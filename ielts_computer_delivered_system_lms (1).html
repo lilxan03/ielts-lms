@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IELTS Computer-Delivered System & LMS (Cloud Edition)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    :root {
+      --bg-main: #ffffff; --bg-sec: #f8fafc; --text-main: #1e293b; --text-sec: #475569;
+      --q-bg: #ffffff; --q-border: transparent; --font-scale: 1.125rem;
+    }
+    body.theme-dark {
+      --bg-main: #0f172a; --bg-sec: #1e293b; --text-main: #f1f5f9; --text-sec: #cbd5e1;
+      --q-bg: #1e293b; --q-border: #334155;
+    }
+    body.theme-pastel {
+      --bg-main: #fdf6e3; --bg-sec: #eee8d5; --text-main: #586e75; --text-sec: #657b83;
+      --q-bg: #fdf6e3; --q-border: #d5c4a1;
+    }
+    body.size-large { --font-scale: 1.35rem; }
+    body.size-xl { --font-scale: 1.6rem; }
+
+    .theme-bg-main { background-color: var(--bg-main); color: var(--text-main); }
+    .theme-bg-sec { background-color: var(--bg-sec); color: var(--text-sec); }
+    .theme-text-main { color: var(--text-main); }
+    .theme-q-block { background-color: var(--q-bg); border-color: var(--q-border); }
+    
+    .passage-text { font-size: var(--font-scale); line-height: 1.8; transition: font-size 0.3s; }
+    .passage-text p { margin-bottom: 1.5rem; }
+    
+    #questions-container p.theme-text-main, #questions-container label span, #questions-container .drop-zone,
+    #questions-container .draggable-item, #questions-container td, #questions-container input[type="text"], #questions-container select,
+    #writing-prompt, #writing-textarea { font-size: var(--font-scale); line-height: 1.6; transition: font-size 0.3s; }
+    
+    .draggable-item { cursor: grab; } .draggable-item:active { cursor: grabbing; }
+    .drop-zone { transition: all 0.2s; }
+    .drop-zone.drag-over { background-color: #dbeafe; border-color: #3b82f6; border-style: solid; }
+
+    .vocab-word { border-bottom: 2px dotted #2563eb; cursor: pointer; color: #1d4ed8; font-weight: 600; transition: all 0.2s; }
+    .vocab-word:hover { background-color: #dbeafe; border-bottom-color: #1e40af; }
+
+    .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+    .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+    .flip-card-front, .flip-card-back { backface-visibility: hidden; }
+    .flip-card-back { transform: rotateY(180deg); }
+
+    @keyframes popIn { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.9); } 100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+    .animate-pop { animation: popIn 0.2s ease-out forwards; }
+  </style>
+</head>
+<body class="font-sans bg-slate-100 overflow-hidden h-screen text-slate-800 transition-colors duration-300">
+
+  <!-- CLOUD LOADER UI -->
+  <div id="cloud-loader" class="h-screen w-full flex flex-col items-center justify-center bg-slate-900 absolute z-[999]">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-6"></div>
+    <h1 class="text-2xl font-bold text-white mb-2 tracking-wide">Connecting to Cloud...</h1>
+    <p id="cloud-loader-text" class="text-slate-400 font-mono text-sm">Initializing secure database connection</p>
+  </div>
+
+  <!-- AUTHENTICATION UI -->
+  <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-slate-900 absolute z-[200]">
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
+      <h1 class="text-3xl font-bold text-center text-slate-800 mb-2">IELTS LMS</h1>
+      <p class="text-center text-slate-500 mb-6 text-sm" id="auth-subtitle">Login to your account</p>
+      
+      <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
+          <input type="text" id="auth-user" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none" placeholder="e.g. student123">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
+          <input type="password" id="auth-pass" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none" placeholder="••••••••">
+        </div>
+        
+        <div id="auth-role-group" class="hidden">
+          <label class="block text-sm font-bold text-slate-700 mb-1">I am a...</label>
+          <div class="flex gap-2">
+            <button onclick="setAuthRole('student')" id="auth-role-student" class="flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded transition">Student</button>
+            <button onclick="setAuthRole('teacher')" id="auth-role-teacher" class="flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded transition">Teacher</button>
+          </div>
+        </div>
+
+        <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded shadow transition mt-2">Log In</button>
+      </div>
+
+      <div class="mt-6 text-center text-sm">
+        <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 hover:underline font-bold">Need an account? Sign up</button>
+      </div>
+      <div class="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-400 text-center">
+        Demo Accounts:<br>Teacher: <b>teacher</b> / 123 <br>Student: <b>student</b> / 123
+      </div>
+    </div>
+  </div>
+
+  <!-- SHARED MODALS -->
+  <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+      <h2 id="modal-title" class="text-xl font-bold mb-4 text-slate-900"></h2>
+      <p id="modal-message" class="mb-4 text-slate-700"></p>
+      <input type="text" id="modal-input" class="hidden w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none" />
+      <div class="flex justify-end gap-3">
+        <button id="modal-cancel" class="hidden px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
+        <button id="modal-confirm" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="test-meta-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 w-[400px] shadow-2xl">
+      <h2 id="meta-modal-heading" class="text-xl font-bold mb-4 text-slate-900">Test Settings</h2>
+      <label class="block text-sm font-bold text-slate-700 mb-1">Test Title</label>
+      <input type="text" id="meta-title-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none font-medium" />
+      <label class="block text-sm font-bold text-slate-700 mb-1">Topics / Tags (Comma separated)</label>
+      <input type="text" id="meta-topics-input" placeholder="e.g. Science, Nature, Maps" class="w-full border border-slate-300 rounded px-3 py-2 mb-6 focus:ring-blue-600 outline-none text-sm" />
+      <div class="flex justify-end gap-3">
+        <button id="meta-cancel" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
+        <button id="meta-confirm" class="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 font-bold shadow">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="teacher-vocab-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center">
+    <div class="bg-white rounded-lg w-[700px] max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-lg">
+        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">🗂️ Test Vocabulary Bank</h2>
+        <button onclick="closeTeacherVocabModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+      </div>
+      <div class="p-5 overflow-y-auto flex-1 bg-slate-100">
+        <div class="bg-white p-4 rounded border border-slate-300 shadow-sm mb-5">
+          <h3 class="font-bold text-sm text-slate-600 uppercase mb-3 border-b pb-2">Add New Word</h3>
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div><label class="block text-xs font-bold text-slate-500 mb-1">Term / Phrase *</label><input type="text" id="tv-term" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="e.g. ubiquitous"></div>
+            <div><label class="block text-xs font-bold text-slate-500 mb-1">Pronunciation (Optional)</label><input type="text" id="tv-pron" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono" placeholder="e.g. /juːˈbɪk.wɪ.təs/"></div>
+          </div>
+          <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">English Definition</label><input type="text" id="tv-eng" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Present, appearing, or found everywhere."></div>
+          <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">Vietnamese Meaning</label><input type="text" id="tv-vi" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Có mặt ở khắp nơi"></div>
+          <button onclick="addTeacherVocab()" class="w-full bg-blue-600 text-white font-bold py-2 rounded shadow hover:bg-blue-700 transition">Add to Test List</button>
+        </div>
+        <h3 class="font-bold text-sm text-slate-600 uppercase mb-2">Current List</h3>
+        <div id="tv-list" class="space-y-2"></div>
+      </div>
+      <div class="p-4 border-t border-slate-200 bg-white rounded-b-lg flex justify-end">
+        <button onclick="closeTeacherVocabModal()" class="px-5 py-2 bg-slate-800 text-white font-bold rounded hover:bg-slate-900 shadow">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UNIFIED SELECTION TOOLTIP (Exam & Review) -->
+  <div id="exam-selection-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+    <button id="tooltip-hl-btn" onmousedown="highlightSelection(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-emerald-600 transition">
+      <span class="text-[10px] font-bold">Highlight</span>
+    </button>
+    <div id="tooltip-hl-divider" class="w-px h-6 bg-slate-200"></div>
+    <button id="tooltip-note-btn" onmousedown="createNoteFromSelection(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-amber-600 transition">
+      <span class="text-[10px] font-bold">Note</span>
+    </button>
+    <div id="tooltip-flashcard-divider" class="w-px h-6 bg-slate-200"></div>
+    <button onmousedown="openStudentFlashcardCreator(event)" id="tooltip-flashcard-btn" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-blue-700 transition">
+      <span class="text-[10px] font-bold">Flashcard</span>
+    </button>
+    <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-slate-300 rotate-45 arrow"></div>
+  </div>
+
+  <!-- CLEAR HIGHLIGHT TOOLTIP -->
+  <div id="clear-highlight-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+    <button onmousedown="clearHighlight(event)" class="flex flex-col items-center justify-center px-4 py-1 hover:bg-rose-50 text-rose-600 rounded transition">
+      <span class="text-[10px] font-bold">Clear Highlight</span>
+    </button>
+    <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-slate-300 rotate-45 arrow"></div>
+  </div>
+
+  <!-- TEACHER EDITOR TEXT SELECTION (Quick Add Vocab) -->
+  <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+    <button onmousedown="quickAddTeacherVocab(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-emerald-400 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+      <span class="text-[10px] font-bold">Add to Vocab</span>
+    </button>
+    <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45 arrow"></div>
+  </div>
+
+  <!-- VOCAB POPOVER (Practice Mode) -->
+  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-2xl rounded-lg p-5 w-72 -translate-y-full mt-[-10px] animate-pop">
+    <button onclick="document.getElementById('vocab-popover').classList.add('hidden')" class="absolute top-2 right-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full w-6 h-6 flex items-center justify-center font-bold">&times;</button>
+    <h4 id="vp-term" class="font-bold text-slate-900 text-xl mb-1 pr-6"></h4>
+    <p id="vp-pron" class="text-blue-700 font-mono text-sm mb-3 font-medium bg-blue-50 inline-block px-2 py-0.5 rounded"></p>
+    <div id="vp-eng" class="text-sm text-slate-700 mb-2 leading-relaxed"></div>
+    <div id="vp-vi" class="text-sm text-slate-700 leading-relaxed border-t border-slate-100 pt-2 mt-2"></div>
+    <div class="absolute bottom-[-6px] w-3 h-3 bg-white border-b border-r border-blue-200 rotate-45 arrow transform -translate-x-1/2"></div>
+  </div>
+
+  <!-- RESULTS MODAL -->
+  <div id="results-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center">
+    <div class="bg-white rounded-lg p-8 w-[440px] shadow-2xl text-center max-h-[90vh] overflow-y-auto">
+      <h2 class="text-2xl font-bold text-slate-900 mb-1">Session Complete</h2>
+      <p class="text-sm text-slate-500 mb-6" id="results-subtitle">Here's how you did</p>
+      <div id="results-score-area"></div>
+      <div class="flex gap-3 mt-6">
+        <button onclick="openExplanationsReview()" class="flex-1 border-2 border-blue-600 text-blue-700 py-2 rounded font-bold hover:bg-blue-50 transition">Review Answers</button>
+        <button onclick="exitToDashboard()" class="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow transition">Exit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENT ADD FLASHCARD MODAL -->
+  <div id="student-fc-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+      <h2 class="text-xl font-bold mb-4 text-slate-900">Add to Flashcards</h2>
+      <label class="block text-sm font-bold text-slate-700 mb-1">Term / Selection</label>
+      <input type="text" id="fc-term-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none font-bold" />
+      <label class="block text-sm font-bold text-slate-700 mb-1">Definition / Translation</label>
+      <textarea id="fc-def-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none text-sm" rows="3"></textarea>
+      <label class="block text-sm font-bold text-slate-700 mb-1">Save to List</label>
+      <select id="fc-list-select" class="w-full border border-slate-300 rounded px-3 py-2 mb-5 focus:ring-blue-600 outline-none text-sm font-medium"></select>
+      <div class="flex justify-between items-center">
+        <button onclick="promptCreateFcList()" class="text-blue-600 text-sm font-bold hover:underline">+ New List</button>
+        <div class="flex gap-2">
+          <button onclick="closeStudentFlashcardCreator()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium text-sm">Cancel</button>
+          <button onclick="saveStudentFlashcard()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow text-sm">Save Card</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center">
+    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+      <h2 class="text-xl font-bold mb-4 text-slate-900">Display Settings</h2>
+      <div class="mb-4">
+        <h3 class="font-semibold mb-2 text-slate-700">Color Theme</h3>
+        <div class="flex gap-2">
+          <button onclick="applyTheme('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 font-medium">Standard</button>
+          <button onclick="applyTheme('dark')" class="flex-1 py-2 border bg-slate-900 text-white rounded hover:bg-slate-800 font-medium">Dark</button>
+          <button onclick="applyTheme('pastel')" class="flex-1 py-2 border bg-[#fdf6e3] text-[#586e75] rounded hover:bg-[#eee8d5] font-medium">Pastel</button>
+        </div>
+      </div>
+      <div class="mb-6">
+        <h3 class="font-semibold mb-2 text-slate-700">Text Size</h3>
+        <div class="flex gap-2">
+          <button onclick="applyFontSize('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-base font-medium">Standard</button>
+          <button onclick="applyFontSize('large')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-lg font-medium">Large</button>
+          <button onclick="applyFontSize('xl')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-xl font-medium">X-Large</button>
+        </div>
+      </div>
+      <button onclick="closeSettings()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow">Done</button>
+    </div>
+  </div>
+
+  <!-- START SCREEN (STUDENT DASHBOARD) -->
+  <div id="start-screen" class="hidden h-screen w-full relative bg-slate-100 overflow-y-auto px-6 py-10">
+    <header class="max-w-6xl mx-auto w-full flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold text-slate-800">Student Dashboard</h1>
+      <div class="flex gap-3">
+        <span class="bg-blue-100 text-blue-800 px-3 py-1.5 rounded font-bold shadow-sm" id="student-name-display">Welcome</span>
+        <button onclick="logout()" class="px-4 py-1.5 border border-slate-300 text-slate-600 rounded font-bold hover:bg-slate-200 transition">Logout</button>
+      </div>
+    </header>
+
+    <div class="bg-white p-8 rounded-xl shadow-xl max-w-6xl mx-auto w-full text-left border-t-8 border-blue-600 shrink-0">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left Column: Class and Mode Setup -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+          <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+            <h2 class="font-bold text-lg mb-4 border-b border-slate-200 pb-2 text-slate-800">1. Select Your Class</h2>
+            <select id="student-class-select" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-2.5 w-full focus:ring-2 focus:ring-blue-600 outline-none font-bold text-slate-800 cursor-pointer"></select>
+          </div>
+
+          <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+            <h2 class="font-bold text-lg mb-4 border-b border-slate-200 pb-2 text-slate-800">2. Select Mode</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+              <button type="button" id="mode-btn-free" onclick="selectTestMode('free')" class="border-2 border-slate-200 rounded-lg p-4 text-left transition hover:border-blue-300">
+                <div class="font-bold text-slate-800 text-md">🕊️ Time-Free (Practice)</div>
+                <div class="text-xs text-slate-500 mt-1">Study vocab in-context. Instant check enabled.</div>
+              </button>
+              <button type="button" id="mode-btn-restricted" onclick="selectTestMode('restricted')" class="border-2 border-slate-200 rounded-lg p-4 text-left transition hover:border-blue-300">
+                <div class="font-bold text-slate-800 text-md">⏱️ Time-Restricted</div>
+                <div class="text-xs text-slate-500 mt-1">Simulate real exam conditions.</div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Assigned Tests -->
+        <div class="lg:col-span-7 flex flex-col">
+          <div class="bg-white border border-blue-200 rounded-lg shadow-sm overflow-hidden flex flex-col h-full min-h-[300px]">
+            <div class="bg-blue-50 px-6 py-4 border-b border-blue-200">
+              <h2 class="font-bold text-blue-900 text-lg">3. Assigned Tests</h2>
+            </div>
+            <div id="student-tests-list" class="divide-y divide-slate-100 overflow-y-auto flex-1"></div>
+          </div>
+        </div>
+
+      </div>
+      
+      <!-- Bottom Section: Progress -->
+      <div id="student-progress-section" class="bg-slate-50 p-6 rounded-lg border border-slate-200 hidden mt-8"></div>
+    </div>
+  </div>
+
+  <!-- EDITOR UI -->
+  <div id="editor-ui" class="hidden h-screen flex flex-col bg-slate-100 z-50 relative">
+    <header class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
+      <div class="flex items-center gap-6">
+        <h1 class="text-xl font-bold">🛠 Teacher Dashboard</h1>
+        
+        <div class="flex bg-slate-900 rounded-md p-1 shadow-inner space-x-1" id="editor-main-tabs">
+          <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Test Bank</button>
+          <button onclick="toggleEditorTab('classes')" id="tab-btn-classes" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Classes</button>
+          <button onclick="toggleEditorTab('subs')" id="tab-btn-subs" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Submissions</button>
+        </div>
+
+        <div id="editor-builder-controls" class="hidden items-center gap-3 bg-slate-700 rounded px-3 py-1.5 shadow-inner">
+          <button onclick="editCurrentTestMeta()" class="text-sm font-bold text-blue-300 hover:text-blue-100 flex items-center gap-1 transition" title="Edit Test Info">
+            <span id="builder-test-name" class="truncate max-w-[200px]">Editing Test...</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </button>
+          <div class="h-4 w-px bg-slate-500 mx-2"></div>
+          <button onclick="openTeacherVocabModal()" class="text-sm font-bold text-emerald-400 hover:text-emerald-200 transition mr-2 flex items-center gap-1">🗂️ Test Vocab</button>
+          <div class="flex items-center">
+            <label class="text-xs text-slate-300 mr-2 uppercase tracking-wide font-bold" id="editor-parts-label">Parts:</label>
+            <select id="editor-part-count" onchange="updatePartCount(this.value)" class="bg-slate-900 text-white text-sm border border-slate-600 rounded px-2 py-1 outline-none font-medium"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button id="editor-logout" onclick="logout()" class="px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Logout</button>
+        <button id="editor-back-bank" onclick="exitBuilder()" class="hidden px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Cancel Edit</button>
+        <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-4 py-2 bg-emerald-600 font-bold rounded hover:bg-emerald-700 transition shadow">Save Test Data</button>
+      </div>
+    </header>
+
+    <!-- Test Bank -->
+    <div id="editor-view-bank" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+          <div><h2 class="text-2xl font-bold text-slate-800">Test Bank (Cloud)</h2></div>
+          <div class="flex gap-2">
+            <button onclick="createNewTest('reading')" class="bg-blue-600 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-blue-700 text-sm">+ Reading</button>
+            <button onclick="createNewTest('listening')" class="bg-cyan-600 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-cyan-700 text-sm">+ Listening</button>
+            <button onclick="createNewTest('writing')" class="bg-emerald-600 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-emerald-700 text-sm">+ Writing</button>
+            <button onclick="createNewTest('speaking')" class="bg-amber-500 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-amber-600 text-sm">+ Speaking</button>
+          </div>
+        </div>
+        <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-20"></div>
+      </div>
+    </div>
+
+    <!-- Classes -->
+    <div id="editor-view-classes" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+          <h2 class="text-2xl font-bold text-slate-800">Class Management (Cloud)</h2>
+          <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Create New Class</button>
+        </div>
+        <div id="classes-list" class="space-y-6 pb-20"></div>
+      </div>
+    </div>
+
+    <!-- Submissions -->
+    <div id="editor-view-subs" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+          <h2 class="text-2xl font-bold text-slate-800">Student Submissions</h2>
+          <button onclick="clearAllSubmissions()" class="px-4 py-2 bg-rose-100 text-rose-700 border border-rose-300 rounded font-bold text-sm shadow-sm hover:bg-rose-200">Clear All Data</button>
+        </div>
+        <div id="submissions-list" class="space-y-4 pb-20"></div>
+      </div>
+    </div>
+
+    <!-- Test Builder -->
+    <div id="editor-view-builder" class="flex-1 flex-col overflow-hidden bg-white hidden">
+      <div class="bg-slate-200 px-6 py-2 flex space-x-2 border-b border-slate-300" id="editor-tabs"></div>
+      <div class="flex flex-1 overflow-hidden" id="builder-split">
+        <div class="w-1/2 p-6 border-r border-slate-300 overflow-y-auto bg-white flex flex-col" id="builder-left">
+          <h2 class="text-lg font-bold mb-4 border-b pb-2 text-slate-800">1. Content Details</h2>
+          <label class="block font-bold mb-1 text-sm text-slate-600" id="edit-title-label">Part Title</label>
+          <input type="text" id="edit-passage-title" class="w-full border p-2 rounded mb-3 focus:ring-blue-500 font-bold">
+          
+          <div id="builder-media-fields">
+            <label class="block font-bold mb-1 text-sm text-slate-600">Audio URL (Optional)</label>
+            <input type="text" id="edit-audio-url" class="w-full border p-2 rounded mb-3 text-sm text-blue-600 font-mono">
+            <label class="block font-bold mb-1 text-sm text-slate-600">Image URL (Optional)</label>
+            <input type="text" id="edit-image-url" class="w-full border p-2 rounded mb-3 text-sm text-blue-600 font-mono">
+          </div>
+          
+          <label class="block font-bold mb-1 text-sm text-slate-600" id="edit-text-label">Prompt / Passage Text</label>
+          <div class="relative flex-1 min-h-[200px]">
+             <textarea id="edit-passage-text" class="absolute inset-0 w-full h-full border p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none font-serif leading-relaxed resize-none"></textarea>
+          </div>
+        </div>
+        <div class="w-1/2 p-6 overflow-y-auto bg-slate-50" id="builder-right">
+          <h2 class="text-lg font-bold mb-4 border-b pb-2 text-slate-800">2. Manage Questions</h2>
+          <div class="mb-6 bg-white p-4 border rounded shadow-sm flex gap-2">
+            <select id="new-q-type" class="flex-1 border p-2 rounded font-medium"></select>
+            <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold shadow hover:bg-blue-700">Add Block</button>
+          </div>
+          <div id="editor-questions-list" class="space-y-4 pb-32"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAM UI -->
+  <div id="exam-ui" class="hidden h-screen flex flex-col bg-white overflow-hidden relative">
+    <header class="bg-slate-900 text-white flex justify-between items-center px-4 py-2 shrink-0 shadow-md z-40">
+      <div class="flex items-center gap-4">
+        <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Candidate:</span>
+        <span id="exam-candidate-name" class="font-bold text-blue-300">Student</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="flex items-center bg-slate-800 rounded px-4 py-1.5 border border-slate-700 shadow-inner gap-2">
+          <span id="timer-label" class="text-[10px] text-slate-400 uppercase tracking-wide font-bold">Time</span>
+          <span id="timer-display" class="font-mono text-xl w-20 text-center text-emerald-400">00:00</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button onclick="toggleNotesPanel()" class="text-slate-400 hover:text-white flex flex-col items-center transition" title="Toggle Notes">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            <span class="text-[9px] font-bold">NOTES</span>
+          </button>
+          <button onclick="openSettings()" class="text-slate-400 hover:text-white flex flex-col items-center transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <span class="text-[9px] font-bold">SETTINGS</span>
+          </button>
+          <span id="autosave-status" class="text-xs font-bold text-emerald-400 opacity-0 transition-opacity">Saved</span>
+          <button onclick="exitTest()" class="text-slate-400 hover:text-white flex flex-col items-center">
+            <span class="text-[10px] mt-1 font-bold text-rose-400 border border-rose-400 px-2 py-1 rounded">SUBMIT TEST</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="bg-blue-700 text-white px-4 py-2 font-semibold flex justify-between items-center shrink-0 z-30 shadow" id="exam-module-bar">
+      <span id="exam-module-title">IELTS Exam Simulator</span>
+      <span id="part-indicator">Part 1</span>
+    </div>
+
+    <!-- Exam Content Area -->
+    <div class="flex flex-1 overflow-hidden theme-bg-main relative" id="split-container">
+      <div class="border-r border-slate-300 overflow-y-auto p-8 pb-32 shadow-inner theme-bg-main relative" id="passage-container" style="width: 50%;"></div>
+      <div id="resizer" class="w-2 bg-slate-200 hover:bg-blue-400 cursor-col-resize shrink-0 flex items-center justify-center z-30"><div class="h-8 w-0.5 bg-slate-500 rounded"></div></div>
+      <div class="flex-1 overflow-y-auto p-8 pb-32 theme-bg-sec min-w-[20%] relative flex flex-col" id="questions-container"></div>
+      
+      <!-- Notes Side Panel -->
+      <div id="notes-panel" class="absolute top-0 right-0 h-full w-80 bg-slate-50 border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-40 flex flex-col">
+        <div class="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-white">
+          <h3 class="font-bold text-slate-800">My Notes</h3>
+          <button onclick="toggleNotesPanel()" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
+        </div>
+        <div id="notes-list" class="flex-1 p-4 overflow-y-auto space-y-4">
+          <div class="text-center text-slate-400 mt-10">Select text in the passage to highlight or add a note.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Palette / Footer -->
+    <footer class="bg-white border-t border-slate-300 shrink-0 h-16 flex items-center px-4 justify-between select-none z-40">
+      <div class="w-32 flex items-center gap-3">
+        <label class="flex items-center space-x-2 cursor-pointer text-slate-600" title="Mark for Review">
+          <input type="checkbox" id="review-checkbox" onchange="toggleReview(this)" class="w-5 h-5 accent-blue-600">
+          <span class="font-bold text-sm">Review</span>
+        </label>
+      </div>
+      <div class="flex-1 flex items-center justify-center gap-4 overflow-x-auto px-4 scrollbar-hide" id="palette-container"></div>
+      <div class="flex space-x-2 w-32 justify-end">
+        <button onclick="handlePrev()" class="w-10 h-10 rounded border border-slate-300 hover:bg-slate-50 font-bold text-slate-600"><</button>
+        <button onclick="handleNext()" class="w-10 h-10 rounded border border-blue-600 text-blue-700 hover:bg-blue-50 font-bold">></button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- REVIEW UI -->
+  <div id="review-ui" class="hidden h-screen flex flex-col bg-slate-100 z-[60] relative overflow-hidden">
+    <header class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
+      <h1 class="text-xl font-bold flex items-center gap-3">📖 Detailed Review <span id="review-module-badge" class="bg-blue-600 text-[10px] uppercase px-2 py-1 rounded">Module</span></h1>
+      <div class="flex gap-3">
+        <button onclick="toggleStudentFlashcardPanel()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-emerald-400 rounded font-bold transition flex items-center gap-2 border border-slate-500">🗂️ My Flashcards</button>
+        <button onclick="closeReviewScreen()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded font-bold transition shadow">Done Reviewing</button>
+      </div>
+    </header>
+    
+    <!-- Split Review Container (Passage Left, Explain Right) -->
+    <div class="flex flex-1 overflow-hidden">
+      <div class="w-1/2 border-r border-slate-300 overflow-y-auto p-8 bg-white shadow-inner" id="review-left-pane"></div>
+      <div class="w-1/2 overflow-y-auto p-6 bg-slate-50 relative" id="review-right-pane"></div>
+    </div>
+
+    <!-- Flashcard Slide Panel (Student) -->
+    <div id="student-fc-panel" class="absolute top-[68px] right-0 h-[calc(100vh-68px)] w-96 bg-white border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-[70] flex flex-col">
+      <div class="p-4 bg-slate-50 border-b border-slate-200">
+        <h2 class="font-bold text-lg text-slate-800 mb-2">Flashcard Decks</h2>
+        <select id="panel-fc-list-select" onchange="renderFlashcardPanel()" class="w-full border border-slate-300 p-2 rounded font-medium focus:ring-2 focus:ring-blue-500 outline-none"></select>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4 bg-slate-100" id="panel-fc-container"></div>
+    </div>
+  </div>
+
+  <!-- FIREBASE INITIALIZATION -->
+    <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    window.initFirebaseSystem = async function() {
+        const firebaseConfig = {
+          apiKey: "AIzaSyC9XmnannGOWSltRQ4ZX_ER_2kNH4MPpSw",
+          authDomain: "khanh-ielts.firebaseapp.com",
+          projectId: "khanh-ielts",
+          storageBucket: "khanh-ielts.firebasestorage.app",
+          messagingSenderId: "448190151769",
+          appId: "1:448190151769:web:2ce1fc076e48d4a70a0548",
+          measurementId: "G-XK8M5ZYPRP"
+        };
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+            
+            // Expose globally so legacy code can use it easily
+            window.db = db;
+            window.fsDoc = doc;
+            window.fsSetDoc = setDoc;
+            window.fsGetDoc = getDoc;
+            window.fsCollection = collection;
+            window.fsGetDocs = getDocs;
+            window.fsDeleteDoc = deleteDoc;
+            
+            // Use your specific project ID for cloud paths
+            window.appId = firebaseConfig.projectId;
+            window.fPath = (col) => `data/${col}`; 
+
+            // Authenticate anonymously so Firebase allows database access
+            await signInAnonymously(auth);
+
+            // Launch our application sync
+            await window.bootLMS();
+        } catch (error) {
+            console.error("Firebase Initialization Failed:", error);
+            document.getElementById('cloud-loader-text').textContent = "Database Connection Failed. Check browser console.";
+            document.getElementById('cloud-loader').querySelector('.animate-spin').classList.add('hidden');
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        window.initFirebaseSystem();
+    });
+  </script>
+
+  <!-- LMS CORE LOGIC -->
+  <script>
+    // CLOUD DATABASE VARIABLES
+    let USERS = [];
+    let TEST_BANK = [];
+    let CLASSES = [];
+    let FLASHCARDS = {};
+    let ALL_NOTES = {};
+    let SUBMISSIONS = [];
+    let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
+
+    let APP_DATA = { module: 'reading', parts: [], vocab: [] };
+    let editingTestId = null;
+    let currentEditorPartIdx = 0;
+
+    // Exam State
+    let timeLeft = 0; 
+    let testMode = 'restricted'; 
+    let isTimeFree = false;
+    let answers = {};
+    let reviewStatus = {}; 
+    let currentPartIdx = 0;
+    let currentBlockIdx = 0;
+    let timerInterval, autosaveTimeout;
+    let draggedData = null; 
+    let mediaRecorder = null;
+    let audioChunks = [];
+
+    // Feature States
+    let activeSelectionRange = null;
+    let activeHighlightNode = null;
+    let currentNotes = []; 
+    let isNotesPanelOpen = false;
+
+    // --- CLOUD SYNC SYSTEM ---
+    window.bootLMS = async function() {
+        try {
+            document.getElementById('cloud-loader-text').textContent = "Fetching LMS Users...";
+            const uSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('users')));
+            USERS = uSnap.docs.map(d => d.data());
+
+            // If completely empty, we populate the default cloud seed data
+            if (USERS.length === 0) {
+                await seedCloudData();
+            } else {
+                document.getElementById('cloud-loader-text').textContent = "Fetching Tests & Classes...";
+                const tSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('tests')));
+                TEST_BANK = tSnap.docs.map(d => d.data());
+
+                const cSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('classes')));
+                CLASSES = cSnap.docs.map(d => d.data());
+
+                const sSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('submissions')));
+                SUBMISSIONS = sSnap.docs.map(d => d.data());
+                
+                const nSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('notes')));
+                nSnap.docs.forEach(d => { ALL_NOTES[d.id] = d.data().data; });
+
+                const fSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('flashcards')));
+                fSnap.docs.forEach(d => { FLASHCARDS[d.id] = d.data().data; });
+            }
+
+            // Remove loading screen and start auth
+            document.getElementById('cloud-loader').classList.add('hidden');
+            checkAuth();
+
+        } catch (err) {
+            console.error("Cloud Boot Error:", err);
+            document.getElementById('cloud-loader-text').textContent = "Failed to load database. Check console.";
+            document.getElementById('cloud-loader').querySelector('.animate-spin').classList.add('hidden');
+        }
+    };
+
+    async function seedCloudData() {
+        document.getElementById('cloud-loader-text').textContent = "Generating Initial Cloud Data...";
+        USERS = [
+          { user: 'teacher', pass: '123', role: 'teacher' },
+          { user: 'student', pass: '123', role: 'student' }
+        ];
+        for(let u of USERS) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u.user), u);
+        
+        TEST_BANK = [
+          { id: "t_read_1", title: "Reading: Bicycle Evolution", module: "reading", topics: ["History"], vocab: [{term: "magnificent", eng: "Extremely beautiful or impressive", vi: "Tráng lệ, tuyệt vời"}], parts: [{ title: "The Evolution", text: "The bicycle is a magnificent invention.\n\nIn the early 19th century, the 'dandy horse' lacked pedals. {drop:1}\n\nJohn Kemp Starley invented the Rover Safety Bicycle in 1885.", questions: [{ blockId: "b1", type: "tfng", ids: [2], instruction: "Agree?", text: "The dandy horse had pedals.", correctAnswers: {2: "False"}, explanation: "It lacked pedals." }, { blockId: "b2", type: "matching_headings", ids: [1], instruction: "Match heading", options: ["i. First concepts", "ii. The danger"], correctAnswers: {1: "i. First concepts"} }] }] },
+          { id: "t_write_1", title: "Writing Task 2: Work Future", module: "writing", topics: ["Work", "Society"], parts: [{ title: "Task 2", text: "The world of work is changing rapidly. Employees cannot depend on the same job for life.\n\nDiscuss the causes and suggest preparations.\n\nWrite at least 250 words.", questions: [{ blockId: "w1", type: "essay", ids: [1], instruction: "Write your essay below.", points: 9 }] }] },
+          { id: "t_speak_1", title: "Speaking: Hometown", module: "speaking", topics: ["Personal"], parts: [{ title: "Part 1: Introduction", text: "Let's talk about your hometown.\n1. Where is your hometown?\n2. What do you like about it?", questions: [{ blockId: "s1", type: "audio_record", ids: [1], instruction: "Record your answer for Part 1" }] }] }
+        ];
+        for(let t of TEST_BANK) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), t.id), t);
+        
+        CLASSES = [{ id: "c_demo", name: "Demo Class", assignedTests: ["t_read_1", "t_write_1", "t_speak_1"] }];
+        for(let c of CLASSES) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+        
+        console.log("Cloud Seeding Complete");
+    }
+
+    function checkAuth() {
+      if (!currentUser) {
+        document.getElementById('auth-ui').classList.remove('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('editor-ui').classList.add('hidden');
+      } else {
+        document.getElementById('auth-ui').classList.add('hidden');
+        if (currentUser.role === 'teacher') openEditor();
+        else { initStudentDashboard(); document.getElementById('start-screen').classList.remove('hidden'); }
+      }
+    }
+
+    let authMode = 'login';
+    function toggleAuthMode() {
+      authMode = authMode === 'login' ? 'register' : 'login';
+      document.getElementById('auth-subtitle').textContent = authMode === 'login' ? 'Login to your account' : 'Create a new account';
+      document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'Log In' : 'Sign Up';
+      document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'Need an account? Sign up' : 'Already have an account? Log in';
+      document.getElementById('auth-role-group').classList.toggle('hidden', authMode === 'login');
+      document.getElementById('auth-error').classList.add('hidden');
+    }
+    
+    let selectedRegRole = 'student';
+    function setAuthRole(role) {
+      selectedRegRole = role;
+      const s = document.getElementById('auth-role-student'), t = document.getElementById('auth-role-teacher');
+      s.className = role === 'student' ? 'flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded transition' : 'flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded transition';
+      t.className = role === 'teacher' ? 'flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded transition' : 'flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded transition';
+    }
+
+    async function handleAuthSubmit() {
+      const u = document.getElementById('auth-user').value.trim(), p = document.getElementById('auth-pass').value.trim();
+      const err = document.getElementById('auth-error');
+      if (!u || !p) { err.textContent = 'Enter username and password'; err.classList.remove('hidden'); return; }
+      
+      const btn = document.getElementById('auth-submit-btn');
+      btn.textContent = "Connecting..."; btn.disabled = true;
+
+      try {
+          if (authMode === 'register') {
+            if (USERS.find(x => x.user === u)) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up"; btn.disabled=false; return; }
+            currentUser = { user: u, pass: p, role: selectedRegRole };
+            USERS.push(currentUser); 
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+          } else {
+            const found = USERS.find(x => x.user === u && x.pass === p);
+            if (!found) { err.textContent = 'Invalid credentials'; err.classList.remove('hidden'); btn.textContent="Log In"; btn.disabled=false; return; }
+            currentUser = found;
+          }
+          
+          sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+          checkAuth();
+      } catch (e) {
+          console.error(e); err.textContent = 'Cloud network error. Try again.'; err.classList.remove('hidden');
+      }
+      btn.textContent = authMode === 'register' ? 'Sign Up' : 'Log In'; btn.disabled = false;
+    }
+    
+    function logout() {
+      sessionStorage.removeItem('ielts_session'); currentUser = null;
+      document.getElementById('editor-ui').classList.add('hidden');
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('exam-ui').classList.add('hidden');
+      document.getElementById('review-ui').classList.add('hidden');
+      clearInterval(timerInterval);
+      checkAuth();
+    }
+
+    function showModalMsg(title, msg, onConfirm=null) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = msg;
+      document.getElementById('modal-input').classList.add('hidden');
+      document.getElementById('modal-cancel').classList.add('hidden');
+      document.getElementById('custom-modal').classList.remove('hidden');
+      document.getElementById('modal-confirm').onclick = () => { document.getElementById('custom-modal').classList.add('hidden'); if(onConfirm) onConfirm(); };
+    }
+    function showConfirm(title, msg, onConfirm) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = msg;
+      document.getElementById('modal-input').classList.add('hidden');
+      document.getElementById('modal-cancel').classList.remove('hidden');
+      document.getElementById('custom-modal').classList.remove('hidden');
+      document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+      document.getElementById('modal-confirm').onclick = () => { document.getElementById('custom-modal').classList.add('hidden'); onConfirm(); };
+    }
+    function showInputPrompt(title, msg, onConfirm) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-message').textContent = msg;
+      const inp = document.getElementById('modal-input'); inp.value = ''; inp.classList.remove('hidden');
+      document.getElementById('modal-cancel').classList.remove('hidden');
+      document.getElementById('custom-modal').classList.remove('hidden');
+      inp.focus();
+      document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+      document.getElementById('modal-confirm').onclick = () => { if(inp.value.trim()) { document.getElementById('custom-modal').classList.add('hidden'); onConfirm(inp.value.trim()); } };
+    }
+    function showTestMetaModal(titleText, defaultTitle, defaultTopics, onConfirm) {
+      document.getElementById('meta-modal-heading').textContent = titleText;
+      document.getElementById('meta-title-input').value = defaultTitle;
+      document.getElementById('meta-topics-input').value = defaultTopics;
+      document.getElementById('test-meta-modal').classList.remove('hidden');
+      document.getElementById('meta-cancel').onclick = () => document.getElementById('test-meta-modal').classList.add('hidden');
+      document.getElementById('meta-confirm').onclick = () => {
+        document.getElementById('test-meta-modal').classList.add('hidden');
+        onConfirm(document.getElementById('meta-title-input').value.trim() || 'Untitled', document.getElementById('meta-topics-input').value.split(',').map(s=>s.trim()).filter(Boolean));
+      };
+    }
+    
+    function applyTheme(t) { document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 ${t!=='standard'?'theme-'+t:''} text-slate-800 bg-slate-100`; }
+    function applyFontSize(s) { document.body.classList.remove('size-large', 'size-xl'); if(s!=='standard') document.body.classList.add(`size-${s}`); }
+    function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+    function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+    function openEditor() {
+      document.getElementById('editor-ui').classList.remove('hidden');
+      toggleEditorTab('bank');
+    }
+    function toggleEditorTab(tab) {
+      ['bank', 'classes', 'subs', 'builder'].forEach(t => document.getElementById(`editor-view-${t}`).classList.add('hidden'));
+      ['bank', 'classes', 'subs'].forEach(t => {
+        const b = document.getElementById(`tab-btn-${t}`);
+        if(b) b.className = t===tab ? 'px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition' : 'px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition';
+      });
+      document.getElementById('editor-builder-controls').classList.add('hidden');
+      document.getElementById('editor-logout').classList.remove('hidden');
+      document.getElementById('editor-back-bank').classList.add('hidden');
+      document.getElementById('editor-save-test').classList.add('hidden');
+
+      if (tab === 'bank') { document.getElementById('editor-view-bank').classList.remove('hidden'); renderTestBank(); }
+      if (tab === 'classes') { document.getElementById('editor-view-classes').classList.remove('hidden'); renderClasses(); }
+      if (tab === 'subs') { document.getElementById('editor-view-subs').classList.remove('hidden'); renderSubmissions(); }
+      if (tab === 'builder') {
+        document.getElementById('editor-view-builder').classList.remove('hidden');
+        document.getElementById('editor-view-builder').classList.add('flex');
+        document.getElementById('editor-builder-controls').classList.remove('hidden');
+        document.getElementById('editor-builder-controls').classList.add('flex');
+        document.getElementById('editor-logout').classList.add('hidden');
+        document.getElementById('editor-back-bank').classList.remove('hidden');
+        document.getElementById('editor-save-test').classList.remove('hidden');
+      }
+    }
+
+    function renderTestBank() {
+      const grid = document.getElementById('test-bank-grid');
+      grid.innerHTML = TEST_BANK.length ? TEST_BANK.map(t => {
+        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
+        const c = modColors[t.module];
+        return `
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col">
+          <div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span><span class="text-xs text-slate-400 font-bold">${t.parts.length} Part(s)</span></div>
+          <h3 class="font-bold text-slate-900 mb-2 truncate">${t.title}</h3>
+          <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100">
+            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 font-bold py-1.5 rounded text-sm transition">Edit</button>
+            <button onclick="deleteTest('${t.id}')" class="px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded text-sm transition">Del</button>
+          </div>
+        </div>`;
+      }).join('') : '<div class="col-span-full text-center text-slate-500 py-10">No tests in the cloud. Create one!</div>';
+    }
+    
+    async function createNewTest(mod) {
+      showTestMetaModal(`New ${mod.charAt(0).toUpperCase()+mod.slice(1)} Test`, "", "", async (title, topics) => {
+        const newTest = { id: 't_'+Date.now(), title, module: mod, topics, parts: [{title:"Part 1", text:"", questions:[]}], vocab: [] };
+        TEST_BANK.unshift(newTest); 
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), newTest.id), newTest);
+        editTest(newTest.id);
+      });
+    }
+    
+    async function deleteTest(id) {
+      showConfirm("Delete Test", "Remove completely from cloud database?", async () => {
+        // Sync Memory
+        TEST_BANK = TEST_BANK.filter(t => t.id !== id); 
+        CLASSES.forEach(c => c.assignedTests = c.assignedTests.filter(tid => tid !== id)); 
+        
+        // Push Database Deletes
+        await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('tests'), id));
+        for(let c of CLASSES) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+        
+        // Clean up cloud notes associated with test
+        const noteIdsToDelete = Object.keys(ALL_NOTES).filter(k => k.endsWith(`_${id}`));
+        for (let nid of noteIdsToDelete) {
+           delete ALL_NOTES[nid];
+           await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('notes'), nid));
+        }
+        
+        renderTestBank();
+      });
+    }
+
+    function renderClasses() {
+      document.getElementById('classes-list').innerHTML = CLASSES.map(cls => `
+        <div class="bg-white border border-slate-200 rounded-lg p-5">
+          <div class="flex justify-between mb-3"><h3 class="font-bold text-lg">${cls.name}</h3><button onclick="deleteClass('${cls.id}')" class="text-rose-500 text-sm font-bold">Delete</button></div>
+          <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded max-h-48 overflow-y-auto">
+            ${TEST_BANK.map(t => `<label class="flex items-center text-sm"><input type="checkbox" onchange="toggleTestAssignment('${cls.id}','${t.id}',this.checked)" ${cls.assignedTests.includes(t.id)?'checked':''} class="mr-2">${t.title}</label>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+    
+    function promptCreateClass() { 
+      showInputPrompt("New Class", "Name:", async (name) => { 
+        const newCls = {id:'c_'+Date.now(), name, assignedTests:[]};
+        CLASSES.push(newCls); 
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), newCls.id), newCls);
+        renderClasses(); 
+      }); 
+    }
+    
+    async function deleteClass(id) { 
+      CLASSES = CLASSES.filter(c => c.id !== id); 
+      await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('classes'), id));
+      renderClasses(); 
+    }
+    
+    async function toggleTestAssignment(cid, tid, isChecked) {
+      const c = CLASSES.find(x => x.id === cid);
+      if(isChecked && !c.assignedTests.includes(tid)) c.assignedTests.push(tid); else if(!isChecked) c.assignedTests = c.assignedTests.filter(x => x !== tid);
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+    }
+
+    function openTeacherVocabModal() {
+      if(!APP_DATA.vocab) APP_DATA.vocab = [];
+      document.getElementById('teacher-vocab-modal').classList.remove('hidden');
+      renderTeacherVocab();
+    }
+    function closeTeacherVocabModal() { document.getElementById('teacher-vocab-modal').classList.add('hidden'); }
+    
+    function renderTeacherVocab() {
+      const list = document.getElementById('tv-list');
+      list.innerHTML = APP_DATA.vocab.length ? APP_DATA.vocab.map((v, i) => `
+        <div class="bg-white p-3 rounded border border-slate-200 flex justify-between items-center">
+          <div><strong class="text-blue-700">${v.term}</strong> <span class="text-xs text-slate-500 font-mono ml-2">${v.pron||''}</span>
+          <div class="text-xs text-slate-600 mt-1">${v.eng||''}${v.eng&&v.vi?' | ':''}${v.vi||''}</div></div>
+          <button onclick="APP_DATA.vocab.splice(${i},1); renderTeacherVocab();" class="text-rose-500 text-xs font-bold px-2 py-1 hover:bg-rose-50 rounded">Delete</button>
+        </div>`).join('') : '<div class="text-xs text-slate-400 italic">No words added yet.</div>';
+    }
+    function addTeacherVocab() {
+      const term = document.getElementById('tv-term').value.trim();
+      if(!term) return;
+      APP_DATA.vocab.push({ term, pron: document.getElementById('tv-pron').value.trim(), eng: document.getElementById('tv-eng').value.trim(), vi: document.getElementById('tv-vi').value.trim() });
+      ['tv-term','tv-pron','tv-eng','tv-vi'].forEach(id => document.getElementById(id).value = '');
+      renderTeacherVocab();
+    }
+    
+    function quickAddTeacherVocab(e) {
+      e.preventDefault(); e.stopPropagation(); document.getElementById('editor-selection-tooltip').classList.add('hidden');
+      const ta = document.getElementById('edit-passage-text');
+      const term = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+      if(term) { openTeacherVocabModal(); document.getElementById('tv-term').value = term; }
+    }
+
+    document.addEventListener('mouseup', (e) => {
+      const edTT = document.getElementById('editor-selection-tooltip');
+      const exTT = document.getElementById('exam-selection-tooltip');
+      const clTT = document.getElementById('clear-highlight-tooltip');
+      
+      if(edTT) edTT.classList.add('hidden'); 
+      if(exTT) exTT.classList.add('hidden');
+      if(clTT) clTT.classList.add('hidden');
+
+      // Teacher Editor Selection
+      if (!document.getElementById('editor-ui').classList.contains('hidden')) {
+        if (e.target.id === 'edit-passage-text') {
+          const start = e.target.selectionStart, end = e.target.selectionEnd;
+          if (start !== end) {
+            const rect = e.target.getBoundingClientRect();
+            edTT.style.left = `${rect.left + (rect.width/2)}px`; edTT.style.top = `${e.clientY - 10}px`;
+            edTT.classList.remove('hidden');
+          }
+        }
+      } 
+      // Student Exam/Review Selection
+      else if (!document.getElementById('exam-ui').classList.contains('hidden') || !document.getElementById('review-ui').classList.contains('hidden')) {
+         const selection = window.getSelection(); const text = selection.toString().trim();
+         
+         if (text.length > 0 && (e.target.closest('#passage-container') || e.target.closest('#review-left-pane'))) {
+            activeSelectionRange = selection.getRangeAt(0); 
+            const rect = activeSelectionRange.getBoundingClientRect();
+            
+            // Hide Flashcard button if actively taking exam
+            const fcBtn = document.getElementById('tooltip-flashcard-btn');
+            const fcDivdr = document.getElementById('tooltip-flashcard-divider');
+            const hlBtn = document.getElementById('tooltip-hl-btn');
+            const noteBtn = document.getElementById('tooltip-note-btn');
+            const hlDivdr = document.getElementById('tooltip-hl-divider');
+            
+            if(!document.getElementById('exam-ui').classList.contains('hidden')) { 
+               if(fcBtn) fcBtn.classList.add('hidden'); 
+               if(fcDivdr) fcDivdr.classList.add('hidden'); 
+               if(hlBtn) hlBtn.classList.remove('hidden');
+               if(noteBtn) noteBtn.classList.remove('hidden');
+               if(hlDivdr) hlDivdr.classList.remove('hidden');
+            } else { 
+               if(fcBtn) fcBtn.classList.remove('hidden'); 
+               if(fcDivdr) fcDivdr.classList.add('hidden'); 
+               if(hlBtn) hlBtn.classList.add('hidden');
+               if(noteBtn) noteBtn.classList.add('hidden');
+               if(hlDivdr) hlDivdr.classList.add('hidden');
+            }
+
+            exTT.style.left = `${rect.left + (rect.width / 2)}px`; exTT.style.top = `${rect.top}px`; 
+            exTT.classList.remove('hidden');
+         } else if (e.target.classList.contains('highlighted-text')) {
+            activeHighlightNode = e.target;
+            const rect = activeHighlightNode.getBoundingClientRect();
+            clTT.style.left = `${rect.left + (rect.width / 2)}px`; clTT.style.top = `${rect.top}px`;
+            clTT.classList.remove('hidden');
+         }
+      }
+    });
+
+    document.addEventListener('mousedown', e => {
+      if (!e.target.closest('#exam-selection-tooltip') && !e.target.closest('#clear-highlight-tooltip') && !e.target.classList.contains('highlighted-text') && !e.target.closest('#editor-selection-tooltip')) {
+         const exTT = document.getElementById('exam-selection-tooltip');
+         const clTT = document.getElementById('clear-highlight-tooltip');
+         const edTT = document.getElementById('editor-selection-tooltip');
+         if(exTT) exTT.classList.add('hidden');
+         if(clTT) clTT.classList.add('hidden');
+         if(edTT) edTT.classList.add('hidden');
+      }
+    });
+    
+    // Core Notes System: Isolated per user and per test, synced to cloud
+    async function saveCurrentNotesToCloud() {
+      if (!currentUser || !APP_DATA || !APP_DATA.id) return;
+      const noteKey = `${currentUser.user}_${APP_DATA.id}`;
+      ALL_NOTES[noteKey] = currentNotes;
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('notes'), noteKey), { data: currentNotes });
+    }
+
+    function highlightSelection(e) {
+      if(e) { e.preventDefault(); e.stopPropagation(); }
+      document.getElementById('exam-selection-tooltip').classList.add('hidden'); 
+      if (!activeSelectionRange) return;
+      const span = document.createElement('span'); 
+      span.className = 'highlighted-text bg-yellow-300 text-slate-900 cursor-pointer rounded px-1 transition-colors'; 
+      span.dataset.id = 'h_' + Date.now();
+      try { 
+        activeSelectionRange.surroundContents(span); 
+        window.getSelection().removeAllRanges(); 
+        currentNotes.push({ id: span.dataset.id, partIdx: currentPartIdx, quote: span.textContent, text: null });
+        saveCurrentNotesToCloud();
+      } catch (err) { showModalMsg("Error", "Please select text within a single paragraph to highlight."); }
+    }
+
+    function createNoteFromSelection(e) {
+      if(e) { e.preventDefault(); e.stopPropagation(); }
+      document.getElementById('exam-selection-tooltip').classList.add('hidden'); 
+      if (!activeSelectionRange) return;
+      const selectedText = activeSelectionRange.toString();
+      showInputPrompt("Add Note", `Note for: "${selectedText.substring(0,30)}..."`, (noteText) => {
+        const noteId = 'n_' + Date.now(); const span = document.createElement('span');
+        span.className = 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500'; 
+        span.dataset.id = noteId;
+        try {
+          activeSelectionRange.surroundContents(span); window.getSelection().removeAllRanges();
+          currentNotes.push({ id: noteId, partIdx: currentPartIdx, quote: selectedText, text: noteText });
+          saveCurrentNotesToCloud();
+          renderNotesPanel(); if(!isNotesPanelOpen) toggleNotesPanel();
+        } catch (err) { showModalMsg("Error", "Please select text within a single paragraph."); }
+      });
+    }
+
+    function clearHighlight(e) {
+      if(e) { e.preventDefault(); e.stopPropagation(); }
+      document.getElementById('clear-highlight-tooltip').classList.add('hidden'); 
+      if (!activeHighlightNode) return;
+      const noteId = activeHighlightNode.dataset.id; 
+      const parent = activeHighlightNode.parentNode;
+      while (activeHighlightNode.firstChild) parent.insertBefore(activeHighlightNode.firstChild, activeHighlightNode);
+      parent.removeChild(activeHighlightNode);
+      currentNotes = currentNotes.filter(n => n.id !== noteId); 
+      saveCurrentNotesToCloud();
+      renderNotesPanel();
+    }
+
+    function toggleNotesPanel() {
+      const panel = document.getElementById('notes-panel'); 
+      isNotesPanelOpen = !isNotesPanelOpen; 
+      panel.classList.toggle('translate-x-full', !isNotesPanelOpen);
+    }
+
+    function renderNotesPanel() {
+      const list = document.getElementById('notes-list');
+      const activeNotes = currentNotes.filter(n => n.text !== null);
+      if (activeNotes.length === 0) {
+        list.innerHTML = `<div class="text-center text-slate-400 mt-10">Select text in the passage to highlight or add a note.</div>`;
+      } else {
+        list.innerHTML = activeNotes.map(n => `
+          <div class="bg-white border border-slate-200 p-3 rounded shadow-sm relative">
+            <button onclick="deleteNote('${n.id}')" class="absolute top-2 right-2 text-slate-400 hover:text-rose-500">&times;</button>
+            <p class="text-xs text-slate-500 italic mb-2 border-l-2 border-amber-400 pl-2">"${n.quote}"</p>
+            <p class="font-medium text-slate-800 text-sm">${n.text}</p>
+          </div>`).join('');
+      }
+    }
+
+    function deleteNote(id) {
+      const span = document.querySelector(`.highlighted-text[data-id="${id}"]`);
+      if(span) {
+        const parent = span.parentNode;
+        while (span.firstChild) parent.insertBefore(span.firstChild, span);
+        parent.removeChild(span);
+      }
+      currentNotes = currentNotes.filter(n => n.id !== id);
+      saveCurrentNotesToCloud();
+      renderNotesPanel();
+    }
+
+    function restoreHighlights() {
+      const container = document.getElementById('passage-container');
+      if(!container) return;
+      
+      const notesForPart = currentNotes.filter(n => n.partIdx === currentPartIdx);
+      if(notesForPart.length === 0) return;
+
+      notesForPart.forEach(n => {
+         const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+         let node;
+         while(node = walker.nextNode()) {
+            if(node.nodeValue.includes(n.quote) && !node.parentNode.classList.contains('highlighted-text')) {
+               const cls = n.text === null 
+                  ? 'highlighted-text bg-yellow-300 text-slate-900 cursor-pointer rounded px-1 transition-colors' 
+                  : 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500';
+               
+               const fragment = document.createDocumentFragment();
+               const parts = node.nodeValue.split(n.quote);
+               parts.forEach((part, i) => {
+                  fragment.appendChild(document.createTextNode(part));
+                  if(i < parts.length - 1) {
+                     const span = document.createElement('span');
+                     span.className = cls; span.dataset.id = n.id; span.textContent = n.quote;
+                     fragment.appendChild(span);
+                  }
+               });
+               node.parentNode.replaceChild(fragment, node);
+               break; 
+            }
+         }
+      });
+    }
+
+    function editTest(id) {
+      editingTestId = id; APP_DATA = JSON.parse(JSON.stringify(TEST_BANK.find(t=>t.id===id)));
+      if(!APP_DATA.vocab) APP_DATA.vocab = [];
+      document.getElementById('builder-test-name').textContent = APP_DATA.title;
+      
+      const pSel = document.getElementById('editor-part-count'); pSel.innerHTML = '';
+      for(let i=1; i<= (APP_DATA.module==='listening'?4:3); i++) pSel.innerHTML += `<option value="${i}">${i}</option>`;
+      pSel.value = APP_DATA.parts.length;
+      
+      const media = document.getElementById('builder-media-fields');
+      if (APP_DATA.module === 'reading' || APP_DATA.module === 'writing') media.classList.add('hidden'); else media.classList.remove('hidden');
+      
+      const qSel = document.getElementById('new-q-type'); qSel.innerHTML = '';
+      if(APP_DATA.module==='writing') qSel.innerHTML = '<option value="essay">Writing Essay Box</option>';
+      else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option>';
+      else {
+        qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop Gaps</option>`;
+        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="matching_headings">Matching Headings</option>`;
+      }
+
+      toggleEditorTab('builder'); loadEditorPart(0);
+    }
+    
+    function exitBuilder() { showConfirm("Cancel Edit", "Changes lost?", () => toggleEditorTab('bank')); }
+    
+    async function saveActiveTest() {
+      saveCurrentEditorPart();
+      
+      const btn = document.getElementById('editor-save-test');
+      btn.textContent = "Saving to Cloud..."; btn.disabled = true;
+
+      try {
+          const idx = TEST_BANK.findIndex(t => t.id === editingTestId);
+          TEST_BANK[idx] = JSON.parse(JSON.stringify(APP_DATA)); 
+          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), editingTestId), TEST_BANK[idx]);
+          showModalMsg("Saved", "Test saved to cloud database successfully."); 
+          toggleEditorTab('bank');
+      } catch (err) {
+          showModalMsg("Error", "Failed to save to cloud.");
+      }
+      
+      btn.textContent = "Save Test Data"; btn.disabled = false;
+    }
+
+    function updatePartCount(cnt) {
+      saveCurrentEditorPart(); cnt = parseInt(cnt); const cur = APP_DATA.parts.length;
+      if(cnt > cur) for(let i=cur; i<cnt; i++) APP_DATA.parts.push({title:`Part ${i+1}`, text:"", questions:[]});
+      else if(cnt < cur) APP_DATA.parts = APP_DATA.parts.slice(0, cnt);
+      if(currentEditorPartIdx >= cnt) currentEditorPartIdx = cnt-1;
+      loadEditorPart(currentEditorPartIdx);
+    }
+
+    function loadEditorPart(idx) {
+      currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
+      document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => `<button onclick="saveCurrentEditorPart(); loadEditorPart(${i})" class="px-5 py-2 font-bold transition ${currentEditorPartIdx===i?'bg-white text-blue-800 border-t-4 border-blue-600':'bg-slate-300 text-slate-600'}">Part ${i+1}</button>`).join('');
+      document.getElementById('edit-passage-title').value = p.title||'';
+      document.getElementById('edit-audio-url').value = p.audioUrl||'';
+      document.getElementById('edit-image-url').value = p.imageUrl||'';
+      document.getElementById('edit-passage-text').value = p.text||'';
+      renderEditorQuestions();
+    }
+
+    function renderEditorQuestions() {
+      const list = document.getElementById('editor-questions-list'); list.innerHTML = '';
+      APP_DATA.parts[currentEditorPartIdx].questions.forEach((q, i) => {
+        const div = document.createElement('div'); div.className = 'bg-white p-4 rounded border border-slate-300 shadow-sm relative mb-4';
+        const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
+        const mkLbl = t => `<label class="block text-xs font-bold text-slate-500 mt-2">${t}</label>`;
+        
+        let html = `<div class="absolute top-2 right-2"><button onclick="APP_DATA.parts[currentEditorPartIdx].questions.splice(${i},1); renderEditorQuestions()" class="text-rose-500 text-xs font-bold px-2 border border-rose-200 rounded">X</button></div>`;
+        html += `<div class="text-sm font-bold text-blue-700 uppercase mb-2 border-b pb-1">Block ${i+1}: ${q.type}</div>`;
+        html += `<div class="flex gap-2">${mkLbl('IDs (csv)')}<input type="text" class="q-ids border p-1 w-full text-sm font-mono" value="${q.ids.join(',')}">${mkLbl('Pts')}<input type="number" class="q-points border p-1 w-16 text-sm" value="${q.points||1}"></div>`;
+        html += `${mkLbl('Instruction')}<input type="text" class="q-inst border p-1 w-full text-sm" value="${esc(q.instruction)}">`;
+        
+        if (q.type === 'multiple_choice' || q.type === 'tfng') {
+           html += `${mkLbl('Question Text')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea>`;
+           if(q.type === 'multiple_choice') html += `${mkLbl('Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
+           html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+        } else if (q.type === 'essay' || q.type === 'audio_record') {
+           // Basic types
+        } else {
+           html += `${mkLbl('Q Text/Options')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea><textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
+           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+        }
+        html += `${mkLbl('Explanation')}<textarea class="q-expl border p-1 w-full text-sm bg-slate-50">${q.explanation||''}</textarea>`;
+        div.innerHTML = html; list.appendChild(div);
+      });
+    }
+
+    function addEditorQuestion() {
+      const type = document.getElementById('new-q-type').value;
+      const ids = [Date.now()%10000]; 
+      const newQ = { blockId: 'b'+Date.now(), type, ids, instruction: "New Q", correctAnswers:{} };
+      APP_DATA.parts[currentEditorPartIdx].questions.push(newQ); renderEditorQuestions();
+    }
+    
+    function saveCurrentEditorPart() {
+      const p = APP_DATA.parts[currentEditorPartIdx];
+      p.title = document.getElementById('edit-passage-title').value;
+      p.audioUrl = document.getElementById('edit-audio-url').value;
+      p.imageUrl = document.getElementById('edit-image-url').value;
+      p.text = document.getElementById('edit-passage-text').value;
+      
+      const blocks = document.getElementById('editor-questions-list').children;
+      p.questions = Array.from(blocks).map((b, i) => {
+        const old = p.questions[i];
+        const res = { blockId: old.blockId, type: old.type, ids: b.querySelector('.q-ids').value.split(',').map(Number), points: Number(b.querySelector('.q-points').value)||1, instruction: b.querySelector('.q-inst').value, explanation: b.querySelector('.q-expl')?.value };
+        if(b.querySelector('.q-text')) res.text = b.querySelector('.q-text').value;
+        if(b.querySelector('.q-opts')) res.options = b.querySelector('.q-opts').value.split('\n').filter(Boolean);
+        
+        const c = b.querySelector('.q-correct');
+        if(c) {
+          res.correctAnswers = {};
+          if(old.type==='multiple_choice'||old.type==='tfng') res.correctAnswers[res.ids[0]] = c.value.trim();
+          else c.value.split('\n').forEach(l => { const m = l.match(/(\d+):(.*)/); if(m) res.correctAnswers[Number(m[1])] = m[2].trim(); });
+        }
+        return res;
+      });
+    }
+
+    function initStudentDashboard() {
+      document.getElementById('student-name-display').textContent = currentUser.user;
+      const sel = document.getElementById('student-class-select');
+      sel.innerHTML = '<option value="">-- Choose Class --</option>' + CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      renderStudentDashboard();
+    }
+
+    function renderStudentDashboard() {
+      const cid = document.getElementById('student-class-select').value;
+      const list = document.getElementById('student-tests-list');
+      const prog = document.getElementById('student-progress-section');
+      
+      if(!cid) { list.innerHTML = '<div class="p-6 text-slate-500">Select a class first.</div>'; prog.classList.add('hidden'); return; }
+      const cls = CLASSES.find(c => c.id === cid);
+      if(!cls || !cls.assignedTests.length) { list.innerHTML = '<div class="p-6 text-slate-500">No tests assigned.</div>'; prog.classList.add('hidden'); return; }
+
+      list.innerHTML = cls.assignedTests.map(tid => {
+        const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
+        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
+        return `
+        <div class="flex justify-between items-center p-4 hover:bg-slate-50 border-b border-slate-100 last:border-0">
+          <div><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase">${t.module}</span><h3 class="font-bold text-slate-800 text-lg mt-1">${t.title}</h3></div>
+          <button onclick="startTest('${t.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow transition">Start</button>
+        </div>`;
+      }).join('');
+      
+      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+      
+      prog.classList.remove('hidden');
+      prog.innerHTML = `
+        <h2 class="font-bold text-lg mb-3 border-b pb-2">4. Your Progress & Feedback (Cloud Synced)</h2>
+        <div class="space-y-3 max-h-60 overflow-y-auto">
+          ${mySubs.length ? mySubs.map(s => `
+            <div class="bg-white border border-slate-200 rounded p-3 shadow-sm flex justify-between items-center">
+              <div><strong class="text-slate-800">${s.testName}</strong><div class="text-xs text-slate-500 mt-1">${s.date}</div></div>
+              <div class="text-right"><span class="font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded">${s.score}</span><button onclick="reviewPastSubmission(${s.id})" class="ml-3 text-xs bg-slate-200 hover:bg-slate-300 font-bold px-2 py-1 rounded">Review</button></div>
+            </div>`).join('') : '<p class="text-sm text-slate-500 italic">No completed tests yet.</p>'}
+        </div>`;
+    }
+
+    function selectTestMode(m) {
+      testMode = m; isTimeFree = (m === 'free');
+      document.getElementById('mode-btn-free').classList.toggle('border-blue-500', isTimeFree);
+      document.getElementById('mode-btn-free').classList.toggle('bg-blue-50', isTimeFree);
+      document.getElementById('mode-btn-restricted').classList.toggle('border-blue-500', !isTimeFree);
+      document.getElementById('mode-btn-restricted').classList.toggle('bg-blue-50', !isTimeFree);
+    }
+
+    function startTest(tid) {
+      const t = TEST_BANK.find(x => x.id === tid); if(!t) return;
+      APP_DATA = JSON.parse(JSON.stringify(t)); 
+      answers = {}; reviewStatus = {};
+      
+      // Initialize isolated notes from Cloud
+      const noteKey = `${currentUser.user}_${APP_DATA.id}`;
+      if (!ALL_NOTES[noteKey]) ALL_NOTES[noteKey] = [];
+      currentNotes = ALL_NOTES[noteKey];
+      
+      activeSelectionRange = null;
+      activeHighlightNode = null;
+      isNotesPanelOpen = false;
+      document.getElementById('notes-panel').classList.add('translate-x-full');
+      renderNotesPanel(); 
+      
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('exam-ui').classList.remove('hidden');
+      document.getElementById('exam-candidate-name').textContent = currentUser.user;
+      document.getElementById('exam-module-title').textContent = APP_DATA.title;
+      
+      const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
+      document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
+      
+      clearInterval(timerInterval);
+      timeLeft = isTimeFree ? 0 : (APP_DATA.module==='listening'?40*60:APP_DATA.module==='writing'?60*60:APP_DATA.module==='speaking'?15*60:60*60);
+      document.getElementById('timer-label').textContent = isTimeFree ? 'Elapsed' : 'Time Left';
+      timerInterval = setInterval(() => {
+        isTimeFree ? timeLeft++ : timeLeft--;
+        if(!isTimeFree && timeLeft <= 0) { clearInterval(timerInterval); exitTest(); return; }
+        const h = Math.floor(timeLeft/3600), m = Math.floor((timeLeft%3600)/60), s = timeLeft%60;
+        document.getElementById('timer-display').textContent = `${h>0?h+':':''}${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      }, 1000);
+      
+      initResizer(); renderPart(0);
+    }
+    
+    function initResizer() {
+      const r = document.getElementById('resizer'), l = document.getElementById('passage-container'), s = document.getElementById('split-container');
+      let drag = false;
+      r.onmousedown = () => { drag = true; document.body.style.cursor = 'col-resize'; l.style.userSelect = 'none'; };
+      document.onmousemove = e => { if(!drag) return; let w = ((e.clientX - s.getBoundingClientRect().left)/s.getBoundingClientRect().width)*100; l.style.width = `${Math.max(20, Math.min(w,80))}%`; };
+      document.onmouseup = () => { if(drag) { drag = false; document.body.style.cursor=''; l.style.userSelect=''; } };
+    }
+
+    function renderPart(idx) {
+      currentPartIdx = idx; currentBlockIdx = 0;
+      document.getElementById('part-indicator').textContent = `Part ${idx + 1} of ${APP_DATA.parts.length}`;
+      const p = APP_DATA.parts[idx];
+      
+      let pText = p.text || '';
+      [...pText.matchAll(/{drop:(\d+)}/g)].forEach(m => {
+        const id = m[1], ans = answers[id]||'';
+        const cls = ans ? 'bg-blue-100 border-blue-600 text-blue-900' : 'bg-slate-50 border-slate-300 text-slate-400 border-dashed';
+        pText = pText.replace(m[0], `<div class="drop-zone inline-block min-w-[100px] h-8 border-2 ${cls} align-middle text-center font-bold rounded cursor-pointer mx-1" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)">${ans}</div>`);
+      });
+
+      let htmlText = pText.split('\n\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
+      if (isTimeFree && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
+        APP_DATA.vocab.forEach((v, vIdx) => {
+          const regex = new RegExp(`(?![^<]*>)\\b(${v.term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+          htmlText = htmlText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
+        });
+      }
+
+      let media = '';
+      if(p.audioUrl) media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4"></audio>`;
+      if(p.imageUrl) media += `<img src="${p.imageUrl}" class="max-w-full h-auto mb-4 rounded border">`;
+      
+      document.getElementById('passage-container').innerHTML = `<h2 class="text-2xl font-bold mb-6 font-serif">${p.title}</h2>${media}<div class="passage-text font-serif text-justify">${htmlText}</div>`;
+      
+      restoreHighlights();
+      renderQuestions(); updateExamUI();
+    }
+    
+    function showVocabPop(e, idx) {
+      e.stopPropagation(); const v = APP_DATA.vocab[idx]; if(!v) return;
+      document.getElementById('vp-term').textContent = v.term;
+      document.getElementById('vp-pron').textContent = v.pron || ''; document.getElementById('vp-pron').classList.toggle('hidden', !v.pron);
+      document.getElementById('vp-eng').innerHTML = v.eng ? `<b>EN:</b> ${v.eng}` : '';
+      document.getElementById('vp-vi').innerHTML = v.vi ? `<b>VI:</b> ${v.vi}` : '';
+      
+      const pop = document.getElementById('vocab-popover'); 
+      pop.classList.remove('hidden');
+      
+      const rect = e.target.getBoundingClientRect();
+      const popWidth = pop.offsetWidth || 288; 
+      
+      let popLeft = rect.left + (rect.width / 2);
+      if (popLeft - (popWidth / 2) < 10) popLeft = (popWidth / 2) + 10;
+      if (popLeft + (popWidth / 2) > window.innerWidth - 10) popLeft = window.innerWidth - (popWidth / 2) - 10;
+      
+      pop.style.left = `${popLeft}px`; 
+      pop.style.top = `${rect.top}px`;
+      
+      const arrow = pop.querySelector('.arrow');
+      if (arrow) {
+         const wordCenter = rect.left + (rect.width / 2);
+         const relativeOffset = wordCenter - popLeft;
+         arrow.style.left = `calc(50% + ${relativeOffset}px)`;
+      }
+    }
+    
+    document.addEventListener('mouseup', e => { if(!e.target.closest('#vocab-popover') && !e.target.classList.contains('vocab-word')) document.getElementById('vocab-popover').classList.add('hidden'); });
+
+    function renderQuestions() {
+      const c = document.getElementById('questions-container'); c.innerHTML = '';
+      APP_DATA.parts[currentPartIdx].questions.forEach((q, i) => {
+        const div = document.createElement('div'); div.id = `q-block-${i}`; div.className = 'mb-8 p-6 rounded-lg border shadow-sm cursor-pointer transition theme-q-block'; div.onclick = () => { currentBlockIdx=i; updateExamUI(); };
+        
+        let content = '';
+        if(q.type === 'multiple_choice' || q.type === 'tfng') {
+           const opts = q.type === 'tfng' ? ['True','False','Not Given'] : q.options;
+           content = `<p class="font-bold mb-4">${q.text}</p><div class="space-y-2">${opts.map(o => `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${o.replace(/'/g,"\\'")}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${o}</span></label>`).join('')}</div>`;
+        } else if(q.type === 'fill_blanks') {
+           let txt = q.text; q.ids.forEach(id => txt = txt.split(`{blank:${id}}`).join(`<input type="text" value="${answers[id]||''}" oninput="handleAns(${id}, this.value)" class="mx-1 border-b-2 border-slate-400 focus:border-blue-600 bg-transparent outline-none px-2 py-1 text-center font-bold text-blue-800 w-32">`));
+           content = `<p class="leading-relaxed whitespace-pre-wrap">${txt}</p>`;
+        } else if(q.type === 'dnd_list' || q.type === 'matching_headings') {
+           content = `<div class="mb-4 p-4 bg-slate-100 rounded text-center">${q.options.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item inline-block bg-white border-2 border-slate-300 rounded-full px-4 py-1.5 font-bold text-blue-800 m-1">${o}</div>`).join('')}</div><p class="italic text-sm text-slate-500">Drag into passage gaps.</p>`;
+        } else if(q.type === 'essay') {
+           content = `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-serif text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\s+/).filter(Boolean).length}</span></div>`;
+        } else if(q.type === 'audio_record') {
+           content = `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
+        }
+        
+        let chkBtn = '';
+        if(isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') chkBtn = `<div class="mt-4 flex justify-end"><button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition">Check Answer</button></div><div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-sm font-bold"></div>`;
+
+        div.innerHTML = `<div class="flex gap-4"><div class="bg-slate-800 text-white px-2 h-8 rounded font-bold flex items-center justify-center shrink-0 shadow">${q.ids.length>1?`${q.ids[0]}-${q.ids[q.ids.length-1]}`:q.ids[0]}</div><div class="flex-1"><p class="text-sm font-bold text-slate-500 uppercase mb-4">${q.instruction}</p>${content}${chkBtn}</div></div>`;
+        c.appendChild(div);
+      });
+    }
+
+    async function toggleRecording(id) {
+      const btn = document.getElementById(`mic-btn-${id}`), st = document.getElementById(`mic-status-${id}`), pb = document.getElementById(`mic-playback-${id}`);
+      if(mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop(); btn.classList.remove('animate-pulse', 'bg-rose-700'); btn.classList.add('bg-rose-500'); st.textContent = 'Processing...';
+      } else {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream); audioChunks = [];
+          mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => { 
+              const b64 = reader.result;
+              if(b64.length > 2000000) { showModalMsg("Warning", "Recording too long for local storage. Please keep it under 1 minute."); return; }
+              answers[id] = b64; triggerAutosave(); pb.src = b64; pb.classList.remove('hidden'); st.textContent = 'Recorded successfully.';
+            };
+            stream.getTracks().forEach(t => t.stop());
+          };
+          mediaRecorder.start(); btn.classList.add('animate-pulse', 'bg-rose-700'); btn.classList.remove('bg-rose-500'); st.textContent = 'Recording... (Click to Stop)'; pb.classList.add('hidden');
+        } catch(err) { showModalMsg("Mic Error", "Microphone access denied or unavailable."); }
+      }
+    }
+
+    function handleAns(id, v) { answers[id] = v; triggerAutosave(); updateExamUI(); }
+    function dragStart(e, d) { draggedData = d; }
+    function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+    function drop(e, id) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); if(draggedData) { handleAns(id, draggedData); e.currentTarget.textContent = draggedData; e.currentTarget.className = e.currentTarget.className.replace('text-slate-400 border-dashed bg-slate-50','bg-blue-100 border-blue-600 text-blue-900'); draggedData=null; } }
+    function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; renderPart(currentPartIdx); } }
+
+    function quickCheckAnswer(bIdx) {
+      const q = APP_DATA.parts[currentPartIdx].questions[bIdx];
+      const resEl = document.getElementById(`quick-res-${bIdx}`);
+      let correct = 0, total = q.ids.length;
+      q.ids.forEach(id => {
+        const expected = ((q.correctAnswers&&q.correctAnswers[id])||'').toString().toLowerCase();
+        const given = (answers[id]||'').toString().toLowerCase();
+        if(expected && expected === given) correct++;
+      });
+      resEl.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800');
+      if(correct === total) { resEl.classList.add('bg-emerald-100', 'text-emerald-800'); resEl.innerHTML = `✅ Perfect! (${correct}/${total})`; }
+      else { resEl.classList.add('bg-rose-100', 'text-rose-800'); resEl.innerHTML = `❌ Try again. (${correct}/${total} correct)`; }
+    }
+
+    function triggerAutosave() {
+      const s = document.getElementById('autosave-status'); s.classList.remove('opacity-0');
+      clearTimeout(autosaveTimeout); autosaveTimeout = setTimeout(() => s.classList.add('opacity-0'), 1500);
+    }
+    
+    function handlePrev() { if (currentBlockIdx > 0) { currentBlockIdx--; document.getElementById(`q-block-${currentBlockIdx}`).scrollIntoView(); updateExamUI(); } else if (currentPartIdx > 0) renderPart(currentPartIdx - 1); }
+    function handleNext() { if (currentBlockIdx < APP_DATA.parts[currentPartIdx].questions.length - 1) { currentBlockIdx++; document.getElementById(`q-block-${currentBlockIdx}`).scrollIntoView(); updateExamUI(); } else if (currentPartIdx < APP_DATA.parts.length - 1) renderPart(currentPartIdx + 1); }
+    function toggleReview(cb) { const q = APP_DATA.parts[currentPartIdx].questions[currentBlockIdx]; if(q) q.ids.forEach(id => reviewStatus[id] = cb.checked); updateExamUI(); }
+    
+    function updateExamUI() {
+      const q = APP_DATA.parts[currentPartIdx].questions[currentBlockIdx];
+      document.getElementById('review-checkbox').checked = q ? !!reviewStatus[q.ids[0]] : false;
+      APP_DATA.parts[currentPartIdx].questions.forEach((_, i) => document.getElementById(`q-block-${i}`).classList.toggle('ring-2', i===currentBlockIdx));
+      
+      const pal = document.getElementById('palette-container'); pal.innerHTML = '';
+      APP_DATA.parts.forEach((p, pIdx) => {
+        const div = document.createElement('div'); div.className = 'flex items-center px-4 py-2 cursor-pointer shrink-0';
+        if(pIdx === currentPartIdx) {
+          div.classList.add('bg-slate-100','rounded'); div.innerHTML = `<span class="font-bold mr-3">Part ${pIdx+1}</span>`;
+          const ql = document.createElement('div'); ql.className='flex gap-1';
+          p.questions.forEach((qb, bIdx) => qb.ids.forEach(id => {
+            const isAns = answers[id]&&String(answers[id]).trim();
+            const btn = document.createElement('button'); btn.textContent = id; btn.onclick = () => { currentBlockIdx=bIdx; document.getElementById(`q-block-${bIdx}`).scrollIntoView(); updateExamUI(); };
+            btn.className = `w-7 h-7 flex items-center justify-center text-xs font-bold transition ${reviewStatus[id]?'rounded-full':'rounded-sm'} ${bIdx===currentBlockIdx?'border-2 border-blue-600 bg-white text-blue-800':(isAns?'bg-transparent text-slate-800 underline decoration-2 underline-offset-2':'bg-transparent text-slate-500 hover:bg-slate-200')}`;
+            ql.appendChild(btn);
+          }));
+          div.appendChild(ql);
+        } else {
+          div.classList.add('hover:bg-slate-50','rounded'); div.onclick = () => renderPart(pIdx);
+          div.innerHTML = `<span class="font-medium text-slate-600">Part ${pIdx+1}</span>`;
+        }
+        pal.appendChild(div);
+      });
+    }
+
+    function exitTest() {
+      showConfirm("Submit Test", "Are you sure you want to finish?", async () => {
+        clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
+        
+        let total = 0, correct = 0;
+        if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
+          APP_DATA.parts.forEach(p => p.questions.forEach(q => q.ids.forEach(id => {
+             total++; const ex = (q.correctAnswers?.[id]||'').toString().toLowerCase(); const gv = (answers[id]||'').toString().toLowerCase();
+             if(ex && ex === gv) correct++;
+          })));
+        }
+        
+        // Save submission to cloud
+        if (testMode !== 'free') {
+          const clsId = document.getElementById('student-class-select').value;
+          const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title, className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers, score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
+          
+          SUBMISSIONS.unshift(sub);
+          try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); }
+          catch(e) { console.error("Cloud Error saving submission:", e); }
+        }
+
+        if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
+           document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div>`;
+        } else {
+           document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">Waiting for teacher review.</p>`;
+        }
+        document.getElementById('results-modal').classList.remove('hidden');
+      });
+    }
+    
+    function exitToDashboard() { document.getElementById('results-modal').classList.add('hidden'); document.getElementById('start-screen').classList.remove('hidden'); renderStudentDashboard(); }
+    
+    function openExplanationsReview() {
+      document.getElementById('results-modal').classList.add('hidden');
+      document.getElementById('review-ui').classList.remove('hidden');
+      document.getElementById('review-module-badge').textContent = APP_DATA.module;
+      buildSplitReviewUI(false, null, {});
+    }
+    function closeReviewScreen() {
+      document.getElementById('review-ui').classList.add('hidden');
+      if (currentUser.role === 'teacher') document.getElementById('editor-ui').classList.remove('hidden');
+      else document.getElementById('start-screen').classList.remove('hidden');
+    }
+
+    function renderSubmissions() {
+      document.getElementById('submissions-list').innerHTML = SUBMISSIONS.length ? SUBMISSIONS.map(s => `
+        <div class="bg-white border border-slate-200 rounded p-4 mb-3">
+          <div class="flex justify-between items-center mb-3">
+            <div><h3 class="font-bold text-lg">${s.student} <span class="text-xs text-slate-500 font-normal">(${s.className})</span></h3><p class="text-sm font-bold text-blue-700">${s.testName} <span class="text-xs text-slate-400 font-normal">${s.date}</span></p></div>
+            <div class="text-right"><p class="font-black text-blue-800 text-lg">${s.score}</p><button onclick="openGradingView(${s.id})" class="text-sm bg-slate-100 hover:bg-slate-200 font-bold px-3 py-1 rounded border border-slate-300 mt-1">Grade / Review</button></div>
+          </div>
+        </div>`).join('') : '<div class="text-center text-slate-500">No submissions yet.</div>';
+    }
+    
+    async function clearAllSubmissions() { 
+      showConfirm("Clear All", "Delete all student data from cloud?", async () => { 
+        for (let sub of SUBMISSIONS) {
+           await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)));
+        }
+        SUBMISSIONS = [];
+        renderSubmissions(); 
+      }); 
+    }
+
+    function openGradingView(subId) {
+      const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
+      
+      const test = TEST_BANK.find(t => t.id === sub.testId);
+      if(!test) { showModalMsg("Error", "Original test deleted."); return; }
+      
+      APP_DATA = test; answers = sub.answers || {};
+      
+      document.getElementById('editor-ui').classList.add('hidden');
+      document.getElementById('review-ui').classList.remove('hidden');
+      document.getElementById('review-module-badge').textContent = `${APP_DATA.module} - GRADING: ${sub.student}`;
+      
+      buildSplitReviewUI(true, subId, sub.teacherFeedback || {});
+    }
+
+    function reviewPastSubmission(subId) {
+      const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
+      APP_DATA = TEST_BANK.find(t => t.id === sub.testId); if(!APP_DATA) return;
+      answers = sub.answers;
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('review-ui').classList.remove('hidden');
+      document.getElementById('review-module-badge').textContent = APP_DATA.module;
+      buildSplitReviewUI(false, subId, sub.teacherFeedback || {});
+    }
+
+    function buildSplitReviewUI(isGrading, subId, feedbackObj) {
+      const l = document.getElementById('review-left-pane'), r = document.getElementById('review-right-pane');
+      
+      let lHtml = '';
+      APP_DATA.parts.forEach((p, i) => {
+        let txt = p.text || '';
+        if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
+           [...txt.matchAll(/{drop:(\d+)}/g)].forEach(m => txt = txt.replace(m[0], `<span class="bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded border border-blue-400 mx-1">${m[1]}</span>`));
+           txt = txt.split('\n\n').map(x => `<p class="mb-4">${x}</p>`).join('');
+        } else if(APP_DATA.module === 'writing') {
+           txt = txt.replace(/\n/g, '<br>');
+        }
+        lHtml += `<h2 class="text-xl font-bold mb-4 font-serif mt-8 first:mt-0">${p.title}</h2>`;
+        if(p.audioUrl) lHtml += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4"></audio>`;
+        if(p.imageUrl) lHtml += `<img src="${p.imageUrl}" class="max-w-full h-auto mb-4 border rounded">`;
+        lHtml += `<div class="font-serif leading-relaxed text-slate-800 text-lg selection-wrapper">${txt}</div>`;
+      });
+      l.innerHTML = lHtml;
+
+      let rHtml = '';
+      APP_DATA.parts.forEach((p, i) => {
+        rHtml += `<h3 class="font-bold text-slate-500 uppercase text-sm mb-4 mt-8 first:mt-0 border-b pb-1">Answers: ${p.title}</h3>`;
+        p.questions.forEach((q) => {
+          let content = '';
+          if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
+             content = q.ids.map(id => {
+               const g = answers[id]||'', e = q.correctAnswers?.[id]||'';
+               const isC = g.toString().toLowerCase() === e.toString().toLowerCase();
+               return `<div class="flex items-center gap-3 text-sm mb-2"><span class="w-6 text-center font-bold text-slate-400">Q${id}</span><span class="${isC?'text-emerald-600':'text-rose-500'} font-black text-lg">${isC?'✓':'✗'}</span><div><div class="text-slate-600">Given: <b>${g||'--'}</b></div><div class="text-emerald-700">Correct: <b>${e}</b></div></div></div>`;
+             }).join('');
+             if(q.explanation) content += `<div class="mt-3 bg-purple-50 border border-purple-200 p-3 rounded text-sm text-purple-900"><b>💡 Explain:</b> ${q.explanation}</div>`;
+          } else if(APP_DATA.module === 'writing') {
+             const a = answers[q.ids[0]]||'';
+             content = `<div class="bg-white border border-slate-300 p-4 rounded font-serif text-lg leading-relaxed whitespace-pre-wrap">${a||'<em class="text-slate-400">No response.</em>'}</div>`;
+             if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave grading comments here...">${feedbackObj[q.ids[0]]||''}</textarea>`;
+             else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
+          } else if(APP_DATA.module === 'speaking') {
+             const a = answers[q.ids[0]];
+             content = a ? `<audio controls src="${a}" class="w-full"></audio>` : `<p class="italic text-slate-500">No recording.</p>`;
+             if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
+             else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
+          }
+          rHtml += `<div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm mb-4"><div class="font-bold text-slate-800 mb-3">${q.instruction}</div>${content}</div>`;
+        });
+      });
+      
+      if(isGrading) rHtml += `<button onclick="saveFeedback(${subId})" id="btn-save-feed" class="w-full mt-4 bg-emerald-600 text-white font-bold py-3 rounded shadow hover:bg-emerald-700">Save Grades & Feedback</button>`;
+      r.innerHTML = rHtml;
+    }
+
+    async function saveFeedback(subId) {
+      const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
+      const btn = document.getElementById('btn-save-feed'); btn.textContent="Saving..."; btn.disabled=true;
+      
+      sub.teacherFeedback = {};
+      APP_DATA.parts.forEach(p => p.questions.forEach(q => {
+         const el = document.getElementById(`fb-${q.ids[0]}`); if(el && el.value.trim()) sub.teacherFeedback[q.ids[0]] = el.value.trim();
+      }));
+      if(APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') sub.score = "Graded ✓";
+      
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
+      showModalMsg("Saved", "Feedback synced to cloud database successfully.");
+      renderSubmissions(); 
+    }
+
+    function toggleStudentFlashcardPanel() {
+      const p = document.getElementById('student-fc-panel');
+      if(p.classList.contains('translate-x-full')) {
+        p.classList.remove('translate-x-full');
+        const sel = document.getElementById('panel-fc-list-select');
+        sel.innerHTML = `<option value="teacher_vocab">📌 Test Vocab (Teacher)</option>` + Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 ${k}</option>`).join('');
+        renderFlashcardPanel();
+      } else p.classList.add('translate-x-full');
+    }
+    
+    function promptCreateFcList() {
+      showInputPrompt("New List", "Name your flashcard deck:", async (name) => {
+        if(!FLASHCARDS[name]) FLASHCARDS[name] = [];
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), name), {data: FLASHCARDS[name]});
+        document.getElementById('fc-list-select').innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
+        document.getElementById('fc-list-select').value = name;
+      });
+    }
+
+    function openStudentFlashcardCreator(e) {
+      e.preventDefault(); e.stopPropagation(); document.getElementById('exam-selection-tooltip').classList.add('hidden');
+      const sel = window.getSelection().toString().trim();
+      if(!sel) return;
+      document.getElementById('fc-term-input').value = sel; document.getElementById('fc-def-input').value = '';
+      const listSel = document.getElementById('fc-list-select');
+      
+      if(Object.keys(FLASHCARDS).length === 0) { 
+          FLASHCARDS['My List'] = []; 
+          window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), 'My List'), {data: []});
+      }
+      
+      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
+      document.getElementById('student-fc-modal').classList.remove('hidden');
+    }
+    
+    function closeStudentFlashcardCreator() { document.getElementById('student-fc-modal').classList.add('hidden'); }
+    
+    async function saveStudentFlashcard() {
+      const term = document.getElementById('fc-term-input').value, def = document.getElementById('fc-def-input').value, list = document.getElementById('fc-list-select').value;
+      FLASHCARDS[list].push({ term, def }); 
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), list), {data: FLASHCARDS[list]});
+      closeStudentFlashcardCreator();
+      if(!document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
+         document.getElementById('panel-fc-list-select').value = list; renderFlashcardPanel();
+      }
+    }
+
+    function renderFlashcardPanel() {
+      const listName = document.getElementById('panel-fc-list-select').value;
+      const c = document.getElementById('panel-fc-container');
+      let cards = [];
+      if (listName === 'teacher_vocab') cards = APP_DATA.vocab || [];
+      else cards = FLASHCARDS[listName] || [];
+
+      if (!cards.length) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No cards in this deck.</div>'; return; }
+      
+      c.innerHTML = cards.map((card, i) => `
+        <div class="flip-card w-full h-40 mb-4 cursor-pointer perspective-1000 relative group" onclick="this.classList.toggle('flipped')">
+          ${listName === 'teacher_vocab' ? `<button onclick="event.stopPropagation(); importCardToMine(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold shadow opacity-0 group-hover:opacity-100 transition z-10">+</button>` : ''}
+          <div class="flip-card-inner w-full h-full relative shadow-md rounded-xl">
+            <div class="flip-card-front absolute w-full h-full bg-white border border-slate-200 rounded-xl flex items-center justify-center p-4">
+              <h3 class="font-bold text-xl text-blue-800 text-center">${card.term}</h3>
+            </div>
+            <div class="flip-card-back absolute w-full h-full bg-blue-50 border border-blue-200 rounded-xl flex flex-col items-center justify-center p-4 overflow-y-auto">
+              ${card.pron ? `<span class="text-xs font-mono text-blue-600 bg-white px-2 py-0.5 rounded mb-2">${card.pron}</span>` : ''}
+              <p class="font-medium text-slate-800 text-center text-sm">${card.def || card.eng || ''}</p>
+              ${card.vi ? `<p class="font-medium text-slate-600 text-center text-sm border-t border-blue-200 mt-2 pt-2">${card.vi}</p>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function importCardToMine(idx) {
+      const v = APP_DATA.vocab[idx]; if(!v) return;
+      document.getElementById('fc-term-input').value = v.term;
+      document.getElementById('fc-def-input').value = `${v.pron ? `[${v.pron}]\n` : ''}${v.eng ? `EN: ${v.eng}\n` : ''}${v.vi ? `VI: ${v.vi}` : ''}`.trim();
+      const listSel = document.getElementById('fc-list-select');
+      
+      if(Object.keys(FLASHCARDS).length === 0) { 
+          FLASHCARDS['My List'] = []; 
+          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), 'My List'), {data: []}); 
+      }
+      
+      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
+      document.getElementById('student-fc-modal').classList.remove('hidden');
+    }
+
+  </script>
+</body>
+</html>
