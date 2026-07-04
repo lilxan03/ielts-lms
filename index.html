@@ -54,7 +54,10 @@
     .flip-card-front, .flip-card-back { backface-visibility: hidden; }
     .flip-card-back { transform: rotateY(180deg); }
 
-    @keyframes popIn { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.9); } 100% { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+    @keyframes popIn { 
+      0% { opacity: 0; transform: translate(-50%, calc(-100% + 5px)) scale(0.95); } 
+      100% { opacity: 1; transform: translate(-50%, calc(-100% - 8px)) scale(1); } 
+    }
     .animate-pop { animation: popIn 0.2s ease-out forwards; }
   </style>
 </head>
@@ -159,7 +162,7 @@
   </div>
 
   <!-- UNIFIED SELECTION TOOLTIP (Exam & Review) -->
-  <div id="exam-selection-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+  <div id="exam-selection-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 animate-pop">
     <button id="tooltip-hl-btn" onmousedown="highlightSelection(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-emerald-600 transition">
       <span class="text-[10px] font-bold">Highlight</span>
     </button>
@@ -175,7 +178,7 @@
   </div>
 
   <!-- CLEAR HIGHLIGHT TOOLTIP -->
-  <div id="clear-highlight-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+  <div id="clear-highlight-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 animate-pop">
     <button onmousedown="clearHighlight(event)" class="flex flex-col items-center justify-center px-4 py-1 hover:bg-rose-50 text-rose-600 rounded transition">
       <span class="text-[10px] font-bold">Clear Highlight</span>
     </button>
@@ -183,7 +186,7 @@
   </div>
 
   <!-- TEACHER EDITOR TEXT SELECTION (Quick Add Vocab) -->
-  <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+  <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 animate-pop">
     <button onmousedown="quickAddTeacherVocab(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-emerald-400 transition">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       <span class="text-[10px] font-bold">Add to Vocab</span>
@@ -192,13 +195,13 @@
   </div>
 
   <!-- VOCAB POPOVER (Practice Mode) -->
-  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-2xl rounded-lg p-5 w-72 -translate-y-full mt-[-10px] animate-pop">
-    <button onclick="document.getElementById('vocab-popover').classList.add('hidden')" class="absolute top-2 right-2 text-slate-400 hover:text-slate-700 bg-slate-100 rounded-full w-6 h-6 flex items-center justify-center font-bold">&times;</button>
-    <h4 id="vp-term" class="font-bold text-slate-900 text-xl mb-1 pr-6"></h4>
-    <p id="vp-pron" class="text-blue-700 font-mono text-sm mb-3 font-medium bg-blue-50 inline-block px-2 py-0.5 rounded"></p>
-    <div id="vp-eng" class="text-sm text-slate-700 mb-2 leading-relaxed"></div>
-    <div id="vp-vi" class="text-sm text-slate-700 leading-relaxed border-t border-slate-100 pt-2 mt-2"></div>
-    <div class="absolute bottom-[-6px] w-3 h-3 bg-white border-b border-r border-blue-200 rotate-45 arrow transform -translate-x-1/2"></div>
+  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-xl rounded-lg p-4 w-64 animate-pop">
+    <button onclick="document.getElementById('vocab-popover').classList.add('hidden')" class="absolute top-1.5 right-1.5 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-6 h-6 flex items-center justify-center font-bold transition">&times;</button>
+    <h4 id="vp-term" class="font-bold text-slate-900 text-lg mb-1 pr-6"></h4>
+    <p id="vp-pron" class="text-blue-700 font-mono text-xs mb-2 font-medium bg-blue-50 inline-block px-1.5 py-0.5 rounded"></p>
+    <div id="vp-eng" class="text-sm text-slate-700 mb-1.5 leading-relaxed"></div>
+    <div id="vp-vi" class="text-sm text-slate-700 leading-relaxed border-t border-slate-100 pt-1.5 mt-1.5"></div>
+    <div class="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-b border-r border-blue-200 rotate-45 arrow"></div>
   </div>
 
   <!-- RESULTS MODAL -->
@@ -968,7 +971,8 @@
           const start = e.target.selectionStart, end = e.target.selectionEnd;
           if (start !== end) {
             const rect = e.target.getBoundingClientRect();
-            edTT.style.left = `${rect.left + (rect.width/2)}px`; edTT.style.top = `${e.clientY - 10}px`;
+            edTT.style.left = `${rect.left + (rect.width/2)}px`; 
+            edTT.style.top = `${e.clientY}px`;
             edTT.classList.remove('hidden');
           }
         }
@@ -1314,8 +1318,17 @@
         
         if (q.type === 'multiple_choice' || q.type === 'tfng') {
            html += `${mkLbl('Question Text')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea>`;
-           if(q.type === 'multiple_choice') html += `${mkLbl('Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
-           html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+           if(q.type === 'multiple_choice') {
+               html += `${mkLbl('Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
+               html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-multi mr-2" ${q.multi ? 'checked' : ''} onchange="APP_DATA.parts[currentEditorPartIdx].questions[${i}].multi = this.checked; saveCurrentEditorPart(); renderEditorQuestions();"> Allow multiple selections (Checkboxes)</label></div>`;
+               if (q.multi) {
+                   html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+               } else {
+                   html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+               }
+           } else {
+               html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+           }
         } else if (q.type === 'essay' || q.type === 'audio_record') {
            // Basic types
         } else if (q.type === 'matching_info') {
@@ -1367,12 +1380,16 @@
         if(b.querySelector('.q-text')) res.text = b.querySelector('.q-text').value;
         if(b.querySelector('.q-opts')) res.options = b.querySelector('.q-opts').value.split('\n').filter(Boolean);
         if(b.querySelector('.q-reus')) res.reusable = b.querySelector('.q-reus').checked;
+        if(b.querySelector('.q-multi')) res.multi = b.querySelector('.q-multi').checked;
         
         const c = b.querySelector('.q-correct');
         if(c) {
           res.correctAnswers = {};
-          if(old.type==='multiple_choice'||old.type==='tfng') res.correctAnswers[res.ids[0]] = c.value.trim();
-          else c.value.split('\n').forEach(l => { const m = l.match(/(\d+):(.*)/); if(m) res.correctAnswers[Number(m[1])] = m[2].trim(); });
+          if(old.type==='tfng' || (old.type==='multiple_choice' && !res.multi)) {
+             res.correctAnswers[res.ids[0]] = c.value.trim();
+          } else {
+             c.value.split('\n').forEach(l => { const m = l.match(/(\d+):(.*)/); if(m) res.correctAnswers[Number(m[1])] = m[2].trim(); });
+          }
         }
         return res;
       });
@@ -1515,7 +1532,7 @@
       pop.classList.remove('hidden');
       
       const rect = e.target.getBoundingClientRect();
-      const popWidth = pop.offsetWidth || 288; 
+      const popWidth = pop.offsetWidth || 256; // adjusted for new w-64
       
       let popLeft = rect.left + (rect.width / 2);
       if (popLeft - (popWidth / 2) < 10) popLeft = (popWidth / 2) + 10;
@@ -1537,14 +1554,13 @@
     function renderQuestions() {
       const c = document.getElementById('questions-container'); c.innerHTML = '';
       
+      const makeBadge = (id) => `<span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} inline-flex min-w-[28px] h-[28px] px-1.5 bg-white border border-slate-800 text-slate-800 text-sm font-bold items-center justify-center cursor-pointer hover:bg-slate-100 transition shrink-0 select-none align-middle mx-1 rounded-sm">${id}</span>`;
+
       APP_DATA.parts[currentPartIdx].questions.forEach((q, i) => {
         const div = document.createElement('div'); div.id = `q-block-${i}`; div.className = 'mb-8 p-6 rounded-lg border shadow-sm cursor-pointer transition theme-q-block'; div.onclick = () => { currentBlockIdx=i; updateExamUI(); };
         
         let unplacedIds = new Set(q.ids);
         
-        // Make individual clickable badge
-        const makeBadge = (id) => `<span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} inline-flex min-w-[28px] h-[28px] px-1.5 bg-white border border-slate-800 text-slate-800 text-sm font-bold items-center justify-center cursor-pointer hover:bg-slate-100 transition shrink-0 select-none align-middle mx-1 rounded-sm">${id}</span>`;
-
         // Smart text parser: Converts exact typed question numbers into badges
         let pt = (str) => {
             if(!str) return '';
@@ -1565,11 +1581,28 @@
         
         if(q.type === 'multiple_choice' || q.type === 'tfng') {
            const opts = q.type === 'tfng' ? ['True','False','Not Given'] : q.options;
+           
            let qText = pt(q.text||'');
-           content = `<div class="font-bold mb-4">${qText}</div><div class="space-y-2">${opts.map(o => {
-              let oText = pt(o); 
-              return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${o.replace(/'/g,"\\'")}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${oText}</span></label>`
-           }).join('')}</div>`;
+           
+           // Consume any remaining unplaced IDs specifically for multiple choice inline placement
+           let remainingInlineBadges = Array.from(unplacedIds).map(id => {
+               unplacedIds.delete(id);
+               return makeBadge(id);
+           }).join('');
+
+           if (q.type === 'multiple_choice' && q.multi) {
+               const selectedVals = q.ids.map(id => answers[id]).filter(Boolean);
+               content = `<div class="font-bold mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
+                  let oText = pt(o); 
+                  const isChecked = selectedVals.includes(o);
+                  return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="checkbox" value="${o.replace(/'/g,"\\'")}" ${isChecked?'checked':''} onchange="handleMultiAns('${q.ids.join(',')}', this)" class="w-4 h-4 text-blue-600 rounded border-slate-300"><span>${oText}</span></label>`
+               }).join('')}</div>`;
+           } else {
+               content = `<div class="font-bold mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
+                  let oText = pt(o); 
+                  return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${o.replace(/'/g,"\\'")}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${oText}</span></label>`
+               }).join('')}</div>`;
+           }
         } else if(q.type === 'fill_blanks') {
            let txt = pt(q.text||''); 
            q.ids.forEach(id => txt = txt.split(`{blank:${id}}`).join(`<input type="text" value="${answers[id]||''}" oninput="handleAns(${id}, this.value)" class="mx-1 border-b-2 border-slate-400 focus:border-blue-600 bg-transparent outline-none px-2 py-1 text-center font-bold text-blue-800 w-32">`));
@@ -1671,6 +1704,30 @@
     }
 
     function handleAns(id, v) { answers[id] = v; triggerAutosave(); updateExamUI(); }
+
+    function handleMultiAns(idsStr, cb) {
+        const ids = idsStr.split(',').map(Number);
+        const val = cb.value;
+        if (cb.checked) {
+            const emptyId = ids.find(id => !answers[id]);
+            if (emptyId !== undefined) {
+                answers[emptyId] = val;
+            } else {
+                cb.checked = false;
+                showModalMsg("Selection Limit", `You can only select up to ${ids.length} options for this question.`);
+                return;
+            }
+        } else {
+            const idToClear = ids.find(id => answers[id] === val);
+            if (idToClear !== undefined) answers[idToClear] = '';
+            
+            // Shift values up so empty slots are always at the end
+            const currentAns = ids.map(id => answers[id]).filter(Boolean);
+            ids.forEach((id, idx) => { answers[id] = currentAns[idx] || ''; });
+        }
+        triggerAutosave();
+        updateExamUI();
+    }
     
     function dragStart(e, d, sourceId = null) { draggedData = { text: d, sourceId }; }
     function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
@@ -1704,11 +1761,24 @@
       const q = APP_DATA.parts[currentPartIdx].questions[bIdx];
       const resEl = document.getElementById(`quick-res-${bIdx}`);
       let correct = 0, total = q.ids.length;
-      q.ids.forEach(id => {
-        const expected = ((q.correctAnswers&&q.correctAnswers[id])||'').toString().toLowerCase();
-        const given = (answers[id]||'').toString().toLowerCase();
-        if(expected && expected === given) correct++;
-      });
+      
+      if (q.multi) {
+         const given = q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean);
+         q.ids.forEach(id => {
+            const ex = (q.correctAnswers?.[id]||'').toString().toLowerCase();
+            if (ex) {
+                const matchIdx = given.indexOf(ex);
+                if (matchIdx !== -1) { correct++; given.splice(matchIdx, 1); }
+            }
+         });
+      } else {
+         q.ids.forEach(id => {
+            const expected = ((q.correctAnswers&&q.correctAnswers[id])||'').toString().toLowerCase();
+            const given = (answers[id]||'').toString().toLowerCase();
+            if(expected && expected === given) correct++;
+         });
+      }
+      
       resEl.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800');
       if(correct === total) { resEl.classList.add('bg-emerald-100', 'text-emerald-800'); resEl.innerHTML = `✅ Perfect! (${correct}/${total})`; }
       else { resEl.classList.add('bg-rose-100', 'text-rose-800'); resEl.innerHTML = `❌ Try again. (${correct}/${total} correct)`; }
@@ -1780,10 +1850,24 @@
         
         let total = 0, correct = 0;
         if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-          APP_DATA.parts.forEach(p => p.questions.forEach(q => q.ids.forEach(id => {
-             total++; const ex = (q.correctAnswers?.[id]||'').toString().toLowerCase(); const gv = (answers[id]||'').toString().toLowerCase();
-             if(ex && ex === gv) correct++;
-          })));
+          APP_DATA.parts.forEach(p => p.questions.forEach(q => {
+             if (q.multi) {
+                 const given = q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean);
+                 q.ids.forEach(id => {
+                    total++;
+                    const ex = (q.correctAnswers?.[id]||'').toString().toLowerCase();
+                    if (ex) {
+                        const matchIdx = given.indexOf(ex);
+                        if (matchIdx !== -1) { correct++; given.splice(matchIdx, 1); }
+                    }
+                 });
+             } else {
+                 q.ids.forEach(id => {
+                    total++; const ex = (q.correctAnswers?.[id]||'').toString().toLowerCase(); const gv = (answers[id]||'').toString().toLowerCase();
+                    if(ex && ex === gv) correct++;
+                 });
+             }
+          }));
         }
         
         // Save submission to cloud (Skip if free mode OR if in teacher preview mode)
@@ -1849,8 +1933,6 @@
         if (btn) { btn.textContent = "Clearing..."; btn.disabled = true; }
         
         try {
-          // Fetch directly from cloud to ensure we wipe the actual document IDs, 
-          // including any legacy submissions that might have mismatched IDs.
           const snap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('submissions')));
           for (let d of snap.docs) {
              await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('submissions'), d.id));
@@ -1916,9 +1998,17 @@
         p.questions.forEach((q) => {
           let content = '';
           if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
+             const givenArr = q.multi ? q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean) : [];
              content = q.ids.map(id => {
                const g = answers[id]||'', e = q.correctAnswers?.[id]||'';
-               const isC = g.toString().toLowerCase() === e.toString().toLowerCase();
+               let isC = false;
+               if (q.multi) {
+                   const exLow = e.toString().toLowerCase();
+                   const matchIdx = givenArr.indexOf(exLow);
+                   if (matchIdx !== -1) { isC = true; givenArr.splice(matchIdx, 1); }
+               } else {
+                   isC = g.toString().toLowerCase() === e.toString().toLowerCase();
+               }
                return `<div class="flex items-center gap-3 text-sm mb-2"><span class="w-6 text-center font-bold text-slate-400">Q${id}</span><span class="${isC?'text-emerald-600':'text-rose-500'} font-black text-lg">${isC?'✓':'✗'}</span><div><div class="text-slate-600">Given: <b>${g||'--'}</b></div><div class="text-emerald-700">Correct: <b>${e}</b></div></div></div>`;
              }).join('');
              if(q.explanation) content += `<div class="mt-3 bg-purple-50 border border-purple-200 p-3 rounded text-sm text-purple-900"><b>💡 Explain:</b> ${q.explanation}</div>`;
