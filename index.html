@@ -44,6 +44,7 @@
     .draggable-item { cursor: grab; } .draggable-item:active { cursor: grabbing; }
     .drop-zone { transition: all 0.2s; }
     .drop-zone.drag-over { background-color: #dbeafe; border-color: #3b82f6; border-style: solid; }
+    .drop-zone-options.drag-over { background-color: #f1f5f9; border-color: #94a3b8; border-style: dashed; }
 
     .vocab-word { border-bottom: 2px dotted #2563eb; cursor: pointer; color: #1d4ed8; font-weight: 600; transition: all 0.2s; }
     .vocab-word:hover { background-color: #dbeafe; border-bottom-color: #1e40af; }
@@ -335,9 +336,12 @@
         </div>
       </div>
 
-      <div class="flex gap-3">
+      <div class="flex gap-3 items-center">
+        <span id="editor-autosave-status" class="text-xs font-bold text-emerald-400 opacity-0 transition-opacity">Autosaved</span>
         <button id="editor-logout" onclick="logout()" class="px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Logout</button>
         <button id="editor-back-bank" onclick="exitBuilder()" class="hidden px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Cancel Edit</button>
+        <!-- Teacher Editor Preview Button -->
+        <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-4 py-2 bg-purple-600 font-bold rounded hover:bg-purple-700 text-white transition shadow flex items-center gap-1">👁️ Preview</button>
         <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-4 py-2 bg-emerald-600 font-bold rounded hover:bg-emerald-700 transition shadow">Save Test Data</button>
       </div>
     </header>
@@ -419,6 +423,8 @@
       <div class="flex items-center gap-4">
         <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Candidate:</span>
         <span id="exam-candidate-name" class="font-bold text-blue-300">Student</span>
+        <!-- Exam Preview Badge -->
+        <span id="exam-preview-badge" class="hidden bg-purple-500 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded animate-pulse shadow-md">Preview</span>
       </div>
       <div class="flex items-center gap-6">
         <div class="flex items-center bg-slate-800 rounded px-4 py-1.5 border border-slate-700 shadow-inner gap-2">
@@ -454,7 +460,7 @@
       <div class="flex-1 overflow-y-auto p-8 pb-32 theme-bg-sec min-w-[20%] relative flex flex-col" id="questions-container"></div>
       
       <!-- Notes Side Panel -->
-      <div id="notes-panel" class="absolute top-0 right-0 h-full w-80 bg-slate-50 border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-40 flex flex-col">
+      <div id="notes-panel" class="hidden w-80 bg-slate-50 border-l border-slate-300 shadow-inner flex flex-col shrink-0">
         <div class="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-white">
           <h3 class="font-bold text-slate-800">My Notes</h3>
           <button onclick="toggleNotesPanel()" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
@@ -580,6 +586,13 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         window.initFirebaseSystem();
+        
+        // Editor autosave triggers
+        const editorBuilder = document.getElementById('editor-view-builder');
+        if (editorBuilder) {
+            editorBuilder.addEventListener('input', triggerEditorAutosave);
+            editorBuilder.addEventListener('change', triggerEditorAutosave);
+        }
     });
   </script>
 
@@ -602,6 +615,7 @@
     let timeLeft = 0; 
     let testMode = 'restricted'; 
     let isTimeFree = false;
+    let isPreviewMode = false; // Tracks if teacher is previewing the test
     let answers = {};
     let reviewStatus = {}; 
     let currentPartIdx = 0;
@@ -616,6 +630,7 @@
     let activeHighlightNode = null;
     let currentNotes = []; 
     let isNotesPanelOpen = false;
+    let editorAutosaveTimer = null;
 
     // --- CLOUD SYNC SYSTEM ---
     window.bootLMS = async function() {
@@ -810,6 +825,7 @@
       document.getElementById('editor-builder-controls').classList.add('hidden');
       document.getElementById('editor-logout').classList.remove('hidden');
       document.getElementById('editor-back-bank').classList.add('hidden');
+      document.getElementById('editor-preview-test').classList.add('hidden');
       document.getElementById('editor-save-test').classList.add('hidden');
 
       if (tab === 'bank') { document.getElementById('editor-view-bank').classList.remove('hidden'); renderTestBank(); }
@@ -822,6 +838,7 @@
         document.getElementById('editor-builder-controls').classList.add('flex');
         document.getElementById('editor-logout').classList.add('hidden');
         document.getElementById('editor-back-bank').classList.remove('hidden');
+        document.getElementById('editor-preview-test').classList.remove('hidden');
         document.getElementById('editor-save-test').classList.remove('hidden');
       }
     }
@@ -917,7 +934,7 @@
         <div class="bg-white p-3 rounded border border-slate-200 flex justify-between items-center">
           <div><strong class="text-blue-700">${v.term}</strong> <span class="text-xs text-slate-500 font-mono ml-2">${v.pron||''}</span>
           <div class="text-xs text-slate-600 mt-1">${v.eng||''}${v.eng&&v.vi?' | ':''}${v.vi||''}</div></div>
-          <button onclick="APP_DATA.vocab.splice(${i},1); renderTeacherVocab();" class="text-rose-500 text-xs font-bold px-2 py-1 hover:bg-rose-50 rounded">Delete</button>
+          <button onclick="APP_DATA.vocab.splice(${i},1); renderTeacherVocab(); triggerEditorAutosave();" class="text-rose-500 text-xs font-bold px-2 py-1 hover:bg-rose-50 rounded">Delete</button>
         </div>`).join('') : '<div class="text-xs text-slate-400 italic">No words added yet.</div>';
     }
     function addTeacherVocab() {
@@ -926,6 +943,7 @@
       APP_DATA.vocab.push({ term, pron: document.getElementById('tv-pron').value.trim(), eng: document.getElementById('tv-eng').value.trim(), vi: document.getElementById('tv-vi').value.trim() });
       ['tv-term','tv-pron','tv-eng','tv-vi'].forEach(id => document.getElementById(id).value = '');
       renderTeacherVocab();
+      triggerEditorAutosave();
     }
     
     function quickAddTeacherVocab(e) {
@@ -959,7 +977,9 @@
       else if (!document.getElementById('exam-ui').classList.contains('hidden') || !document.getElementById('review-ui').classList.contains('hidden')) {
          const selection = window.getSelection(); const text = selection.toString().trim();
          
-         if (text.length > 0 && (e.target.closest('#passage-container') || e.target.closest('#review-left-pane'))) {
+         if (text.length > 0 && (e.target.closest('#passage-container') || e.target.closest('#questions-container') || e.target.closest('#review-left-pane') || e.target.closest('#review-right-pane'))) {
+            if (e.target.nodeName === 'TEXTAREA' || e.target.nodeName === 'INPUT') return;
+            
             activeSelectionRange = selection.getRangeAt(0); 
             const rect = activeSelectionRange.getBoundingClientRect();
             
@@ -1063,7 +1083,7 @@
     function toggleNotesPanel() {
       const panel = document.getElementById('notes-panel'); 
       isNotesPanelOpen = !isNotesPanelOpen; 
-      panel.classList.toggle('translate-x-full', !isNotesPanelOpen);
+      panel.classList.toggle('hidden', !isNotesPanelOpen);
     }
 
     function renderNotesPanel() {
@@ -1094,35 +1114,43 @@
     }
 
     function restoreHighlights() {
-      const container = document.getElementById('passage-container');
-      if(!container) return;
-      
-      const notesForPart = currentNotes.filter(n => n.partIdx === currentPartIdx);
-      if(notesForPart.length === 0) return;
+      ['passage-container', 'questions-container', 'review-left-pane', 'review-right-pane'].forEach(cid => {
+         const container = document.getElementById(cid);
+         if(!container) return;
+         
+         const isReview = cid.startsWith('review-');
+         const notesToRestore = isReview ? currentNotes : currentNotes.filter(n => n.partIdx === currentPartIdx);
+         if(notesToRestore.length === 0) return;
 
-      notesForPart.forEach(n => {
-         const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-         let node;
-         while(node = walker.nextNode()) {
-            if(node.nodeValue.includes(n.quote) && !node.parentNode.classList.contains('highlighted-text')) {
-               const cls = n.text === null 
-                  ? 'highlighted-text bg-yellow-300 text-slate-900 cursor-pointer rounded px-1 transition-colors' 
-                  : 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500';
-               
-               const fragment = document.createDocumentFragment();
-               const parts = node.nodeValue.split(n.quote);
-               parts.forEach((part, i) => {
-                  fragment.appendChild(document.createTextNode(part));
-                  if(i < parts.length - 1) {
-                     const span = document.createElement('span');
-                     span.className = cls; span.dataset.id = n.id; span.textContent = n.quote;
-                     fragment.appendChild(span);
-                  }
-               });
-               node.parentNode.replaceChild(fragment, node);
-               break; 
+         notesToRestore.forEach(n => {
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+                acceptNode: function(node) {
+                    if (['TEXTAREA', 'INPUT', 'SELECT', 'SCRIPT', 'STYLE'].includes(node.parentNode.nodeName)) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }, false);
+            let node;
+            while(node = walker.nextNode()) {
+               if(node.nodeValue.includes(n.quote) && !node.parentNode.classList.contains('highlighted-text')) {
+                  const cls = n.text === null 
+                     ? 'highlighted-text bg-yellow-300 text-slate-900 cursor-pointer rounded px-1 transition-colors' 
+                     : 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500';
+                  
+                  const fragment = document.createDocumentFragment();
+                  const parts = node.nodeValue.split(n.quote);
+                  parts.forEach((part, i) => {
+                     fragment.appendChild(document.createTextNode(part));
+                     if(i < parts.length - 1) {
+                        const span = document.createElement('span');
+                        span.className = cls; span.dataset.id = n.id; span.textContent = n.quote;
+                        fragment.appendChild(span);
+                     }
+                  });
+                  node.parentNode.replaceChild(fragment, node);
+                  break; 
+               }
             }
-         }
+         });
       });
     }
 
@@ -1142,8 +1170,8 @@
       if(APP_DATA.module==='writing') qSel.innerHTML = '<option value="essay">Writing Essay Box</option>';
       else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option>';
       else {
-        qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop Gaps</option>`;
-        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="matching_headings">Matching Headings</option>`;
+        qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option>`;
+        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Info (Grid)</option>`;
       }
 
       toggleEditorTab('builder'); loadEditorPart(0);
@@ -1151,7 +1179,46 @@
     
     function exitBuilder() { showConfirm("Cancel Edit", "Changes lost?", () => toggleEditorTab('bank')); }
     
+    function editCurrentTestMeta() {
+      showTestMetaModal("Edit Test Settings", APP_DATA.title, (APP_DATA.topics || []).join(", "), (title, topics) => {
+        APP_DATA.title = title;
+        APP_DATA.topics = topics;
+        document.getElementById('builder-test-name').textContent = title;
+        triggerEditorAutosave();
+      });
+    }
+    
+    function triggerEditorAutosave() {
+      if (!editingTestId) return;
+      const s = document.getElementById('editor-autosave-status');
+      s.textContent = "Saving...";
+      s.className = "text-xs font-bold text-slate-400 transition-opacity";
+      
+      clearTimeout(editorAutosaveTimer);
+      editorAutosaveTimer = setTimeout(performEditorAutosave, 1500);
+    }
+    
+    async function performEditorAutosave() {
+      saveCurrentEditorPart();
+      const s = document.getElementById('editor-autosave-status');
+      try {
+          const idx = TEST_BANK.findIndex(t => t.id === editingTestId);
+          if (idx > -1) {
+             TEST_BANK[idx] = JSON.parse(JSON.stringify(APP_DATA)); 
+             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), editingTestId), TEST_BANK[idx]);
+             s.textContent = "Autosaved";
+             s.className = "text-xs font-bold text-emerald-400 transition-opacity";
+             setTimeout(() => s.classList.add('opacity-0'), 2000);
+          }
+      } catch (err) {
+          console.error("Autosave failed", err);
+          s.textContent = "Save Failed";
+          s.className = "text-xs font-bold text-rose-400 transition-opacity";
+      }
+    }
+
     async function saveActiveTest() {
+      clearTimeout(editorAutosaveTimer); // Cancel any pending autosave
       saveCurrentEditorPart();
       
       const btn = document.getElementById('editor-save-test');
@@ -1170,12 +1237,54 @@
       btn.textContent = "Save Test Data"; btn.disabled = false;
     }
 
+    // Teacher Preview Implementation
+    function previewActiveTest() {
+      saveCurrentEditorPart(); // Ensure latest edits are loaded into APP_DATA
+      isPreviewMode = true;
+
+      // Reset exam tracking variables
+      answers = {};
+      reviewStatus = {};
+      activeSelectionRange = null;
+      activeHighlightNode = null;
+      isNotesPanelOpen = false;
+      document.getElementById('notes-panel').classList.add('hidden');
+
+      // Transition to Exam UI
+      document.getElementById('editor-ui').classList.add('hidden');
+      document.getElementById('exam-ui').classList.remove('hidden');
+      
+      // Update Exam Header for Preview
+      document.getElementById('exam-candidate-name').textContent = "Teacher (Preview)";
+      document.getElementById('exam-preview-badge').classList.remove('hidden');
+      document.getElementById('exam-module-title').textContent = APP_DATA.title;
+
+      const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
+      document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
+
+      // Set up timer for practice/free mode
+      clearInterval(timerInterval);
+      timeLeft = 0; 
+      isTimeFree = true; // Use time free so teachers can instantly check answers
+      testMode = 'free';
+      document.getElementById('timer-label').textContent = 'Elapsed';
+
+      timerInterval = setInterval(() => {
+        timeLeft++;
+        const h = Math.floor(timeLeft/3600), m = Math.floor((timeLeft%3600)/60), s = timeLeft%60;
+        document.getElementById('timer-display').textContent = `${h>0?h+':':''}${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+      }, 1000);
+
+      initResizer(); renderPart(0);
+    }
+
     function updatePartCount(cnt) {
       saveCurrentEditorPart(); cnt = parseInt(cnt); const cur = APP_DATA.parts.length;
       if(cnt > cur) for(let i=cur; i<cnt; i++) APP_DATA.parts.push({title:`Part ${i+1}`, text:"", questions:[]});
       else if(cnt < cur) APP_DATA.parts = APP_DATA.parts.slice(0, cnt);
       if(currentEditorPartIdx >= cnt) currentEditorPartIdx = cnt-1;
       loadEditorPart(currentEditorPartIdx);
+      triggerEditorAutosave();
     }
 
     function loadEditorPart(idx) {
@@ -1195,10 +1304,13 @@
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
         const mkLbl = t => `<label class="block text-xs font-bold text-slate-500 mt-2">${t}</label>`;
         
-        let html = `<div class="absolute top-2 right-2"><button onclick="APP_DATA.parts[currentEditorPartIdx].questions.splice(${i},1); renderEditorQuestions()" class="text-rose-500 text-xs font-bold px-2 border border-rose-200 rounded">X</button></div>`;
-        html += `<div class="text-sm font-bold text-blue-700 uppercase mb-2 border-b pb-1">Block ${i+1}: ${q.type}</div>`;
+        let html = `<div class="absolute top-2 right-2 flex gap-1">`;
+        if (i > 0) html += `<button onclick="moveEditorQuestion(${i}, -1)" class="text-slate-500 hover:bg-slate-100 font-bold px-2 rounded border border-slate-200 transition" title="Move Up">↑</button>`;
+        if (i < APP_DATA.parts[currentEditorPartIdx].questions.length - 1) html += `<button onclick="moveEditorQuestion(${i}, 1)" class="text-slate-500 hover:bg-slate-100 font-bold px-2 rounded border border-slate-200 transition" title="Move Down">↓</button>`;
+        html += `<button onclick="APP_DATA.parts[currentEditorPartIdx].questions.splice(${i},1); renderEditorQuestions(); triggerEditorAutosave();" class="text-rose-500 hover:bg-rose-50 text-xs font-bold px-2 border border-rose-200 rounded transition" title="Delete Block">X</button></div>`;
+        html += `<div class="text-sm font-bold text-blue-700 uppercase mb-2 border-b pb-1 pr-24">Block ${i+1}: ${q.type}</div>`;
         html += `<div class="flex gap-2">${mkLbl('IDs (csv)')}<input type="text" class="q-ids border p-1 w-full text-sm font-mono" value="${q.ids.join(',')}">${mkLbl('Pts')}<input type="number" class="q-points border p-1 w-16 text-sm" value="${q.points||1}"></div>`;
-        html += `${mkLbl('Instruction')}<input type="text" class="q-inst border p-1 w-full text-sm" value="${esc(q.instruction)}">`;
+        html += `${mkLbl('Instruction (HTML supported)')}<textarea class="q-inst border p-2 w-full text-sm font-mono bg-slate-50" rows="3" placeholder="Use <b>bold</b> or <i>italic</i> tags if needed">${(q.instruction||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>`;
         
         if (q.type === 'multiple_choice' || q.type === 'tfng') {
            html += `${mkLbl('Question Text')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea>`;
@@ -1206,9 +1318,16 @@
            html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
         } else if (q.type === 'essay' || q.type === 'audio_record') {
            // Basic types
-        } else {
-           html += `${mkLbl('Q Text/Options')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea><textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
+        } else if (q.type === 'matching_info') {
+           html += `${mkLbl('Row Statements (1/line)')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea>`;
+           html += `${mkLbl('Columns / Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
            html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+        } else {
+           html += `${mkLbl(q.type==='dnd_list'?'Q Text (Use {drop:ID} for blanks)':'Q Text/Options')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea><textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
+           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+           if (q.type === 'dnd_list' || q.type === 'matching_headings') {
+              html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-reus mr-2" ${q.reusable ? 'checked' : ''}> Options are Reusable (can be used multiple times)</label></div>`;
+           }
         }
         html += `${mkLbl('Explanation')}<textarea class="q-expl border p-1 w-full text-sm bg-slate-50">${q.explanation||''}</textarea>`;
         div.innerHTML = html; list.appendChild(div);
@@ -1220,6 +1339,18 @@
       const ids = [Date.now()%10000]; 
       const newQ = { blockId: 'b'+Date.now(), type, ids, instruction: "New Q", correctAnswers:{} };
       APP_DATA.parts[currentEditorPartIdx].questions.push(newQ); renderEditorQuestions();
+      triggerEditorAutosave();
+    }
+    
+    function moveEditorQuestion(idx, dir) {
+      saveCurrentEditorPart(); // Save any unsaved text inputs first
+      const qList = APP_DATA.parts[currentEditorPartIdx].questions;
+      const target = idx + dir;
+      if (target >= 0 && target < qList.length) {
+        [qList[idx], qList[target]] = [qList[target], qList[idx]]; // Swap
+        renderEditorQuestions();
+        triggerEditorAutosave();
+      }
     }
     
     function saveCurrentEditorPart() {
@@ -1235,6 +1366,7 @@
         const res = { blockId: old.blockId, type: old.type, ids: b.querySelector('.q-ids').value.split(',').map(Number), points: Number(b.querySelector('.q-points').value)||1, instruction: b.querySelector('.q-inst').value, explanation: b.querySelector('.q-expl')?.value };
         if(b.querySelector('.q-text')) res.text = b.querySelector('.q-text').value;
         if(b.querySelector('.q-opts')) res.options = b.querySelector('.q-opts').value.split('\n').filter(Boolean);
+        if(b.querySelector('.q-reus')) res.reusable = b.querySelector('.q-reus').checked;
         
         const c = b.querySelector('.q-correct');
         if(c) {
@@ -1298,6 +1430,7 @@
       const t = TEST_BANK.find(x => x.id === tid); if(!t) return;
       APP_DATA = JSON.parse(JSON.stringify(t)); 
       answers = {}; reviewStatus = {};
+      isPreviewMode = false; // Reset preview flag
       
       // Initialize isolated notes from Cloud
       const noteKey = `${currentUser.user}_${APP_DATA.id}`;
@@ -1307,12 +1440,13 @@
       activeSelectionRange = null;
       activeHighlightNode = null;
       isNotesPanelOpen = false;
-      document.getElementById('notes-panel').classList.add('translate-x-full');
+      document.getElementById('notes-panel').classList.add('hidden');
       renderNotesPanel(); 
       
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('exam-ui').classList.remove('hidden');
       document.getElementById('exam-candidate-name').textContent = currentUser.user;
+      document.getElementById('exam-preview-badge').classList.add('hidden');
       document.getElementById('exam-module-title').textContent = APP_DATA.title;
       
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
@@ -1346,9 +1480,9 @@
       
       let pText = p.text || '';
       [...pText.matchAll(/{drop:(\d+)}/g)].forEach(m => {
-        const id = m[1], ans = answers[id]||'';
-        const cls = ans ? 'bg-blue-100 border-blue-600 text-blue-900' : 'bg-slate-50 border-slate-300 text-slate-400 border-dashed';
-        pText = pText.replace(m[0], `<div class="drop-zone inline-block min-w-[100px] h-8 border-2 ${cls} align-middle text-center font-bold rounded cursor-pointer mx-1" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)">${ans}</div>`);
+        const id = Number(m[1]), ans = answers[id]||'';
+        const cls = ans ? 'bg-blue-100 border-blue-600 text-blue-900 cursor-grab shadow-sm' : 'bg-slate-50 border-slate-300 text-slate-400 border-dashed';
+        pText = pText.replace(m[0], `<div class="drop-zone inline-flex min-w-[80px] px-2 h-7 border-2 ${cls} align-middle text-center font-bold text-sm rounded mx-1 items-center justify-center transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
       });
 
       let htmlText = pText.split('\n\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
@@ -1365,8 +1499,9 @@
       
       document.getElementById('passage-container').innerHTML = `<h2 class="text-2xl font-bold mb-6 font-serif">${p.title}</h2>${media}<div class="passage-text font-serif text-justify">${htmlText}</div>`;
       
+      renderQuestions(); 
+      updateExamUI();
       restoreHighlights();
-      renderQuestions(); updateExamUI();
     }
     
     function showVocabPop(e, idx) {
@@ -1401,28 +1536,111 @@
 
     function renderQuestions() {
       const c = document.getElementById('questions-container'); c.innerHTML = '';
+      
       APP_DATA.parts[currentPartIdx].questions.forEach((q, i) => {
         const div = document.createElement('div'); div.id = `q-block-${i}`; div.className = 'mb-8 p-6 rounded-lg border shadow-sm cursor-pointer transition theme-q-block'; div.onclick = () => { currentBlockIdx=i; updateExamUI(); };
         
+        let unplacedIds = new Set(q.ids);
+        
+        // Make individual clickable badge
+        const makeBadge = (id) => `<span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} inline-flex min-w-[28px] h-[28px] px-1.5 bg-white border border-slate-800 text-slate-800 text-sm font-bold items-center justify-center cursor-pointer hover:bg-slate-100 transition shrink-0 select-none align-middle mx-1 rounded-sm">${id}</span>`;
+
+        // Smart text parser: Converts exact typed question numbers into badges
+        let pt = (str) => {
+            if(!str) return '';
+            let res = str;
+            const sortedIds = [...q.ids].sort((a,b) => b - a); // Match larger numbers first
+            sortedIds.forEach(id => {
+                // Matches ID at start, after space, or after HTML tags, followed by optional . or )
+                const regex = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)(?=\\s|<|$)`, 'g');
+                if (regex.test(res)) {
+                    res = res.replace(regex, `$1${makeBadge(id)} `); // Swap text number for badge!
+                    unplacedIds.delete(id);
+                }
+            });
+            return res;
+        };
+
         let content = '';
+        
         if(q.type === 'multiple_choice' || q.type === 'tfng') {
            const opts = q.type === 'tfng' ? ['True','False','Not Given'] : q.options;
-           content = `<p class="font-bold mb-4">${q.text}</p><div class="space-y-2">${opts.map(o => `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${o.replace(/'/g,"\\'")}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${o}</span></label>`).join('')}</div>`;
+           let qText = pt(q.text||'');
+           content = `<div class="font-bold mb-4">${qText}</div><div class="space-y-2">${opts.map(o => {
+              let oText = pt(o); 
+              return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${o.replace(/'/g,"\\'")}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${oText}</span></label>`
+           }).join('')}</div>`;
         } else if(q.type === 'fill_blanks') {
-           let txt = q.text; q.ids.forEach(id => txt = txt.split(`{blank:${id}}`).join(`<input type="text" value="${answers[id]||''}" oninput="handleAns(${id}, this.value)" class="mx-1 border-b-2 border-slate-400 focus:border-blue-600 bg-transparent outline-none px-2 py-1 text-center font-bold text-blue-800 w-32">`));
+           let txt = pt(q.text||''); 
+           q.ids.forEach(id => txt = txt.split(`{blank:${id}}`).join(`<input type="text" value="${answers[id]||''}" oninput="handleAns(${id}, this.value)" class="mx-1 border-b-2 border-slate-400 focus:border-blue-600 bg-transparent outline-none px-2 py-1 text-center font-bold text-blue-800 w-32">`));
            content = `<p class="leading-relaxed whitespace-pre-wrap">${txt}</p>`;
-        } else if(q.type === 'dnd_list' || q.type === 'matching_headings') {
-           content = `<div class="mb-4 p-4 bg-slate-100 rounded text-center">${q.options.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item inline-block bg-white border-2 border-slate-300 rounded-full px-4 py-1.5 font-bold text-blue-800 m-1">${o}</div>`).join('')}</div><p class="italic text-sm text-slate-500">Drag into passage gaps.</p>`;
+        } else if(q.type === 'dnd_list') {
+           let txt = pt(q.text||'');
+           q.ids.forEach(id => {
+              const ans = answers[id]||'';
+              const cls = ans ? 'bg-blue-100 border-blue-600 text-blue-900 cursor-grab shadow-sm' : 'bg-slate-50 border-slate-300 text-slate-400 border-dashed';
+              txt = txt.split(`{drop:${id}}`).join(`<div class="drop-zone inline-flex min-w-[80px] px-2 h-7 border-2 ${cls} align-middle text-center font-bold text-sm rounded mx-1 items-center justify-center transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
+           });
+           
+           let availOpts = q.options || [];
+           if (!q.reusable) {
+               const used = q.ids.map(i => answers[i]).filter(Boolean);
+               availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
+           }
+
+           content = `<div class="mb-5 leading-relaxed whitespace-pre-wrap">${txt}</div><div class="p-4 bg-slate-50 border border-slate-200 rounded-lg drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-300 rounded px-2.5 py-1 text-sm font-medium text-slate-700 shadow-sm hover:border-blue-500 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+        } else if(q.type === 'matching_headings') {
+           let txt = pt(q.text||'');
+           
+           let availOpts = q.options || [];
+           if (!q.reusable) {
+               const used = q.ids.map(i => answers[i]).filter(Boolean);
+               availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
+           }
+
+           content = (txt ? `<div class="mb-5 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-200 rounded-lg drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-300 rounded px-2.5 py-1 text-sm font-medium text-slate-700 shadow-sm hover:border-blue-500 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+        } else if(q.type === 'matching_info') {
+           const statements = (q.text||'').split('\n').filter(Boolean);
+           const cols = q.options || [];
+           let table = `<div class="overflow-x-auto mb-4"><table class="w-full text-left border-collapse border border-slate-300 bg-white"><thead><tr class="bg-slate-50"><th class="border border-slate-300 px-3 py-2 font-bold text-slate-700" style="font-size: 0.95rem;">Statement</th>${cols.map(c => `<th class="border border-slate-300 px-2 py-2 text-center min-w-[40px] font-bold text-slate-700" style="font-size: 0.95rem;">${c}</th>`).join('')}</tr></thead><tbody>`;
+           statements.forEach((stmt, sIdx) => {
+              const id = q.ids[sIdx];
+              if(!id) return;
+              let stmtTxt = pt(stmt);
+              table += `<tr><td class="border border-slate-300 px-3 py-2 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.4;">${stmtTxt}</td>`;
+              cols.forEach(c => {
+                 table += `<td class="border border-slate-300 p-1.5 text-center bg-white"><input type="radio" name="q-${id}" value="${c.replace(/'/g,"\\'")}" ${answers[id]===c?'checked':''} onchange="handleAns(${id}, this.value)" class="w-4 h-4 text-blue-600 cursor-pointer"></td>`;
+              });
+              table += `</tr>`;
+           });
+           table += `</tbody></table></div>`;
+           content = table;
         } else if(q.type === 'essay') {
-           content = `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-serif text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\s+/).filter(Boolean).length}</span></div>`;
+           let txt = pt(q.text||'');
+           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-serif text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\s+/).filter(Boolean).length}</span></div>`;
         } else if(q.type === 'audio_record') {
-           content = `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
+           let txt = pt(q.text||'');
+           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
         }
         
         let chkBtn = '';
         if(isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') chkBtn = `<div class="mt-4 flex justify-end"><button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition">Check Answer</button></div><div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-sm font-bold"></div>`;
 
-        div.innerHTML = `<div class="flex gap-4"><div class="bg-slate-800 text-white px-2 h-8 rounded font-bold flex items-center justify-center shrink-0 shadow">${q.ids.length>1?`${q.ids[0]}-${q.ids[q.ids.length-1]}`:q.ids[0]}</div><div class="flex-1"><p class="text-sm font-bold text-slate-500 uppercase mb-4">${q.instruction}</p>${content}${chkBtn}</div></div>`;
+        // If you didn't type a number in the text for certain IDs, gracefully place them at the top
+        let leftoverBadges = Array.from(unplacedIds).map(id => makeBadge(id)).join('');
+
+        div.innerHTML = `
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-col gap-2">
+                ${leftoverBadges ? `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>` : ''}
+                <div class="text-[1.05rem] text-slate-800 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>
+            </div>
+            <div class="w-full text-slate-800 mt-2">
+              ${content}
+              ${chkBtn}
+            </div>
+          </div>
+        `;
         c.appendChild(div);
       });
     }
@@ -1453,11 +1671,34 @@
     }
 
     function handleAns(id, v) { answers[id] = v; triggerAutosave(); updateExamUI(); }
-    function dragStart(e, d) { draggedData = d; }
+    
+    function dragStart(e, d, sourceId = null) { draggedData = { text: d, sourceId }; }
     function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
     function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
-    function drop(e, id) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); if(draggedData) { handleAns(id, draggedData); e.currentTarget.textContent = draggedData; e.currentTarget.className = e.currentTarget.className.replace('text-slate-400 border-dashed bg-slate-50','bg-blue-100 border-blue-600 text-blue-900'); draggedData=null; } }
-    function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; renderPart(currentPartIdx); } }
+    
+    function drop(e, id) { 
+        e.preventDefault(); e.currentTarget.classList.remove('drag-over'); 
+        if(draggedData) { 
+            if(draggedData.sourceId && draggedData.sourceId !== id) answers[draggedData.sourceId] = '';
+            handleAns(id, draggedData.text); 
+            draggedData=null; 
+            renderPart(currentPartIdx);
+        } 
+    }
+    
+    function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; renderPart(currentPartIdx); triggerAutosave(); updateExamUI(); } }
+    
+    function optionsDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    function optionsDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+    function returnToOptions(e) {
+        e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+        if(draggedData && draggedData.sourceId) {
+            answers[draggedData.sourceId] = '';
+            draggedData = null;
+            renderPart(currentPartIdx);
+            triggerAutosave(); updateExamUI();
+        }
+    }
 
     function quickCheckAnswer(bIdx) {
       const q = APP_DATA.parts[currentPartIdx].questions[bIdx];
@@ -1482,10 +1723,31 @@
     function handleNext() { if (currentBlockIdx < APP_DATA.parts[currentPartIdx].questions.length - 1) { currentBlockIdx++; document.getElementById(`q-block-${currentBlockIdx}`).scrollIntoView(); updateExamUI(); } else if (currentPartIdx < APP_DATA.parts.length - 1) renderPart(currentPartIdx + 1); }
     function toggleReview(cb) { const q = APP_DATA.parts[currentPartIdx].questions[currentBlockIdx]; if(q) q.ids.forEach(id => reviewStatus[id] = cb.checked); updateExamUI(); }
     
+    window.toggleReviewByIds = function(ids) {
+      const isReviewed = ids.some(id => reviewStatus[id]);
+      ids.forEach(id => reviewStatus[id] = !isReviewed);
+      updateExamUI();
+    };
+
     function updateExamUI() {
       const q = APP_DATA.parts[currentPartIdx].questions[currentBlockIdx];
       document.getElementById('review-checkbox').checked = q ? !!reviewStatus[q.ids[0]] : false;
-      APP_DATA.parts[currentPartIdx].questions.forEach((_, i) => document.getElementById(`q-block-${i}`).classList.toggle('ring-2', i===currentBlockIdx));
+      
+      APP_DATA.parts[currentPartIdx].questions.forEach((_q, i) => {
+         document.getElementById(`q-block-${i}`).classList.toggle('ring-2', i===currentBlockIdx);
+         _q.ids.forEach(id => {
+            const badges = document.querySelectorAll(`.q-badge-single-${id}`);
+            badges.forEach(badge => {
+                if(reviewStatus[id]) {
+                    badge.classList.remove('bg-white', 'text-slate-800', 'border-slate-800', 'hover:bg-slate-100');
+                    badge.classList.add('bg-blue-600', 'text-white', 'border-blue-600', 'ring-2', 'ring-blue-300', 'ring-offset-2', 'hover:bg-blue-700');
+                } else {
+                    badge.classList.add('bg-white', 'text-slate-800', 'border-slate-800', 'hover:bg-slate-100');
+                    badge.classList.remove('bg-blue-600', 'text-white', 'border-blue-600', 'ring-2', 'ring-blue-300', 'ring-offset-2', 'hover:bg-blue-700');
+                }
+            });
+         });
+      });
       
       const pal = document.getElementById('palette-container'); pal.innerHTML = '';
       APP_DATA.parts.forEach((p, pIdx) => {
@@ -1495,8 +1757,10 @@
           const ql = document.createElement('div'); ql.className='flex gap-1';
           p.questions.forEach((qb, bIdx) => qb.ids.forEach(id => {
             const isAns = answers[id]&&String(answers[id]).trim();
-            const btn = document.createElement('button'); btn.textContent = id; btn.onclick = () => { currentBlockIdx=bIdx; document.getElementById(`q-block-${bIdx}`).scrollIntoView(); updateExamUI(); };
-            btn.className = `w-7 h-7 flex items-center justify-center text-xs font-bold transition ${reviewStatus[id]?'rounded-full':'rounded-sm'} ${bIdx===currentBlockIdx?'border-2 border-blue-600 bg-white text-blue-800':(isAns?'bg-transparent text-slate-800 underline decoration-2 underline-offset-2':'bg-transparent text-slate-500 hover:bg-slate-200')}`;
+            const btn = document.createElement('button'); btn.textContent = id; 
+            btn.onclick = () => { currentBlockIdx=bIdx; document.getElementById(`q-block-${bIdx}`).scrollIntoView(); updateExamUI(); };
+            btn.oncontextmenu = (e) => { e.preventDefault(); window.toggleReviewByIds([id]); };
+            btn.className = `w-7 h-7 flex items-center justify-center text-xs font-bold transition ${reviewStatus[id]?'rounded-full ring-2 ring-blue-400 bg-blue-50 text-blue-800':'rounded-sm'} ${bIdx===currentBlockIdx?'border-2 border-blue-600 bg-white text-blue-800':(isAns?'bg-transparent text-slate-800 underline decoration-2 underline-offset-2':'bg-transparent text-slate-500 hover:bg-slate-200')}`;
             ql.appendChild(btn);
           }));
           div.appendChild(ql);
@@ -1509,7 +1773,9 @@
     }
 
     function exitTest() {
-      showConfirm("Submit Test", "Are you sure you want to finish?", async () => {
+      const title = isPreviewMode ? "End Preview" : "Submit Test";
+      const desc = isPreviewMode ? "End preview and check results?" : "Are you sure you want to finish?";
+      showConfirm(title, desc, async () => {
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
         
         let total = 0, correct = 0;
@@ -1520,8 +1786,8 @@
           })));
         }
         
-        // Save submission to cloud
-        if (testMode !== 'free') {
+        // Save submission to cloud (Skip if free mode OR if in teacher preview mode)
+        if (testMode !== 'free' && !isPreviewMode) {
           const clsId = document.getElementById('student-class-select').value;
           const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title, className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers, score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
           
@@ -1533,23 +1799,37 @@
         if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
            document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div>`;
         } else {
-           document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">Waiting for teacher review.</p>`;
+           document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p>`;
         }
         document.getElementById('results-modal').classList.remove('hidden');
       });
     }
     
-    function exitToDashboard() { document.getElementById('results-modal').classList.add('hidden'); document.getElementById('start-screen').classList.remove('hidden'); renderStudentDashboard(); }
+    function exitToDashboard() { 
+      document.getElementById('results-modal').classList.add('hidden'); 
+      if (isPreviewMode) {
+         isPreviewMode = false;
+         document.getElementById('editor-ui').classList.remove('hidden');
+      } else {
+         document.getElementById('start-screen').classList.remove('hidden'); 
+         renderStudentDashboard(); 
+      }
+    }
     
     function openExplanationsReview() {
       document.getElementById('results-modal').classList.add('hidden');
       document.getElementById('review-ui').classList.remove('hidden');
-      document.getElementById('review-module-badge').textContent = APP_DATA.module;
+      document.getElementById('review-module-badge').textContent = APP_DATA.module + (isPreviewMode ? ' (Preview)' : '');
       buildSplitReviewUI(false, null, {});
     }
+    
     function closeReviewScreen() {
       document.getElementById('review-ui').classList.add('hidden');
-      if (currentUser.role === 'teacher') document.getElementById('editor-ui').classList.remove('hidden');
+      if (isPreviewMode) {
+         isPreviewMode = false;
+         document.getElementById('editor-ui').classList.remove('hidden');
+      }
+      else if (currentUser.role === 'teacher') document.getElementById('editor-ui').classList.remove('hidden');
       else document.getElementById('start-screen').classList.remove('hidden');
     }
 
@@ -1565,11 +1845,24 @@
     
     async function clearAllSubmissions() { 
       showConfirm("Clear All", "Delete all student data from cloud?", async () => { 
-        for (let sub of SUBMISSIONS) {
-           await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)));
+        const btn = document.querySelector('button[onclick="clearAllSubmissions()"]');
+        if (btn) { btn.textContent = "Clearing..."; btn.disabled = true; }
+        
+        try {
+          // Fetch directly from cloud to ensure we wipe the actual document IDs, 
+          // including any legacy submissions that might have mismatched IDs.
+          const snap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('submissions')));
+          for (let d of snap.docs) {
+             await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('submissions'), d.id));
+          }
+          SUBMISSIONS = [];
+          renderSubmissions(); 
+        } catch (err) {
+          console.error("Clear Submissions Error:", err);
+          showModalMsg("Error", "Could not clear all submissions. Please try again.");
         }
-        SUBMISSIONS = [];
-        renderSubmissions(); 
+        
+        if (btn) { btn.textContent = "Clear All Data"; btn.disabled = false; }
       }); 
     }
 
@@ -1640,12 +1933,13 @@
              if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
              else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
           }
-          rHtml += `<div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm mb-4"><div class="font-bold text-slate-800 mb-3">${q.instruction}</div>${content}</div>`;
+          rHtml += `<div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm mb-4"><div class="text-slate-800 mb-4 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>${content}</div>`;
         });
       });
       
       if(isGrading) rHtml += `<button onclick="saveFeedback(${subId})" id="btn-save-feed" class="w-full mt-4 bg-emerald-600 text-white font-bold py-3 rounded shadow hover:bg-emerald-700">Save Grades & Feedback</button>`;
       r.innerHTML = rHtml;
+      setTimeout(restoreHighlights, 50);
     }
 
     async function saveFeedback(subId) {
