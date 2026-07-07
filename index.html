@@ -14,17 +14,59 @@
     input[type="number"]::-webkit-inner-spin-button,
     input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
+    .rich-editor {
+      min-height: 120px;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.375rem;
+      padding: 0.75rem;
+      background-color: #ffffff;
+      font-family: inherit; /* Inherits main font */
+      font-size: inherit;   /* Inherits global text size */
+      outline: none;
+      overflow-y: auto;
+    }
+    .rich-editor p { margin-bottom: 0.5rem; }
+    .rich-editor:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
+    .rich-editor table { max-width: 100%; border-collapse: collapse; margin-bottom: 1rem; background-color: white; }
+    .rich-editor th, .rich-editor td { padding: 0.5rem; text-align: left; min-width: 3rem; }
+    .rich-editor table.no-border th, .rich-editor table.no-border td { border: 1px dashed #cbd5e1; }
+    .rich-editor table:not(.no-border) th, .rich-editor table:not(.no-border) td { border: 1px solid #cbd5e1; }
+    .rich-editor th { background-color: #f1f5f9; }
+    
+    .rich-editor ul, .exam-reading-pane ul, #questions-container ul, #review-right-pane ul, #review-left-pane ul { 
+        list-style-type: disc; 
+        padding-left: 1.5rem; 
+        margin-top: 0.5rem; 
+        margin-bottom: 0.5rem; 
+    }
+    .rich-editor ol, .exam-reading-pane ol, #questions-container ol, #review-right-pane ol, #review-left-pane ol { 
+        list-style-type: decimal; 
+        padding-left: 1.5rem; 
+        margin-top: 0.5rem; 
+        margin-bottom: 0.5rem; 
+    }
+    .rich-editor li, .exam-reading-pane li, #questions-container li, #review-right-pane li, #review-left-pane li {
+        margin-bottom: 0.25rem;
+    }
+
+    .rich-editor b, .exam-reading-pane b, #questions-container b { font-weight: bold; }
+    .rich-editor i, .exam-reading-pane i, #questions-container i { font-style: italic; }
+    .rich-editor u, .exam-reading-pane u, #questions-container u { text-decoration: underline; }
+
+    .col-resizer { display: none !important; }
+    .rich-editor .col-resizer { display: block !important; }
+    .rich-editor table, #questions-container table, #review-right-pane table, #review-left-pane table {
+        overflow-wrap: break-word;
+        word-break: normal;
+        max-width: 100%;
+    }
+    .rich-editor th, .rich-editor td, #questions-container th, #questions-container td, #review-right-pane th, #review-right-pane td, #review-left-pane th, #review-left-pane td {
+        vertical-align: top;
+    }
+
     :root {
       --bg-main: #ffffff; --bg-sec: #f8fafc; --text-main: #1e293b; --text-sec: #475569;
       --q-bg: #ffffff; --q-border: transparent; --font-scale: 1.125rem;
-    }
-    body.theme-dark {
-      --bg-main: #0f172a; --bg-sec: #1e293b; --text-main: #f1f5f9; --text-sec: #cbd5e1;
-      --q-bg: #1e293b; --q-border: #334155;
-    }
-    body.theme-pastel {
-      --bg-main: #fdf6e3; --bg-sec: #eee8d5; --text-main: #586e75; --text-sec: #657b83;
-      --q-bg: #fdf6e3; --q-border: #d5c4a1;
     }
     body.size-large { --font-scale: 1.35rem; }
     body.size-xl { --font-scale: 1.6rem; }
@@ -33,17 +75,59 @@
     .theme-bg-sec { background-color: var(--bg-sec); color: var(--text-sec); }
     .theme-text-main { color: var(--text-main); }
     .theme-q-block { background-color: var(--q-bg); border-color: var(--q-border); }
+
+    /* Dark Theme */
+    body.theme-dark { background-color: #0f172a !important; color: #f1f5f9 !important; --bg-main: #0f172a; --bg-sec: #1e293b; --text-main: #f1f5f9; --text-sec: #cbd5e1; --q-bg: #1e293b; --q-border: #334155; }
+    body.theme-dark #split-container, body.theme-dark #review-ui { background-color: var(--bg-main) !important; }
+    body.theme-dark #passage-container, body.theme-dark #review-left-pane { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important; }
+    body.theme-dark #questions-container, body.theme-dark #review-right-pane { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
     
-    .passage-text { font-size: var(--font-scale); line-height: 1.8; transition: font-size 0.3s; }
+    body.theme-dark #split-container .text-slate-800, body.theme-dark #split-container .text-slate-700, body.theme-dark #split-container .text-slate-900,
+    body.theme-dark #review-ui .text-slate-800, body.theme-dark #review-ui .text-slate-700, body.theme-dark #review-ui .text-slate-900 { color: #f1f5f9 !important; }
+    body.theme-dark #split-container .text-slate-600, body.theme-dark #split-container .text-slate-500, body.theme-dark #split-container .text-slate-400,
+    body.theme-dark #review-ui .text-slate-600, body.theme-dark #review-ui .text-slate-500, body.theme-dark #review-ui .text-slate-400 { color: #cbd5e1 !important; }
+    body.theme-dark #split-container .bg-white, body.theme-dark #review-ui .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+    body.theme-dark #split-container .bg-slate-50, body.theme-dark #split-container .bg-slate-100, body.theme-dark #review-ui .bg-slate-50, body.theme-dark #review-ui .bg-slate-100 { background-color: #0f172a !important; border-color: #334155 !important; }
+    body.theme-dark #split-container input, body.theme-dark #split-container textarea, body.theme-dark #split-container select, body.theme-dark #split-container .drop-zone-options,
+    body.theme-dark #review-ui input, body.theme-dark #review-ui textarea, body.theme-dark #review-ui select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+    body.theme-dark #split-container .border-slate-200, body.theme-dark #split-container .border-slate-300, body.theme-dark #split-container .border-slate-400,
+    body.theme-dark #review-ui .border-slate-200, body.theme-dark #review-ui .border-slate-300, body.theme-dark #review-ui .border-slate-400 { border-color: #334155 !important; }
+    body.theme-dark .drop-zone.border-blue-500 { border-color: #3b82f6 !important; background-color: #1d4ed8 !important; color: #ffffff !important; }
+
+    /* Pastel Theme */
+    body.theme-pastel { background-color: #fdf6e3 !important; color: #586e75 !important; --bg-main: #fdf6e3; --bg-sec: #eee8d5; --text-main: #586e75; --text-sec: #657b83; --q-bg: #fdf6e3; --q-border: #d5c4a1; }
+    body.theme-pastel #split-container, body.theme-pastel #review-ui { background-color: var(--bg-main) !important; }
+    body.theme-pastel #passage-container, body.theme-pastel #review-left-pane { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important;}
+    body.theme-pastel #questions-container, body.theme-pastel #review-right-pane { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
+    
+    body.theme-pastel #split-container .text-slate-800, body.theme-pastel #split-container .text-slate-700, body.theme-pastel #split-container .text-slate-900,
+    body.theme-pastel #review-ui .text-slate-800, body.theme-pastel #review-ui .text-slate-700, body.theme-pastel #review-ui .text-slate-900 { color: #586e75 !important; }
+    body.theme-pastel #split-container .text-slate-600, body.theme-pastel #split-container .text-slate-500, body.theme-pastel #split-container .text-slate-400,
+    body.theme-pastel #review-ui .text-slate-600, body.theme-pastel #review-ui .text-slate-500, body.theme-pastel #review-ui .text-slate-400 { color: #657b83 !important; }
+    body.theme-pastel #split-container .bg-white, body.theme-pastel #review-ui .bg-white { background-color: #fdf6e3 !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel #split-container .bg-slate-50, body.theme-pastel #split-container .bg-slate-100, body.theme-pastel #review-ui .bg-slate-50, body.theme-pastel #review-ui .bg-slate-100 { background-color: #eee8d5 !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel #split-container input, body.theme-pastel #split-container textarea, body.theme-pastel #split-container select, body.theme-pastel #split-container .drop-zone-options,
+    body.theme-pastel #review-ui input, body.theme-pastel #review-ui textarea, body.theme-pastel #review-ui select { background-color: #eee8d5 !important; color: #586e75 !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel #split-container .border-slate-200, body.theme-pastel #split-container .border-slate-300, body.theme-pastel #split-container .border-slate-400,
+    body.theme-pastel #review-ui .border-slate-200, body.theme-pastel #review-ui .border-slate-300, body.theme-pastel #review-ui .border-slate-400 { border-color: #d5c4a1 !important; }
+
+    .passage-text { font-size: var(--font-scale) !important; line-height: 1.8 !important; transition: font-size 0.3s; }
     .passage-text p { margin-bottom: 1.5rem; }
     
-    #questions-container p.theme-text-main, #questions-container label span, #questions-container .drop-zone,
-    #questions-container .draggable-item, #questions-container td, #questions-container input[type="text"], #questions-container select,
-    #writing-prompt, #writing-textarea { font-size: var(--font-scale); line-height: 1.6; transition: font-size 0.3s; }
+    #questions-container, #questions-container div:not(.draggable-item), #questions-container p, #questions-container label span, #questions-container .drop-zone,
+    #questions-container td, #questions-container input, #questions-container select, #questions-container textarea,
+    #review-right-pane, #review-right-pane div, #review-right-pane p, #review-right-pane td, #review-right-pane textarea, #writing-textarea {
+        font-size: var(--font-scale); line-height: 1.6; transition: font-size 0.3s;
+    }
+
+    body.size-large #questions-container .text-sm, body.size-large #review-right-pane .text-sm, body.size-large #passage-container .text-sm, body.size-large #review-left-pane .text-sm { font-size: 1.15rem !important; line-height: 1.7 !important; }
+    body.size-xl #questions-container .text-sm, body.size-xl #review-right-pane .text-sm, body.size-xl #passage-container .text-sm, body.size-xl #review-left-pane .text-sm { font-size: 1.35rem !important; line-height: 1.8 !important; }
+    body.size-large #questions-container .text-xs, body.size-large #review-right-pane .text-xs { font-size: 1rem !important; }
+    body.size-xl #questions-container .text-xs, body.size-xl #review-right-pane .text-xs { font-size: 1.15rem !important; }
     
-    .draggable-item { cursor: grab; } .draggable-item:active { cursor: grabbing; }
+    .draggable-item { cursor: grab; font-size: inherit; } .draggable-item:active { cursor: grabbing; }
     .drop-zone { transition: all 0.2s; }
-    .drop-zone.drag-over { background-color: #dbeafe; border-color: #3b82f6; border-style: solid; }
+    .drop-zone.drag-over { background-color: #dbeafe !important; border-color: #3b82f6 !important; border-style: solid !important; }
     .drop-zone-options.drag-over { background-color: #f1f5f9; border-color: #94a3b8; border-style: dashed; }
 
     .vocab-word { border-bottom: 2px dotted #2563eb; cursor: pointer; color: #1d4ed8; font-weight: 600; transition: all 0.2s; }
@@ -59,51 +143,82 @@
       100% { opacity: 1; transform: translate(-50%, calc(-100% - 8px)) scale(1); } 
     }
     .animate-pop { animation: popIn 0.2s ease-out forwards; }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+    
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+      100% { transform: translateY(0px); }
+    }
+    .animate-float { animation: float 4s ease-in-out infinite; }
+
+    /* Beautiful Primary Button */
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
+    }
+    .btn-primary:active { transform: translateY(0); }
   </style>
 </head>
 <body class="font-sans bg-slate-100 overflow-hidden h-screen text-slate-800 transition-colors duration-300">
 
-  <!-- CLOUD LOADER UI -->
-  <div id="cloud-loader" class="h-screen w-full flex flex-col items-center justify-center bg-slate-900 absolute z-[999]">
-    <div id="loader-spinner" class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-6"></div>
-    <h1 class="text-2xl font-bold text-white mb-2 tracking-wide">Connecting to Cloud...</h1>
-    <div id="cloud-loader-text" class="text-slate-400 font-mono text-sm max-w-xl text-center px-4">Initializing secure database connection</div>
+  <div id="cloud-loader" class="h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 absolute z-[999]">
+    <div class="relative flex justify-center items-center mb-8 animate-float">
+      <div class="absolute inset-0 bg-blue-500 blur-[30px] opacity-30 rounded-full"></div>
+      <div id="loader-spinner" class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white shadow-[0_0_15px_rgba(255,255,255,0.5)]"></div>
+    </div>
+    <h1 class="text-3xl font-extrabold text-white mb-3 tracking-wide drop-shadow-md">IELTS LMS</h1>
+    <h2 class="text-lg font-medium text-blue-200 mb-2 tracking-wide">Connecting to Cloud...</h2>
+    <div id="cloud-loader-text" class="text-blue-100/70 font-mono text-sm max-w-xl text-center px-4">Initializing secure database connection</div>
   </div>
 
   <!-- AUTHENTICATION UI -->
-  <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-slate-900 absolute z-[200]">
-    <div class="bg-white p-8 rounded-xl shadow-2xl w-96">
-      <h1 class="text-3xl font-bold text-center text-slate-800 mb-2">IELTS LMS</h1>
-      <p class="text-center text-slate-500 mb-6 text-sm" id="auth-subtitle">Login to your account</p>
+  <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 absolute z-[200] overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 7s;"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 9s;"></div>
+    
+    <div class="bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[400px] relative z-10 animate-fade-in-up border border-white/20">
+      <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700 mb-2">IELTS LMS</h1>
+      <p class="text-center text-slate-500 mb-8 font-medium" id="auth-subtitle">Login to your account</p>
       
       <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
 
-      <div class="space-y-4">
+      <div class="space-y-5">
         <div>
           <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
-          <input type="text" id="auth-user" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none" placeholder="e.g. student123">
+          <input type="text" id="auth-user" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="e.g. student123">
         </div>
         <div>
           <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
-          <input type="password" id="auth-pass" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-2 focus:ring-blue-600 outline-none" placeholder="••••••••">
+          <input type="password" id="auth-pass" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="••••••••">
         </div>
         
         <div id="auth-role-group" class="hidden">
           <label class="block text-sm font-bold text-slate-700 mb-1">I am a...</label>
           <div class="flex gap-2">
-            <button onclick="setAuthRole('student')" id="auth-role-student" class="flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded transition">Student</button>
-            <button onclick="setAuthRole('teacher')" id="auth-role-teacher" class="flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded transition">Teacher</button>
+            <button onclick="setAuthRole('student')" id="auth-role-student" class="flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded-lg transition">Student</button>
+            <button onclick="setAuthRole('teacher')" id="auth-role-teacher" class="flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-lg transition hover:bg-slate-50">Teacher</button>
           </div>
         </div>
 
-        <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded shadow transition mt-2">Log In</button>
+        <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
       </div>
 
       <div class="mt-6 text-center text-sm">
-        <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 hover:underline font-bold">Need an account? Sign up</button>
+        <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 hover:text-blue-800 hover:underline font-bold transition-colors">Need an account? Sign up</button>
       </div>
-      <div class="mt-4 pt-4 border-t border-slate-200 text-xs text-slate-400 text-center">
-        Demo Accounts:<br>Teacher: <b>teacher</b> / 123 <br>Student: <b>student</b> / 123
+      <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 text-center bg-slate-50 rounded-lg p-3">
+        <b>Demo Accounts:</b><br>Teacher: <b>teacher</b> / 123 &nbsp;|&nbsp; Student: <b>student</b> / 123
       </div>
     </div>
   </div>
@@ -186,7 +301,7 @@
   </div>
 
   <!-- TEACHER EDITOR TEXT SELECTION (Quick Add Vocab) -->
-  <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 animate-pop">
+  <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
     <button onmousedown="quickAddTeacherVocab(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-emerald-400 transition">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       <span class="text-[10px] font-bold">Add to Vocab</span>
@@ -194,25 +309,43 @@
     <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45 arrow"></div>
   </div>
 
+  <!-- TABLE CONTROLS TOOLTIP (Teacher Editor) -->
+  <div id="table-controls-tooltip" class="hidden fixed z-[160] bg-white border border-slate-300 shadow-xl rounded flex items-center p-1 text-[11px] font-bold animate-pop">
+    <button onmousedown="event.preventDefault(); modifyTable('row-above')" class="px-2 py-1.5 hover:bg-slate-100 text-slate-700 rounded transition" title="Insert Row Above">Row ↑</button>
+    <button onmousedown="event.preventDefault(); modifyTable('row-below')" class="px-2 py-1.5 hover:bg-slate-100 text-slate-700 rounded transition" title="Insert Row Below">Row ↓</button>
+    <button onmousedown="event.preventDefault(); modifyTable('del-row')" class="px-2 py-1.5 hover:bg-rose-50 text-rose-600 rounded transition" title="Delete Row">Del Row</button>
+    <div class="w-px h-5 bg-slate-200 mx-1"></div>
+    <button onmousedown="event.preventDefault(); modifyTable('col-left')" class="px-2 py-1.5 hover:bg-slate-100 text-slate-700 rounded transition" title="Insert Column Left">Col ←</button>
+    <button onmousedown="event.preventDefault(); modifyTable('col-right')" class="px-2 py-1.5 hover:bg-slate-100 text-slate-700 rounded transition" title="Insert Column Right">Col →</button>
+    <button onmousedown="event.preventDefault(); modifyTable('del-col')" class="px-2 py-1.5 hover:bg-rose-50 text-rose-600 rounded transition" title="Delete Column">Del Col</button>
+    <div class="w-px h-5 bg-slate-200 mx-1"></div>
+    <button onmousedown="event.preventDefault(); modifyTable('merge-right')" class="px-2 py-1.5 hover:bg-slate-100 text-slate-700 rounded transition" title="Merge Right">Merge →</button>
+    <button onmousedown="event.preventDefault(); modifyTable('merge-down')" class="px-2 py-1.5 hover:bg-slate-100 text-slate-700 rounded transition" title="Merge Down">Merge ↓</button>
+    <button onmousedown="event.preventDefault(); modifyTable('unmerge')" class="px-2 py-1.5 hover:bg-slate-100 text-slate-700 rounded transition" title="Unmerge Cells">Unmerge</button>
+    <div class="w-px h-5 bg-slate-200 mx-1"></div>
+    <button onmousedown="event.preventDefault(); modifyTable('toggle-width')" class="px-2 py-1.5 hover:bg-slate-100 text-blue-700 rounded transition" title="Toggle Auto-Fit / Full Width">↔ Auto-Fit</button>
+    <button onmousedown="event.preventDefault(); modifyTable('toggle-border')" class="px-2 py-1.5 hover:bg-slate-100 text-blue-700 rounded transition" title="Toggle Borders">▦ Borders</button>
+  </div>
+
   <!-- VOCAB POPOVER (Practice Mode) -->
-  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-xl rounded-lg p-4 w-64 animate-pop">
-    <button onclick="document.getElementById('vocab-popover').classList.add('hidden')" class="absolute top-1.5 right-1.5 text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full w-6 h-6 flex items-center justify-center font-bold transition">&times;</button>
-    <h4 id="vp-term" class="font-bold text-slate-900 text-lg mb-1 pr-6"></h4>
-    <p id="vp-pron" class="text-blue-700 font-mono text-xs mb-2 font-medium bg-blue-50 inline-block px-1.5 py-0.5 rounded"></p>
-    <div id="vp-eng" class="text-sm text-slate-700 mb-1.5 leading-relaxed"></div>
-    <div id="vp-vi" class="text-sm text-slate-700 leading-relaxed border-t border-slate-100 pt-1.5 mt-1.5"></div>
-    <div class="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white border-b border-r border-blue-200 rotate-45 arrow"></div>
+  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-2xl rounded-lg p-3 w-64 -translate-y-full mt-[-10px] animate-pop">
+    <div class="flex justify-between items-start mb-2">
+        <h3 class="font-bold text-lg text-blue-800" id="vp-term"></h3>
+        <span id="vp-pron" class="text-xs font-mono text-slate-500 bg-slate-100 px-1 rounded"></span>
+    </div>
+    <div id="vp-eng" class="text-sm text-slate-700 mb-1"></div>
+    <div id="vp-vi" class="text-sm text-slate-600"></div>
+    <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-blue-200 rotate-45 arrow"></div>
   </div>
 
   <!-- RESULTS MODAL -->
-  <div id="results-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-8 w-[440px] shadow-2xl text-center max-h-[90vh] overflow-y-auto">
-      <h2 class="text-2xl font-bold text-slate-900 mb-1">Session Complete</h2>
-      <p class="text-sm text-slate-500 mb-6" id="results-subtitle">Here's how you did</p>
-      <div id="results-score-area"></div>
-      <div class="flex gap-3 mt-6">
-        <button onclick="openExplanationsReview()" class="flex-1 border-2 border-blue-600 text-blue-700 py-2 rounded font-bold hover:bg-blue-50 transition">Review Answers</button>
-        <button onclick="exitToDashboard()" class="flex-1 bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow transition">Exit</button>
+  <div id="results-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-2xl p-8 w-[400px] shadow-2xl text-center transform transition-all">
+      <h2 class="text-3xl font-black text-slate-800 mb-2">Test Complete!</h2>
+      <div id="results-score-area" class="my-6 py-6 bg-slate-50 rounded-xl border border-slate-200"></div>
+      <div class="flex gap-3 mt-8">
+        <button onclick="openExplanationsReview()" class="flex-1 border-2 border-blue-600 text-blue-700 py-3 rounded-lg font-bold hover:bg-blue-50 transition">Review</button>
+        <button onclick="exitToDashboard()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow transition">Exit</button>
       </div>
     </div>
   </div>
@@ -262,16 +395,23 @@
   </div>
 
   <!-- START SCREEN (STUDENT DASHBOARD) -->
-  <div id="start-screen" class="hidden h-screen w-full relative bg-slate-100 overflow-y-auto px-6 py-10">
-    <header class="max-w-6xl mx-auto w-full flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold text-slate-800">Student Dashboard</h1>
-      <div class="flex gap-3">
-        <span class="bg-blue-100 text-blue-800 px-3 py-1.5 rounded font-bold shadow-sm" id="student-name-display">Welcome</span>
-        <button onclick="logout()" class="px-4 py-1.5 border border-slate-300 text-slate-600 rounded font-bold hover:bg-slate-200 transition">Logout</button>
-      </div>
-    </header>
+  <div id="start-screen" class="hidden h-screen w-full relative bg-slate-50 overflow-y-auto">
+    <!-- Blue Header Banner -->
+    <div class="bg-gradient-to-r from-blue-800 to-indigo-700 pt-10 pb-24 px-6 shadow-md">
+      <header class="max-w-6xl mx-auto w-full flex justify-between items-center">
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Student Dashboard</h1>
+        <div class="flex gap-3 items-center">
+          <div class="flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-white font-bold text-sm" id="student-name-display">Welcome</span>
+          </div>
+          <button onclick="logout()" class="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold transition backdrop-blur-sm border border-transparent hover:border-white/30 text-sm">Logout</button>
+        </div>
+      </header>
+    </div>
 
-    <div class="bg-white p-8 rounded-xl shadow-xl max-w-6xl mx-auto w-full text-left border-t-8 border-blue-600 shrink-0">
+    <!-- Main Content Container (Pushed up into the blue banner) -->
+    <div class="bg-white p-8 rounded-2xl shadow-xl max-w-6xl mx-auto w-full text-left shrink-0 -mt-16 relative z-10 animate-fade-in-up border border-slate-100 mx-6 mb-12">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <!-- Left Column: Class and Mode Setup -->
@@ -397,15 +537,32 @@
           <input type="text" id="edit-passage-title" class="w-full border p-2 rounded mb-3 focus:ring-blue-500 font-bold">
           
           <div id="builder-media-fields">
-            <label class="block font-bold mb-1 text-sm text-slate-600">Audio URL (Optional)</label>
-            <input type="text" id="edit-audio-url" class="w-full border p-2 rounded mb-3 text-sm text-blue-600 font-mono">
-            <label class="block font-bold mb-1 text-sm text-slate-600">Image URL (Optional)</label>
-            <input type="text" id="edit-image-url" class="w-full border p-2 rounded mb-3 text-sm text-blue-600 font-mono">
+            <div id="audio-field-container">
+              <label class="block font-bold mb-1 text-sm text-slate-600">Audio URL (Optional)</label>
+              <input type="text" id="edit-audio-url" class="w-full border p-2 rounded mb-3 text-sm text-blue-600 font-mono">
+            </div>
+            <div id="image-field-container" class="hidden">
+              <label class="block font-bold mb-1 text-sm text-slate-600">Part Image (Task 1 Chart, etc.)</label>
+              <div class="relative border-2 border-dashed border-slate-400 bg-slate-50 mt-1 mb-3 flex flex-col items-center justify-center min-h-[150px] cursor-pointer overflow-hidden focus:ring-2 focus:ring-blue-500" tabindex="0" onclick="document.getElementById('edit-part-image-file').click()" onpaste="handlePartImagePaste(event)">
+                  <div id="part-image-preview-container" class="w-full text-center"></div>
+              </div>
+              <input type="file" id="edit-part-image-file" class="hidden" accept="image/*" onchange="handlePartImageFile(event)">
+            </div>
           </div>
           
-          <label class="block font-bold mb-1 text-sm text-slate-600" id="edit-text-label">Prompt / Passage Text</label>
-          <div class="relative flex-1 min-h-[200px]">
-             <textarea id="edit-passage-text" class="absolute inset-0 w-full h-full border p-3 rounded focus:ring-2 focus:ring-blue-500 outline-none font-serif leading-relaxed resize-none"></textarea>
+          <div class="flex justify-between items-end mb-1">
+              <label class="block font-bold text-sm text-slate-600" id="edit-text-label">Prompt / Passage Text</label>
+              <div class="flex gap-1 bg-slate-100 p-1 rounded border border-slate-200">
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Bold">B</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 hover:bg-slate-200 text-slate-700 text-sm italic rounded transition" title="Italic">I</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 hover:bg-slate-200 text-slate-700 text-sm underline rounded transition" title="Underline">U</button>
+                  <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Bullet List">• List</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Numbered List">1. List</button>
+              </div>
+          </div>
+          <div class="relative flex-1 min-h-[200px] flex flex-col">
+             <div id="edit-passage-text" class="rich-editor flex-1 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 leading-relaxed outline-none" style="font-family: inherit !important; font-size: 1rem !important;" contenteditable="true" oninput="window.triggerEditorAutosave()"></div>
           </div>
         </div>
         <div class="w-1/2 p-6 overflow-y-auto bg-slate-50" id="builder-right">
@@ -440,12 +597,12 @@
             <span class="text-[9px] font-bold">NOTES</span>
           </button>
           <button onclick="openSettings()" class="text-slate-400 hover:text-white flex flex-col items-center transition">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><circle cx="12" cy="12" r="3"></circle><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>
             <span class="text-[9px] font-bold">SETTINGS</span>
           </button>
           <span id="autosave-status" class="text-xs font-bold text-emerald-400 opacity-0 transition-opacity">Saved</span>
           <button onclick="exitTest()" class="text-slate-400 hover:text-white flex flex-col items-center">
-            <span class="text-[10px] mt-1 font-bold text-rose-400 border border-rose-400 px-2 py-1 rounded">SUBMIT TEST</span>
+            <span id="exam-action-btn-text" class="text-[10px] mt-1 font-bold text-rose-400 border border-rose-400 px-2 py-1 rounded">SUBMIT TEST</span>
           </button>
         </div>
       </div>
@@ -458,6 +615,19 @@
 
     <!-- Exam Content Area -->
     <div class="flex flex-1 overflow-hidden theme-bg-main relative" id="split-container">
+      
+      <!-- Listening Exam Mode Overlay -->
+      <div id="listening-exam-overlay" class="hidden absolute inset-0 bg-[#404040] z-[100] flex-col items-center justify-center text-white p-8 text-center">
+         <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-6"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+         <p class="text-lg mb-6 max-w-2xl leading-relaxed font-medium">You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.</p>
+         <p class="mb-8 font-medium">To continue, click Play.</p>
+         <button onclick="startListeningAudio()" class="bg-black hover:bg-slate-900 text-white font-bold py-3 px-10 rounded shadow-lg flex items-center gap-3 transition border border-black hover:border-slate-700">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Play
+         </button>
+      </div>
+      <audio id="exam-listening-audio" class="hidden"></audio>
+
       <div class="border-r border-slate-300 overflow-y-auto p-8 pb-32 shadow-inner theme-bg-main relative" id="passage-container" style="width: 50%;"></div>
       <div id="resizer" class="w-2 bg-slate-200 hover:bg-blue-400 cursor-col-resize shrink-0 flex items-center justify-center z-30"><div class="h-8 w-0.5 bg-slate-500 rounded"></div></div>
       <div class="flex-1 overflow-y-auto p-8 pb-32 theme-bg-sec min-w-[20%] relative flex flex-col" id="questions-container"></div>
@@ -523,7 +693,6 @@
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
     window.initFirebaseSystem = async function() {
-        // EXACT CONFIGURATION AS REQUESTED
         const firebaseConfig = {
           apiKey: "AIzaSyC9XmnannGOWSltRQ4ZX_ER_2kNH4MPpSw",
           authDomain: "khanh-ielts.firebaseapp.com",
@@ -551,7 +720,7 @@
             window.fsCollection = collection;
             window.fsGetDocs = getDocs;
             window.fsDeleteDoc = deleteDoc;
-            window.fPath = (col) => col; // Use root collections (e.g. /users, /tests)
+            window.fPath = (col) => col;
 
             loaderText.innerHTML = "Authenticating Connection...<br><br><span class='text-xs'>If this fails, ensure you enabled Anonymous Sign-in in Firebase.</span>";
             
@@ -569,7 +738,7 @@
                     3. Ensure "Anonymous" is enabled in Sign-in methods.
                  </div>
                `;
-               return; // Stop execution
+               return; 
             }
 
             loaderText.innerHTML = "Fetching Data from Firestore...";
@@ -589,8 +758,6 @@
 
     window.addEventListener('DOMContentLoaded', () => {
         window.initFirebaseSystem();
-        
-        // Editor autosave triggers
         const editorBuilder = document.getElementById('editor-view-builder');
         if (editorBuilder) {
             editorBuilder.addEventListener('input', triggerEditorAutosave);
@@ -618,7 +785,7 @@
     let timeLeft = 0; 
     let testMode = 'restricted'; 
     let isTimeFree = false;
-    let isPreviewMode = false; // Tracks if teacher is previewing the test
+    let isPreviewMode = false;
     let answers = {};
     let reviewStatus = {}; 
     let currentPartIdx = 0;
@@ -634,6 +801,139 @@
     let currentNotes = []; 
     let isNotesPanelOpen = false;
     let editorAutosaveTimer = null;
+    let activeTableCell = null;
+
+    // Helper to process, compress and convert Map images to prevent Firebase payload limit errors
+    window.processImageFile = function(file, callback) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height;
+                const maxW = 1000;
+                if (w > maxW) { h = Math.round((h * maxW) / w); w = maxW; }
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/jpeg', 0.8)); // Output compressed JPEG
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.handleMapClick = function(e, i) {
+        const q = APP_DATA.parts[currentEditorPartIdx].questions[i];
+        if (!q.image) {
+            document.getElementById(`map-file-${i}`).click();
+            return;
+        }
+        if (q.type !== 'map_labelling_hotspots') return;
+        
+        const img = document.getElementById(`map-img-${i}`);
+        if (!img) return;
+        const rect = img.getBoundingClientRect();
+        if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+        
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        
+        if (!q.hotspots) q.hotspots = [];
+        const newId = (q.ids && q.ids.length > 0) ? Math.max(...q.ids) + 1 : 1;
+        q.hotspots.push({id: newId, x, y});
+        if(!q.ids.includes(newId)) q.ids.push(newId);
+        
+        window.saveCurrentEditorPart();
+        renderEditorQuestions();
+        window.triggerEditorAutosave();
+    };
+
+    window.removeHotspot = function(e, qIdx, id) {
+        e.stopPropagation();
+        const q = APP_DATA.parts[currentEditorPartIdx].questions[qIdx];
+        q.hotspots = q.hotspots.filter(h => h.id !== id);
+        q.ids = q.ids.filter(i => i !== id);
+        if(q.ids.length === 0) q.ids = [Date.now()%10000]; 
+        window.saveCurrentEditorPart();
+        renderEditorQuestions();
+        window.triggerEditorAutosave();
+    };
+
+    window.handleMapPaste = function(e, i) {
+        e.preventDefault();
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.type.indexOf('image') === 0) {
+                const file = item.getAsFile();
+                window.processImageFile(file, (base64) => {
+                    APP_DATA.parts[currentEditorPartIdx].questions[i].image = base64;
+                    window.saveCurrentEditorPart();
+                    renderEditorQuestions();
+                    window.triggerEditorAutosave();
+                });
+                return;
+            }
+        }
+    };
+
+    window.handleMapFile = function(e, i) {
+        const file = e.target.files[0];
+        if (!file) return;
+        window.processImageFile(file, (base64) => {
+            APP_DATA.parts[currentEditorPartIdx].questions[i].image = base64;
+            window.saveCurrentEditorPart();
+            renderEditorQuestions();
+            window.triggerEditorAutosave();
+        });
+    };
+
+    window.removeMapImage = function(i) {
+        const q = APP_DATA.parts[currentEditorPartIdx].questions[i];
+        q.image = null;
+        if (q.type === 'map_labelling_hotspots') {
+            q.hotspots = [];
+            q.ids = [Date.now()%10000];
+        }
+        window.saveCurrentEditorPart();
+        renderEditorQuestions();
+        window.triggerEditorAutosave();
+    };
+
+    // PART LEVEL IMAGE HANDLERS
+    window.handlePartImagePaste = function(e) {
+        e.preventDefault();
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.type.indexOf('image') === 0) {
+                const file = item.getAsFile();
+                window.processImageFile(file, (base64) => {
+                    APP_DATA.parts[currentEditorPartIdx].image = base64;
+                    loadEditorPart(currentEditorPartIdx);
+                    window.triggerEditorAutosave();
+                });
+                return;
+            }
+        }
+    };
+
+    window.handlePartImageFile = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        window.processImageFile(file, (base64) => {
+            APP_DATA.parts[currentEditorPartIdx].image = base64;
+            loadEditorPart(currentEditorPartIdx);
+            window.triggerEditorAutosave();
+        });
+        e.target.value = ''; 
+    };
+
+    window.removePartImage = function() {
+        APP_DATA.parts[currentEditorPartIdx].image = null;
+        loadEditorPart(currentEditorPartIdx);
+        window.triggerEditorAutosave();
+    };
 
     // --- CLOUD SYNC SYSTEM ---
     window.bootLMS = async function() {
@@ -874,15 +1174,12 @@
     
     async function deleteTest(id) {
       showConfirm("Delete Test", "Remove completely from cloud database?", async () => {
-        // Sync Memory
         TEST_BANK = TEST_BANK.filter(t => t.id !== id); 
         CLASSES.forEach(c => c.assignedTests = c.assignedTests.filter(tid => tid !== id)); 
         
-        // Push Database Deletes
         await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('tests'), id));
         for(let c of CLASSES) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
         
-        // Clean up cloud notes associated with test
         const noteIdsToDelete = Object.keys(ALL_NOTES).filter(k => k.endsWith(`_${id}`));
         for (let nid of noteIdsToDelete) {
            delete ALL_NOTES[nid];
@@ -949,45 +1246,265 @@
       triggerEditorAutosave();
     }
     
+    window.execCmd = function(command, value = null) {
+      document.execCommand(command, false, value);
+      window.triggerEditorAutosave();
+    };
+
+    window.insertVisualTemplate = function(editorId, type, qType) {
+      const editor = document.getElementById(editorId);
+      if (!editor) return;
+      editor.focus();
+      
+      let html = '';
+      const blankTag = (qType === 'dnd_list' || qType === 'matching_headings') ? '{drop:1}' : '{blank:1}';
+      
+      if (type === 'table') {
+          html = `<table class="border-collapse border border-slate-300 mb-4 bg-white text-sm w-full" style="table-layout: fixed; width: 100%;"><tbody><tr class="bg-slate-100"><th class="border border-slate-300 p-2 text-left">Heading 1</th><th class="border border-slate-300 p-2 text-left">Heading 2</th></tr><tr><td class="border border-slate-300 p-2 font-medium">Row 1 ${blankTag}</td><td class="border border-slate-300 p-2">Info goes here...</td></tr></tbody></table><p><br></p>`;
+      } else if (type === 'flow') {
+          html = `<div class="mb-4 flex flex-col items-center text-center"><div class="border-2 border-slate-400 p-2 rounded font-bold bg-white shadow-sm inline-block">Step 1</div><div class="h-6 w-0.5 bg-slate-400"></div><div class="border-2 border-slate-400 p-2 rounded font-bold bg-white shadow-sm inline-block">Step 2 ${blankTag}</div><div class="h-6 w-0.5 bg-slate-400"></div><div class="border-2 border-slate-400 p-2 rounded font-bold bg-white shadow-sm inline-block">Step 3</div></div><p><br></p>`;
+      }
+      
+      const selection = window.getSelection();
+      if (selection.getRangeAt && selection.rangeCount) {
+          let range = selection.getRangeAt(0);
+          if (editor.contains(range.commonAncestorContainer)) {
+              const el = document.createElement("div");
+              el.innerHTML = html;
+              const frag = document.createDocumentFragment();
+              let node, lastNode;
+              while ( (node = el.firstChild) ) {
+                  lastNode = frag.appendChild(node);
+              }
+              range.insertNode(frag);
+              if (lastNode) {
+                  range = range.cloneRange();
+                  range.setStartAfter(lastNode);
+                  range.collapse(true);
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+              }
+          } else {
+              editor.innerHTML += html;
+          }
+      } else {
+          editor.innerHTML += html;
+      }
+      
+      if (typeof window.saveCurrentEditorPart === 'function') window.saveCurrentEditorPart();
+      if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    };
+
+    window.modifyTable = function(action) {
+        if(!activeTableCell) return;
+        const table = activeTableCell.closest('table');
+        const row = activeTableCell.closest('tr');
+        const rowIdx = Array.from(row.parentNode.children).indexOf(row);
+        const cells = Array.from(row.children);
+        const cellIdx = cells.indexOf(activeTableCell);
+
+        if(action === 'row-above' || action === 'row-below') {
+            const newRow = row.cloneNode(true);
+            Array.from(newRow.children).forEach(c => { c.innerHTML = '<br>'; c.removeAttribute('colspan'); c.removeAttribute('rowspan'); });
+            if(action === 'row-above') row.parentNode.insertBefore(newRow, row);
+            else row.parentNode.insertBefore(newRow, row.nextSibling);
+        }
+        if(action === 'del-row') {
+            row.remove();
+            document.getElementById('table-controls-tooltip').classList.add('hidden');
+        }
+        if(action === 'col-left' || action === 'col-right') {
+            Array.from(table.rows).forEach(r => {
+                const targetCell = r.children[cellIdx] || r.lastElementChild;
+                const newCell = document.createElement(targetCell?.tagName || 'td');
+                if (targetCell) newCell.className = targetCell.className;
+                newCell.innerHTML = '<br>';
+                
+                if(targetCell && action === 'col-left') r.insertBefore(newCell, targetCell);
+                else if(targetCell && action === 'col-right') {
+                    if(targetCell.nextSibling) r.insertBefore(newCell, targetCell.nextSibling);
+                    else r.appendChild(newCell);
+                } else {
+                    r.appendChild(newCell);
+                }
+            });
+        }
+        if(action === 'del-col') {
+            Array.from(table.rows).forEach(r => {
+                if(r.children[cellIdx]) r.children[cellIdx].remove();
+            });
+            document.getElementById('table-controls-tooltip').classList.add('hidden');
+        }
+        if(action === 'merge-right') {
+            const nextCell = activeTableCell.nextElementSibling;
+            if(nextCell) {
+                activeTableCell.colSpan = (activeTableCell.colSpan || 1) + (nextCell.colSpan || 1);
+                activeTableCell.innerHTML += (nextCell.innerHTML === '<br>' ? '' : ' ' + nextCell.innerHTML);
+                nextCell.remove();
+            }
+        }
+        if(action === 'merge-down') {
+            const nextRow = table.rows[rowIdx + (activeTableCell.rowSpan || 1)];
+            if(nextRow && nextRow.children[cellIdx]) {
+                const targetCell = nextRow.children[cellIdx];
+                activeTableCell.rowSpan = (activeTableCell.rowSpan || 1) + (targetCell.rowSpan || 1);
+                activeTableCell.innerHTML += (targetCell.innerHTML === '<br>' ? '' : '<br>' + targetCell.innerHTML);
+                targetCell.remove();
+            }
+        }
+        if(action === 'unmerge') {
+            const rs = activeTableCell.rowSpan || 1;
+            const cs = activeTableCell.colSpan || 1;
+            activeTableCell.removeAttribute('rowspan');
+            activeTableCell.removeAttribute('colspan');
+            
+            for(let r=0; r<rs; r++) {
+                for(let c=0; c<cs; c++) {
+                    if(r===0 && c===0) continue;
+                    const targetRow = table.rows[rowIdx + r];
+                    if(targetRow) {
+                        const newCell = document.createElement(activeTableCell.tagName);
+                        newCell.innerHTML = '<br>';
+                        const insertBeforeCell = targetRow.children[cellIdx + (r===0?c:0)];
+                        if(insertBeforeCell) targetRow.insertBefore(newCell, insertBeforeCell);
+                        else targetRow.appendChild(newCell);
+                    }
+                }
+            }
+        }
+        if(action === 'toggle-width') {
+            const isFull = table.classList.contains('w-full');
+            if (isFull) {
+                table.classList.remove('w-full');
+                table.style.width = 'auto';
+                table.style.tableLayout = 'auto';
+            } else {
+                table.classList.add('w-full');
+                table.style.width = '100%';
+                table.style.tableLayout = 'fixed';
+            }
+        }
+        if(action === 'toggle-border') {
+            const hasBorder = table.classList.contains('border');
+            if (hasBorder) {
+                table.classList.remove('border', 'border-slate-300');
+                table.classList.add('no-border');
+                table.querySelectorAll('th, td').forEach(c => c.classList.remove('border', 'border-slate-300'));
+            } else {
+                table.classList.add('border', 'border-slate-300');
+                table.classList.remove('no-border');
+                table.querySelectorAll('th, td').forEach(c => c.classList.add('border', 'border-slate-300'));
+            }
+        }
+        window.saveCurrentEditorPart();
+        window.triggerEditorAutosave();
+    };
+
     function quickAddTeacherVocab(e) {
       e.preventDefault(); e.stopPropagation(); document.getElementById('editor-selection-tooltip').classList.add('hidden');
-      const ta = document.getElementById('edit-passage-text');
-      const term = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+      const term = window.getSelection().toString().trim();
       if(term) { openTeacherVocabModal(); document.getElementById('tv-term').value = term; }
     }
+
+    let isColResizing = false;
+    let activeTh = null;
+    let startColX = 0;
+    let startColWidth = 0;
+
+    document.addEventListener('mousedown', function(e) {
+        if(e.target.classList.contains('col-resizer')) {
+            isColResizing = true;
+            activeTh = e.target.parentElement;
+            const table = activeTh.closest('table');
+            if(table) {
+                table.style.tableLayout = 'fixed';
+                if (!table.style.width || table.style.width === 'auto') table.style.width = table.offsetWidth + 'px';
+            }
+            startColX = e.pageX;
+            startColWidth = activeTh.offsetWidth;
+            e.preventDefault();
+            e.stopPropagation();
+            e.target.classList.add('bg-blue-500');
+            e.target.classList.remove('hover:bg-blue-400');
+        }
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if(isColResizing && activeTh) {
+            let newWidth = Math.max(30, startColWidth + (e.pageX - startColX));
+            activeTh.style.width = newWidth + 'px';
+        }
+    });
+
+    document.addEventListener('mouseup', function(e) {
+        if(isColResizing) {
+            isColResizing = false;
+            if (activeTh) {
+               const resizer = activeTh.querySelector('.col-resizer');
+               if(resizer) {
+                   resizer.classList.remove('bg-blue-500');
+                   resizer.classList.add('hover:bg-blue-400');
+               }
+            }
+            activeTh = null;
+            if(window.triggerEditorAutosave) window.triggerEditorAutosave();
+        }
+    });
+
+    document.addEventListener('mouseover', e => {
+       if ((e.target.tagName === 'TH' || e.target.tagName === 'TD') && e.target.closest('.rich-editor')) {
+           if (e.target.querySelector('.col-resizer')) return;
+           const resizer = document.createElement('div');
+           resizer.className = 'col-resizer absolute right-0 top-0 bottom-0 w-2 cursor-col-resize hover:bg-blue-400 z-10';
+           resizer.contentEditable = "false";
+           e.target.style.position = 'relative';
+           e.target.appendChild(resizer);
+       }
+    });
 
     document.addEventListener('mouseup', (e) => {
       const edTT = document.getElementById('editor-selection-tooltip');
       const exTT = document.getElementById('exam-selection-tooltip');
       const clTT = document.getElementById('clear-highlight-tooltip');
+      const tableTT = document.getElementById('table-controls-tooltip');
       
       if(edTT) edTT.classList.add('hidden'); 
       if(exTT) exTT.classList.add('hidden');
       if(clTT) clTT.classList.add('hidden');
 
-      // Teacher Editor Selection
       if (!document.getElementById('editor-ui').classList.contains('hidden')) {
-        if (e.target.id === 'edit-passage-text') {
-          const start = e.target.selectionStart, end = e.target.selectionEnd;
-          if (start !== end) {
-            const rect = e.target.getBoundingClientRect();
+        const cell = e.target.closest('.rich-editor td, .rich-editor th');
+        if (cell && tableTT) {
+            activeTableCell = cell;
+            const rect = cell.getBoundingClientRect();
+            tableTT.style.top = `${rect.top - 45}px`; 
+            tableTT.style.left = `${Math.min(rect.left, window.innerWidth - 450)}px`;
+            tableTT.classList.remove('hidden');
+        } else if (tableTT && !e.target.closest('#table-controls-tooltip')) {
+            tableTT.classList.add('hidden');
+            activeTableCell = null;
+        }
+
+        if (e.target.closest('#edit-passage-text')) {
+          const sel = window.getSelection();
+          if (sel && sel.toString().trim().length > 0) {
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
             edTT.style.left = `${rect.left + (rect.width/2)}px`; 
-            edTT.style.top = `${e.clientY}px`;
+            edTT.style.top = `${rect.top - 5}px`;
             edTT.classList.remove('hidden');
           }
         }
       } 
-      // Student Exam/Review Selection
       else if (!document.getElementById('exam-ui').classList.contains('hidden') || !document.getElementById('review-ui').classList.contains('hidden')) {
          const selection = window.getSelection(); const text = selection.toString().trim();
          
          if (text.length > 0 && (e.target.closest('#passage-container') || e.target.closest('#questions-container') || e.target.closest('#review-left-pane') || e.target.closest('#review-right-pane'))) {
             if (e.target.nodeName === 'TEXTAREA' || e.target.nodeName === 'INPUT') return;
             
-            activeSelectionRange = selection.getRangeAt(0); 
+            activeSelectionRange = selection.getRangeAt(0).cloneRange(); 
             const rect = activeSelectionRange.getBoundingClientRect();
             
-            // Hide Flashcard button if actively taking exam
             const fcBtn = document.getElementById('tooltip-flashcard-btn');
             const fcDivdr = document.getElementById('tooltip-flashcard-divider');
             const hlBtn = document.getElementById('tooltip-hl-btn');
@@ -1020,19 +1537,34 @@
     });
 
     document.addEventListener('mousedown', e => {
-      if (!e.target.closest('#exam-selection-tooltip') && !e.target.closest('#clear-highlight-tooltip') && !e.target.classList.contains('highlighted-text') && !e.target.closest('#editor-selection-tooltip')) {
+      if (!e.target.closest('#exam-selection-tooltip') && !e.target.closest('#clear-highlight-tooltip') && !e.target.classList.contains('highlighted-text') && !e.target.closest('#editor-selection-tooltip') && !e.target.closest('#table-controls-tooltip')) {
          const exTT = document.getElementById('exam-selection-tooltip');
          const clTT = document.getElementById('clear-highlight-tooltip');
          const edTT = document.getElementById('editor-selection-tooltip');
+         const tableTT = document.getElementById('table-controls-tooltip');
          if(exTT) exTT.classList.add('hidden');
          if(clTT) clTT.classList.add('hidden');
          if(edTT) edTT.classList.add('hidden');
+         if(tableTT) { tableTT.classList.add('hidden'); activeTableCell = null; }
       }
     });
+
+    function wrapRangeWithSpanSafely(range, span) {
+        try {
+            range.surroundContents(span);
+            return true;
+        } catch(e) {
+            try {
+                const fragment = range.extractContents();
+                span.appendChild(fragment);
+                range.insertNode(span);
+                return true;
+            } catch(err2) { return false; }
+        }
+    }
     
-    // Core Notes System: Isolated per user and per test, synced to cloud
     async function saveCurrentNotesToCloud() {
-      if (!currentUser || !APP_DATA || !APP_DATA.id) return;
+      if (!currentUser || !APP_DATA || !APP_DATA.id || isPreviewMode) return;
       const noteKey = `${currentUser.user}_${APP_DATA.id}`;
       ALL_NOTES[noteKey] = currentNotes;
       await window.fsSetDoc(window.fsDoc(window.db, window.fPath('notes'), noteKey), { data: currentNotes });
@@ -1045,12 +1577,14 @@
       const span = document.createElement('span'); 
       span.className = 'highlighted-text bg-yellow-300 text-slate-900 cursor-pointer rounded px-1 transition-colors'; 
       span.dataset.id = 'h_' + Date.now();
-      try { 
-        activeSelectionRange.surroundContents(span); 
-        window.getSelection().removeAllRanges(); 
-        currentNotes.push({ id: span.dataset.id, partIdx: currentPartIdx, quote: span.textContent, text: null });
-        saveCurrentNotesToCloud();
-      } catch (err) { showModalMsg("Error", "Please select text within a single paragraph to highlight."); }
+      
+      if (wrapRangeWithSpanSafely(activeSelectionRange, span)) {
+          window.getSelection().removeAllRanges(); 
+          currentNotes.push({ id: span.dataset.id, partIdx: currentPartIdx, quote: span.textContent, text: null });
+          saveCurrentNotesToCloud();
+      } else {
+          showModalMsg("Error", "Could not highlight. Please select a smaller block of text without overlapping structural styles.");
+      }
     }
 
     function createNoteFromSelection(e) {
@@ -1062,12 +1596,16 @@
         const noteId = 'n_' + Date.now(); const span = document.createElement('span');
         span.className = 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500'; 
         span.dataset.id = noteId;
-        try {
-          activeSelectionRange.surroundContents(span); window.getSelection().removeAllRanges();
-          currentNotes.push({ id: noteId, partIdx: currentPartIdx, quote: selectedText, text: noteText });
-          saveCurrentNotesToCloud();
-          renderNotesPanel(); if(!isNotesPanelOpen) toggleNotesPanel();
-        } catch (err) { showModalMsg("Error", "Please select text within a single paragraph."); }
+        
+        if (wrapRangeWithSpanSafely(activeSelectionRange, span)) {
+            window.getSelection().removeAllRanges();
+            currentNotes.push({ id: noteId, partIdx: currentPartIdx, quote: selectedText, text: noteText });
+            saveCurrentNotesToCloud();
+            renderNotesPanel(); 
+            if(!isNotesPanelOpen) toggleNotesPanel();
+        } else {
+            showModalMsg("Error", "Could not create note. Please select a smaller block of text without overlapping structural styles.");
+        }
       });
     }
 
@@ -1093,8 +1631,9 @@
     function renderNotesPanel() {
       const list = document.getElementById('notes-list');
       const activeNotes = currentNotes.filter(n => n.text !== null);
+      
       if (activeNotes.length === 0) {
-        list.innerHTML = `<div class="text-center text-slate-400 mt-10">Select text in the passage to highlight or add a note.</div>`;
+        list.innerHTML = `<div class="text-center text-slate-400 mt-10">Select text in the passage to add a note.</div>`;
       } else {
         list.innerHTML = activeNotes.map(n => `
           <div class="bg-white border border-slate-200 p-3 rounded shadow-sm relative">
@@ -1168,14 +1707,29 @@
       pSel.value = APP_DATA.parts.length;
       
       const media = document.getElementById('builder-media-fields');
-      if (APP_DATA.module === 'reading' || APP_DATA.module === 'writing') media.classList.add('hidden'); else media.classList.remove('hidden');
+      const audioField = document.getElementById('audio-field-container');
+      const imageField = document.getElementById('image-field-container');
+      
+      // Module specific rendering
+      if (APP_DATA.module === 'listening' || APP_DATA.module === 'speaking') {
+          media.classList.remove('hidden');
+          audioField.classList.remove('hidden');
+          imageField.classList.add('hidden');
+      } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'reading') {
+          media.classList.remove('hidden');
+          audioField.classList.add('hidden');
+          imageField.classList.remove('hidden');
+      } else {
+          media.classList.add('hidden');
+      }
       
       const qSel = document.getElementById('new-q-type'); qSel.innerHTML = '';
       if(APP_DATA.module==='writing') qSel.innerHTML = '<option value="essay">Writing Essay Box</option>';
-      else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option>';
+      else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option><option value="essay">Notes / Text Box</option>';
       else {
         qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option>`;
-        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Info (Grid)</option>`;
+        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Info (Grid)</option>`;
+        qSel.innerHTML += `<option value="map_labelling_hotspots">Map Labelling (Hotspots / Options > Gaps)</option><option value="map_labelling_grid">Map Labelling (Grid / Options < Gaps)</option>`;
       }
 
       toggleEditorTab('builder'); loadEditorPart(0);
@@ -1222,7 +1776,7 @@
     }
 
     async function saveActiveTest() {
-      clearTimeout(editorAutosaveTimer); // Cancel any pending autosave
+      clearTimeout(editorAutosaveTimer);
       saveCurrentEditorPart();
       
       const btn = document.getElementById('editor-save-test');
@@ -1241,35 +1795,32 @@
       btn.textContent = "Save Test Data"; btn.disabled = false;
     }
 
-    // Teacher Preview Implementation
     function previewActiveTest() {
-      saveCurrentEditorPart(); // Ensure latest edits are loaded into APP_DATA
+      saveCurrentEditorPart();
       isPreviewMode = true;
 
-      // Reset exam tracking variables
       answers = {};
       reviewStatus = {};
       activeSelectionRange = null;
       activeHighlightNode = null;
       isNotesPanelOpen = false;
+      currentNotes = []; 
       document.getElementById('notes-panel').classList.add('hidden');
 
-      // Transition to Exam UI
       document.getElementById('editor-ui').classList.add('hidden');
       document.getElementById('exam-ui').classList.remove('hidden');
       
-      // Update Exam Header for Preview
       document.getElementById('exam-candidate-name').textContent = "Teacher (Preview)";
       document.getElementById('exam-preview-badge').classList.remove('hidden');
       document.getElementById('exam-module-title').textContent = APP_DATA.title;
+      document.getElementById('exam-action-btn-text').textContent = "EXIT PREVIEW";
 
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
       document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
 
-      // Set up timer for practice/free mode
       clearInterval(timerInterval);
       timeLeft = 0; 
-      isTimeFree = true; // Use time free so teachers can instantly check answers
+      isTimeFree = true; 
       testMode = 'free';
       document.getElementById('timer-label').textContent = 'Elapsed';
 
@@ -1296,8 +1847,16 @@
       document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => `<button onclick="saveCurrentEditorPart(); loadEditorPart(${i})" class="px-5 py-2 font-bold transition ${currentEditorPartIdx===i?'bg-white text-blue-800 border-t-4 border-blue-600':'bg-slate-300 text-slate-600'}">Part ${i+1}</button>`).join('');
       document.getElementById('edit-passage-title').value = p.title||'';
       document.getElementById('edit-audio-url').value = p.audioUrl||'';
-      document.getElementById('edit-image-url').value = p.imageUrl||'';
-      document.getElementById('edit-passage-text').value = p.text||'';
+      
+      const imgContainer = document.getElementById('part-image-preview-container');
+      if (p.image) {
+          imgContainer.innerHTML = `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-2 py-1 rounded shadow" onclick="event.stopPropagation(); removePartImage()">Clear Image</button></div><img src="${p.image}" class="max-h-[200px] mx-auto block pointer-events-none select-none">`;
+      } else {
+          imgContainer.innerHTML = `<div class="text-slate-500 pointer-events-none my-8" id="part-image-placeholder">Paste or click to upload image</div>`;
+      }
+      
+      const passTxt = document.getElementById('edit-passage-text');
+      if(passTxt.tagName === 'TEXTAREA') passTxt.value = p.text||''; else passTxt.innerHTML = p.text||'';
       renderEditorQuestions();
     }
 
@@ -1306,18 +1865,31 @@
       APP_DATA.parts[currentEditorPartIdx].questions.forEach((q, i) => {
         const div = document.createElement('div'); div.className = 'bg-white p-4 rounded border border-slate-300 shadow-sm relative mb-4';
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
-        const mkLbl = t => `<label class="block text-xs font-bold text-slate-500 mt-2">${t}</label>`;
+        const mkLbl = t => `<label class="block text-xs font-bold text-slate-500 mt-3 mb-1">${t}</label>`;
+        const mkToolbar = () => `<div class="flex gap-1 bg-slate-100 p-1 rounded-t border border-b-0 border-slate-300 w-fit"><button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">B</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs italic rounded">I</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs underline rounded">U</button><div class="w-px h-4 bg-slate-300 mx-1 self-center"></div><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">• List</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">1. List</button></div>`;
+        
+        const editorId = `rich-text-${i}`;
+        const toolbar = `<div class="flex gap-1 mb-1 mt-1">
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Bold">B</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs italic rounded transition" title="Italic">I</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs underline rounded transition" title="Underline">U</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Bullet List">• List</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'table', '${q.type}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Insert Table">▦ Table</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'flow', '${q.type}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Insert Flowchart">↓ Flow</button>
+        </div>`;
         
         let html = `<div class="absolute top-2 right-2 flex gap-1">`;
         if (i > 0) html += `<button onclick="moveEditorQuestion(${i}, -1)" class="text-slate-500 hover:bg-slate-100 font-bold px-2 rounded border border-slate-200 transition" title="Move Up">↑</button>`;
         if (i < APP_DATA.parts[currentEditorPartIdx].questions.length - 1) html += `<button onclick="moveEditorQuestion(${i}, 1)" class="text-slate-500 hover:bg-slate-100 font-bold px-2 rounded border border-slate-200 transition" title="Move Down">↓</button>`;
         html += `<button onclick="APP_DATA.parts[currentEditorPartIdx].questions.splice(${i},1); renderEditorQuestions(); triggerEditorAutosave();" class="text-rose-500 hover:bg-rose-50 text-xs font-bold px-2 border border-rose-200 rounded transition" title="Delete Block">X</button></div>`;
         html += `<div class="text-sm font-bold text-blue-700 uppercase mb-2 border-b pb-1 pr-24">Block ${i+1}: ${q.type}</div>`;
-        html += `<div class="flex gap-2">${mkLbl('IDs (csv)')}<input type="text" class="q-ids border p-1 w-full text-sm font-mono" value="${q.ids.join(',')}">${mkLbl('Pts')}<input type="number" class="q-points border p-1 w-16 text-sm" value="${q.points||1}"></div>`;
-        html += `${mkLbl('Instruction (HTML supported)')}<textarea class="q-inst border p-2 w-full text-sm font-mono bg-slate-50" rows="3" placeholder="Use <b>bold</b> or <i>italic</i> tags if needed">${(q.instruction||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>`;
         
-        if (q.type === 'multiple_choice' || q.type === 'tfng') {
-           html += `${mkLbl('Question Text')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea>`;
+        const isHotspot = q.type === 'map_labelling_hotspots';
+        html += `<div class="flex gap-2">${mkLbl('IDs (csv)')}<input type="text" class="q-ids border p-1 w-full text-sm font-mono ${isHotspot ? 'bg-slate-100 text-slate-500' : ''}" value="${q.ids.join(',')}" ${isHotspot ? 'readonly title="Auto-generated from map hotspots"' : ''}>${mkLbl('Pts')}<input type="number" class="q-points border p-1 w-16 text-sm" value="${q.points||1}"></div>`;
+        html += `${mkLbl('Instruction')}${mkToolbar()}<div class="q-inst rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[60px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.instruction||''}</div>`;
+        
+        if (q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
+           html += `${mkLbl('Question Text')}${mkToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[60px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div>`;
            if(q.type === 'multiple_choice') {
                html += `${mkLbl('Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
                html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-multi mr-2" ${q.multi ? 'checked' : ''} onchange="APP_DATA.parts[currentEditorPartIdx].questions[${i}].multi = this.checked; saveCurrentEditorPart(); renderEditorQuestions();"> Allow multiple selections (Checkboxes)</label></div>`;
@@ -1330,19 +1902,47 @@
                html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
            }
         } else if (q.type === 'essay' || q.type === 'audio_record') {
-           // Basic types
+           // Basics
         } else if (q.type === 'matching_info') {
            html += `${mkLbl('Row Statements (1/line)')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea>`;
            html += `${mkLbl('Columns / Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
            html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+        } else if (q.type === 'map_labelling_hotspots') {
+           html += `${mkLbl('Map Image (Click to add gaps)')}`;
+           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 mt-1 mb-3 flex flex-col items-center justify-center min-h-[150px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
+                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-2 py-1 rounded shadow" onclick="event.stopPropagation(); removeMapImage(${i})">Clear Image</button></div><img src="${q.image}" class="max-w-full w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 pointer-events-none my-8">Paste or click to upload map image</div>`}
+                        ${(q.hotspots || []).map(h => `<div class="absolute bg-white border-2 border-blue-600 rounded flex items-center justify-center text-xs font-bold text-blue-900 shadow-md cursor-pointer hover:bg-rose-100 hover:border-rose-500 transition-colors z-10" style="left:${h.x}%; top:${h.y}%; transform:translate(-50%,-50%); width:32px; height:32px;" onclick="removeHotspot(event, ${i}, ${h.id})" title="Click to remove gap ${h.id}">${h.id}</div>`).join('')}
+                    </div>`;
+           html += `<input type="file" id="map-file-${i}" class="hidden" accept="image/*" onchange="handleMapFile(event, ${i})">`;
+           html += `${mkLbl('Map Options / Labels (1/line)')}<textarea class="q-opts border p-1 w-full text-sm" placeholder="e.g. Cookery room\nGames room">${formatArr(q.options)}</textarea>`;
+           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+        } else if (q.type === 'map_labelling_grid') {
+           html += `${mkLbl('Map Image (Optional)')}`;
+           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 mt-1 mb-3 flex flex-col items-center justify-center min-h-[100px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
+                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-2 py-1 rounded shadow" onclick="event.stopPropagation(); removeMapImage(${i})">Clear Image</button></div><img src="${q.image}" class="max-w-[400px] w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 pointer-events-none my-4">Paste or click to upload map image</div>`}
+                        <input type="file" id="map-file-${i}" class="hidden" accept="image/*" onchange="handleMapFile(event, ${i})">
+                    </div>`;
+           html += `${mkLbl('Row Statements (1/line matching IDs)')}<textarea class="q-text border p-1 w-full text-sm" placeholder="e.g. Quilt Shop\nHandicrafts Museum">${q.text||''}</textarea>`;
+           html += `${mkLbl('Columns / Map Letters (1/line)')}<textarea class="q-opts border p-1 w-full text-sm" placeholder="e.g. A\nB\nC\nD">${formatArr(q.options)}</textarea>`;
+           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
         } else {
-           html += `${mkLbl(q.type==='dnd_list'?'Q Text (Use {drop:ID} for blanks)':'Q Text/Options')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea><textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
+           if (q.type === 'fill_blanks' || q.type === 'dnd_list') {
+               html += toolbar;
+               html += `<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-2 rounded-b min-h-[100px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div>`;
+           } else {
+               html += mkToolbar();
+               html += `<div class="q-text rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[100px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div>`;
+           }
+           
+           if (q.type !== 'fill_blanks') {
+               html += `<textarea class="q-opts border p-1 w-full text-sm mt-2">${formatArr(q.options)}</textarea>`;
+           }
            html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
            if (q.type === 'dnd_list' || q.type === 'matching_headings') {
               html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-reus mr-2" ${q.reusable ? 'checked' : ''}> Options are Reusable (can be used multiple times)</label></div>`;
            }
         }
-        html += `${mkLbl('Explanation')}<textarea class="q-expl border p-1 w-full text-sm bg-slate-50">${q.explanation||''}</textarea>`;
+        html += `${mkLbl('Explanation')}${mkToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[60px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div>`;
         div.innerHTML = html; list.appendChild(div);
       });
     }
@@ -1356,11 +1956,11 @@
     }
     
     function moveEditorQuestion(idx, dir) {
-      saveCurrentEditorPart(); // Save any unsaved text inputs first
+      saveCurrentEditorPart(); 
       const qList = APP_DATA.parts[currentEditorPartIdx].questions;
       const target = idx + dir;
       if (target >= 0 && target < qList.length) {
-        [qList[idx], qList[target]] = [qList[target], qList[idx]]; // Swap
+        [qList[idx], qList[target]] = [qList[target], qList[idx]];
         renderEditorQuestions();
         triggerEditorAutosave();
       }
@@ -1370,14 +1970,38 @@
       const p = APP_DATA.parts[currentEditorPartIdx];
       p.title = document.getElementById('edit-passage-title').value;
       p.audioUrl = document.getElementById('edit-audio-url').value;
-      p.imageUrl = document.getElementById('edit-image-url').value;
-      p.text = document.getElementById('edit-passage-text').value;
+      
+      const passTxt = document.getElementById('edit-passage-text');
+      p.text = passTxt.tagName === 'TEXTAREA' ? passTxt.value : passTxt.innerHTML;
       
       const blocks = document.getElementById('editor-questions-list').children;
       p.questions = Array.from(blocks).map((b, i) => {
         const old = p.questions[i];
-        const res = { blockId: old.blockId, type: old.type, ids: b.querySelector('.q-ids').value.split(',').map(Number), points: Number(b.querySelector('.q-points').value)||1, instruction: b.querySelector('.q-inst').value, explanation: b.querySelector('.q-expl')?.value };
-        if(b.querySelector('.q-text')) res.text = b.querySelector('.q-text').value;
+        
+        let idsArr = old.ids;
+        const idsInput = b.querySelector('.q-ids');
+        if (idsInput && !idsInput.readOnly) {
+            idsArr = idsInput.value.split(',').map(n=>Number(n.trim())).filter(n=>!isNaN(n));
+            if(idsArr.length === 0) idsArr = old.ids;
+        }
+
+        const getVal = (el) => el ? (el.isContentEditable ? el.innerHTML : el.value) : '';
+        const res = { 
+            blockId: old.blockId, type: old.type, ids: idsArr, 
+            points: Number(b.querySelector('.q-points').value)||1, 
+            instruction: getVal(b.querySelector('.q-inst')), 
+            explanation: getVal(b.querySelector('.q-expl')) 
+        };
+        
+        if (old.image) res.image = old.image;
+        if (old.hotspots) res.hotspots = old.hotspots;
+        
+        const qTextEl = b.querySelector('.q-text');
+        if (qTextEl) {
+            if (qTextEl.isContentEditable) res.text = qTextEl.innerHTML;
+            else res.text = qTextEl.value;
+        }
+        
         if(b.querySelector('.q-opts')) res.options = b.querySelector('.q-opts').value.split('\n').filter(Boolean);
         if(b.querySelector('.q-reus')) res.reusable = b.querySelector('.q-reus').checked;
         if(b.querySelector('.q-multi')) res.multi = b.querySelector('.q-multi').checked;
@@ -1385,7 +2009,7 @@
         const c = b.querySelector('.q-correct');
         if(c) {
           res.correctAnswers = {};
-          if(old.type==='tfng' || (old.type==='multiple_choice' && !res.multi)) {
+          if(old.type==='tfng' || old.type==='ynng' || (old.type==='multiple_choice' && !res.multi)) {
              res.correctAnswers[res.ids[0]] = c.value.trim();
           } else {
              c.value.split('\n').forEach(l => { const m = l.match(/(\d+):(.*)/); if(m) res.correctAnswers[Number(m[1])] = m[2].trim(); });
@@ -1447,9 +2071,8 @@
       const t = TEST_BANK.find(x => x.id === tid); if(!t) return;
       APP_DATA = JSON.parse(JSON.stringify(t)); 
       answers = {}; reviewStatus = {};
-      isPreviewMode = false; // Reset preview flag
+      isPreviewMode = false; 
       
-      // Initialize isolated notes from Cloud
       const noteKey = `${currentUser.user}_${APP_DATA.id}`;
       if (!ALL_NOTES[noteKey]) ALL_NOTES[noteKey] = [];
       currentNotes = ALL_NOTES[noteKey];
@@ -1465,6 +2088,7 @@
       document.getElementById('exam-candidate-name').textContent = currentUser.user;
       document.getElementById('exam-preview-badge').classList.add('hidden');
       document.getElementById('exam-module-title').textContent = APP_DATA.title;
+      document.getElementById('exam-action-btn-text').textContent = "SUBMIT TEST";
       
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
       document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
@@ -1481,13 +2105,22 @@
       
       initResizer(); renderPart(0);
     }
-    
+
     function initResizer() {
       const r = document.getElementById('resizer'), l = document.getElementById('passage-container'), s = document.getElementById('split-container');
       let drag = false;
       r.onmousedown = () => { drag = true; document.body.style.cursor = 'col-resize'; l.style.userSelect = 'none'; };
       document.onmousemove = e => { if(!drag) return; let w = ((e.clientX - s.getBoundingClientRect().left)/s.getBoundingClientRect().width)*100; l.style.width = `${Math.max(20, Math.min(w,80))}%`; };
       document.onmouseup = () => { if(drag) { drag = false; document.body.style.cursor=''; l.style.userSelect=''; } };
+    }
+
+    function startListeningAudio() {
+        const audio = document.getElementById('exam-listening-audio');
+        if (audio) {
+            audio.play().catch(e => console.error("Audio playback error:", e));
+        }
+        document.getElementById('listening-exam-overlay').classList.add('hidden');
+        document.getElementById('listening-exam-overlay').classList.remove('flex');
     }
 
     function renderPart(idx) {
@@ -1511,10 +2144,41 @@
       }
 
       let media = '';
-      if(p.audioUrl) media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4"></audio>`;
-      if(p.imageUrl) media += `<img src="${p.imageUrl}" class="max-w-full h-auto mb-4 rounded border">`;
+      if(p.audioUrl) media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4 rounded"></audio>`;
+      if(p.image) media += `<div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded text-center"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
       
-      document.getElementById('passage-container').innerHTML = `<h2 class="text-2xl font-bold mb-6 font-serif">${p.title}</h2>${media}<div class="passage-text font-serif text-justify">${htmlText}</div>`;
+      const passageContainer = document.getElementById('passage-container');
+      const resizer = document.getElementById('resizer');
+      const listeningOverlay = document.getElementById('listening-exam-overlay');
+      const examAudio = document.getElementById('exam-listening-audio');
+
+      if (listeningOverlay) {
+          listeningOverlay.classList.add('hidden');
+          listeningOverlay.classList.remove('flex');
+      }
+      if (examAudio) examAudio.src = '';
+      window.listeningMediaInjection = '';
+
+      if (APP_DATA.module === 'listening') {
+          passageContainer.classList.add('hidden');
+          resizer.classList.add('hidden');
+          
+          if (p.audioUrl) {
+              if (!isTimeFree) {
+                  examAudio.src = p.audioUrl;
+                  listeningOverlay.classList.remove('hidden');
+                  listeningOverlay.classList.add('flex');
+              } else {
+                  window.listeningMediaInjection = `<div class="sticky -top-8 -mx-8 px-8 pt-8 pb-4 z-[60] mb-6 theme-bg-sec border-b border-slate-200 shadow-sm"><div class="bg-blue-50 border border-blue-200 p-3 rounded-lg shadow-inner"><div class="text-xs font-bold text-blue-800 uppercase mb-2 flex items-center gap-2">🎧 Practice Audio</div><audio controls src="${p.audioUrl}" class="w-full h-10 outline-none"></audio></div></div>`;
+              }
+          }
+          passageContainer.innerHTML = '';
+      } else {
+          passageContainer.classList.remove('hidden');
+          resizer.classList.remove('hidden');
+          passageContainer.style.width = '50%'; 
+          passageContainer.innerHTML = `<h2 class="text-2xl font-bold mb-6">${p.title}</h2>${media}<div class="passage-text text-justify">${htmlText}</div>`;
+      }
       
       renderQuestions(); 
       updateExamUI();
@@ -1532,7 +2196,7 @@
       pop.classList.remove('hidden');
       
       const rect = e.target.getBoundingClientRect();
-      const popWidth = pop.offsetWidth || 256; // adjusted for new w-64
+      const popWidth = pop.offsetWidth || 256; 
       
       let popLeft = rect.left + (rect.width / 2);
       if (popLeft - (popWidth / 2) < 10) popLeft = (popWidth / 2) + 10;
@@ -1552,7 +2216,8 @@
     document.addEventListener('mouseup', e => { if(!e.target.closest('#vocab-popover') && !e.target.classList.contains('vocab-word')) document.getElementById('vocab-popover').classList.add('hidden'); });
 
     function renderQuestions() {
-      const c = document.getElementById('questions-container'); c.innerHTML = '';
+      const c = document.getElementById('questions-container'); 
+      c.innerHTML = window.listeningMediaInjection || '';
       
       const makeBadge = (id) => `<span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} inline-flex min-w-[28px] h-[28px] px-1.5 bg-white border border-slate-800 text-slate-800 text-sm font-bold items-center justify-center cursor-pointer hover:bg-slate-100 transition shrink-0 select-none align-middle mx-1 rounded-sm">${id}</span>`;
 
@@ -1561,16 +2226,24 @@
         
         let unplacedIds = new Set(q.ids);
         
-        // Smart text parser: Converts exact typed question numbers into badges
+        let rawText = q.text || '';
+        if (q.type === 'fill_blanks' || q.type === 'dnd_list') {
+            q.ids.forEach(id => {
+                const regexDrop = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)\\s*\\{drop:${id}\\}`, 'g');
+                rawText = rawText.replace(regexDrop, `$1{drop:${id}}`);
+                const regexBlank = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)\\s*\\{blank:${id}\\}`, 'g');
+                rawText = rawText.replace(regexBlank, `$1{blank:${id}}`);
+            });
+        }
+        
         let pt = (str) => {
             if(!str) return '';
             let res = str;
-            const sortedIds = [...q.ids].sort((a,b) => b - a); // Match larger numbers first
+            const sortedIds = [...q.ids].sort((a,b) => b - a); 
             sortedIds.forEach(id => {
-                // Matches ID at start, after space, or after HTML tags, followed by optional . or )
                 const regex = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)(?=\\s|<|$)`, 'g');
                 if (regex.test(res)) {
-                    res = res.replace(regex, `$1${makeBadge(id)} `); // Swap text number for badge!
+                    res = res.replace(regex, `$1${makeBadge(id)} `);
                     unplacedIds.delete(id);
                 }
             });
@@ -1579,16 +2252,10 @@
 
         let content = '';
         
-        if(q.type === 'multiple_choice' || q.type === 'tfng') {
-           const opts = q.type === 'tfng' ? ['True','False','Not Given'] : q.options;
-           
-           let qText = pt(q.text||'');
-           
-           // Consume any remaining unplaced IDs specifically for multiple choice inline placement
-           let remainingInlineBadges = Array.from(unplacedIds).map(id => {
-               unplacedIds.delete(id);
-               return makeBadge(id);
-           }).join('');
+        if(q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
+           const opts = q.type === 'tfng' ? ['True','False','Not Given'] : (q.type === 'ynng' ? ['Yes','No','Not Given'] : q.options);
+           let qText = pt(rawText);
+           let remainingInlineBadges = Array.from(unplacedIds).map(id => { unplacedIds.delete(id); return makeBadge(id); }).join('');
 
            if (q.type === 'multiple_choice' && q.multi) {
                const selectedVals = q.ids.map(id => answers[id]).filter(Boolean);
@@ -1604,15 +2271,30 @@
                }).join('')}</div>`;
            }
         } else if(q.type === 'fill_blanks') {
-           let txt = pt(q.text||''); 
-           q.ids.forEach(id => txt = txt.split(`{blank:${id}}`).join(`<input type="text" value="${answers[id]||''}" oninput="handleAns(${id}, this.value)" class="mx-1 border-b-2 border-slate-400 focus:border-blue-600 bg-transparent outline-none px-2 py-1 text-center font-bold text-blue-800 w-32">`));
-           content = `<p class="leading-relaxed whitespace-pre-wrap">${txt}</p>`;
-        } else if(q.type === 'dnd_list') {
-           let txt = pt(q.text||'');
+           let txt = pt(rawText); 
            q.ids.forEach(id => {
+               unplacedIds.delete(id);
+               const ans = answers[id]||'';
+               const inputHtml = `<span class="inline-flex items-center align-middle border border-slate-400 rounded bg-white h-[36px] p-0.5 mx-1 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all">
+                   <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[26px] h-[26px] bg-white border border-slate-800 text-slate-800 text-base font-bold rounded-sm cursor-pointer hover:bg-slate-100 transition shrink-0 select-none">${id}</span>
+                   <input type="text" value="${ans.replace(/"/g, '&quot;')}" oninput="handleAns(${id}, this.value)" placeholder="" class="px-2 w-[120px] text-base font-bold text-blue-900 bg-transparent outline-none">
+               </span>`;
+               txt = txt.split(`{blank:${id}}`).join(inputHtml);
+           });
+           content = `<div class="leading-relaxed">${txt}</div>`;
+        } else if(q.type === 'dnd_list') {
+           let txt = pt(rawText);
+           q.ids.forEach(id => {
+              unplacedIds.delete(id);
               const ans = answers[id]||'';
-              const cls = ans ? 'bg-blue-100 border-blue-600 text-blue-900 cursor-grab shadow-sm' : 'bg-slate-50 border-slate-300 text-slate-400 border-dashed';
-              txt = txt.split(`{drop:${id}}`).join(`<div class="drop-zone inline-flex min-w-[80px] px-2 h-7 border-2 ${cls} align-middle text-center font-bold text-sm rounded mx-1 items-center justify-center transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
+              const hasAns = !!ans;
+              const dropZoneHtml = `<span class="drop-zone inline-flex items-center align-middle rounded bg-white h-[36px] p-0.5 mx-1 transition-all ${hasAns ? 'border-2 border-blue-500 shadow-sm cursor-grab bg-blue-50' : 'border border-dashed border-slate-400'}"
+                   ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)"
+                   ${hasAns ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>
+                  <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[26px] h-[26px] bg-white border border-slate-800 text-slate-800 text-base font-bold rounded-sm cursor-pointer hover:bg-slate-100 transition shrink-0 select-none">${id}</span>
+                  <span class="px-2 min-w-[100px] text-center text-base ${hasAns ? 'font-bold text-blue-900' : 'text-slate-400 italic'} whitespace-nowrap pointer-events-none">${hasAns ? ans : 'Drop answer here'}</span>
+              </span>`;
+              txt = txt.split(`{drop:${id}}`).join(dropZoneHtml);
            });
            
            let availOpts = q.options || [];
@@ -1621,19 +2303,89 @@
                availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
            }
 
-           content = `<div class="mb-5 leading-relaxed whitespace-pre-wrap">${txt}</div><div class="p-4 bg-slate-50 border border-slate-200 rounded-lg drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-300 rounded px-2.5 py-1 text-sm font-medium text-slate-700 shadow-sm hover:border-blue-500 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+           // Here is the fix for making listening drag and drop options smaller and more compact
+           if (APP_DATA.module === 'listening') {
+               content = `<div class="flex flex-col lg:flex-row gap-8 items-start justify-start"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium">Drag options into gaps:</p><div class="flex flex-col gap-1 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2 py-0.5 min-w-[36px] text-center text-[13px] leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
+           } else {
+               content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-1.5 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2.5 py-1 min-w-[40px] text-center text-sm font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+           }
         } else if(q.type === 'matching_headings') {
-           let txt = pt(q.text||'');
-           
+           let txt = pt(rawText);
            let availOpts = q.options || [];
            if (!q.reusable) {
                const used = q.ids.map(i => answers[i]).filter(Boolean);
                availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
            }
+           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-wrap gap-1.5 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2.5 py-1 min-w-[40px] text-center text-sm font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+        } else if (q.type === 'map_labelling_hotspots') {
+           let availOpts = q.options || [];
+           const used = q.ids.map(i => answers[i]).filter(Boolean);
+           availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
 
-           content = (txt ? `<div class="mb-5 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-200 rounded-lg drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-300 rounded px-2.5 py-1 text-sm font-medium text-slate-700 shadow-sm hover:border-blue-500 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+           let mapHtml = '';
+           if (q.image) {
+               mapHtml = `<div class="relative inline-block max-w-full">
+                   <img src="${q.image}" class="max-w-full block rounded border border-slate-300 shadow-sm" draggable="false">
+                   ${(q.hotspots||[]).map(h => {
+                       const id = h.id;
+                       const ans = answers[id]||'';
+                       const hasAns = !!ans;
+                       return `<span class="absolute drop-zone inline-flex items-center justify-center align-middle bg-white min-h-[38px] p-1 transition-all ${hasAns ? 'border border-slate-500 shadow cursor-grab' : 'border-2 border-dashed border-slate-600 rounded-sm'}"
+                           style="left:${h.x}%; top:${h.y}%; transform:translate(-50%, -50%); z-index:10;"
+                           ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)"
+                           ${hasAns ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>
+                          <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[28px] h-[28px] bg-white border border-slate-800 text-slate-800 text-base font-bold cursor-pointer hover:bg-slate-100 transition shrink-0 select-none ${hasAns ? 'mr-3' : ''}">${id}</span>
+                          <span class="pr-2 text-center text-base ${hasAns ? 'font-bold text-slate-900' : 'hidden'} whitespace-nowrap pointer-events-none">${hasAns ? ans : ''}</span>
+                      </span>`;
+                   }).join('')}
+               </div>`;
+           }
+
+           content = `<div class="flex flex-col lg:flex-row gap-8 items-start justify-start w-full">
+               <div class="leading-relaxed overflow-x-auto max-w-full flex-1 selection-wrapper text-center bg-slate-50 p-4 border border-slate-100 rounded-xl">
+                   ${mapHtml || '<div class="italic text-slate-400">Map image not provided.</div>'}
+               </div>
+               <div class="w-full sm:w-auto min-w-[160px] shrink-0 p-4 bg-white border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)">
+                   <div class="flex flex-col gap-1.5 min-h-[40px] items-stretch">
+                       ${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2.5 py-1.5 text-sm font-medium text-slate-800 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit md:max-w-full text-left md:text-center">${o}</div>`).join('')}
+                   </div>
+               </div>
+           </div>`;
+        } else if (q.type === 'map_labelling_grid') {
+           const places = (rawText).split('\n').filter(Boolean);
+           const opts = q.options || [];
+           
+           let mapHtml = q.image ? `<div class="w-full lg:w-1/2 shrink-0 text-center bg-slate-50 p-4 rounded-lg border border-slate-200"><img src="${q.image}" class="max-w-full inline-block rounded border border-slate-300 shadow-sm"></div>` : '';
+
+           let table = `<div class="overflow-x-auto shadow-sm rounded border border-slate-300 w-full"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-[#c2d4ec]">`;
+           table += `<th class="border border-slate-300 px-4 py-3 font-bold text-slate-800 min-w-[150px]"></th>`;
+           opts.forEach(c => {
+               table += `<th class="border border-slate-300 px-3 py-3 text-center font-bold text-slate-800 text-sm whitespace-nowrap min-w-[50px]">${c}</th>`;
+           });
+           table += `</tr></thead><tbody>`;
+           
+           q.ids.forEach((id, idx) => {
+               unplacedIds.delete(id);
+               const placeName = places[idx] || '';
+               table += `<tr class="hover:bg-slate-50 transition-colors">`;
+               table += `<td class="border border-slate-300 px-4 py-3 font-medium text-slate-800 whitespace-nowrap"><div class="flex items-center gap-4">${makeBadge(id)} <span class="text-[0.95rem]">${placeName}</span></div></td>`;
+               
+               opts.forEach(c => {
+                   const isSelected = answers[id] === c;
+                   const bgClass = isSelected ? 'bg-[#d0e3f5]' : 'bg-white hover:bg-slate-100';
+                   table += `<td class="border border-slate-300 p-0 text-center cursor-pointer transition-colors ${bgClass}" onclick="handleAns(${id}, this.dataset.val); renderPart(currentPartIdx);" data-val="${c.replace(/"/g,"&quot;")}">
+                       <div class="w-full h-full flex items-center justify-center min-h-[44px]">
+                           ${isSelected ? `<svg class="w-6 h-6 text-[#5cb85c] font-black drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>` : ''}
+                       </div>
+                   </td>`;
+               });
+               table += `</tr>`;
+           });
+           table += `</tbody></table></div>`;
+           
+           content = `<div class="flex flex-col lg:flex-row gap-8 items-start w-full">${mapHtml}<div class="flex-1 w-full">${table}</div></div>`;
         } else if(q.type === 'matching_info') {
-           const statements = (q.text||'').split('\n').filter(Boolean);
+           const statements = (rawText).split('\n').filter(Boolean);
            const cols = q.options || [];
            let table = `<div class="overflow-x-auto mb-4"><table class="w-full text-left border-collapse border border-slate-300 bg-white"><thead><tr class="bg-slate-50"><th class="border border-slate-300 px-3 py-2 font-bold text-slate-700" style="font-size: 0.95rem;">Statement</th>${cols.map(c => `<th class="border border-slate-300 px-2 py-2 text-center min-w-[40px] font-bold text-slate-700" style="font-size: 0.95rem;">${c}</th>`).join('')}</tr></thead><tbody>`;
            statements.forEach((stmt, sIdx) => {
@@ -1649,24 +2401,23 @@
            table += `</tbody></table></div>`;
            content = table;
         } else if(q.type === 'essay') {
-           let txt = pt(q.text||'');
-           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-serif text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\s+/).filter(Boolean).length}</span></div>`;
+           let txt = pt(rawText);
+           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\s+/).filter(Boolean).length}</span></div>`;
         } else if(q.type === 'audio_record') {
-           let txt = pt(q.text||'');
+           let txt = pt(rawText);
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
         }
         
         let chkBtn = '';
-        if(isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') chkBtn = `<div class="mt-4 flex justify-end"><button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition">Check Answer</button></div><div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-sm font-bold"></div>`;
+        if(isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') chkBtn = `<div class="mt-4 flex justify-end"><button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition">Check Answer</button></div><div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-base font-bold"></div>`;
 
-        // If you didn't type a number in the text for certain IDs, gracefully place them at the top
         let leftoverBadges = Array.from(unplacedIds).map(id => makeBadge(id)).join('');
 
         div.innerHTML = `
           <div class="flex flex-col gap-3">
             <div class="flex flex-col gap-2">
                 ${leftoverBadges ? `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>` : ''}
-                <div class="text-[1.05rem] text-slate-800 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>
+                <div class="text-base text-slate-800 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>
             </div>
             <div class="w-full text-slate-800 mt-2">
               ${content}
@@ -1720,8 +2471,6 @@
         } else {
             const idToClear = ids.find(id => answers[id] === val);
             if (idToClear !== undefined) answers[idToClear] = '';
-            
-            // Shift values up so empty slots are always at the end
             const currentAns = ids.map(id => answers[id]).filter(Boolean);
             ids.forEach((id, idx) => { answers[id] = currentAns[idx] || ''; });
         }
@@ -1729,15 +2478,30 @@
         updateExamUI();
     }
     
-    function dragStart(e, d, sourceId = null) { draggedData = { text: d, sourceId }; }
-    function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    // Core Drag and Drop Fix (Explicit data transfer setup required by DOM)
+    function dragStart(e, d, sourceId = null) { 
+        e.dataTransfer.setData('text/plain', d); 
+        e.dataTransfer.effectAllowed = 'move';
+        draggedData = { text: d, sourceId }; 
+    }
+    function dragOver(e) { 
+        e.preventDefault(); 
+        e.dataTransfer.dropEffect = 'move';
+        e.currentTarget.classList.add('drag-over'); 
+    }
     function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
     
     function drop(e, id) { 
         e.preventDefault(); e.currentTarget.classList.remove('drag-over'); 
-        if(draggedData) { 
-            if(draggedData.sourceId && draggedData.sourceId !== id) answers[draggedData.sourceId] = '';
-            handleAns(id, draggedData.text); 
+        
+        let droppedText = e.dataTransfer.getData('text/plain');
+        if(!droppedText && draggedData) droppedText = draggedData.text;
+
+        if(droppedText) { 
+            if(draggedData && draggedData.sourceId && draggedData.sourceId !== id) {
+                answers[draggedData.sourceId] = '';
+            }
+            handleAns(id, droppedText); 
             draggedData=null; 
             renderPart(currentPartIdx);
         } 
@@ -1745,7 +2509,11 @@
     
     function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; renderPart(currentPartIdx); triggerAutosave(); updateExamUI(); } }
     
-    function optionsDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+    function optionsDragOver(e) { 
+        e.preventDefault(); 
+        e.dataTransfer.dropEffect = 'move';
+        e.currentTarget.classList.add('drag-over'); 
+    }
     function optionsDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
     function returnToOptions(e) {
         e.preventDefault(); e.currentTarget.classList.remove('drag-over');
@@ -1848,6 +2616,9 @@
       showConfirm(title, desc, async () => {
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
         
+        const examAudio = document.getElementById('exam-listening-audio');
+        if (examAudio) examAudio.src = '';
+        
         let total = 0, correct = 0;
         if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
           APP_DATA.parts.forEach(p => p.questions.forEach(q => {
@@ -1870,7 +2641,6 @@
           }));
         }
         
-        // Save submission to cloud (Skip if free mode OR if in teacher preview mode)
         if (testMode !== 'free' && !isPreviewMode) {
           const clsId = document.getElementById('student-class-select').value;
           const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title, className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers, score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
@@ -1894,6 +2664,7 @@
       if (isPreviewMode) {
          isPreviewMode = false;
          document.getElementById('editor-ui').classList.remove('hidden');
+         toggleEditorTab('builder');
       } else {
          document.getElementById('start-screen').classList.remove('hidden'); 
          renderStudentDashboard(); 
@@ -1912,9 +2683,14 @@
       if (isPreviewMode) {
          isPreviewMode = false;
          document.getElementById('editor-ui').classList.remove('hidden');
+         toggleEditorTab('builder');
       }
-      else if (currentUser.role === 'teacher') document.getElementById('editor-ui').classList.remove('hidden');
-      else document.getElementById('start-screen').classList.remove('hidden');
+      else if (currentUser && currentUser.role === 'teacher') {
+         document.getElementById('editor-ui').classList.remove('hidden');
+      } else {
+         document.getElementById('start-screen').classList.remove('hidden');
+         renderStudentDashboard();
+      }
     }
 
     function renderSubmissions() {
@@ -1985,10 +2761,10 @@
         } else if(APP_DATA.module === 'writing') {
            txt = txt.replace(/\n/g, '<br>');
         }
-        lHtml += `<h2 class="text-xl font-bold mb-4 font-serif mt-8 first:mt-0">${p.title}</h2>`;
+        lHtml += `<h2 class="text-xl font-bold mb-4 mt-8 first:mt-0">${p.title}</h2>`;
         if(p.audioUrl) lHtml += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4"></audio>`;
-        if(p.imageUrl) lHtml += `<img src="${p.imageUrl}" class="max-w-full h-auto mb-4 border rounded">`;
-        lHtml += `<div class="font-serif leading-relaxed text-slate-800 text-lg selection-wrapper">${txt}</div>`;
+        if(p.image) lHtml += `<div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded text-center"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
+        lHtml += `<div class="leading-relaxed text-slate-800 text-lg selection-wrapper">${txt}</div>`;
       });
       l.innerHTML = lHtml;
 
@@ -1997,6 +2773,29 @@
         rHtml += `<h3 class="font-bold text-slate-500 uppercase text-sm mb-4 mt-8 first:mt-0 border-b pb-1">Answers: ${p.title}</h3>`;
         p.questions.forEach((q) => {
           let content = '';
+          let qImageHtml = '';
+
+          if (q.type === 'map_labelling_hotspots' && q.image) {
+              qImageHtml = `<div class="mb-6 text-center bg-slate-50 p-4 border border-slate-200 rounded-lg overflow-x-auto"><div class="relative inline-block max-w-full">
+                  <img src="${q.image}" class="max-w-full block rounded border border-slate-300 shadow-sm">
+                  ${(q.hotspots||[]).map(h => {
+                     const id = h.id;
+                     const g = answers[id]||'';
+                     const e = q.correctAnswers?.[id]||'';
+                     const isC = g.toString().toLowerCase() === e.toString().toLowerCase();
+                     
+                     return `<div class="absolute flex flex-col items-center" style="left:${h.x}%; top:${h.y}%; transform:translate(-50%, -50%); z-index:10;">
+                        <div class="bg-white px-2 py-1 rounded shadow border-2 ${isC?'border-emerald-500':'border-rose-500'} text-xs font-bold text-slate-800 whitespace-nowrap mb-1">
+                           <span class="mr-1 inline-block text-[10px] bg-slate-200 rounded px-1">${id}</span> ${g || '--'}
+                        </div>
+                        <div class="${isC?'hidden':'bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded shadow text-[10px] font-bold whitespace-nowrap border border-emerald-300'}">✓ ${e}</div>
+                     </div>`;
+                  }).join('')}
+              </div></div>`;
+          } else if (q.type === 'map_labelling_grid' && q.image) {
+              qImageHtml = `<div class="mb-6 text-center bg-slate-50 p-4 border border-slate-200 rounded-lg"><img src="${q.image}" class="max-w-full inline-block rounded border border-slate-300 shadow-sm"></div>`;
+          }
+
           if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
              const givenArr = q.multi ? q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean) : [];
              content = q.ids.map(id => {
@@ -2012,10 +2811,15 @@
                return `<div class="flex items-center gap-3 text-sm mb-2"><span class="w-6 text-center font-bold text-slate-400">Q${id}</span><span class="${isC?'text-emerald-600':'text-rose-500'} font-black text-lg">${isC?'✓':'✗'}</span><div><div class="text-slate-600">Given: <b>${g||'--'}</b></div><div class="text-emerald-700">Correct: <b>${e}</b></div></div></div>`;
              }).join('');
              if(q.explanation) content += `<div class="mt-3 bg-purple-50 border border-purple-200 p-3 rounded text-sm text-purple-900"><b>💡 Explain:</b> ${q.explanation}</div>`;
-          } else if(APP_DATA.module === 'writing') {
+          } else if(q.type === 'essay') {
              const a = answers[q.ids[0]]||'';
-             content = `<div class="bg-white border border-slate-300 p-4 rounded font-serif text-lg leading-relaxed whitespace-pre-wrap">${a||'<em class="text-slate-400">No response.</em>'}</div>`;
+             content = `<div class="bg-white border border-slate-300 p-4 rounded font-sans text-lg leading-relaxed whitespace-pre-wrap">${a||'<em class="text-slate-400">No response.</em>'}</div>`;
              if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave grading comments here...">${feedbackObj[q.ids[0]]||''}</textarea>`;
+             else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
+          } else if(q.type === 'audio_record') {
+             const a = answers[q.ids[0]];
+             content = a ? `<audio controls src="${a}" class="w-full"></audio>` : `<p class="italic text-slate-500">No recording.</p>`;
+             if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
              else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
           } else if(APP_DATA.module === 'speaking') {
              const a = answers[q.ids[0]];
@@ -2023,7 +2827,7 @@
              if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
              else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
           }
-          rHtml += `<div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm mb-4"><div class="text-slate-800 mb-4 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>${content}</div>`;
+          rHtml += `<div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm mb-4"><div class="text-slate-800 mb-4 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>${qImageHtml}${content}</div>`;
         });
       });
       
