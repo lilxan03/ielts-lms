@@ -3047,10 +3047,60 @@
              content = '';
              if(q.explanation) content += `<div class="bg-purple-50 border border-purple-200 p-4 rounded-lg text-[15px] leading-relaxed text-purple-900 shadow-inner"><b>💡 Explanation:</b><br>${q.explanation}</div>`;
           } else if(q.type === 'essay') {
-             const a = answers[q.ids[0]]||'';
-             content = `<div class="bg-white border border-slate-300 p-4 rounded font-sans text-lg leading-relaxed whitespace-pre-wrap">${a||'<em class="text-slate-400">No response.</em>'}</div>`;
-             if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave grading comments here...">${feedbackObj[q.ids[0]]||''}</textarea>`;
-             else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
+    // 1. Parse the new feedback object structure (or fall back to old string if legacy)
+    let fbData = { annotated: answers[q.ids[0]] || '', tr: '', cc: '', lr: '', gra: '', comment: '' };
+    try { 
+        if (feedbackObj[q.ids[0]]) fbData = JSON.parse(feedbackObj[q.ids[0]]); 
+    } catch(e) { 
+        fbData.comment = feedbackObj[q.ids[0]]; // Legacy support
+    }
+    
+    // Band score options helper
+    const bandOpts = [9, 8.5, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4].map(b => `<option value="${b}">${b}</option>`).join('');
+    const mkSelect = (id, lbl, val) => `<div><label class="block text-xs font-bold text-slate-500 mb-1">${lbl}</label><select id="${id}" class="w-full border border-slate-300 p-2 rounded outline-none focus:border-blue-500"><option value="">--</option>${bandOpts.replace(`value="${val}"`, `value="${val}" selected`)}</select></div>`;
+
+    if (isGrading) {
+        // TEACHER VIEW: Interactive Editing + Grading Criteria
+        content = `
+        <div class="mb-4">
+            <div class="flex gap-2 mb-2 bg-slate-100 p-2 rounded-t border border-slate-300 border-b-0">
+                <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm font-bold hover:bg-slate-50">B</button>
+                <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm italic hover:bg-slate-50">I</button>
+                <button type="button" onmousedown="event.preventDefault(); document.execCommand('strikeThrough')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm line-through hover:bg-slate-50">S</button>
+                <div class="w-px h-6 bg-slate-300 self-center mx-1"></div>
+                <button type="button" onmousedown="event.preventDefault(); document.execCommand('hiliteColor', false, '#fef08a')" class="px-3 py-1 bg-yellow-200 border border-yellow-400 rounded shadow-sm hover:bg-yellow-300 text-sm font-medium">Highlight</button>
+                <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#ef4444')" class="px-3 py-1 bg-white border border-slate-300 text-red-500 rounded shadow-sm hover:bg-red-50 text-sm font-bold">Red Text</button>
+                <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#10b981')" class="px-3 py-1 bg-white border border-slate-300 text-emerald-500 rounded shadow-sm hover:bg-emerald-50 text-sm font-bold">Green Text</button>
+            </div>
+            <div id="essay-content-${q.ids[0]}" contenteditable="true" class="bg-white border border-slate-300 p-4 rounded-b font-sans text-lg leading-relaxed whitespace-pre-wrap outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-4 shadow-sm">
+            <h4 class="font-bold text-blue-900 mb-3 border-b border-blue-200 pb-2">IELTS Criteria Grading</h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                ${mkSelect(`tr-${q.ids[0]}`, 'Task Response', fbData.tr)}
+                ${mkSelect(`cc-${q.ids[0]}`, 'Coherence & Cohesion', fbData.cc)}
+                ${mkSelect(`lr-${q.ids[0]}`, 'Lexical Resource', fbData.lr)}
+                ${mkSelect(`gra-${q.ids[0]}`, 'Grammar & Accuracy', fbData.gra)}
+            </div>
+            <textarea id="fb-${q.ids[0]}" class="w-full border border-blue-300 rounded p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Overall comments and feedback...">${fbData.comment}</textarea>
+        </div>`;
+    } else {
+        // STUDENT VIEW: Read-only Annotated Essay + Scores
+        content = `<div class="bg-white border border-slate-300 p-4 rounded font-sans text-lg leading-relaxed whitespace-pre-wrap">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>`;
+        if(feedbackObj[q.ids[0]]) {
+            content += `
+            <div class="mt-4 bg-emerald-50 border border-emerald-200 rounded-lg p-4 shadow-sm">
+                <h4 class="font-bold text-emerald-900 mb-3 border-b border-emerald-200 pb-2">Teacher Feedback & Scores</h4>
+                <div class="flex flex-wrap gap-4 mb-3">
+                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>TR:</b> ${fbData.tr || '-'}</span>
+                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>CC:</b> ${fbData.cc || '-'}</span>
+                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>LR:</b> ${fbData.lr || '-'}</span>
+                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>GRA:</b> ${fbData.gra || '-'}</span>
+                </div>
+                <div class="text-emerald-900 text-sm leading-relaxed">${fbData.comment}</div>
+            </div>`;
+        }
+    }
           } else if(q.type === 'audio_record') {
              const a = answers[q.ids[0]];
              content = a ? `<audio controls src="${a}" class="w-full"></audio>` : `<p class="italic text-slate-500">No recording.</p>`;
@@ -3206,19 +3256,57 @@
     }
 
     async function saveFeedback(subId) {
-      const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
-      const btn = document.getElementById('btn-save-feed'); btn.textContent="Saving..."; btn.disabled=true;
-      
-      sub.teacherFeedback = {};
-      APP_DATA.parts.forEach(p => p.questions.forEach(q => {
-         const el = document.getElementById(`fb-${q.ids[0]}`); if(el && el.value.trim()) sub.teacherFeedback[q.ids[0]] = el.value.trim();
-      }));
-      if(APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') sub.score = "Graded ✓";
-      
-      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
-      showModalMsg("Saved", "Feedback synced to cloud database successfully.");
-      renderSubmissions(); 
-    }
+  const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
+  const btn = document.getElementById('btn-save-feed'); btn.textContent="Saving..."; btn.disabled=true;
+  
+  sub.teacherFeedback = {};
+  
+  // Calculate overall score for Writing based on the 4 criteria
+  let totalWritingScore = 0;
+  let hasWritingScore = false;
+
+  APP_DATA.parts.forEach(p => p.questions.forEach(q => {
+     if (q.type === 'essay') {
+         // Gather all the new grading data
+         const annotatedContent = document.getElementById(`essay-content-${q.ids[0]}`)?.innerHTML || '';
+         const tr = document.getElementById(`tr-${q.ids[0]}`)?.value || '';
+         const cc = document.getElementById(`cc-${q.ids[0]}`)?.value || '';
+         const lr = document.getElementById(`lr-${q.ids[0]}`)?.value || '';
+         const gra = document.getElementById(`gra-${q.ids[0]}`)?.value || '';
+         const comment = document.getElementById(`fb-${q.ids[0]}`)?.value || '';
+         
+         // Calculate average if all 4 are filled
+         if (tr && cc && lr && gra) {
+             let avg = (Number(tr) + Number(cc) + Number(lr) + Number(gra)) / 4;
+             // Round to nearest 0.5 (IELTS standard)
+             totalWritingScore = Math.round(avg * 2) / 2;
+             hasWritingScore = true;
+         }
+
+         // Save as a JSON string to keep database structure compatible
+         sub.teacherFeedback[q.ids[0]] = JSON.stringify({
+             annotated: annotatedContent,
+             tr: tr, cc: cc, lr: lr, gra: gra,
+             comment: comment
+         });
+     } else {
+         // Keep logic for other types (like Audio feedback)
+         const el = document.getElementById(`fb-${q.ids[0]}`); 
+         if(el && el.value.trim()) sub.teacherFeedback[q.ids[0]] = el.value.trim();
+     }
+  }));
+
+  if(APP_DATA.module === 'writing') {
+      sub.score = hasWritingScore ? `Band ${totalWritingScore}` : "Graded ✓";
+  } else if (APP_DATA.module === 'speaking') {
+      sub.score = "Graded ✓";
+  }
+  
+  await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
+  showModalMsg("Saved", "Feedback synced to cloud database successfully.");
+  renderSubmissions(); 
+  btn.textContent="Save Grades & Feedback"; btn.disabled=false;
+}
 
     function toggleStudentFlashcardPanel() {
       const p = document.getElementById('student-fc-panel');
