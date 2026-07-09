@@ -115,8 +115,8 @@
     .passage-text p { margin-bottom: 1.5rem; }
     
     #questions-container, #questions-container div:not(.draggable-item), #questions-container p, #questions-container label span, #questions-container .drop-zone,
-    #questions-container td, #questions-container input, #questions-container select, #questions-container textarea,
-    #review-right-pane, #review-right-pane div, #review-right-pane p, #review-right-pane td, #review-right-pane textarea, #writing-textarea {
+    #questions-container td, #questions-container th, #questions-container li, #questions-container input, #questions-container select, #questions-container textarea,
+    #review-right-pane, #review-right-pane div, #review-right-pane p, #review-right-pane td, #review-right-pane th, #review-right-pane li, #review-right-pane textarea, #writing-textarea {
         font-size: var(--font-scale); line-height: 1.6; transition: font-size 0.3s;
     }
 
@@ -214,12 +214,6 @@
         <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
       </div>
 
-      <div class="mt-6 text-center text-sm">
-        <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 hover:text-blue-800 hover:underline font-bold transition-colors">Need an account? Sign up</button>
-      </div>
-      <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 text-center bg-slate-50 rounded-lg p-3">
-        <b>Demo Accounts:</b><br>Teacher: <b>teacher</b> / 123 &nbsp;|&nbsp; Student: <b>student</b> / 123
-      </div>
     </div>
   </div>
 
@@ -337,6 +331,51 @@
     <div id="vp-vi" class="text-sm text-slate-600"></div>
     <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-blue-200 rotate-45 arrow"></div>
   </div>
+  
+  <!-- AI GENERATOR MODAL (AUTONOMOUS VISION & TEXT) -->
+  <div id="ai-generator-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh] overflow-hidden">
+      <div class="bg-gradient-to-r from-purple-700 to-fuchsia-700 px-6 py-4 flex justify-between items-center text-white shrink-0">
+        <h2 class="text-xl font-bold flex items-center gap-2">✨ Autonomous AI Extractor</h2>
+        <button onclick="closeAIGenerator()" class="text-white hover:text-purple-200 font-bold text-2xl leading-none">&times;</button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
+        <p class="text-slate-600 mb-4 text-sm font-medium">Upload a screenshot of a test or paste text. The AI will automatically detect the passage, extract all questions, identify their formats (Multiple Choice, True/False, Gap Fill, etc.), and find the answers.</p>
+        
+        <!-- Image Upload Area -->
+        <div id="ai-image-dropzone" class="border-2 border-dashed border-purple-300 bg-purple-50 rounded-lg p-6 mb-4 text-center cursor-pointer hover:bg-purple-100 transition relative" onclick="document.getElementById('ai-image-input').click()">
+            <input type="file" id="ai-image-input" class="hidden" accept="image/*" onchange="handleAIImageUpload(event)">
+            <div id="ai-image-placeholder">
+                <span class="text-4xl mb-2 block">📸</span>
+                <span class="text-purple-800 font-bold text-base">Upload Screenshot of Test</span>
+                <p class="text-xs text-purple-600 mt-1 font-medium">JPG, PNG supported. (Take a screenshot of your PDF)</p>
+            </div>
+            <img id="ai-image-preview" class="hidden mx-auto max-h-48 rounded shadow-md border border-purple-200">
+            <button id="ai-image-clear" onclick="clearAIImage(event)" class="hidden absolute top-3 right-3 bg-rose-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg hover:bg-rose-600 transition">&times;</button>
+        </div>
+
+        <div class="flex items-center gap-4 mb-4">
+            <div class="h-px bg-slate-300 flex-1"></div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">AND / OR</span>
+            <div class="h-px bg-slate-300 flex-1"></div>
+        </div>
+        
+        <label class="block text-sm font-bold text-slate-700 mb-1">Paste Raw Text</label>
+        <textarea id="ai-source-text" class="w-full border border-slate-300 rounded-lg p-4 mb-4 focus:ring-2 focus:ring-purple-500 outline-none h-32 text-sm shadow-inner" placeholder="Paste reading passage and/or questions here..."></textarea>
+
+        <!-- Loading State -->
+        <div id="ai-loading" class="hidden flex-col items-center justify-center p-6 bg-purple-50 border border-purple-200 rounded-lg mb-4 shadow-inner">
+           <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-purple-700 mb-3 shadow-[0_0_10px_rgba(126,34,206,0.3)]"></div>
+           <p class="text-purple-800 font-bold text-sm tracking-wide">AI is analyzing context & mapping questions...</p>
+           <p class="text-purple-600 text-xs mt-1 italic">This requires heavy processing. Please wait 10-15 seconds.</p>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-200 bg-white shrink-0 flex justify-end gap-3">
+        <button onclick="closeAIGenerator()" class="px-5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
+        <button id="ai-generate-btn" onclick="generateAIQuestions()" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-md transition flex items-center gap-2 border border-purple-800">✨ Extract & Build Test</button>
+      </div>
+    </div>
+  </div>
 
   <!-- RESULTS MODAL -->
   <div id="results-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center backdrop-blur-sm">
@@ -412,44 +451,72 @@
 
     <!-- Main Content Container (Pushed up into the blue banner) -->
     <div class="bg-white p-8 rounded-2xl shadow-xl max-w-6xl mx-auto w-full text-left shrink-0 -mt-16 relative z-10 animate-fade-in-up border border-slate-100 mx-6 mb-12">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Payment Warning Banner -->
+      <div id="student-payment-warning" class="hidden bg-rose-50 border-l-4 border-rose-500 p-6 rounded-r-lg mb-8">
+         <h2 class="text-rose-800 font-bold text-xl mb-2">Access Restricted: Payment Required</h2>
+         <p class="text-rose-600">Your account is currently inactive. Please complete your tuition payment with your teacher to unlock your tests and classes.</p>
+      </div>
+
+      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <!-- Left Column: Class and Mode Setup -->
         <div class="lg:col-span-5 flex flex-col gap-6">
+          
+          <!-- 1. RESTORED CLASS SELECTOR -->
           <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-            <h2 class="font-bold text-lg mb-4 border-b border-slate-200 pb-2 text-slate-800">1. Select Your Class</h2>
-            <select id="student-class-select" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-2.5 w-full focus:ring-2 focus:ring-blue-600 outline-none font-bold text-slate-800 cursor-pointer"></select>
+            <h2 class="font-bold text-lg mb-4 border-b border-slate-200 pb-2 text-slate-800">1. Select Class</h2>
+            <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full border-2 border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500 font-bold text-slate-700 bg-white">
+            </select>
           </div>
 
           <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-            <h2 class="font-bold text-lg mb-4 border-b border-slate-200 pb-2 text-slate-800">2. Select Mode</h2>
+            <h2 class="font-bold text-lg mb-4 border-b border-slate-200 pb-2 text-slate-800">2. Select Mode & Time</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
               <button type="button" id="mode-btn-free" onclick="selectTestMode('free')" class="border-2 border-slate-200 rounded-lg p-4 text-left transition hover:border-blue-300">
                 <div class="font-bold text-slate-800 text-md">🕊️ Time-Free (Practice)</div>
                 <div class="text-xs text-slate-500 mt-1">Study vocab in-context. Instant check enabled.</div>
               </button>
-              <button type="button" id="mode-btn-restricted" onclick="selectTestMode('restricted')" class="border-2 border-slate-200 rounded-lg p-4 text-left transition hover:border-blue-300">
+              
+              <!-- Changed to a DIV so the input box doesn't break the button clicking -->
+              <div id="mode-btn-restricted" onclick="selectTestMode('restricted')" class="border-2 border-blue-500 bg-blue-50 rounded-lg p-4 text-left transition hover:border-blue-300 cursor-pointer flex flex-col">
                 <div class="font-bold text-slate-800 text-md">⏱️ Time-Restricted</div>
                 <div class="text-xs text-slate-500 mt-1">Simulate real exam conditions.</div>
-              </button>
+                
+                <div id="custom-time-container" class="mt-3 pt-3 border-t border-blue-200 flex items-center gap-2" onclick="event.stopPropagation()">
+                   <label class="text-sm font-bold text-slate-700">Time Limit:</label>
+                   <input type="number" id="custom-time-input" min="1" max="180" placeholder="Default" class="w-24 border border-slate-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-blue-700 bg-white">
+                   <span class="text-sm text-slate-600">minutes</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Right Column: Assigned Tests -->
+        <!-- Right Column: Weekly Schedule -->
         <div class="lg:col-span-7 flex flex-col">
-          <div class="bg-white border border-blue-200 rounded-lg shadow-sm overflow-hidden flex flex-col h-full min-h-[300px]">
-            <div class="bg-blue-50 px-6 py-4 border-b border-blue-200">
-              <h2 class="font-bold text-blue-900 text-lg">3. Assigned Tests</h2>
-            </div>
-            <div id="student-tests-list" class="divide-y divide-slate-100 overflow-y-auto flex-1"></div>
+          <div id="student-schedule-section" class="bg-white border border-indigo-200 rounded-lg shadow-sm overflow-hidden hidden flex-col h-full min-h-[350px]">
+             <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-200">
+               <h2 class="font-bold text-indigo-900 text-lg">3. Weekly Class Timetable</h2>
+             </div>
+             <div id="student-schedule-list" class="flex-1 divide-y divide-slate-100 overflow-y-auto bg-slate-50"></div>
           </div>
         </div>
-
       </div>
       
-      <!-- Bottom Section: Progress -->
-      <div id="student-progress-section" class="bg-slate-50 p-6 rounded-lg border border-slate-200 hidden mt-8"></div>
+      <!-- Bottom Section: Library & Progress -->
+      <div id="bottom-student-sections" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 hidden">
+          <!-- Course Material Library -->
+          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col max-h-[400px]">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+              <h2 class="font-bold text-slate-700 text-lg">4. Course Material Library</h2>
+            </div>
+            <div id="student-tests-list" class="overflow-y-auto p-4 space-y-2 bg-slate-50 flex-1"></div>
+          </div>
+
+          <!-- Progress Section -->
+          <div id="student-progress-section" class="bg-white p-6 rounded-lg border border-slate-200 shadow-sm max-h-[400px] overflow-y-auto flex flex-col"></div>
+      </div>
     </div>
   </div>
 
@@ -460,9 +527,11 @@
         <h1 class="text-xl font-bold">🛠 Teacher Dashboard</h1>
         
         <div class="flex bg-slate-900 rounded-md p-1 shadow-inner space-x-1" id="editor-main-tabs">
-          <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Test Bank</button>
+          <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Bank</button>
           <button onclick="toggleEditorTab('classes')" id="tab-btn-classes" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Classes</button>
           <button onclick="toggleEditorTab('subs')" id="tab-btn-subs" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Submissions</button>
+          <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Students/Pay</button>
+          <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Timetable</button>
         </div>
 
         <div id="editor-builder-controls" class="hidden items-center gap-3 bg-slate-700 rounded px-3 py-1.5 shadow-inner">
@@ -527,6 +596,36 @@
       </div>
     </div>
 
+    <!-- Students & Payments -->
+    <div id="editor-view-students" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+          <h2 class="text-2xl font-bold text-slate-800">Students & Payment Control</h2>
+          <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Add Student</button>
+        </div>
+        <div id="students-list" class="space-y-4 pb-20"></div>
+      </div>
+    </div>
+
+    <!-- Timetable & Attendance -->
+    <div id="editor-view-timetable" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+          <h2 class="text-2xl font-bold text-slate-800">Timetable & Attendance</h2>
+          <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Schedule Class</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
+          <div>
+            <h3 class="font-bold text-lg text-slate-700 mb-3">Upcoming Schedules</h3>
+            <div id="timetable-list" class="space-y-3"></div>
+          </div>
+          <div>
+             <h3 class="font-bold text-lg text-slate-700 mb-3">Attendance & Export</h3>
+             <div id="attendance-export-list" class="space-y-3 bg-white p-4 border border-slate-200 rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Test Builder -->
     <div id="editor-view-builder" class="flex-1 flex-col overflow-hidden bg-white hidden">
       <div class="bg-slate-200 px-6 py-2 flex space-x-2 border-b border-slate-300" id="editor-tabs"></div>
@@ -568,8 +667,9 @@
         <div class="w-1/2 p-6 overflow-y-auto bg-slate-50" id="builder-right">
           <h2 class="text-lg font-bold mb-4 border-b pb-2 text-slate-800">2. Manage Questions</h2>
           <div class="mb-6 bg-white p-4 border rounded shadow-sm flex gap-2">
-            <select id="new-q-type" class="flex-1 border p-2 rounded font-medium"></select>
-            <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-4 py-2 rounded font-bold shadow hover:bg-blue-700">Add Block</button>
+            <select id="new-q-type" class="flex-1 border p-2 rounded text-sm font-medium"></select>
+            <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-3 py-2 rounded font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap">＋ Add</button>
+            <button onclick="openAIGenerator()" class="bg-purple-600 text-white px-3 py-2 rounded font-bold shadow hover:bg-purple-700 text-sm whitespace-nowrap flex items-center gap-1 transition">✨ AI Auto-Gen</button>
           </div>
           <div id="editor-questions-list" class="space-y-4 pb-32"></div>
         </div>
@@ -775,6 +875,8 @@
     let FLASHCARDS = {};
     let ALL_NOTES = {};
     let SUBMISSIONS = [];
+    let SCHEDULES = [];
+    let ATTENDANCE = [];
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
 
     let APP_DATA = { module: 'reading', parts: [], vocab: [] };
@@ -954,6 +1056,12 @@
 
                 const sSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('submissions')));
                 SUBMISSIONS = sSnap.docs.map(d => d.data());
+
+                const schedSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('schedules')));
+                SCHEDULES = schedSnap.docs.map(d => d.data());
+
+                const attSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('attendance')));
+                ATTENDANCE = attSnap.docs.map(d => d.data());
                 
                 const nSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('notes')));
                 nSnap.docs.forEach(d => { ALL_NOTES[d.id] = d.data().data; });
@@ -1120,8 +1228,8 @@
       toggleEditorTab('bank');
     }
     function toggleEditorTab(tab) {
-      ['bank', 'classes', 'subs', 'builder'].forEach(t => document.getElementById(`editor-view-${t}`).classList.add('hidden'));
-      ['bank', 'classes', 'subs'].forEach(t => {
+      ['bank', 'classes', 'subs', 'builder', 'students', 'timetable'].forEach(t => document.getElementById(`editor-view-${t}`).classList.add('hidden'));
+      ['bank', 'classes', 'subs', 'students', 'timetable'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
         if(b) b.className = t===tab ? 'px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition' : 'px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition';
       });
@@ -1134,6 +1242,8 @@
       if (tab === 'bank') { document.getElementById('editor-view-bank').classList.remove('hidden'); renderTestBank(); }
       if (tab === 'classes') { document.getElementById('editor-view-classes').classList.remove('hidden'); renderClasses(); }
       if (tab === 'subs') { document.getElementById('editor-view-subs').classList.remove('hidden'); renderSubmissions(); }
+      if (tab === 'students') { document.getElementById('editor-view-students').classList.remove('hidden'); renderStudentsList(); }
+      if (tab === 'timetable') { document.getElementById('editor-view-timetable').classList.remove('hidden'); renderTimetable(); }
       if (tab === 'builder') {
         document.getElementById('editor-view-builder').classList.remove('hidden');
         document.getElementById('editor-view-builder').classList.add('flex');
@@ -1260,7 +1370,7 @@
       const blankTag = (qType === 'dnd_list' || qType === 'matching_headings') ? '{drop:1}' : '{blank:1}';
       
       if (type === 'table') {
-          html = `<table class="border-collapse border border-slate-300 mb-4 bg-white text-sm w-full" style="table-layout: fixed; width: 100%;"><tbody><tr class="bg-slate-100"><th class="border border-slate-300 p-2 text-left">Heading 1</th><th class="border border-slate-300 p-2 text-left">Heading 2</th></tr><tr><td class="border border-slate-300 p-2 font-medium">Row 1 ${blankTag}</td><td class="border border-slate-300 p-2">Info goes here...</td></tr></tbody></table><p><br></p>`;
+          html = `<table class="border-collapse border border-slate-300 mb-4 bg-white w-full" style="table-layout: fixed; width: 100%;"><tbody><tr class="bg-slate-100"><th class="border border-slate-300 p-2 text-left">Heading 1</th><th class="border border-slate-300 p-2 text-left">Heading 2</th></tr><tr><td class="border border-slate-300 p-2 font-medium">Row 1 ${blankTag}</td><td class="border border-slate-300 p-2">Info goes here...</td></tr></tbody></table><p><br></p>`;
       } else if (type === 'flow') {
           html = `<div class="mb-4 flex flex-col items-center text-center"><div class="border-2 border-slate-400 p-2 rounded font-bold bg-white shadow-sm inline-block">Step 1</div><div class="h-6 w-0.5 bg-slate-400"></div><div class="border-2 border-slate-400 p-2 rounded font-bold bg-white shadow-sm inline-block">Step 2 ${blankTag}</div><div class="h-6 w-0.5 bg-slate-400"></div><div class="border-2 border-slate-400 p-2 rounded font-bold bg-white shadow-sm inline-block">Step 3</div></div><p><br></p>`;
       }
@@ -1806,6 +1916,7 @@
       isNotesPanelOpen = false;
       currentNotes = []; 
       document.getElementById('notes-panel').classList.add('hidden');
+      document.getElementById('questions-container').innerHTML = '';
 
       document.getElementById('editor-ui').classList.add('hidden');
       document.getElementById('exam-ui').classList.remove('hidden');
@@ -1894,12 +2005,12 @@
                html += `${mkLbl('Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
                html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-multi mr-2" ${q.multi ? 'checked' : ''} onchange="APP_DATA.parts[currentEditorPartIdx].questions[${i}].multi = this.checked; saveCurrentEditorPart(); renderEditorQuestions();"> Allow multiple selections (Checkboxes)</label></div>`;
                if (q.multi) {
-                   html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+                   html += `${mkLbl('Answers (ID:Ans) — Use / for multiple valid options')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
                } else {
-                   html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+                   html += `${mkLbl('Correct Answer (Use / for multiple valid, e.g. color / colour)')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
                }
            } else {
-               html += `${mkLbl('Correct Answer')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+               html += `${mkLbl('Correct Answer (Use / for multiple valid, e.g. color / colour)')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
            }
         } else if (q.type === 'essay' || q.type === 'audio_record') {
            // Basics
@@ -1937,7 +2048,7 @@
            if (q.type !== 'fill_blanks') {
                html += `<textarea class="q-opts border p-1 w-full text-sm mt-2">${formatArr(q.options)}</textarea>`;
            }
-           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+           html += `${mkLbl('Answers (ID:Ans) — Use / for multiple valid options')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
            if (q.type === 'dnd_list' || q.type === 'matching_headings') {
               html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-reus mr-2" ${q.reusable ? 'checked' : ''}> Options are Reusable (can be used multiple times)</label></div>`;
            }
@@ -2021,40 +2132,104 @@
 
     function initStudentDashboard() {
       document.getElementById('student-name-display').textContent = currentUser.user;
-      const sel = document.getElementById('student-class-select');
-      sel.innerHTML = '<option value="">-- Choose Class --</option>' + CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      renderStudentDashboard();
+      
+      const isPaid = currentUser.isPaid === true;
+      document.getElementById('student-payment-warning').classList.toggle('hidden', isPaid);
+      document.getElementById('student-main-content').classList.toggle('hidden', !isPaid);
+      
+      if(isPaid) {
+          const sel = document.getElementById('student-class-select');
+          sel.innerHTML = '<option value="">-- Choose Class --</option>' + CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+          renderStudentDashboard();
+      }
     }
 
     function renderStudentDashboard() {
       const cid = document.getElementById('student-class-select').value;
       const list = document.getElementById('student-tests-list');
       const prog = document.getElementById('student-progress-section');
+      const schedSec = document.getElementById('student-schedule-section');
+      const schedList = document.getElementById('student-schedule-list');
+      const bottomSec = document.getElementById('bottom-student-sections');
       
-      if(!cid) { list.innerHTML = '<div class="p-6 text-slate-500">Select a class first.</div>'; prog.classList.add('hidden'); return; }
+      if(!cid) { 
+          list.innerHTML = '<div class="p-6 text-slate-500">Select a class first.</div>'; 
+          if(bottomSec) bottomSec.classList.add('hidden'); 
+          if(schedSec) schedSec.classList.add('hidden');
+          return; 
+      }
+      
       const cls = CLASSES.find(c => c.id === cid);
-      if(!cls || !cls.assignedTests.length) { list.innerHTML = '<div class="p-6 text-slate-500">No tests assigned.</div>'; prog.classList.add('hidden'); return; }
+      if(!cls) return;
+      if(bottomSec) bottomSec.classList.remove('hidden');
 
-      list.innerHTML = cls.assignedTests.map(tid => {
+      // Helper to draw a test item
+      const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
         return `
-        <div class="flex justify-between items-center p-4 hover:bg-slate-50 border-b border-slate-100 last:border-0">
-          <div><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase">${t.module}</span><h3 class="font-bold text-slate-800 text-lg mt-1">${t.title}</h3></div>
-          <button onclick="startTest('${t.id}')" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded shadow transition">Start</button>
+        <div class="flex justify-between items-center p-3 border border-slate-200 bg-white shadow-sm mb-2 rounded hover:border-blue-300 transition">
+          <div class="truncate pr-4"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase mr-2">${t.module}</span><span class="font-bold text-slate-800 text-sm truncate">${t.title}</span></div>
+          <button onclick="startTest('${t.id}')" class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-4 rounded text-sm shadow transition">Start</button>
         </div>`;
-      }).join('');
+      };
+
+      // 1. Build the Timetable (Weekly View)
+      if(schedSec && schedList) {
+          const classSchedules = SCHEDULES.filter(s => s.className === cls.name);
+          const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+          
+          if(classSchedules.length > 0) {
+              schedSec.classList.remove('hidden');
+              schedSec.classList.add('flex');
+              
+              let schedHtml = '';
+              daysOrder.forEach(day => {
+                  const dayScheds = classSchedules.filter(s => s.dayOfWeek === day);
+                  if(dayScheds.length > 0) {
+                      schedHtml += `<div class="bg-indigo-100 px-6 py-2 font-bold text-indigo-900 shadow-inner border-y border-indigo-200">${day}</div>`;
+                      schedHtml += dayScheds.map(s => {
+                          const lessonTests = (s.assignedTests || []).map(tid => renderTestItem(tid)).join('');
+                          return `
+                            <div class="p-6 bg-white hover:bg-slate-50 transition border-b border-slate-100">
+                               <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('sched-tests-${s.id}').classList.toggle('hidden')">
+                                  <div>
+                                     <h3 class="font-black text-xl text-slate-800 mb-1">${s.time}</h3>
+                                     <p class="text-sm font-medium text-slate-500 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-400"></span> ${s.topic || 'General Practice'}</p>
+                                  </div>
+                                  <button class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold px-4 py-2 rounded-full hover:bg-indigo-100 transition shadow-sm">${s.assignedTests?.length ? `View Materials (${s.assignedTests.length}) ↓` : 'No Materials'}</button>
+                               </div>
+                               <div id="sched-tests-${s.id}" class="hidden mt-6 pt-4 border-t border-slate-100 space-y-1">
+                                  ${lessonTests || '<p class="text-xs text-slate-500 italic p-2 bg-slate-100 rounded">No specific tests assigned to this lesson.</p>'}
+                               </div>
+                            </div>
+                          `;
+                      }).join('');
+                  }
+              });
+              schedList.innerHTML = schedHtml;
+          } else {
+              schedSec.classList.add('hidden');
+              schedSec.classList.remove('flex');
+          }
+      }
       
+      // 2. Build the "Course Material Library"
+      let allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials assigned to this course yet.</p>';
+      if (cls.assignedTests && cls.assignedTests.length) {
+          allTestsHtml = cls.assignedTests.map(tid => renderTestItem(tid)).join('');
+      }
+      list.innerHTML = allTestsHtml;
+      
+      // 3. Update Submissions Progress
       const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
-      
-      prog.classList.remove('hidden');
       prog.innerHTML = `
-        <h2 class="font-bold text-lg mb-3 border-b pb-2">4. Your Progress & Feedback (Cloud Synced)</h2>
-        <div class="space-y-3 max-h-60 overflow-y-auto">
+        <h2 class="font-bold text-lg mb-4 border-b pb-2 text-slate-700">5. Your Progress & Feedback</h2>
+        <div class="space-y-3">
           ${mySubs.length ? mySubs.map(s => `
-            <div class="bg-white border border-slate-200 rounded p-3 shadow-sm flex justify-between items-center">
-              <div><strong class="text-slate-800">${s.testName}</strong><div class="text-xs text-slate-500 mt-1">${s.date}</div></div>
-              <div class="text-right"><span class="font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded">${s.score}</span><button onclick="reviewPastSubmission(${s.id})" class="ml-3 text-xs bg-slate-200 hover:bg-slate-300 font-bold px-2 py-1 rounded">Review</button></div>
+            <div class="bg-slate-50 border border-slate-200 rounded p-3 flex justify-between items-center">
+              <div class="truncate pr-2"><strong class="text-slate-800 text-sm block truncate">${s.testName}</strong><span class="text-[10px] text-slate-500 font-bold uppercase">${s.date}</span></div>
+              <div class="text-right shrink-0"><span class="font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded text-sm">${s.score}</span><button onclick="reviewPastSubmission(${s.id})" class="ml-2 text-xs bg-white border border-slate-300 hover:bg-slate-100 font-bold px-2 py-1 rounded shadow-sm">Review</button></div>
             </div>`).join('') : '<p class="text-sm text-slate-500 italic">No completed tests yet.</p>'}
         </div>`;
     }
@@ -2065,6 +2240,11 @@
       document.getElementById('mode-btn-free').classList.toggle('bg-blue-50', isTimeFree);
       document.getElementById('mode-btn-restricted').classList.toggle('border-blue-500', !isTimeFree);
       document.getElementById('mode-btn-restricted').classList.toggle('bg-blue-50', !isTimeFree);
+      
+      const timeContainer = document.getElementById('custom-time-container');
+      if (timeContainer) {
+          timeContainer.classList.toggle('hidden', isTimeFree);
+      }
     }
 
     function startTest(tid) {
@@ -2081,6 +2261,7 @@
       activeHighlightNode = null;
       isNotesPanelOpen = false;
       document.getElementById('notes-panel').classList.add('hidden');
+      document.getElementById('questions-container').innerHTML = '';
       renderNotesPanel(); 
       
       document.getElementById('start-screen').classList.add('hidden');
@@ -2122,7 +2303,18 @@
         document.getElementById('listening-exam-overlay').classList.add('hidden');
         document.getElementById('listening-exam-overlay').classList.remove('flex');
     }
-
+    window.toggleTranscript = function() {
+        const passage = document.getElementById('passage-container');
+        const resizer = document.getElementById('resizer');
+        // Toggle visibility of the left reading pane
+        if (passage.classList.contains('hidden')) {
+            passage.classList.remove('hidden');
+            resizer.classList.remove('hidden');
+        } else {
+            passage.classList.add('hidden');
+            resizer.classList.add('hidden');
+        }
+    };
     function renderPart(idx) {
       currentPartIdx = idx; currentBlockIdx = 0;
       document.getElementById('part-indicator').textContent = `Part ${idx + 1} of ${APP_DATA.parts.length}`;
@@ -2144,7 +2336,7 @@
       }
 
       let media = '';
-      if(p.audioUrl) media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4 rounded"></audio>`;
+      if(p.audioUrl && APP_DATA.module !== 'listening') media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4 rounded"></audio>`;
       if(p.image) media += `<div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded text-center"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
       
       const passageContainer = document.getElementById('passage-container');
@@ -2152,11 +2344,6 @@
       const listeningOverlay = document.getElementById('listening-exam-overlay');
       const examAudio = document.getElementById('exam-listening-audio');
 
-      if (listeningOverlay) {
-          listeningOverlay.classList.add('hidden');
-          listeningOverlay.classList.remove('flex');
-      }
-      if (examAudio) examAudio.src = '';
       window.listeningMediaInjection = '';
 
       if (APP_DATA.module === 'listening') {
@@ -2165,19 +2352,35 @@
           
           if (p.audioUrl) {
               if (!isTimeFree) {
-                  examAudio.src = p.audioUrl;
-                  listeningOverlay.classList.remove('hidden');
-                  listeningOverlay.classList.add('flex');
+                  if (examAudio.getAttribute('src') !== p.audioUrl) {
+                      if (examAudio.src) examAudio.pause();
+                      examAudio.src = p.audioUrl;
+                      if (listeningOverlay) {
+                          listeningOverlay.classList.remove('hidden');
+                          listeningOverlay.classList.add('flex');
+                      }
+                  }
               } else {
-                  window.listeningMediaInjection = `<div class="sticky -top-8 -mx-8 px-8 pt-8 pb-4 z-[60] mb-6 theme-bg-sec border-b border-slate-200 shadow-sm"><div class="bg-blue-50 border border-blue-200 p-3 rounded-lg shadow-inner"><div class="text-xs font-bold text-blue-800 uppercase mb-2 flex items-center gap-2">🎧 Practice Audio</div><audio controls src="${p.audioUrl}" class="w-full h-10 outline-none"></audio></div></div>`;
+                  // ✨ NEW: Compact single-row layout. No header text, reduced padding, side-by-side elements.
+                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex items-center gap-3"><audio controls src="${p.audioUrl}" class="w-full flex-1 h-9 outline-none"></audio><button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button></div>`;
+                  if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
+                  if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
               }
+          } else {
+              if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
+              if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
           }
-          passageContainer.innerHTML = '';
+          // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
+          passageContainer.style.width = '50%'; 
+          passageContainer.innerHTML = `<h2 class="text-2xl font-bold mb-6">${p.title} (Transcript)</h2>${media}<div class="passage-text text-justify">${htmlText}</div>`;
       } else {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
           passageContainer.style.width = '50%'; 
           passageContainer.innerHTML = `<h2 class="text-2xl font-bold mb-6">${p.title}</h2>${media}<div class="passage-text text-justify">${htmlText}</div>`;
+          
+          if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
+          if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
       }
       
       renderQuestions(); 
@@ -2217,7 +2420,32 @@
 
     function renderQuestions() {
       const c = document.getElementById('questions-container'); 
-      c.innerHTML = window.listeningMediaInjection || '';
+      
+      let mediaDiv = document.getElementById('practice-audio-wrapper');
+      let qListContainer = document.getElementById('questions-list-container');
+      
+      if (!qListContainer) {
+          // ✨ NEW: Changed top-0 to -top-8 to seal the top gap perfectly, and reduced pb-4 to pb-3
+          c.innerHTML = `<div id="practice-audio-wrapper" class="sticky -top-8 z-[60] -mt-8 -mx-8 px-8 pt-8 pb-3 mb-4 border-b border-slate-200 shadow-sm theme-bg-sec empty:hidden"></div><div id="questions-list-container" class="flex flex-col"></div>`;
+          mediaDiv = document.getElementById('practice-audio-wrapper');
+          qListContainer = document.getElementById('questions-list-container');
+      }
+      
+      if (window.listeningMediaInjection) {
+          if (mediaDiv.dataset.audioUrl !== APP_DATA.parts[currentPartIdx].audioUrl) {
+              mediaDiv.innerHTML = window.listeningMediaInjection;
+              mediaDiv.dataset.audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
+          }
+      } else {
+          if (mediaDiv.innerHTML !== '') {
+              const audioEl = mediaDiv.querySelector('audio');
+              if (audioEl) audioEl.pause();
+              mediaDiv.innerHTML = '';
+          }
+          mediaDiv.dataset.audioUrl = '';
+      }
+      
+      qListContainer.innerHTML = '';
       
       const makeBadge = (id) => `<span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} inline-flex min-w-[28px] h-[28px] px-1.5 bg-white border border-slate-800 text-slate-800 text-sm font-bold items-center justify-center cursor-pointer hover:bg-slate-100 transition shrink-0 select-none align-middle mx-1 rounded-sm">${id}</span>`;
 
@@ -2303,11 +2531,11 @@
                availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
            }
 
-           // Here is the fix for making listening drag and drop options smaller and more compact
+           // ✨ NEW: Removed explicit text-sizes so .draggable-item inherits the global scalable font size. Increased px/py paddings.
            if (APP_DATA.module === 'listening') {
-               content = `<div class="flex flex-col lg:flex-row gap-8 items-start justify-start"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium">Drag options into gaps:</p><div class="flex flex-col gap-1 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2 py-0.5 min-w-[36px] text-center text-[13px] leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
+               content = `<div class="flex flex-col lg:flex-row gap-8 items-start justify-start"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium"></p><div class="flex flex-col gap-2 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
            } else {
-               content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-1.5 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2.5 py-1 min-w-[40px] text-center text-sm font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+               content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
            }
         } else if(q.type === 'matching_headings') {
            let txt = pt(rawText);
@@ -2316,7 +2544,7 @@
                const used = q.ids.map(i => answers[i]).filter(Boolean);
                availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
            }
-           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-wrap gap-1.5 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2.5 py-1 min-w-[40px] text-center text-sm font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
         } else if (q.type === 'map_labelling_hotspots') {
            let availOpts = q.options || [];
            const used = q.ids.map(i => answers[i]).filter(Boolean);
@@ -2346,8 +2574,8 @@
                    ${mapHtml || '<div class="italic text-slate-400">Map image not provided.</div>'}
                </div>
                <div class="w-full sm:w-auto min-w-[160px] shrink-0 p-4 bg-white border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)">
-                   <div class="flex flex-col gap-1.5 min-h-[40px] items-stretch">
-                       ${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-2.5 py-1.5 text-sm font-medium text-slate-800 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit md:max-w-full text-left md:text-center">${o}</div>`).join('')}
+                   <div class="flex flex-col gap-2 min-h-[40px] items-stretch">
+                       ${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-2 font-medium text-slate-800 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit md:max-w-full text-left md:text-center">${o}</div>`).join('')}
                    </div>
                </div>
            </div>`;
@@ -2413,19 +2641,29 @@
 
         let leftoverBadges = Array.from(unplacedIds).map(id => makeBadge(id)).join('');
 
-        div.innerHTML = `
-          <div class="flex flex-col gap-3">
+        // ✨ NEW: Only render the instruction block if it actually contains something useful
+        let instructionHtml = '';
+        const cleanInst = (q.instruction || '').trim();
+        const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
+        
+        if (leftoverBadges || hasInst) {
+            instructionHtml = `
             <div class="flex flex-col gap-2">
                 ${leftoverBadges ? `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>` : ''}
-                <div class="text-base text-slate-800 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>
-            </div>
-            <div class="w-full text-slate-800 mt-2">
+                ${hasInst ? `<div class="text-base text-slate-800 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>` : ''}
+            </div>`;
+        }
+
+        div.innerHTML = `
+          <div class="flex flex-col ${instructionHtml ? 'gap-3' : 'gap-0'}">
+            ${instructionHtml}
+            <div class="w-full text-slate-800 ${instructionHtml ? 'mt-2' : 'mt-0'}">
               ${content}
               ${chkBtn}
             </div>
           </div>
         `;
-        c.appendChild(div);
+        qListContainer.appendChild(div);
       });
     }
 
@@ -2541,9 +2779,11 @@
          });
       } else {
          q.ids.forEach(id => {
-            const expected = ((q.correctAnswers&&q.correctAnswers[id])||'').toString().toLowerCase();
-            const given = (answers[id]||'').toString().toLowerCase();
-            if(expected && expected === given) correct++;
+            const expectedStr = ((q.correctAnswers&&q.correctAnswers[id])||'').toString().toLowerCase();
+            const given = (answers[id]||'').toString().toLowerCase().trim();
+            // ✨ NEW: Splits the expected answer by / or | to check against an array of valid answers
+            const expectedList = expectedStr.split(/[/|]/).map(x => x.trim()); 
+            if(expectedStr && expectedList.includes(given) && given !== '') correct++;
          });
       }
       
@@ -2617,7 +2857,9 @@
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
         
         const examAudio = document.getElementById('exam-listening-audio');
-        if (examAudio) examAudio.src = '';
+        if (examAudio) { examAudio.pause(); examAudio.src = ''; }
+        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
+        if (practiceAudio) { practiceAudio.pause(); }
         
         let total = 0, correct = 0;
         if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
@@ -2634,8 +2876,12 @@
                  });
              } else {
                  q.ids.forEach(id => {
-                    total++; const ex = (q.correctAnswers?.[id]||'').toString().toLowerCase(); const gv = (answers[id]||'').toString().toLowerCase();
-                    if(ex && ex === gv) correct++;
+                    total++; 
+                    const exStr = (q.correctAnswers?.[id]||'').toString().toLowerCase(); 
+                    const gv = (answers[id]||'').toString().toLowerCase().trim();
+                    // ✨ NEW: Multi-valid answer evaluation
+                    const exList = exStr.split(/[/|]/).map(x => x.trim());
+                    if(exStr && exList.includes(gv) && gv !== '') correct++;
                  });
              }
           }));
@@ -2797,20 +3043,9 @@
           }
 
           if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-             const givenArr = q.multi ? q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean) : [];
-             content = q.ids.map(id => {
-               const g = answers[id]||'', e = q.correctAnswers?.[id]||'';
-               let isC = false;
-               if (q.multi) {
-                   const exLow = e.toString().toLowerCase();
-                   const matchIdx = givenArr.indexOf(exLow);
-                   if (matchIdx !== -1) { isC = true; givenArr.splice(matchIdx, 1); }
-               } else {
-                   isC = g.toString().toLowerCase() === e.toString().toLowerCase();
-               }
-               return `<div class="flex items-center gap-3 text-sm mb-2"><span class="w-6 text-center font-bold text-slate-400">Q${id}</span><span class="${isC?'text-emerald-600':'text-rose-500'} font-black text-lg">${isC?'✓':'✗'}</span><div><div class="text-slate-600">Given: <b>${g||'--'}</b></div><div class="text-emerald-700">Correct: <b>${e}</b></div></div></div>`;
-             }).join('');
-             if(q.explanation) content += `<div class="mt-3 bg-purple-50 border border-purple-200 p-3 rounded text-sm text-purple-900"><b>💡 Explain:</b> ${q.explanation}</div>`;
+             // ✨ NEW: Removed the redundant Given/Correct list! Now we only render content here if there is an explanation.
+             content = '';
+             if(q.explanation) content += `<div class="bg-purple-50 border border-purple-200 p-4 rounded-lg text-[15px] leading-relaxed text-purple-900 shadow-inner"><b>💡 Explanation:</b><br>${q.explanation}</div>`;
           } else if(q.type === 'essay') {
              const a = answers[q.ids[0]]||'';
              content = `<div class="bg-white border border-slate-300 p-4 rounded font-sans text-lg leading-relaxed whitespace-pre-wrap">${a||'<em class="text-slate-400">No response.</em>'}</div>`;
@@ -2827,7 +3062,141 @@
              if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
              else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
           }
-          rHtml += `<div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm mb-4"><div class="text-slate-800 mb-4 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>${qImageHtml}${content}</div>`;
+
+          // ✨ FIXED: Secure tokenized replacement to completely prevent duplicated or nested badges
+          let qTextHtml = '';
+          const cleanText = (q.text || '').trim();
+          if (cleanText && cleanText !== '<br>' && cleanText !== '<p><br></p>') {
+              let rawText = q.text;
+              const givenArr = q.multi ? q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean) : [];
+              
+              // 1. Build the HTML badge map
+              const badgeMap = {};
+              q.ids.forEach(id => {
+                  const g = answers[id] || '';
+                  const e = q.correctAnswers?.[id] || '';
+                  let isC = false;
+                  
+                  if (q.multi) {
+                      const exLow = e.toString().toLowerCase();
+                      const matchIdx = givenArr.indexOf(exLow);
+                      if (matchIdx !== -1) { isC = true; givenArr.splice(matchIdx, 1); }
+                  } else {
+                      const gClean = g.toString().toLowerCase().trim();
+                      const eList = e.toString().toLowerCase().split(/[/|]/).map(x => x.trim());
+                      isC = eList.includes(gClean) && gClean !== '';
+                  }
+                  
+                  if (APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
+                      if (isC) {
+                          badgeMap[id] = `<span class="inline-flex items-center align-middle bg-emerald-50 border border-emerald-400 text-emerald-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span>${g}</span>`;
+                      } else {
+                          badgeMap[id] = `<span class="inline-flex items-center align-middle bg-rose-50 border border-rose-300 text-rose-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span><s class="opacity-70 mr-1.5 text-rose-600">${g || '—'}</s><span class="text-emerald-700 bg-emerald-100 px-1 rounded border border-emerald-400 ml-0.5 shadow-inner">✓ ${e}</span></span>`;
+                      }
+                  } else {
+                      badgeMap[id] = `<span class="inline-flex min-w-[24px] h-[24px] bg-slate-800 text-white text-[11px] font-bold items-center justify-center rounded-sm mx-1 shadow-sm align-middle">${id}</span>`;
+                  }
+              });
+
+              // 2. Clean up redundant typed numbers before explicit blanks (e.g., "2 {blank:2}" -> "{blank:2}")
+              q.ids.forEach(id => {
+                  const regexDrop = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)\\s*\\{drop:${id}\\}`, 'g');
+                  rawText = rawText.replace(regexDrop, `$1{drop:${id}}`);
+                  const regexBlank = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)\\s*\\{blank:${id}\\}`, 'g');
+                  rawText = rawText.replace(regexBlank, `$1{blank:${id}}`);
+              });
+
+              // 3. Swap explicit markers for safe temporary tokens
+              rawText = rawText.replace(/\{(blank|drop):(\d+)\}/g, (match, type, idStr) => {
+                  return `[[BADGE_${idStr}]]`;
+              });
+              
+              // 4. Safely swap remaining loose question numbers for tokens (won't match inside HTML anymore)
+              q.ids.forEach(id => {
+                  if (badgeMap[id]) {
+                      const regex = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)(?=\\s|<|$)`, 'g');
+                      rawText = rawText.replace(regex, `$1[[BADGE_${id}]] `);
+                  }
+              });
+
+              // 5. Finally inject the HTML badges replacing the safe tokens
+              q.ids.forEach(id => {
+                  if (badgeMap[id]) {
+                      rawText = rawText.split(`[[BADGE_${id}]]`).join(badgeMap[id]);
+                  }
+              });
+
+              qTextHtml = `<div class="mb-4 text-slate-800 bg-slate-50 p-4 rounded-lg border border-slate-200 text-[15px] overflow-x-auto leading-relaxed">${rawText}</div>`;
+          }
+          
+          // ✨ NEW: Render graded options as beautiful contextual lists (MCQs) or colored banks (Drag & Drop)
+          let qOptsHtml = '';
+          const reviewOpts = q.type === 'tfng' ? ['True','False','Not Given'] : (q.type === 'ynng' ? ['Yes','No','Not Given'] : (q.options || []));
+          
+          if (reviewOpts.length > 0 && q.type !== 'map_labelling_hotspots' && q.type !== 'map_labelling_grid') {
+              const givenArr = q.ids.map(id => (answers[id] || '').toString().toLowerCase().trim()).filter(Boolean);
+              const correctArr = q.ids.flatMap(id => (q.correctAnswers?.[id] || '').toString().toLowerCase().split(/[/|]/).map(x => x.trim())).filter(Boolean);
+              
+              if (q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
+                  // Render MCQs as a vertical list resembling original radios/checkboxes
+                  qOptsHtml = `<div class="mb-4 flex flex-col gap-2">` + reviewOpts.map(o => {
+                      const optClean = o.toLowerCase().trim();
+                      const isSelected = givenArr.includes(optClean);
+                      const isCorrect = correctArr.includes(optClean);
+                      
+                      let style = 'bg-white border-slate-200 text-slate-700';
+                      let icon = '<span class="w-5 h-5 rounded-full border border-slate-300 inline-block mr-3 shrink-0 bg-slate-50"></span>';
+                      
+                      if (isSelected && isCorrect) {
+                          style = 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm';
+                          icon = '<span class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center mr-3 shrink-0 text-xs shadow-inner">✓</span>';
+                      } else if (isSelected && !isCorrect) {
+                          style = 'bg-rose-50 border-rose-300 text-rose-800 shadow-sm';
+                          icon = '<span class="w-5 h-5 rounded-full bg-rose-500 text-white flex items-center justify-center mr-3 shrink-0 text-xs shadow-inner">✗</span>';
+                      } else if (!isSelected && isCorrect) {
+                          style = 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm border-dashed';
+                          icon = '<span class="w-5 h-5 rounded-full border-2 border-emerald-500 text-emerald-600 flex items-center justify-center mr-3 shrink-0 text-xs">✓</span>';
+                      }
+                      
+                      // Convert radio circles to square checkboxes if it's a multi-select
+                      if (q.multi) icon = icon.replace(/rounded-full/g, 'rounded-sm');
+
+                      return `<div class="flex items-center p-3 border rounded-lg transition-colors ${style}">${icon}<span class="font-medium text-[15px]">${o}</span></div>`;
+                  }).join('') + `</div>`;
+              } else {
+                  // Render Drag & Drop / Matching as a horizontal bank of color-coded pills
+                  qOptsHtml = `<div class="mb-4"><p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Options Bank</p><div class="flex flex-wrap gap-2">` + reviewOpts.map(o => {
+                      const optClean = o.toLowerCase().trim();
+                      const isSelected = givenArr.includes(optClean);
+                      const isCorrect = correctArr.includes(optClean);
+                      
+                      let style = 'bg-white border-slate-300 text-slate-600';
+                      if (isSelected && isCorrect) {
+                          style = 'bg-emerald-50 border-emerald-500 text-emerald-800 font-bold shadow-sm';
+                      } else if (isSelected && !isCorrect) {
+                          style = 'bg-rose-50 border-rose-400 text-rose-800 line-through opacity-70';
+                      } else if (!isSelected && isCorrect) {
+                          style = 'bg-emerald-50 border-emerald-500 text-emerald-800 border-dashed font-bold shadow-sm';
+                      }
+                      
+                      return `<span class="border px-3 py-1.5 rounded text-sm transition-colors ${style}">${o}</span>`;
+                  }).join('') + `</div></div>`;
+              }
+          }
+
+          const cleanInst = (q.instruction || '').trim();
+          const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
+          
+          // ✨ NEW: Only render the Results header divider if there is actually content to show (like an explanation or essay feedback)
+          const resultsSectionHtml = content ? `<div class="border-t-2 border-slate-100 pt-4 mt-4"><h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Results & Feedback</h4>${content}</div>` : '';
+
+          rHtml += `<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-5">
+              ${hasInst ? `<div class="text-slate-900 font-bold mb-3 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>` : ''}
+              ${qTextHtml}
+              ${qOptsHtml}
+              ${qImageHtml}
+              ${resultsSectionHtml}
+          </div>`;
         });
       });
       
@@ -2938,7 +3307,599 @@
       listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
       document.getElementById('student-fc-modal').classList.remove('hidden');
     }
+   // --- STUDENTS & PAYMENTS LOGIC ---
+    function renderStudentsList() {
+        const list = document.getElementById('students-list');
+        const students = USERS.filter(u => u.role === 'student');
+        list.innerHTML = students.map(s => `
+            <div class="bg-white border border-slate-200 p-4 rounded flex justify-between items-center shadow-sm">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-800">${s.user}</h3>
+                    <p class="text-xs text-slate-500">Created: ${s.createdAt || 'N/A'}</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-bold ${s.isPaid ? 'text-emerald-600' : 'text-rose-500'}">${s.isPaid ? 'Payment Confirmed ✓' : 'Unpaid ✗'}</span>
+                    <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="px-3 py-1 text-sm font-bold text-white rounded ${s.isPaid ? 'bg-slate-400 hover:bg-slate-500' : 'bg-emerald-600 hover:bg-emerald-700'} transition">
+                        ${s.isPaid ? 'Revoke Access' : 'Mark as Paid'}
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
 
+    function promptCreateStudent() {
+        showInputPrompt("Add Student", "Enter new student username:", async (username) => {
+            if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
+            showInputPrompt("Password", `Enter password for ${username}:`, async (password) => {
+                const newStudent = { user: username, pass: password, role: 'student', isPaid: true, createdAt: new Date().toLocaleDateString() };
+                USERS.push(newStudent);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newStudent);
+                renderStudentsList();
+            });
+        });
+    }
+
+    async function togglePaymentStatus(username, status) {
+        const user = USERS.find(u => u.user === username);
+        if(user) {
+            user.isPaid = status;
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), user);
+            renderStudentsList();
+        }
+    }
+
+    // --- TIMETABLE & ATTENDANCE LOGIC ---
+    function promptCreateSchedule() {
+        if(CLASSES.length === 0) { showModalMsg("Error", "Create a Class first."); return; }
+        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => `<option value="${d}">${d}</option>`).join('');
+
+        document.getElementById('modal-title').textContent = "Schedule a Lesson";
+        document.getElementById('modal-message').innerHTML = `
+            <select id="sched-class" class="w-full border p-2 mb-3 rounded font-bold text-blue-800 outline-none" onchange="window.updateSchedTestOptions()">${classOpts}</select>
+            <div class="flex gap-2 mb-3">
+                <select id="sched-day-of-week" class="w-1/2 border p-2 rounded outline-none">${days}</select>
+                <input type="text" id="sched-time" placeholder="Time (e.g. 10:00 AM)" class="w-1/2 border p-2 rounded outline-none">
+            </div>
+            <input type="text" id="sched-topic" placeholder="Topic Focus (e.g. Reading Part 1)" class="w-full border p-2 mb-4 rounded outline-none">
+            
+            <label class="block text-sm font-bold text-slate-700 mb-1">Assign Materials to this Lesson:</label>
+            <div id="sched-tests-container" class="max-h-40 overflow-y-auto border border-slate-200 p-3 rounded bg-slate-50 text-sm text-slate-500 italic space-y-2">
+               Please select a class first...
+            </div>
+        `;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        // Dynamically load tests available to the selected class
+        window.updateSchedTestOptions = () => {
+            const clsName = document.getElementById('sched-class').value;
+            const cls = CLASSES.find(c => c.name === clsName);
+            const container = document.getElementById('sched-tests-container');
+            if(!cls || !cls.assignedTests || cls.assignedTests.length === 0) {
+                container.innerHTML = "No tests assigned to this class yet. Assign tests in the 'Classes' tab first.";
+                return;
+            }
+            container.innerHTML = cls.assignedTests.map(tid => {
+                const t = TEST_BANK.find(x => x.id === tid);
+                return t ? `<label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-200 p-1.5 rounded transition"><input type="checkbox" class="sched-test-cb w-4 h-4 text-blue-600 rounded" value="${t.id}"> <span class="truncate font-medium text-slate-800">${t.title}</span></label>` : '';
+            }).join('');
+            container.classList.remove('italic', 'text-slate-500');
+        };
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = async () => {
+            const cls = document.getElementById('sched-class').value;
+            const dayOfWeek = document.getElementById('sched-day-of-week').value;
+            const time = document.getElementById('sched-time').value;
+            const topic = document.getElementById('sched-topic').value;
+            const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
+
+            if(cls && time) {
+                const newSched = { id: 'sch_'+Date.now(), className: cls, dayOfWeek, time, topic, assignedTests: selectedTests, dateAdded: new Date().toLocaleDateString() };
+                SCHEDULES.push(newSched);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), newSched.id), newSched);
+                document.getElementById('custom-modal').classList.add('hidden');
+                renderTimetable();
+            } else {
+                alert("Please select a class and enter a time.");
+            }
+        };
+    }
+
+    window.editSchedule = function(id) {
+        const sched = SCHEDULES.find(s => s.id === id);
+        if(!sched) return;
+
+        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.name}" ${c.name === sched.className ? 'selected' : ''}>${c.name}</option>`).join('');
+        let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => `<option value="${d}" ${d === sched.dayOfWeek ? 'selected' : ''}>${d}</option>`).join('');
+
+        document.getElementById('modal-title').textContent = "Edit Schedule";
+        document.getElementById('modal-message').innerHTML = `
+            <select id="sched-class" class="w-full border p-2 mb-3 rounded font-bold text-blue-800 outline-none" onchange="window.updateSchedTestOptions()">${classOpts}</select>
+            <div class="flex gap-2 mb-3">
+                <select id="sched-day-of-week" class="w-1/2 border p-2 rounded outline-none">${days}</select>
+                <input type="text" id="sched-time" placeholder="Time (e.g. 10:00 AM)" value="${sched.time}" class="w-1/2 border p-2 rounded outline-none">
+            </div>
+            <input type="text" id="sched-topic" placeholder="Topic Focus (e.g. Reading Part 1)" value="${sched.topic}" class="w-full border p-2 mb-4 rounded outline-none">
+            
+            <label class="block text-sm font-bold text-slate-700 mb-1">Assign Materials to this Lesson:</label>
+            <div id="sched-tests-container" class="max-h-40 overflow-y-auto border border-slate-200 p-3 rounded bg-slate-50 text-sm text-slate-500 space-y-2">
+            </div>
+        `;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        // Dynamically load tests available to the selected class and pre-check assigned ones
+        window.updateSchedTestOptions = () => {
+            const clsName = document.getElementById('sched-class').value;
+            const cls = CLASSES.find(c => c.name === clsName);
+            const container = document.getElementById('sched-tests-container');
+            if(!cls || !cls.assignedTests || cls.assignedTests.length === 0) {
+                container.innerHTML = "No tests assigned to this class yet. Assign tests in the 'Classes' tab first.";
+                return;
+            }
+            container.innerHTML = cls.assignedTests.map(tid => {
+                const t = TEST_BANK.find(x => x.id === tid);
+                const isChecked = (sched.assignedTests || []).includes(tid) ? 'checked' : '';
+                return t ? `<label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-200 p-1.5 rounded transition"><input type="checkbox" class="sched-test-cb w-4 h-4 text-blue-600 rounded" value="${t.id}" ${isChecked}> <span class="truncate font-medium text-slate-800">${t.title}</span></label>` : '';
+            }).join('');
+            container.classList.remove('italic', 'text-slate-500');
+        };
+        
+        window.updateSchedTestOptions(); 
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = async () => {
+            const cls = document.getElementById('sched-class').value;
+            const dayOfWeek = document.getElementById('sched-day-of-week').value;
+            const time = document.getElementById('sched-time').value;
+            const topic = document.getElementById('sched-topic').value;
+            const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
+
+            if(cls && time) {
+                sched.className = cls;
+                sched.dayOfWeek = dayOfWeek;
+                sched.time = time;
+                sched.topic = topic;
+                sched.assignedTests = selectedTests;
+                
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), sched.id), sched);
+                document.getElementById('custom-modal').classList.add('hidden');
+                renderTimetable();
+            } else {
+                alert("Please select a class and enter a time.");
+            }
+        };
+    }
+
+    window.deleteSchedule = function(id) {
+        showConfirm("Delete Schedule", "Are you sure you want to remove this lesson from the timetable? This will also clear its attendance records.", async () => {
+            SCHEDULES = SCHEDULES.filter(s => s.id !== id);
+            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('schedules'), id));
+            
+            // Cleanup associated attendance to keep the database clean
+            const attToDelete = ATTENDANCE.filter(a => a.scheduleId === id);
+            ATTENDANCE = ATTENDANCE.filter(a => a.scheduleId !== id);
+            for(let a of attToDelete) {
+                await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('attendance'), a.id));
+            }
+            renderTimetable();
+        });
+    }
+
+    function renderTimetable() {
+        const list = document.getElementById('timetable-list');
+        const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        if(SCHEDULES.length === 0) {
+            list.innerHTML = '<p class="text-sm text-slate-500 italic">No schedules created.</p>';
+        } else {
+            let html = '';
+            daysOrder.forEach(day => {
+                const dayScheds = SCHEDULES.filter(s => s.dayOfWeek === day);
+                if(dayScheds.length > 0) {
+                    html += `<h4 class="font-bold text-slate-700 bg-slate-200 px-3 py-1.5 rounded mt-5 mb-3 border-l-4 border-slate-500">${day}</h4>`;
+                    html += dayScheds.map(s => `
+                        <div class="bg-white border border-slate-200 p-4 rounded shadow-sm mb-3">
+                            <div class="flex justify-between items-start mb-1">
+                                <div>
+                                    <span class="font-bold text-blue-800 block">${s.className}</span>
+                                    <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded inline-block mt-1">${s.time}</span>
+                                </div>
+                                <div class="flex gap-1 shrink-0">
+                                    <button onclick="editSchedule('${s.id}')" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded border border-slate-200 transition">Edit</button>
+                                    <button onclick="deleteSchedule('${s.id}')" class="text-[11px] px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded border border-rose-200 transition">Del</button>
+                                </div>
+                            </div>
+                            <div class="text-sm text-slate-600 mb-3 mt-2">Topic: ${s.topic || 'General Practice'}</div>
+                            ${s.assignedTests && s.assignedTests.length ? `<div class="text-[10px] text-slate-500 uppercase font-bold mb-3 border-t pt-2 border-slate-100">📎 ${s.assignedTests.length} Material(s) Attached</div>` : ''}
+                            <button onclick="promptAttendance('${s.id}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold py-1.5 rounded text-sm transition">Mark Attendance</button>
+                        </div>
+                    `).join('');
+                }
+            });
+            list.innerHTML = html;
+        }
+
+        const students = USERS.filter(u => u.role === 'student');
+        document.getElementById('attendance-export-list').innerHTML = students.map(st => `
+            <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2 last:border-0 last:pb-0">
+                <span class="font-bold text-slate-700">${st.user}</span>
+                <button onclick="exportAttendancePDF('${st.user}')" class="text-xs bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 font-bold rounded">Export PDF Report</button>
+            </div>
+        `).join('');
+    }
+
+    function promptAttendance(scheduleId) {
+        const sched = SCHEDULES.find(s => s.id === scheduleId);
+        const students = USERS.filter(u => u.role === 'student'); // Realistically, filter by class enrolled, but we show all for simplicity
+        
+        let checks = students.map(st => {
+            const hasAttended = ATTENDANCE.find(a => a.scheduleId === scheduleId && a.student === st.user);
+            return `<label class="flex items-center space-x-2 mb-1"><input type="checkbox" id="att_${st.user}" ${hasAttended ? 'checked' : ''} class="w-4 h-4 text-blue-600"> <span>${st.user}</span></label>`;
+        }).join('');
+
+        document.getElementById('modal-title').textContent = `Attendance: ${sched.className}`;
+        document.getElementById('modal-message').innerHTML = `<p class="mb-2 text-sm font-bold text-blue-600">${sched.time} - ${sched.topic}</p><div class="max-h-40 overflow-y-auto p-2 bg-slate-50 border rounded">${checks}</div>`;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        document.getElementById('modal-confirm').onclick = async () => {
+            for (let st of students) {
+                const isChecked = document.getElementById(`att_${st.user}`).checked;
+                const recordId = `${scheduleId}_${st.user}`;
+                const existingIdx = ATTENDANCE.findIndex(a => a.scheduleId === scheduleId && a.student === st.user);
+                
+                if (isChecked && existingIdx === -1) {
+                    const record = { id: recordId, scheduleId, student: st.user, date: new Date().toLocaleDateString(), topic: sched.topic, className: sched.className };
+                    ATTENDANCE.push(record);
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('attendance'), recordId), record);
+                } else if (!isChecked && existingIdx !== -1) {
+                    ATTENDANCE.splice(existingIdx, 1);
+                    await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('attendance'), recordId));
+                }
+            }
+            document.getElementById('custom-modal').classList.add('hidden');
+            showModalMsg("Saved", "Attendance records updated.");
+        };
+    }
+
+    function exportAttendancePDF(studentName) {
+        // Collect Data
+        const studentAttendance = ATTENDANCE.filter(a => a.student === studentName);
+        const studentTests = SUBMISSIONS.filter(s => s.student === studentName);
+
+        // Generate HTML Report
+        const printWindow = window.open('', '_blank');
+        const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Student Report - ${studentName}</title>
+            <style>
+                body { font-family: Arial, sans-serif; color: #333; padding: 40px; }
+                h1 { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+                h2 { color: #374151; margin-top: 30px; font-size: 18px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
+                th { background-color: #f3f4f6; color: #1f2937; }
+                .summary { background: #eff6ff; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #bfdbfe; }
+            </style>
+        </head>
+        <body>
+            <h1>IELTS LMS - Student Report</h1>
+            <p><strong>Candidate:</strong> ${studentName}</p>
+            <p><strong>Date Generated:</strong> ${new Date().toLocaleDateString()}</p>
+            
+            <div class="summary">
+                <strong>Summary:</strong> Total Lessons Attended: ${studentAttendance.length} | Total Tests Submitted: ${studentTests.length}
+            </div>
+
+            <h2>📚 Class Attendance Schedule</h2>
+            <table>
+                <tr><th>Date</th><th>Class</th><th>Topic / Focus</th></tr>
+                ${studentAttendance.length ? studentAttendance.map(a => `<tr><td>${a.date}</td><td>${a.className}</td><td>${a.topic}</td></tr>`).join('') : '<tr><td colspan="3">No records found.</td></tr>'}
+            </table>
+
+            <h2>📝 Test & Material Completion</h2>
+            <table>
+                <tr><th>Date</th><th>Test Name</th><th>Score / Status</th></tr>
+                ${studentTests.length ? studentTests.map(t => `<tr><td>${t.date}</td><td>${t.testName}</td><td>${t.score}</td></tr>`).join('') : '<tr><td colspan="3">No tests submitted yet.</td></tr>'}
+            </table>
+            
+            <scr` + `ipt>
+                window.onload = function() { window.print(); }
+            </scr` + `ipt>
+        </body>
+        </html>`;
+        
+        printWindow.document.write(html);
+        printWindow.document.close();
+    }
+  // --- AUTONOMOUS AI EXTRACTOR LOGIC ---
+    let aiUploadedImageBase64 = null;
+    let aiUploadedImageMime = null;
+
+    function handleAIImageUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            aiUploadedImageBase64 = ev.target.result.split(',')[1]; 
+            aiUploadedImageMime = file.type;
+            document.getElementById('ai-image-placeholder').classList.add('hidden');
+            const preview = document.getElementById('ai-image-preview');
+            preview.src = ev.target.result;
+            preview.classList.remove('hidden');
+            document.getElementById('ai-image-clear').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearAIImage(e) {
+        if(e) e.stopPropagation();
+        aiUploadedImageBase64 = null;
+        aiUploadedImageMime = null;
+        document.getElementById('ai-image-input').value = '';
+        document.getElementById('ai-image-placeholder').classList.remove('hidden');
+        document.getElementById('ai-image-preview').classList.add('hidden');
+        document.getElementById('ai-image-clear').classList.add('hidden');
+    }
+
+    function openAIGenerator() {
+        const passTxt = document.getElementById('edit-passage-text');
+        const currentPassage = passTxt.tagName === 'TEXTAREA' ? passTxt.value : passTxt.innerText;
+        document.getElementById('ai-source-text').value = currentPassage.trim();
+        document.getElementById('ai-generator-modal').classList.remove('hidden');
+    }
+
+    function closeAIGenerator() {
+        document.getElementById('ai-generator-modal').classList.add('hidden');
+    }
+
+    async function generateAIQuestions() {
+        const sourceText = document.getElementById('ai-source-text').value.trim();
+        
+        if (!sourceText && !aiUploadedImageBase64) {
+            showModalMsg("Error", "Please provide source text or upload an image for the AI to analyze.");
+            return;
+        }
+
+        const btn = document.getElementById('ai-generate-btn');
+        const loading = document.getElementById('ai-loading');
+        
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        loading.classList.remove('hidden');
+        loading.classList.add('flex');
+
+        try {
+            // Uses the environment's free internal proxy! (No API key needed)
+            const apiKey = "AQ.Ab8RN6LV9iPUNh3QL2pnVWQLskGbUl9tmW91NXMs9acAxqEWcQ";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const prompt = `Act as an expert IELTS curriculum developer. Analyze the provided text and/or image.
+            1. Extract the main reading passage (if any) and its title.
+            2. Extract ALL questions found. Classify each question's format strictly into one of these exact types: 'multiple_choice', 'tfng', 'ynng', 'fill_blanks', or 'matching_headings'.
+            3. For 'fill_blanks', you MUST put the exact string '{blank:1}' inside the 'text' field where the gap belongs.
+            4. Extract all options (if any) into the 'options' array.
+            5. Determine the correct 'answer' based on the text context and provide a brief 'explanation'.
+            
+            Source Text: ${sourceText || "None provided. Rely on image."}`;
+
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: { 
+                    temperature: 0.1,
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            passageTitle: { type: "STRING" },
+                            passageText: { type: "STRING" },
+                            questions: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        type: { type: "STRING" },
+                                        instruction: { type: "STRING" },
+                                        text: { type: "STRING" },
+                                        options: { type: "ARRAY", items: { type: "STRING" } },
+                                        answer: { type: "STRING" },
+                                        explanation: { type: "STRING" }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            if (aiUploadedImageBase64) {
+                payload.contents[0].parts.push({
+                    inlineData: { mimeType: aiUploadedImageMime || "image/jpeg", data: aiUploadedImageBase64 }
+                });
+            }
+
+            // Exponential Backoff (Handles network hiccups gracefully)
+            const fetchWithRetry = async (url, options, retries = 5) => {
+                const delays = [1000, 2000, 4000, 8000, 16000];
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (!response.ok) {
+                            const errData = await response.text();
+                            throw new Error(`API Error ${response.status}: ${errData}`);
+                        }
+                        return await response.json();
+                    } catch (e) {
+                        if (i === retries - 1) throw e;
+                        await new Promise(res => setTimeout(res, delays[i]));
+                    }
+                }
+            };
+
+            const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+            if (!result.candidates || result.candidates.length === 0 || !result.candidates[0].content) {
+                 throw new Error("Google AI blocked the generation (likely due to safety filters).");
+            }
+
+            let jsonText = result.candidates[0].content.parts[0].text;
+            let data;
+
+            try {
+                data = JSON.parse(jsonText);
+            } catch (e) {
+                console.error("JSON Parse Error:", e, jsonText);
+                throw new Error("The AI failed to format the data correctly. Please click Generate again.");
+            }
+            
+            // 1. Inject Passage Text
+            if (data.passageText && data.passageText.trim().length > 10) {
+               const passTxt = document.getElementById('edit-passage-text');
+               if (passTxt.tagName === 'TEXTAREA') passTxt.value = data.passageText;
+               else passTxt.innerHTML = data.passageText.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
+               
+               if (data.passageTitle) document.getElementById('edit-passage-title').value = data.passageTitle;
+            }
+
+            // 2. Map AI Questions to Editor Objects
+            if (data.questions && Array.isArray(data.questions)) {
+                data.questions.forEach((q, i) => {
+                    const newId = (Date.now() % 10000) + Math.floor(Math.random() * 10000) + i;
+                    const validTypes = ['multiple_choice', 'tfng', 'ynng', 'fill_blanks', 'matching_headings', 'dnd_list'];
+                    let qType = validTypes.includes(q.type) ? q.type : 'multiple_choice';
+
+                    let newBlock = {
+                        blockId: 'b' + Date.now() + i + Math.floor(Math.random() * 1000),
+                        type: qType,
+                        ids: [newId],
+                        points: 1,
+                        instruction: q.instruction || "Answer the question.",
+                        explanation: q.explanation || "",
+                        correctAnswers: {}
+                    };
+
+                    if (qType === 'multiple_choice' || qType === 'matching_headings') {
+                        newBlock.text = q.text || "";
+                        newBlock.options = q.options || [];
+                        newBlock.correctAnswers[newId] = q.answer || "";
+                        newBlock.multi = false;
+                    } else if (qType === 'fill_blanks' || qType === 'dnd_list') {
+                        let txt = q.text || "";
+                        if (!txt.includes('{blank:1}') && !txt.includes('{drop:1}')) {
+                            txt += ` {${qType==='fill_blanks'?'blank':'drop'}:${newId}}`; 
+                        } else {
+                            txt = txt.replace(/\{blank:1\}/g, `{blank:${newId}}`).replace(/\{drop:1\}/g, `{drop:${newId}}`);
+                        }
+                        newBlock.text = txt;
+                        newBlock.correctAnswers[newId] = q.answer || "";
+                    } else { 
+                        newBlock.text = q.text || "";
+                        newBlock.correctAnswers[newId] = q.answer || "";
+                    }
+
+                    APP_DATA.parts[currentEditorPartIdx].questions.push(newBlock);
+                });
+            }
+
+            saveCurrentEditorPart();
+            renderEditorQuestions();
+            triggerEditorAutosave();
+            closeAIGenerator();
+            clearAIImage();
+            
+            const addBtn = document.querySelector('button[onclick="addEditorQuestion()"]');
+            if (addBtn) {
+                const originalColor = addBtn.className;
+                addBtn.className = "bg-emerald-500 text-white px-3 py-2 rounded font-bold shadow text-sm whitespace-nowrap transition-colors";
+                addBtn.textContent = `✓ Built ${data.questions?.length || 0} Questions`;
+                setTimeout(() => { addBtn.className = originalColor; addBtn.textContent = '＋ Add'; }, 2500);
+            }
+
+        } catch (err) {
+            console.error("AI Generation Error:", err);
+            showModalMsg("AI Error", `${err.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            loading.classList.add('hidden');
+            loading.classList.remove('flex');
+        }
+    }
+   // ==========================================
+    // SMART PASTE HANDLER FOR RICH EDITORS
+    // ==========================================
+    document.addEventListener('paste', function(e) {
+        const editor = e.target.closest('.rich-editor');
+        if (!editor) return;
+
+        e.preventDefault();
+        
+        const html = e.clipboardData.getData('text/html');
+        const plainText = e.clipboardData.getData('text/plain');
+
+        // 1. IF PLAIN TEXT (or user used Ctrl+Shift+V)
+        if (!html) {
+            const formattedText = plainText.replace(/\n/g, '<br>');
+            document.execCommand('insertHTML', false, formattedText);
+            if (window.triggerEditorAutosave) window.triggerEditorAutosave();
+            return;
+        }
+
+        // 2. IF FORMATTED TEXT (Sanitize to remove inline styles, fonts, and colors)
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        // Allowed tags (removes span, div, style, script, etc.)
+        const allowedTags = ['B', 'I', 'U', 'STRONG', 'EM', 'P', 'BR', 'UL', 'OL', 'LI', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD', 'H1', 'H2', 'H3'];
+        
+        function cleanNode(node) {
+            // Keep text nodes
+            if (node.nodeType === 3) return document.createTextNode(node.textContent);
+            // Ignore comments or other node types
+            if (node.nodeType !== 1) return document.createDocumentFragment();
+
+            let newNode;
+            if (allowedTags.includes(node.nodeName)) {
+                // Standardize bold/italics
+                const tagName = node.nodeName === 'STRONG' ? 'B' : (node.nodeName === 'EM' ? 'I' : node.nodeName);
+                newNode = document.createElement(tagName);
+                
+                // Preserve table structures
+                if (node.hasAttribute('colspan')) newNode.setAttribute('colspan', node.getAttribute('colspan'));
+                if (node.hasAttribute('rowspan')) newNode.setAttribute('rowspan', node.getAttribute('rowspan'));
+                
+                // Automatically style pasted tables to match LMS theme
+                if (tagName === 'TABLE') newNode.className = 'border-collapse border border-slate-300 mb-4 bg-white w-full';
+                if (tagName === 'TH' || tagName === 'TD') newNode.className = 'border border-slate-300 p-2';
+                
+            } else {
+                // If tag is NOT allowed (like <span> or <div>), unwrap it and keep its children
+                newNode = document.createDocumentFragment();
+            }
+
+            for (let child of Array.from(node.childNodes)) {
+                newNode.appendChild(cleanNode(child));
+            }
+            return newNode;
+        }
+
+        const frag = document.createDocumentFragment();
+        for (let child of Array.from(doc.body.childNodes)) {
+            frag.appendChild(cleanNode(child));
+        }
+
+        const temp = document.createElement('div');
+        temp.appendChild(frag);
+        
+        document.execCommand('insertHTML', false, temp.innerHTML);
+        if (window.triggerEditorAutosave) window.triggerEditorAutosave();
+    });
   </script>
 </body>
 </html>
