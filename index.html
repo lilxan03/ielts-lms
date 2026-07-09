@@ -1518,8 +1518,11 @@
                                     <span class="${s.score.includes('Band') || s.score.includes('/') ? 'text-emerald-600' : 'text-amber-500'}">${s.score}</span>
                                 </div>
                                 <div class="flex justify-between items-center pl-2 mt-2 pt-2 border-t border-slate-50">
-                                    <span class="text-[11px] text-slate-500 truncate max-w-[140px] font-medium" title="${s.testName}">${s.testName}</span>
-                                    <button onclick="openGradingView(${s.id})" class="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-blue-700 font-bold px-3 py-1 rounded transition shadow-sm">Review</button>
+                                    <span class="text-[11px] text-slate-500 truncate max-w-[120px] font-medium" title="${s.testName}">${s.testName}</span>
+                                    <div class="flex gap-1 shrink-0">
+                                        <button onclick="openGradingView(${s.id})" class="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-blue-700 font-bold px-3 py-1 rounded transition shadow-sm">Review</button>
+                                        <button onclick="window.deleteSubmission(${s.id})" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 font-bold px-2 py-1 rounded transition shadow-sm" title="Delete Submission">Del</button>
+                                    </div>
                                 </div>
                             </div>
                         `).join('') : '<p class="text-xs text-slate-400 italic">No submissions yet.</p>'}
@@ -1529,6 +1532,15 @@
         </div>`;
       }).join('');
     }
+
+    // ✨ NEW: Delete Submission Function
+    window.deleteSubmission = function(id) {
+        showConfirm("Delete Submission", "Are you sure you want to permanently delete this student's submission?", async () => {
+            SUBMISSIONS = SUBMISSIONS.filter(s => s.id !== id);
+            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('submissions'), String(id)));
+            renderClasses(); 
+        });
+    };
 
     function promptCreateClass() { 
       showInputPrompt("New Class", "Name:", async (name) => { 
