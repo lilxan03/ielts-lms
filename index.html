@@ -528,8 +528,7 @@
         
         <div class="flex bg-slate-900 rounded-md p-1 shadow-inner space-x-1" id="editor-main-tabs">
           <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Bank</button>
-          <button onclick="toggleEditorTab('classes')" id="tab-btn-classes" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Classes</button>
-          <button onclick="toggleEditorTab('subs')" id="tab-btn-subs" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Submissions</button>
+          <button onclick="toggleEditorTab('classes')" id="tab-btn-classes" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Classes & Subs</button>
           <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Students/Pay</button>
           <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Timetable</button>
         </div>
@@ -576,10 +575,13 @@
 
     <!-- Classes -->
     <div id="editor-view-classes" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-5xl mx-auto">
+      <div class="max-w-[1400px] mx-auto">
         <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <h2 class="text-2xl font-bold text-slate-800">Class Management (Cloud)</h2>
-          <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Create New Class</button>
+          <h2 class="text-2xl font-bold text-slate-800">Class Management & Submissions</h2>
+          <div class="flex gap-3">
+             <button onclick="clearAllSubmissions()" class="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded font-bold text-sm shadow-sm hover:bg-rose-100 transition">Clear All Submissions</button>
+             <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm transition">＋ Create New Class</button>
+          </div>
         </div>
         <div id="classes-list" class="space-y-6 pb-20"></div>
       </div>
@@ -905,6 +907,91 @@
     let editorAutosaveTimer = null;
     let activeTableCell = null;
 
+    // --- IELTS BAND DESCRIPTORS (Writing Task 2) ---
+    const IELTS_DESCRIPTORS = {
+        tr: {
+            '9': '[TR] Band 9: The prompt is appropriately addressed and explored in depth. A clear and fully developed position is presented which directly answers the question/s. Ideas are relevant, fully extended and well supported. Any lapses in content or support are extremely rare.',
+            '8.5': '[TR] Band 8.5: Meets all criteria for Band 8 and some for Band 9.',
+            '8': '[TR] Band 8: The prompt is appropriately and sufficiently addressed. A clear and well-developed position is presented in response to the question/s. Ideas are relevant, well extended and supported. There may be occasional omissions or lapses in content.',
+            '7.5': '[TR] Band 7.5: Meets all criteria for Band 7 and some for Band 8.',
+            '7': '[TR] Band 7: The main parts of the prompt are appropriately addressed. A clear and developed position is presented. Main ideas are extended and supported but there may be a tendency to over-generalise or there may be a lack of focus and precision in supporting ideas/material.',
+            '6.5': '[TR] Band 6.5: Meets all criteria for Band 6 and some for Band 7.',
+            '6': '[TR] Band 6: The main parts of the prompt are addressed. A position is presented that is directly relevant, although conclusions may be unclear. Main ideas are relevant, but some may be insufficiently developed.',
+            '5.5': '[TR] Band 5.5: Meets all criteria for Band 5 and some for Band 6.',
+            '5': '[TR] Band 5: The main parts of the prompt are incompletely addressed. The writer expresses a position, but the development is not always clear. Some main ideas are put forward, but they are limited and not sufficiently developed.',
+            '4.5': '[TR] Band 4.5: Meets all criteria for Band 4 and some for Band 5.',
+            '4': '[TR] Band 4: The prompt is tackled in a minimal way. A position is discernible, but the reader has to read carefully to find it. Main ideas are difficult to identify and lack relevance or support.'
+        },
+        cc: {
+            '9': '[CC] Band 9: The message can be followed effortlessly. Cohesion is used in such a way that it very rarely attracts attention. Any lapses in coherence or cohesion are minimal. Paragraphing is skilfully managed.',
+            '8.5': '[CC] Band 8.5: Meets all criteria for Band 8 and some for Band 9.',
+            '8': '[CC] Band 8: The message can be followed with ease. Information and ideas are logically sequenced, and cohesion is well managed. Occasional lapses in coherence and cohesion may occur. Paragraphing is used sufficiently and appropriately.',
+            '7.5': '[CC] Band 7.5: Meets all criteria for Band 7 and some for Band 8.',
+            '7': '[CC] Band 7: Information and ideas are logically organised, and there is a clear progression throughout. A range of cohesive devices including reference and substitution is used flexibly but with some inaccuracies. Paragraphing is generally used effectively.',
+            '6.5': '[CC] Band 6.5: Meets all criteria for Band 6 and some for Band 7.',
+            '6': '[CC] Band 6: Information and ideas are generally arranged coherently and there is a clear overall progression. Cohesive devices are used to some good effect but may be faulty or mechanical. Paragraphing may not always be logical.',
+            '5.5': '[CC] Band 5.5: Meets all criteria for Band 5 and some for Band 6.',
+            '5': '[CC] Band 5: Organisation is evident but is not wholly logical and there may be a lack of overall progression. The relationship of ideas can be followed but sentences are not fluently linked. Paragraphing may be inadequate or missing.',
+            '4.5': '[CC] Band 4.5: Meets all criteria for Band 4 and some for Band 5.',
+            '4': '[CC] Band 4: Information and ideas are evident but not arranged coherently and there is no clear progression. Relationships between ideas can be unclear and/or inadequately marked. There may be no paragraphing.'
+        },
+        lr: {
+            '9': '[LR] Band 9: Full flexibility and precise use are widely evident. A wide range of vocabulary is used accurately and appropriately with very natural and sophisticated control of lexical features. Minor errors are extremely rare.',
+            '8.5': '[LR] Band 8.5: Meets all criteria for Band 8 and some for Band 9.',
+            '8': '[LR] Band 8: A wide resource is fluently and flexibly used to convey precise meanings. There is skilful use of uncommon and/or idiomatic items when appropriate, despite occasional inaccuracies. Occasional errors may occur.',
+            '7.5': '[LR] Band 7.5: Meets all criteria for Band 7 and some for Band 8.',
+            '7': '[LR] Band 7: The resource is sufficient to allow some flexibility and precision. There is some ability to use less common and/or idiomatic items. An awareness of style and collocation is evident, though inappropriacies occur.',
+            '6.5': '[LR] Band 6.5: Meets all criteria for Band 6 and some for Band 7.',
+            '6': '[LR] Band 6: The resource is generally adequate and appropriate for the task. The meaning is generally clear in spite of a rather restricted range or a lack of precision in word choice. There are some errors but these do not impede communication.',
+            '5.5': '[LR] Band 5.5: Meets all criteria for Band 5 and some for Band 6.',
+            '5': '[LR] Band 5: The resource is limited but minimally adequate for the task. Simple vocabulary may be used accurately. There may be frequent lapses in the appropriacy of word choice and a lack of flexibility.',
+            '4.5': '[LR] Band 4.5: Meets all criteria for Band 4 and some for Band 5.',
+            '4': '[LR] Band 4: The resource is limited and inadequate for or unrelated to the task. Vocabulary is basic and may be used repetitively. Inappropriate word choice and/or errors may impede meaning.'
+        },
+        gra: {
+            '9': '[GRA] Band 9: A wide range of structures is used with full flexibility and control. Punctuation and grammar are used appropriately throughout. Minor errors are extremely rare and have minimal impact.',
+            '8.5': '[GRA] Band 8.5: Meets all criteria for Band 8 and some for Band 9.',
+            '8': '[GRA] Band 8: A wide range of structures is flexibly and accurately used. The majority of sentences are error-free, and punctuation is well managed. Occasional, non-systematic errors occur, but have minimal impact.',
+            '7.5': '[GRA] Band 7.5: Meets all criteria for Band 7 and some for Band 8.',
+            '7': '[GRA] Band 7: A variety of complex structures is used with some flexibility and accuracy. Grammar and punctuation are generally well controlled, and error-free sentences are frequent. A few errors in grammar may persist.',
+            '6.5': '[GRA] Band 6.5: Meets all criteria for Band 6 and some for Band 7.',
+            '6': '[GRA] Band 6: A mix of simple and complex sentence forms is used but flexibility is limited. Examples of more complex structures are not marked by the same level of accuracy as in simple structures. Errors occur but rarely impede communication.',
+            '5.5': '[GRA] Band 5.5: Meets all criteria for Band 5 and some for Band 6.',
+            '5': '[GRA] Band 5: The range of structures is limited and rather repetitive. Although complex sentences are attempted, they tend to be faulty, and the greatest accuracy is achieved on simple sentences. Grammatical errors may be frequent.',
+            '4.5': '[GRA] Band 4.5: Meets all criteria for Band 4 and some for Band 5.',
+            '4': '[GRA] Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning.'
+        }
+    };
+
+    window.updateFeedbackText = function(qId, criteria, bandScore) {
+        if (!bandScore || !IELTS_DESCRIPTORS[criteria] || !IELTS_DESCRIPTORS[criteria][bandScore]) return;
+        const textarea = document.getElementById(`fb-${qId}`);
+        if (textarea) {
+            const newText = IELTS_DESCRIPTORS[criteria][bandScore];
+            textarea.value = textarea.value ? textarea.value + '\\n\\n' + newText : newText;
+            textarea.focus();
+        }
+    };
+
+    window.insertInlineFeedback = function(editorId) {
+        const selectEl = document.getElementById(`inline-crit-${editorId}`);
+        if (!selectEl.value) return;
+        
+        const [crit, band] = selectEl.value.split('-');
+        const text = IELTS_DESCRIPTORS[crit][band];
+        selectEl.value = ''; // reset dropdown
+        
+        const editor = document.getElementById(`essay-content-${editorId}`);
+        if (!editor) return;
+        
+        editor.focus();
+        
+        // Flattened HTML string with tighter padding (pt-3 px-3 pb-1.5 and mb-1) to eliminate bottom spacing
+        const htmlToInsert = `<div class="relative bg-amber-50 border-l-4 border-amber-500 pt-3 px-3 pb-1.5 my-2 pr-8 text-sm text-amber-900 shadow-sm" contenteditable="false"><button type="button" onclick="this.parentElement.remove()" contenteditable="false" class="absolute top-1 right-2 text-amber-400 hover:text-rose-500 font-bold text-xl leading-none cursor-pointer" title="Remove this feedback block">&times;</button><strong>${text}</strong><div contenteditable="true" class="text-slate-700 block mt-2 mb-1 p-2 bg-white border border-dashed border-amber-300 rounded outline-none focus:border-solid focus:border-amber-500 min-h-[40px]">[Write specific feedback here...]</div></div><p><br></p>`;
+        
+        document.execCommand('insertHTML', false, htmlToInsert);
+    };
+
     // Helper to process, compress and convert Map images to prevent Firebase payload limit errors
     window.processImageFile = function(file, callback) {
         if (!file || !file.type.startsWith('image/')) return;
@@ -1228,8 +1315,8 @@
       toggleEditorTab('bank');
     }
     function toggleEditorTab(tab) {
-      ['bank', 'classes', 'subs', 'builder', 'students', 'timetable'].forEach(t => document.getElementById(`editor-view-${t}`).classList.add('hidden'));
-      ['bank', 'classes', 'subs', 'students', 'timetable'].forEach(t => {
+      ['bank', 'classes', 'builder', 'students', 'timetable'].forEach(t => document.getElementById(`editor-view-${t}`).classList.add('hidden'));
+      ['bank', 'classes', 'students', 'timetable'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
         if(b) b.className = t===tab ? 'px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition' : 'px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition';
       });
@@ -1241,7 +1328,6 @@
 
       if (tab === 'bank') { document.getElementById('editor-view-bank').classList.remove('hidden'); renderTestBank(); }
       if (tab === 'classes') { document.getElementById('editor-view-classes').classList.remove('hidden'); renderClasses(); }
-      if (tab === 'subs') { document.getElementById('editor-view-subs').classList.remove('hidden'); renderSubmissions(); }
       if (tab === 'students') { document.getElementById('editor-view-students').classList.remove('hidden'); renderStudentsList(); }
       if (tab === 'timetable') { document.getElementById('editor-view-timetable').classList.remove('hidden'); renderTimetable(); }
       if (tab === 'builder') {
@@ -1261,17 +1347,90 @@
       grid.innerHTML = TEST_BANK.length ? TEST_BANK.map(t => {
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
         const c = modColors[t.module];
+        
+        // Check which classes this test is currently assigned to
+        const assignedClasses = CLASSES.filter(cls => cls.assignedTests && cls.assignedTests.includes(t.id)).map(cls => cls.name);
+        const assignedBadge = assignedClasses.length > 0 
+            ? `<div class="mt-1 mb-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded truncate" title="Assigned to: ${assignedClasses.join(', ')}">📖 ${assignedClasses.join(', ')}</div>`
+            : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
+
         return `
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col">
           <div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span><span class="text-xs text-slate-400 font-bold">${t.parts.length} Part(s)</span></div>
-          <h3 class="font-bold text-slate-900 mb-2 truncate">${t.title}</h3>
-          <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100">
-            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 font-bold py-1.5 rounded text-sm transition">Edit</button>
+          <h3 class="font-bold text-slate-900 truncate">${t.title}</h3>
+          ${assignedBadge}
+          <div class="flex gap-2 mt-auto pt-4 border-t border-slate-100">
+            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 font-bold py-1.5 rounded text-sm transition text-slate-700">Edit</button>
+            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-1.5 rounded text-sm transition">Assign</button>
             <button onclick="deleteTest('${t.id}')" class="px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded text-sm transition">Del</button>
           </div>
         </div>`;
       }).join('') : '<div class="col-span-full text-center text-slate-500 py-10">No tests in the cloud. Create one!</div>';
     }
+
+    // New Function to handle direct assignment from the Test Bank
+    window.promptAssignTest = function(tid) {
+      const test = TEST_BANK.find(t => t.id === tid);
+      if (!test) return;
+
+      if (CLASSES.length === 0) {
+          showModalMsg("No Classes", "Please create a class in the 'Classes' tab first.");
+          return;
+      }
+
+      let classChecks = CLASSES.map(c => {
+          const isAssigned = c.assignedTests && c.assignedTests.includes(tid);
+          return `<label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded transition border border-slate-200 mb-2 bg-white shadow-sm">
+              <input type="checkbox" id="assign_c_${c.id}" ${isAssigned ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded">
+              <span class="font-bold text-slate-700">${c.name}</span>
+          </label>`;
+      }).join('');
+
+      document.getElementById('modal-title').textContent = `Assign: ${test.title}`;
+      document.getElementById('modal-message').innerHTML = `
+          <p class="text-sm text-slate-500 mb-4">Select the classes that should have access to this test. Students in unassigned classes will not see it.</p>
+          <div class="max-h-60 overflow-y-auto pr-2 bg-slate-50 p-2 rounded-lg border border-slate-200">${classChecks}</div>
+      `;
+      
+      document.getElementById('modal-input').classList.add('hidden');
+      document.getElementById('modal-cancel').classList.remove('hidden');
+      document.getElementById('custom-modal').classList.remove('hidden');
+
+      document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+      
+      document.getElementById('modal-confirm').onclick = async () => {
+          const btn = document.getElementById('modal-confirm');
+          btn.textContent = "Saving..."; btn.disabled = true;
+          
+          try {
+              for (let c of CLASSES) {
+                  const isChecked = document.getElementById(`assign_c_${c.id}`).checked;
+                  if (!c.assignedTests) c.assignedTests = [];
+                  
+                  const currentlyAssigned = c.assignedTests.includes(tid);
+                  
+                  if (isChecked && !currentlyAssigned) {
+                      c.assignedTests.push(tid);
+                      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+                  } else if (!isChecked && currentlyAssigned) {
+                      c.assignedTests = c.assignedTests.filter(id => id !== tid);
+                      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+                  }
+              }
+              document.getElementById('custom-modal').classList.add('hidden');
+              renderTestBank(); // Update UI to show assigned badges
+              
+              if(!document.getElementById('editor-view-classes').classList.contains('hidden')) {
+                  renderClasses(); // Keep 'Classes' view in sync if opened later
+              }
+          } catch (e) {
+              console.error(e);
+              showModalMsg("Error", "Could not save assignments to cloud.");
+          }
+          
+          btn.textContent = "OK"; btn.disabled = false;
+      };
+    };
     
     async function createNewTest(mod) {
       showTestMetaModal(`New ${mod.charAt(0).toUpperCase()+mod.slice(1)} Test`, "", "", async (title, topics) => {
@@ -1300,19 +1459,80 @@
       });
     }
 
+    function renderSubmissions() { renderClasses(); } // Reroute old save triggers to update classes
+
     function renderClasses() {
-      document.getElementById('classes-list').innerHTML = CLASSES.map(cls => `
-        <div class="bg-white border border-slate-200 rounded-lg p-5">
-          <div class="flex justify-between mb-3"><h3 class="font-bold text-lg">${cls.name}</h3><button onclick="deleteClass('${cls.id}')" class="text-rose-500 text-sm font-bold">Delete</button></div>
-          <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded max-h-48 overflow-y-auto">
-            ${TEST_BANK.map(t => `<label class="flex items-center text-sm"><input type="checkbox" onchange="toggleTestAssignment('${cls.id}','${t.id}',this.checked)" ${cls.assignedTests.includes(t.id)?'checked':''} class="mr-2">${t.title}</label>`).join('')}
-          </div>
-        </div>`).join('');
+      document.getElementById('classes-list').innerHTML = CLASSES.map(cls => {
+        const enrolled = cls.enrolledStudents || [];
+        const assigned = cls.assignedTests || [];
+        const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
+        
+        return `
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+            <div class="bg-slate-100 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
+                <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-sm">Delete Class</button>
+            </div>
+            <div class="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-slate-200">
+                
+                <div class="p-5 bg-white">
+                    <h4 class="font-bold text-slate-700 mb-3 flex justify-between items-center border-b pb-2">
+                        Enrolled Students (${enrolled.length})
+                        <button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded hover:bg-blue-100 transition border border-blue-200">+ Assign User</button>
+                    </h4>
+                    <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        ${enrolled.length ? enrolled.map(student => `
+                            <div class="flex justify-between items-center text-sm p-2 bg-slate-50 rounded border border-slate-100 hover:border-slate-200 transition">
+                                <span class="font-medium text-slate-800 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span> ${student}</span>
+                                <button onclick="window.unenrollStudent('${cls.id}', '${student}')" class="text-rose-400 text-xs font-bold hover:text-rose-600 px-2 py-1">Remove</button>
+                            </div>
+                        `).join('') : '<p class="text-xs text-slate-400 italic">No students assigned.</p>'}
+                    </div>
+                </div>
+                
+                <div class="p-5 bg-white">
+                    <h4 class="font-bold text-slate-700 mb-3 border-b pb-2">Assigned Tests (${assigned.length})</h4>
+                    <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        ${assigned.length ? assigned.map(tid => {
+                            const t = TEST_BANK.find(x => x.id === tid);
+                            if(!t) return '';
+                            const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
+                            return `
+                            <div class="text-sm p-2.5 bg-slate-50 rounded border border-slate-100 flex justify-between items-start gap-2">
+                               <span class="font-medium text-slate-700 leading-tight">${t.title}</span>
+                               <span class="text-[9px] uppercase font-bold text-${modColors[t.module]}-700 bg-${modColors[t.module]}-100 px-1.5 py-0.5 border border-${modColors[t.module]}-200 rounded shrink-0">${t.module}</span>
+                            </div>`;
+                        }).join('') : '<p class="text-xs text-slate-400 italic">No tests assigned.</p>'}
+                    </div>
+                    <div class="mt-4 text-[11px] text-slate-500 italic bg-slate-50 p-2 rounded border border-slate-100 text-center">Assign new tests from the <b class="text-slate-700">Bank</b> tab.</div>
+                </div>
+
+                <div class="p-5 bg-slate-50">
+                    <h4 class="font-bold text-slate-700 mb-3 border-b pb-2">Recent Submissions (${classSubs.length})</h4>
+                    <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
+                        ${classSubs.length ? classSubs.map(s => `
+                            <div class="text-sm p-3 bg-white rounded shadow-sm border border-slate-200 relative overflow-hidden group">
+                                <div class="absolute left-0 top-0 bottom-0 w-1 ${s.score.includes('Band') || s.score.includes('/') ? 'bg-emerald-400' : 'bg-amber-400'}"></div>
+                                <div class="flex justify-between font-bold mb-1 pl-2">
+                                    <span class="text-slate-800">${s.student}</span>
+                                    <span class="${s.score.includes('Band') || s.score.includes('/') ? 'text-emerald-600' : 'text-amber-500'}">${s.score}</span>
+                                </div>
+                                <div class="flex justify-between items-center pl-2 mt-2 pt-2 border-t border-slate-50">
+                                    <span class="text-[11px] text-slate-500 truncate max-w-[140px] font-medium" title="${s.testName}">${s.testName}</span>
+                                    <button onclick="openGradingView(${s.id})" class="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-blue-700 font-bold px-3 py-1 rounded transition shadow-sm">Review</button>
+                                </div>
+                            </div>
+                        `).join('') : '<p class="text-xs text-slate-400 italic">No submissions yet.</p>'}
+                    </div>
+                </div>
+            </div>
+        </div>`;
+      }).join('');
     }
-    
+
     function promptCreateClass() { 
       showInputPrompt("New Class", "Name:", async (name) => { 
-        const newCls = {id:'c_'+Date.now(), name, assignedTests:[]};
+        const newCls = {id:'c_'+Date.now(), name, assignedTests:[], enrolledStudents:[]};
         CLASSES.push(newCls); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), newCls.id), newCls);
         renderClasses(); 
@@ -1324,11 +1544,46 @@
       await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('classes'), id));
       renderClasses(); 
     }
-    
-    async function toggleTestAssignment(cid, tid, isChecked) {
-      const c = CLASSES.find(x => x.id === cid);
-      if(isChecked && !c.assignedTests.includes(tid)) c.assignedTests.push(tid); else if(!isChecked) c.assignedTests = c.assignedTests.filter(x => x !== tid);
-      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+
+    window.promptEnrollStudent = function(cid) {
+        const cls = CLASSES.find(c => c.id === cid);
+        if(!cls) return;
+        const availableStudents = USERS.filter(u => u.role === 'student' && !(cls.enrolledStudents || []).includes(u.user));
+        
+        if(availableStudents.length === 0) {
+            showModalMsg("No Students", "All available students are already enrolled in this class.");
+            return;
+        }
+        
+        const opts = availableStudents.map(u => `<option value="${u.user}">${u.user}</option>`).join('');
+        document.getElementById('modal-title').textContent = `Assign User to: ${cls.name}`;
+        document.getElementById('modal-message').innerHTML = `<p class="mb-2 text-sm text-slate-500">Select a student from the system to grant them access to this class.</p><select id="enroll-student-select" class="w-full border-2 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-800 bg-slate-50">${opts}</select>`;
+        
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+        
+        // ✨ THE FIX: Wire up the Cancel button to close the modal
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        
+        document.getElementById('modal-confirm').onclick = async () => {
+            const sName = document.getElementById('enroll-student-select').value;
+            if(!cls.enrolledStudents) cls.enrolledStudents = [];
+            cls.enrolledStudents.push(sName);
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            document.getElementById('custom-modal').classList.add('hidden');
+            renderClasses();
+        };
+    }
+
+    window.unenrollStudent = async function(cid, student) {
+        const cls = CLASSES.find(c => c.id === cid);
+        if(!cls) return;
+        showConfirm("Remove Student", `Remove ${student} from ${cls.name}?`, async () => {
+            cls.enrolledStudents = cls.enrolledStudents.filter(s => s !== student);
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            renderClasses();
+        });
     }
 
     function openTeacherVocabModal() {
@@ -2138,9 +2393,18 @@
       document.getElementById('student-main-content').classList.toggle('hidden', !isPaid);
       
       if(isPaid) {
+          // Filter classes to ONLY show ones this specific user is assigned to
+          const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
           const sel = document.getElementById('student-class-select');
-          sel.innerHTML = '<option value="">-- Choose Class --</option>' + CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-          renderStudentDashboard();
+          
+          if (myClasses.length === 0) {
+              sel.innerHTML = '<option value="">-- No Classes Assigned --</option>';
+              sel.disabled = true;
+          } else {
+              sel.innerHTML = '<option value="">-- Choose Class --</option>' + myClasses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+              sel.disabled = false;
+              renderStudentDashboard();
+          }
       }
     }
 
@@ -2163,7 +2427,6 @@
       if(!cls) return;
       if(bottomSec) bottomSec.classList.remove('hidden');
 
-      // Helper to draw a test item
       const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
@@ -2174,15 +2437,12 @@
         </div>`;
       };
 
-      // 1. Build the Timetable (Weekly View)
       if(schedSec && schedList) {
           const classSchedules = SCHEDULES.filter(s => s.className === cls.name);
           const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-          
           if(classSchedules.length > 0) {
               schedSec.classList.remove('hidden');
               schedSec.classList.add('flex');
-              
               let schedHtml = '';
               daysOrder.forEach(day => {
                   const dayScheds = classSchedules.filter(s => s.dayOfWeek === day);
@@ -2214,22 +2474,39 @@
           }
       }
       
-      // 2. Build the "Course Material Library"
       let allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials assigned to this course yet.</p>';
       if (cls.assignedTests && cls.assignedTests.length) {
           allTestsHtml = cls.assignedTests.map(tid => renderTestItem(tid)).join('');
       }
       list.innerHTML = allTestsHtml;
       
-      // 3. Update Submissions Progress
+      // Calculate Student Progress Metrics
       const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+      const totalTests = cls.assignedTests?.length || 0;
+      const completedTestIds = [...new Set(mySubs.map(s => s.testId))]; 
+      const completedCount = completedTestIds.length;
+      const progressPct = totalTests === 0 ? 0 : Math.round((completedCount / totalTests) * 100);
+
       prog.innerHTML = `
-        <h2 class="font-bold text-lg mb-4 border-b pb-2 text-slate-700">5. Your Progress & Feedback</h2>
+        <h2 class="font-bold text-lg mb-4 border-b pb-2 text-slate-700">5. Class Progress & Feedback</h2>
+        
+        <div class="mb-5 bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-bold text-slate-700 text-sm">Course Completion</span>
+                <span class="font-black text-blue-700">${completedCount} / ${totalTests} Assigned Tests</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-3 mb-1">
+                <div class="bg-blue-600 h-3 rounded-full transition-all duration-1000" style="width: ${progressPct}%"></div>
+            </div>
+            <div class="text-right text-xs font-bold text-slate-400">${progressPct}% Finished</div>
+        </div>
+
+        <h3 class="font-bold text-sm text-slate-500 uppercase tracking-wider mb-3">Feedback History</h3>
         <div class="space-y-3">
           ${mySubs.length ? mySubs.map(s => `
-            <div class="bg-slate-50 border border-slate-200 rounded p-3 flex justify-between items-center">
+            <div class="bg-slate-50 border border-slate-200 rounded p-3 flex justify-between items-center hover:bg-slate-100 transition">
               <div class="truncate pr-2"><strong class="text-slate-800 text-sm block truncate">${s.testName}</strong><span class="text-[10px] text-slate-500 font-bold uppercase">${s.date}</span></div>
-              <div class="text-right shrink-0"><span class="font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded text-sm">${s.score}</span><button onclick="reviewPastSubmission(${s.id})" class="ml-2 text-xs bg-white border border-slate-300 hover:bg-slate-100 font-bold px-2 py-1 rounded shadow-sm">Review</button></div>
+              <div class="text-right shrink-0"><span class="font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded text-sm">${s.score}</span><button onclick="reviewPastSubmission(${s.id})" class="ml-2 text-xs bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded shadow-sm">Review</button></div>
             </div>`).join('') : '<p class="text-sm text-slate-500 italic">No completed tests yet.</p>'}
         </div>`;
     }
@@ -3047,60 +3324,94 @@
              content = '';
              if(q.explanation) content += `<div class="bg-purple-50 border border-purple-200 p-4 rounded-lg text-[15px] leading-relaxed text-purple-900 shadow-inner"><b>💡 Explanation:</b><br>${q.explanation}</div>`;
           } else if(q.type === 'essay') {
-    // 1. Parse the new feedback object structure (or fall back to old string if legacy)
-    let fbData = { annotated: answers[q.ids[0]] || '', tr: '', cc: '', lr: '', gra: '', comment: '' };
-    try { 
-        if (feedbackObj[q.ids[0]]) fbData = JSON.parse(feedbackObj[q.ids[0]]); 
-    } catch(e) { 
-        fbData.comment = feedbackObj[q.ids[0]]; // Legacy support
-    }
-    
-    // Band score options helper
-    const bandOpts = [9, 8.5, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4].map(b => `<option value="${b}">${b}</option>`).join('');
-    const mkSelect = (id, lbl, val) => `<div><label class="block text-xs font-bold text-slate-500 mb-1">${lbl}</label><select id="${id}" class="w-full border border-slate-300 p-2 rounded outline-none focus:border-blue-500"><option value="">--</option>${bandOpts.replace(`value="${val}"`, `value="${val}" selected`)}</select></div>`;
+            let fbData = { annotated: answers[q.ids[0]] || '', tr: '', cc: '', lr: '', gra: '', comment: '' };
+            try { 
+                if (feedbackObj[q.ids[0]]) fbData = JSON.parse(feedbackObj[q.ids[0]]); 
+            } catch(e) { 
+                fbData.comment = feedbackObj[q.ids[0]]; // Legacy fallback
+            }
+            
+            // Helper for the bottom 4 dropdowns (auto-populates text area)
+            const bandOpts = [9, 8.5, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4].map(b => `<option value="${b}">${b}</option>`).join('');
+            const mkSelect = (id, lbl, val, crit, qId) => `<div><label class="block text-xs font-bold text-slate-500 mb-1">${lbl}</label><select id="${id}" onchange="window.updateFeedbackText('${qId}', '${crit}', this.value)" class="w-full border border-slate-300 p-2 rounded outline-none focus:border-blue-500"><option value="">--</option>${bandOpts.replace(`value="${val}"`, `value="${val}" selected`)}</select></div>`;
 
-    if (isGrading) {
-        // TEACHER VIEW: Interactive Editing + Grading Criteria
-        content = `
-        <div class="mb-4">
-            <div class="flex gap-2 mb-2 bg-slate-100 p-2 rounded-t border border-slate-300 border-b-0">
-                <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm font-bold hover:bg-slate-50">B</button>
-                <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm italic hover:bg-slate-50">I</button>
-                <button type="button" onmousedown="event.preventDefault(); document.execCommand('strikeThrough')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm line-through hover:bg-slate-50">S</button>
-                <div class="w-px h-6 bg-slate-300 self-center mx-1"></div>
-                <button type="button" onmousedown="event.preventDefault(); document.execCommand('hiliteColor', false, '#fef08a')" class="px-3 py-1 bg-yellow-200 border border-yellow-400 rounded shadow-sm hover:bg-yellow-300 text-sm font-medium">Highlight</button>
-                <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#ef4444')" class="px-3 py-1 bg-white border border-slate-300 text-red-500 rounded shadow-sm hover:bg-red-50 text-sm font-bold">Red Text</button>
-                <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#10b981')" class="px-3 py-1 bg-white border border-slate-300 text-emerald-500 rounded shadow-sm hover:bg-emerald-50 text-sm font-bold">Green Text</button>
-            </div>
-            <div id="essay-content-${q.ids[0]}" contenteditable="true" class="bg-white border border-slate-300 p-4 rounded-b font-sans text-lg leading-relaxed whitespace-pre-wrap outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-4 shadow-sm">
-            <h4 class="font-bold text-blue-900 mb-3 border-b border-blue-200 pb-2">IELTS Criteria Grading</h4>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                ${mkSelect(`tr-${q.ids[0]}`, 'Task Response', fbData.tr)}
-                ${mkSelect(`cc-${q.ids[0]}`, 'Coherence & Cohesion', fbData.cc)}
-                ${mkSelect(`lr-${q.ids[0]}`, 'Lexical Resource', fbData.lr)}
-                ${mkSelect(`gra-${q.ids[0]}`, 'Grammar & Accuracy', fbData.gra)}
-            </div>
-            <textarea id="fb-${q.ids[0]}" class="w-full border border-blue-300 rounded p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Overall comments and feedback...">${fbData.comment}</textarea>
-        </div>`;
-    } else {
-        // STUDENT VIEW: Read-only Annotated Essay + Scores
-        content = `<div class="bg-white border border-slate-300 p-4 rounded font-sans text-lg leading-relaxed whitespace-pre-wrap">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>`;
-        if(feedbackObj[q.ids[0]]) {
-            content += `
-            <div class="mt-4 bg-emerald-50 border border-emerald-200 rounded-lg p-4 shadow-sm">
-                <h4 class="font-bold text-emerald-900 mb-3 border-b border-emerald-200 pb-2">Teacher Feedback & Scores</h4>
-                <div class="flex flex-wrap gap-4 mb-3">
-                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>TR:</b> ${fbData.tr || '-'}</span>
-                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>CC:</b> ${fbData.cc || '-'}</span>
-                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>LR:</b> ${fbData.lr || '-'}</span>
-                    <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>GRA:</b> ${fbData.gra || '-'}</span>
+            // Helper for the inline toolbar dropdown
+            const inlineOpts = Object.keys(IELTS_DESCRIPTORS).map(crit => {
+                const labels = { tr: 'Task Response', cc: 'Coherence', lr: 'Lexical', gra: 'Grammar' };
+                return `<optgroup label="${labels[crit]}">` + 
+                    [9, 8.5, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4].map(b => `<option value="${crit}-${b}">Band ${b}</option>`).join('') + 
+                    `</optgroup>`;
+            }).join('');
+
+            if (isGrading) {
+                content = `
+                <div class="mb-4">
+                    <div class="flex flex-wrap gap-2 mb-2 bg-slate-100 p-2 rounded-t border border-slate-300 border-b-0 items-center">
+                        <div class="flex gap-1">
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm font-bold hover:bg-slate-50">B</button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm italic hover:bg-slate-50">I</button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('strikeThrough')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm line-through hover:bg-slate-50">S</button>
+                        </div>
+                        <div class="w-px h-6 bg-slate-300 self-center mx-1"></div>
+                        <div class="flex gap-1">
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('hiliteColor', false, '#fef08a')" class="px-3 py-1 bg-yellow-200 border border-yellow-400 rounded shadow-sm hover:bg-yellow-300 text-sm font-medium">Highlight</button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#ef4444')" class="px-3 py-1 bg-white border border-slate-300 text-red-500 rounded shadow-sm hover:bg-red-50 text-sm font-bold">Red</button>
+                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#10b981')" class="px-3 py-1 bg-white border border-slate-300 text-emerald-500 rounded shadow-sm hover:bg-emerald-50 text-sm font-bold">Green</button>
+                        </div>
+                        <div class="w-px h-6 bg-slate-300 self-center mx-1"></div>
+                        <select id="inline-crit-${q.ids[0]}" onchange="window.insertInlineFeedback('${q.ids[0]}')" class="border border-slate-300 rounded px-2 py-1 text-sm outline-none bg-white">
+                            <option value="">+ Insert Descriptor...</option>
+                            ${inlineOpts}
+                        </select>
+                    </div>
+                    <div id="essay-content-${q.ids[0]}" contenteditable="true" class="bg-white border border-slate-300 p-4 rounded-b font-sans text-lg leading-relaxed whitespace-pre-wrap outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>
                 </div>
-                <div class="text-emerald-900 text-sm leading-relaxed">${fbData.comment}</div>
-            </div>`;
-        }
-    }
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-4 shadow-sm">
+                    <h4 class="font-bold text-blue-900 mb-3 border-b border-blue-200 pb-2">IELTS Criteria Grading</h4>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        ${mkSelect(`tr-${q.ids[0]}`, 'Task Response', fbData.tr, 'tr', q.ids[0])}
+                        ${mkSelect(`cc-${q.ids[0]}`, 'Coherence & Cohesion', fbData.cc, 'cc', q.ids[0])}
+                        ${mkSelect(`lr-${q.ids[0]}`, 'Lexical Resource', fbData.lr, 'lr', q.ids[0])}
+                        ${mkSelect(`gra-${q.ids[0]}`, 'Grammar & Accuracy', fbData.gra, 'gra', q.ids[0])}
+                    </div>
+                    <textarea id="fb-${q.ids[0]}" class="w-full border border-blue-300 rounded p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Overall comments and feedback...">${fbData.comment}</textarea>
+                </div>`;
+            } else {
+                // 1. Clean the HTML for the student: Remove delete buttons, lock text boxes, and fix spacing
+                let readOnlyAnnotation = fbData.annotated || '<em class="text-slate-400">No response.</em>';
+                
+                // Remove the button AND any <br> tags immediately before/after it that cause extra top space
+                readOnlyAnnotation = readOnlyAnnotation.replace(/\s*(?:<br\s*\/?>)?\s*<button[^>]*onclick="this\.parentElement\.remove\(\)"[^>]*>.*?<\/button>\s*(?:<br\s*\/?>)?\s*/gi, '');
+                
+                // Aggressively remove extra <br> or empty <p> tags sitting right at the bottom of the amber box
+                readOnlyAnnotation = readOnlyAnnotation.replace(/(?:<br\s*\/?>|<p><br\s*\/?>\s*<\/p>|\s)+<\/div>/gi, '</div>');
+
+                // Shrink the right-padding (pr-8 to pr-3) so it looks balanced now that the 'X' button is gone
+                readOnlyAnnotation = readOnlyAnnotation.replace(/pr-8/gi, 'pr-3');
+
+                // Lock editable fields
+                readOnlyAnnotation = readOnlyAnnotation.replace(/contenteditable="true"/gi, 'contenteditable="false"');
+
+                content = ''; // Initialize empty content
+                
+                // 2. Render Teacher Feedback & Scores at the TOP
+                if(feedbackObj[q.ids[0]]) {
+                    content += `
+                    <div class="mb-4 bg-emerald-50 border border-emerald-200 rounded-lg p-4 shadow-sm">
+                        <h4 class="font-bold text-emerald-900 mb-3 border-b border-emerald-200 pb-2">Teacher Feedback & Scores</h4>
+                        <div class="flex flex-wrap gap-4 mb-3">
+                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>TR:</b> ${fbData.tr || '-'}</span>
+                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>CC:</b> ${fbData.cc || '-'}</span>
+                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>LR:</b> ${fbData.lr || '-'}</span>
+                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>GRA:</b> ${fbData.gra || '-'}</span>
+                        </div>
+                        <div class="text-emerald-900 text-sm leading-relaxed">${fbData.comment}</div>
+                    </div>`;
+                }
+
+                // 3. Render the Annotated Essay text BELOW the scores
+                content += `<div class="bg-white border border-slate-300 p-4 rounded font-sans text-lg leading-relaxed whitespace-pre-wrap">${readOnlyAnnotation}</div>`;
+            }
           } else if(q.type === 'audio_record') {
              const a = answers[q.ids[0]];
              content = a ? `<audio controls src="${a}" class="w-full"></audio>` : `<p class="italic text-slate-500">No recording.</p>`;
@@ -3256,57 +3567,56 @@
     }
 
     async function saveFeedback(subId) {
-  const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
-  const btn = document.getElementById('btn-save-feed'); btn.textContent="Saving..."; btn.disabled=true;
-  
-  sub.teacherFeedback = {};
-  
-  // Calculate overall score for Writing based on the 4 criteria
-  let totalWritingScore = 0;
-  let hasWritingScore = false;
+      const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
+      const btn = document.getElementById('btn-save-feed'); btn.textContent="Saving..."; btn.disabled=true;
+      
+      sub.teacherFeedback = {};
+      
+      let totalWritingScore = 0;
+      let hasWritingScore = false;
 
-  APP_DATA.parts.forEach(p => p.questions.forEach(q => {
-     if (q.type === 'essay') {
-         // Gather all the new grading data
-         const annotatedContent = document.getElementById(`essay-content-${q.ids[0]}`)?.innerHTML || '';
-         const tr = document.getElementById(`tr-${q.ids[0]}`)?.value || '';
-         const cc = document.getElementById(`cc-${q.ids[0]}`)?.value || '';
-         const lr = document.getElementById(`lr-${q.ids[0]}`)?.value || '';
-         const gra = document.getElementById(`gra-${q.ids[0]}`)?.value || '';
-         const comment = document.getElementById(`fb-${q.ids[0]}`)?.value || '';
-         
-         // Calculate average if all 4 are filled
-         if (tr && cc && lr && gra) {
-             let avg = (Number(tr) + Number(cc) + Number(lr) + Number(gra)) / 4;
-             // Round to nearest 0.5 (IELTS standard)
-             totalWritingScore = Math.round(avg * 2) / 2;
-             hasWritingScore = true;
+      APP_DATA.parts.forEach(p => p.questions.forEach(q => {
+         if (q.type === 'essay') {
+             // Gather all the new grading data
+             const annotatedContent = document.getElementById(`essay-content-${q.ids[0]}`)?.innerHTML || '';
+             const tr = document.getElementById(`tr-${q.ids[0]}`)?.value || '';
+             const cc = document.getElementById(`cc-${q.ids[0]}`)?.value || '';
+             const lr = document.getElementById(`lr-${q.ids[0]}`)?.value || '';
+             const gra = document.getElementById(`gra-${q.ids[0]}`)?.value || '';
+             const comment = document.getElementById(`fb-${q.ids[0]}`)?.value || '';
+             
+             // Calculate average if all 4 are filled
+             if (tr && cc && lr && gra) {
+                 let avg = (Number(tr) + Number(cc) + Number(lr) + Number(gra)) / 4;
+                 // Round to nearest 0.5 (IELTS standard)
+                 totalWritingScore = Math.round(avg * 2) / 2;
+                 hasWritingScore = true;
+             }
+
+             // Save as a JSON string to keep database structure compatible
+             sub.teacherFeedback[q.ids[0]] = JSON.stringify({
+                 annotated: annotatedContent,
+                 tr: tr, cc: cc, lr: lr, gra: gra,
+                 comment: comment
+             });
+         } else {
+             // Keep logic for other types (like Audio feedback)
+             const el = document.getElementById(`fb-${q.ids[0]}`); 
+             if(el && el.value.trim()) sub.teacherFeedback[q.ids[0]] = el.value.trim();
          }
+      }));
 
-         // Save as a JSON string to keep database structure compatible
-         sub.teacherFeedback[q.ids[0]] = JSON.stringify({
-             annotated: annotatedContent,
-             tr: tr, cc: cc, lr: lr, gra: gra,
-             comment: comment
-         });
-     } else {
-         // Keep logic for other types (like Audio feedback)
-         const el = document.getElementById(`fb-${q.ids[0]}`); 
-         if(el && el.value.trim()) sub.teacherFeedback[q.ids[0]] = el.value.trim();
-     }
-  }));
-
-  if(APP_DATA.module === 'writing') {
-      sub.score = hasWritingScore ? `Band ${totalWritingScore}` : "Graded ✓";
-  } else if (APP_DATA.module === 'speaking') {
-      sub.score = "Graded ✓";
-  }
-  
-  await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
-  showModalMsg("Saved", "Feedback synced to cloud database successfully.");
-  renderSubmissions(); 
-  btn.textContent="Save Grades & Feedback"; btn.disabled=false;
-}
+      if(APP_DATA.module === 'writing') {
+          sub.score = hasWritingScore ? `Band ${totalWritingScore.toFixed(1)}` : "Graded ✓";
+      } else if (APP_DATA.module === 'speaking') {
+          sub.score = "Graded ✓";
+      }
+      
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
+      showModalMsg("Saved", "Feedback synced to cloud database successfully.");
+      renderSubmissions(); 
+      btn.textContent="Save Grades & Feedback"; btn.disabled=false;
+    }
 
     function toggleStudentFlashcardPanel() {
       const p = document.getElementById('student-fc-panel');
