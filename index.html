@@ -272,9 +272,15 @@
 
   <!-- UNIFIED SELECTION TOOLTIP (Exam & Review) -->
   <div id="exam-selection-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 animate-pop">
-    <button id="tooltip-hl-btn" onmousedown="highlightSelection(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-emerald-600 transition">
-      <span class="text-[10px] font-bold">Highlight</span>
-    </button>
+    <div id="tooltip-hl-group" class="flex items-center gap-2 px-2 py-1 hidden">
+      <button onmousedown="highlightSelection(event, 'bg-yellow-300')" class="w-5 h-5 rounded-full bg-yellow-300 border border-yellow-400 hover:scale-110 transition shadow-sm" title="Yellow"></button>
+      
+      <div id="tooltip-hl-extra" class="flex items-center gap-2">
+        <button onmousedown="highlightSelection(event, 'bg-green-300')" class="w-5 h-5 rounded-full bg-green-300 border border-green-400 hover:scale-110 transition shadow-sm" title="Green"></button>
+        <button onmousedown="highlightSelection(event, 'bg-pink-300')" class="w-5 h-5 rounded-full bg-pink-300 border border-pink-400 hover:scale-110 transition shadow-sm" title="Pink"></button>
+        <button onmousedown="highlightSelection(event, 'bg-blue-300')" class="w-5 h-5 rounded-full bg-blue-300 border border-blue-400 hover:scale-110 transition shadow-sm" title="Blue"></button>
+      </div>
+    </div>
     <div id="tooltip-hl-divider" class="w-px h-6 bg-slate-200"></div>
     <button id="tooltip-note-btn" onmousedown="createNoteFromSelection(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-amber-600 transition">
       <span class="text-[10px] font-bold">Note</span>
@@ -409,6 +415,17 @@
     </div>
   </div>
 
+  <!-- STUDENT DAY SCHEDULE MODAL -->
+  <div id="student-day-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-xl p-6 w-[550px] shadow-2xl max-h-[85vh] flex flex-col">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
+        <h2 id="day-modal-title" class="text-2xl font-black text-indigo-900">Schedules</h2>
+        <button onclick="document.getElementById('student-day-modal').classList.add('hidden')" class="text-slate-400 hover:text-rose-500 font-bold text-2xl leading-none">&times;</button>
+      </div>
+      <div id="day-modal-content" class="overflow-y-auto flex-1 space-y-4 pr-2"></div>
+    </div>
+  </div>
+
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
@@ -458,7 +475,14 @@
          <p class="text-rose-600">Your account is currently inactive. Please complete your tuition payment with your teacher to unlock your tests and classes.</p>
       </div>
 
-      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div id="student-toolbar" class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md pb-4 pt-4 mb-6 border-b border-slate-200 flex flex-wrap gap-2 -mx-8 px-8 shadow-sm">
+        <button onclick="document.getElementById('student-main-content').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">⚙️ Class & Mode</button>
+        <button onclick="document.getElementById('student-schedule-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 text-slate-700 hover:text-indigo-700 font-bold rounded-lg transition text-sm">📅 Timetable</button>
+        <button onclick="document.getElementById('bottom-student-sections').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">📚 Library</button>
+        <button onclick="document.getElementById('student-progress-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 text-slate-700 hover:text-emerald-700 font-bold rounded-lg transition text-sm">📈 Progress & Feedback</button>
+      </div>
+
+      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-8 scroll-mt-24">
         
         <!-- Left Column: Class and Mode Setup -->
         <div class="lg:col-span-5 flex flex-col gap-6">
@@ -495,27 +519,46 @@
 
         <!-- Right Column: Weekly Schedule -->
         <div class="lg:col-span-7 flex flex-col">
-          <div id="student-schedule-section" class="bg-white border border-indigo-200 rounded-lg shadow-sm overflow-hidden hidden flex-col h-full min-h-[350px]">
-             <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-200">
-               <h2 class="font-bold text-indigo-900 text-lg">3. Weekly Class Timetable</h2>
+          <div id="student-schedule-section" class="bg-white border border-indigo-200 rounded-lg shadow-sm overflow-hidden hidden flex-col h-full min-h-[350px] scroll-mt-24">
+             <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-200 flex justify-between items-center gap-2">
+               <h2 class="font-bold text-indigo-900 text-lg">3. Monthly Class Timetable</h2>
+               <div class="flex items-center gap-2">
+                 <button onclick="changeCalendarMonth(-1, 'student')" class="px-2 py-1 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100 font-bold shadow-sm">&larr;</button>
+                 <span id="student-cal-month" class="font-bold text-indigo-900 min-w-[130px] text-center uppercase tracking-wide">Month Year</span>
+                 <button onclick="changeCalendarMonth(1, 'student')" class="px-2 py-1 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100 font-bold shadow-sm">&rarr;</button>
+               </div>
              </div>
-             <div id="student-schedule-list" class="flex-1 divide-y divide-slate-100 overflow-y-auto bg-slate-50"></div>
+             <div class="p-6 bg-slate-50 flex-1">
+                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-xs font-black text-slate-400 mb-2 tracking-widest">
+                    <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+                 </div>
+                 <div id="student-cal-grid" class="grid grid-cols-7 gap-1 md:gap-2"></div>
+             </div>
           </div>
         </div>
       </div>
       
       <!-- Bottom Section: Library & Progress -->
-      <div id="bottom-student-sections" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 hidden">
+      <div id="bottom-student-sections" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 hidden scroll-mt-24">
           <!-- Course Material Library -->
           <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col max-h-[400px]">
-            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
-              <h2 class="font-bold text-slate-700 text-lg">4. Course Material Library</h2>
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex flex-col xl:flex-row justify-between xl:items-center gap-4">
+              <h2 class="font-bold text-slate-700 text-lg whitespace-nowrap">4. Course Material Library</h2>
+              <div class="flex flex-wrap items-center gap-2">
+                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search materials..." class="flex-1 min-w-[150px] border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
+                  <option value="all">All Modules</option><option value="reading">Read</option><option value="listening">Listen</option><option value="writing">Write</option><option value="speaking">Speak</option>
+                </select>
+                <select id="student-test-sort" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
+                  <option value="default">Default</option><option value="az">A-Z</option><option value="za">Z-A</option>
+                </select>
+              </div>
             </div>
             <div id="student-tests-list" class="overflow-y-auto p-4 space-y-2 bg-slate-50 flex-1"></div>
           </div>
 
           <!-- Progress Section -->
-          <div id="student-progress-section" class="bg-white p-6 rounded-lg border border-slate-200 shadow-sm max-h-[400px] overflow-y-auto flex flex-col"></div>
+          <div id="student-progress-section" class="bg-white p-6 rounded-lg border border-slate-200 shadow-sm max-h-[400px] overflow-y-auto flex flex-col scroll-mt-24"></div>
       </div>
     </div>
   </div>
@@ -527,8 +570,7 @@
         <h1 class="text-xl font-bold">🛠 Teacher Dashboard</h1>
         
         <div class="flex bg-slate-900 rounded-md p-1 shadow-inner space-x-1" id="editor-main-tabs">
-          <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Bank</button>
-          <button onclick="toggleEditorTab('classes')" id="tab-btn-classes" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Classes & Subs</button>
+          <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Dashboard</button>
           <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Students/Pay</button>
           <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Timetable</button>
         </div>
@@ -557,33 +599,58 @@
       </div>
     </header>
 
-    <!-- Test Bank -->
     <div id="editor-view-bank" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <div><h2 class="text-2xl font-bold text-slate-800">Test Bank (Cloud)</h2></div>
-          <div class="flex gap-2">
-            <button onclick="createNewTest('reading')" class="bg-blue-600 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-blue-700 text-sm">+ Reading</button>
-            <button onclick="createNewTest('listening')" class="bg-cyan-600 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-cyan-700 text-sm">+ Listening</button>
-            <button onclick="createNewTest('writing')" class="bg-emerald-600 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-emerald-700 text-sm">+ Writing</button>
-            <button onclick="createNewTest('speaking')" class="bg-amber-500 text-white px-3 py-2 rounded font-bold shadow-sm hover:bg-amber-600 text-sm">+ Speaking</button>
-          </div>
+      <div class="max-w-7xl mx-auto pb-20">
+        
+        <div class="flex justify-center mb-8">
+            <div class="bg-slate-200 p-1.5 rounded-xl flex space-x-2 shadow-inner">
+                <button onclick="toggleDashboardView('tests')" id="dash-btn-tests" class="px-8 py-2.5 bg-white text-blue-700 font-bold rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    Test Bank
+                </button>
+                <button onclick="toggleDashboardView('classes')" id="dash-btn-classes" class="px-8 py-2.5 text-slate-500 font-bold rounded-lg hover:text-slate-700 transition duration-200 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    Classes & Subs
+                </button>
+            </div>
         </div>
-        <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-20"></div>
-      </div>
-    </div>
 
-    <!-- Classes -->
-    <div id="editor-view-classes" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-[1400px] mx-auto">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <h2 class="text-2xl font-bold text-slate-800">Class Management & Submissions</h2>
-          <div class="flex gap-3">
-             <button onclick="clearAllSubmissions()" class="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded font-bold text-sm shadow-sm hover:bg-rose-100 transition">Clear All Submissions</button>
-             <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm transition">＋ Create New Class</button>
+        <div id="dash-view-tests" class="flex flex-col gap-6 animate-fade-in-up">
+          <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Test Bank (Cloud)</h2>
+            <div class="flex gap-2">
+              <button onclick="createNewTest('reading')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-blue-700 text-sm transition">+ Reading</button>
+              <button onclick="createNewTest('listening')" class="bg-cyan-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-cyan-700 text-sm transition">+ Listening</button>
+              <button onclick="createNewTest('writing')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-emerald-700 text-sm transition">+ Writing</button>
+              <button onclick="createNewTest('speaking')" class="bg-amber-500 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-amber-600 text-sm transition">+ Speaking</button>
+            </div>
           </div>
+          <div class="flex flex-col sm:flex-row gap-3 bg-white p-3 rounded-lg shadow-sm border border-slate-200">
+            <input type="text" id="bank-search" onkeyup="renderTestBank()" placeholder="Search tests by title or tag..." class="flex-1 border-2 border-slate-200 rounded-md px-4 py-2 text-sm focus:border-blue-500 focus:ring-0 outline-none transition font-medium text-slate-700">
+            <select id="bank-filter-mod" onchange="renderTestBank()" class="border-2 border-slate-200 rounded-md px-4 py-2 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 transition">
+              <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
+            </select>
+            <select id="bank-sort" onchange="renderTestBank()" class="border-2 border-slate-200 rounded-md px-4 py-2 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 transition">
+              <option value="newest">Newest First</option><option value="az">A-Z</option><option value="za">Z-A</option>
+            </select>
+          </div>
+          <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"></div>
         </div>
-        <div id="classes-list" class="space-y-6 pb-20"></div>
+
+        <div id="dash-view-classes" class="hidden flex-col gap-6 animate-fade-in-up">
+          <div class="flex justify-between items-center border-b border-slate-200 pb-4">
+            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Classes & Submissions</h2>
+            <div class="flex gap-3">
+               <button onclick="clearAllSubmissions()" class="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg font-bold text-sm shadow-sm hover:bg-rose-100 transition">Clear Submissions</button>
+               <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition">＋ New Class</button>
+            </div>
+          </div>
+          <div>
+            <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-200 rounded-lg px-5 py-3 text-base focus:border-blue-500 focus:ring-0 outline-none shadow-sm transition font-medium text-slate-700 bg-white">
+          </div>
+          <div id="classes-list" class="space-y-6"></div>
+        </div>
+
       </div>
     </div>
 
@@ -609,25 +676,45 @@
       </div>
     </div>
 
-    <!-- Timetable & Attendance -->
+    <!-- Timetable & Attendance (Calendar View) -->
     <div id="editor-view-timetable" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-5xl mx-auto">
+      <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <h2 class="text-2xl font-bold text-slate-800">Timetable & Attendance</h2>
+          <h2 class="text-2xl font-bold text-slate-800">Monthly Timetable & Attendance</h2>
           <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Schedule Class</button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
-          <div>
-            <h3 class="font-bold text-lg text-slate-700 mb-3">Upcoming Schedules</h3>
-            <div id="timetable-list" class="space-y-3"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
+          
+          <!-- Calendar Left Column -->
+          <div class="lg:col-span-2 bg-white border border-slate-200 rounded-lg shadow-sm p-5">
+             <div class="flex justify-between items-center mb-6 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                <button onclick="changeCalendarMonth(-1, 'teacher')" class="px-3 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded font-bold text-slate-600 shadow-sm">&larr; Prev</button>
+                <h3 id="teacher-cal-month" class="font-black text-xl text-blue-900 tracking-wide uppercase">Month Year</h3>
+                <button onclick="changeCalendarMonth(1, 'teacher')" class="px-3 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded font-bold text-slate-600 shadow-sm">Next &rarr;</button>
+             </div>
+             <div class="grid grid-cols-7 gap-2 text-center text-xs font-black text-slate-400 mb-2 tracking-widest">
+                <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+             </div>
+             <div id="teacher-cal-grid" class="grid grid-cols-7 gap-2"></div>
           </div>
-          <div>
-             <h3 class="font-bold text-lg text-slate-700 mb-3">Attendance & Export</h3>
-             <div id="attendance-export-list" class="space-y-3 bg-white p-4 border border-slate-200 rounded-lg"></div>
+
+          <!-- Day Schedule Right Column -->
+          <div class="flex flex-col gap-6">
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-5 h-[400px] flex flex-col">
+              <h3 id="teacher-selected-date-label" class="font-bold text-lg text-blue-800 mb-3 border-b border-slate-100 pb-2">Select a date</h3>
+              <div id="timetable-list" class="space-y-3 overflow-y-auto flex-1 pr-1">
+                 <p class="text-sm text-slate-500 italic mt-10 text-center">Click a day on the calendar to view or add class schedules.</p>
+              </div>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
+               <h3 class="font-bold text-lg text-slate-700 mb-3 border-b border-slate-100 pb-2">Attendance Export</h3>
+               <div id="attendance-export-list" class="space-y-3 max-h-[250px] overflow-y-auto pr-1"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
     <!-- Test Builder -->
     <div id="editor-view-builder" class="flex-1 flex-col overflow-hidden bg-white hidden">
       <div class="bg-slate-200 px-6 py-2 flex space-x-2 border-b border-slate-300" id="editor-tabs"></div>
@@ -660,6 +747,9 @@
                   <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Bullet List">• List</button>
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Numbered List">1. List</button>
+                  <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank')" class="px-2 py-1 hover:bg-blue-100 text-blue-700 text-sm font-bold rounded transition" title="Insert Gap Fill Blank">{_}</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop')" class="px-2 py-1 hover:bg-blue-100 text-blue-700 text-sm font-bold rounded transition" title="Insert Drag & Drop Gap">[↓]</button>
               </div>
           </div>
           <div class="relative flex-1 min-h-[200px] flex flex-col">
@@ -1310,12 +1400,35 @@
     function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
     function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
 
+    window.toggleDashboardView = function(view) {
+      const testsView = document.getElementById('dash-view-tests');
+      const classesView = document.getElementById('dash-view-classes');
+      const btnTests = document.getElementById('dash-btn-tests');
+      const btnClasses = document.getElementById('dash-btn-classes');
+
+      if (view === 'tests') {
+          if(testsView) { testsView.classList.remove('hidden'); testsView.classList.add('flex'); }
+          if(classesView) { classesView.classList.add('hidden'); classesView.classList.remove('flex'); }
+          if(btnTests) btnTests.className = "px-8 py-2.5 bg-white text-blue-700 font-bold rounded-lg shadow-sm transition duration-200 flex items-center gap-2";
+          if(btnClasses) btnClasses.className = "px-8 py-2.5 text-slate-500 font-bold rounded-lg hover:text-slate-700 transition duration-200 flex items-center gap-2";
+      } else {
+          if(classesView) { classesView.classList.remove('hidden'); classesView.classList.add('flex'); }
+          if(testsView) { testsView.classList.add('hidden'); testsView.classList.remove('flex'); }
+          if(btnClasses) btnClasses.className = "px-8 py-2.5 bg-white text-blue-700 font-bold rounded-lg shadow-sm transition duration-200 flex items-center gap-2";
+          if(btnTests) btnTests.className = "px-8 py-2.5 text-slate-500 font-bold rounded-lg hover:text-slate-700 transition duration-200 flex items-center gap-2";
+      }
+    };
+
     function openEditor() {
       document.getElementById('editor-ui').classList.remove('hidden');
       toggleEditorTab('bank');
     }
+
     function toggleEditorTab(tab) {
-      ['bank', 'classes', 'builder', 'students', 'timetable'].forEach(t => document.getElementById(`editor-view-${t}`).classList.add('hidden'));
+      ['bank', 'classes', 'builder', 'students', 'timetable'].forEach(t => {
+          const el = document.getElementById(`editor-view-${t}`);
+          if (el) el.classList.add('hidden');
+      });
       ['bank', 'classes', 'students', 'timetable'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
         if(b) b.className = t===tab ? 'px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition' : 'px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition';
@@ -1326,8 +1439,18 @@
       document.getElementById('editor-preview-test').classList.add('hidden');
       document.getElementById('editor-save-test').classList.add('hidden');
 
-      if (tab === 'bank') { document.getElementById('editor-view-bank').classList.remove('hidden'); renderTestBank(); }
-      if (tab === 'classes') { document.getElementById('editor-view-classes').classList.remove('hidden'); renderClasses(); }
+      if (tab === 'bank') { 
+          const bankView = document.getElementById('editor-view-bank');
+          if(bankView) bankView.classList.remove('hidden'); 
+          renderTestBank(); 
+          renderClasses();
+          window.toggleDashboardView('tests'); // Default to Tests sub-tab
+      }
+      if (tab === 'classes') { 
+          const classView = document.getElementById('editor-view-classes');
+          if(classView) classView.classList.remove('hidden'); 
+          renderClasses(); 
+      }
       if (tab === 'students') { document.getElementById('editor-view-students').classList.remove('hidden'); renderStudentsList(); }
       if (tab === 'timetable') { document.getElementById('editor-view-timetable').classList.remove('hidden'); renderTimetable(); }
       if (tab === 'builder') {
@@ -1344,7 +1467,20 @@
 
     function renderTestBank() {
       const grid = document.getElementById('test-bank-grid');
-      grid.innerHTML = TEST_BANK.length ? TEST_BANK.map(t => {
+      const query = (document.getElementById('bank-search')?.value || '').toLowerCase();
+      const mod = document.getElementById('bank-filter-mod')?.value || 'all';
+      const sort = document.getElementById('bank-sort')?.value || 'newest';
+
+      let filtered = TEST_BANK.filter(t => {
+          const matchQuery = t.title.toLowerCase().includes(query) || (t.topics && t.topics.join(' ').toLowerCase().includes(query));
+          const matchMod = mod === 'all' || t.module === mod;
+          return matchQuery && matchMod;
+      });
+
+      if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
+      else if (sort === 'za') filtered.sort((a, b) => b.title.localeCompare(a.title));
+
+      grid.innerHTML = filtered.length ? filtered.map(t => {
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
         const c = modColors[t.module];
         
@@ -1418,10 +1554,11 @@
                   }
               }
               document.getElementById('custom-modal').classList.add('hidden');
-              renderTestBank(); // Update UI to show assigned badges
+              renderTestBank(); 
               
-              if(!document.getElementById('editor-view-classes').classList.contains('hidden')) {
-                  renderClasses(); // Keep 'Classes' view in sync if opened later
+              const dashView = document.getElementById('editor-view-bank');
+              if(dashView && !dashView.classList.contains('hidden')) {
+                  renderClasses(); 
               }
           } catch (e) {
               console.error(e);
@@ -1462,7 +1599,10 @@
     function renderSubmissions() { renderClasses(); } // Reroute old save triggers to update classes
 
     function renderClasses() {
-      document.getElementById('classes-list').innerHTML = CLASSES.map(cls => {
+      const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
+      const filteredClasses = CLASSES.filter(c => c.name.toLowerCase().includes(query));
+      
+      document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
         const assigned = cls.assignedTests || [];
         const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
@@ -1625,6 +1765,43 @@
     
     window.execCmd = function(command, value = null) {
       document.execCommand(command, false, value);
+      window.triggerEditorAutosave();
+    };
+
+    window.insertGap = function(type, blockIdx) {
+      let idToUse = 1;
+      
+      // If triggered from inside a specific question block, find the next available ID
+      if (typeof blockIdx !== 'undefined' && blockIdx !== null) {
+          const blockEl = document.getElementById('editor-questions-list').children[blockIdx];
+          if (blockEl) {
+              const idsInput = blockEl.querySelector('.q-ids');
+              let ids = [];
+              
+              // 1. Get the current IDs defined in the input box
+              if (idsInput && !idsInput.readOnly) {
+                  ids = idsInput.value.split(',').map(n => Number(n.trim())).filter(n => !isNaN(n));
+              }
+              if (ids.length === 0 && APP_DATA.parts[currentEditorPartIdx].questions[blockIdx]) {
+                  ids = APP_DATA.parts[currentEditorPartIdx].questions[blockIdx].ids;
+              }
+              
+              // 2. Check the rich editor to see which IDs have already been placed
+              const qTextEl = blockEl.querySelector('.q-text.rich-editor');
+              const currentHtml = qTextEl ? qTextEl.innerHTML : '';
+              
+              // 3. Pick the first ID from the list that isn't found in the text yet
+              idToUse = ids.find(id => !currentHtml.includes(`{${type}:${id}}`));
+              
+              // Fallback: If all are used (or none exist), default to the first ID in the array
+              if (idToUse === undefined && ids.length > 0) {
+                  idToUse = ids[0];
+              }
+          }
+      }
+
+      const tag = type === 'blank' ? `{blank:${idToUse}}` : `{drop:${idToUse}}`;
+      document.execCommand('insertHTML', false, tag);
       window.triggerEditorAutosave();
     };
 
@@ -1884,20 +2061,24 @@
             
             const fcBtn = document.getElementById('tooltip-flashcard-btn');
             const fcDivdr = document.getElementById('tooltip-flashcard-divider');
-            const hlBtn = document.getElementById('tooltip-hl-btn');
+            const hlGroup = document.getElementById('tooltip-hl-group');
+            const hlExtra = document.getElementById('tooltip-hl-extra');
             const noteBtn = document.getElementById('tooltip-note-btn');
             const hlDivdr = document.getElementById('tooltip-hl-divider');
             
             if(!document.getElementById('exam-ui').classList.contains('hidden')) { 
                if(fcBtn) fcBtn.classList.add('hidden'); 
                if(fcDivdr) fcDivdr.classList.add('hidden'); 
-               if(hlBtn) hlBtn.classList.remove('hidden');
+               
+               if(hlGroup) hlGroup.classList.remove('hidden');
+               if(hlExtra) hlExtra.classList.toggle('hidden', !isTimeFree); // Hide extra colors if restricted mode
+               
                if(noteBtn) noteBtn.classList.remove('hidden');
                if(hlDivdr) hlDivdr.classList.remove('hidden');
             } else { 
                if(fcBtn) fcBtn.classList.remove('hidden'); 
                if(fcDivdr) fcDivdr.classList.add('hidden'); 
-               if(hlBtn) hlBtn.classList.add('hidden');
+               if(hlGroup) hlGroup.classList.add('hidden');
                if(noteBtn) noteBtn.classList.add('hidden');
                if(hlDivdr) hlDivdr.classList.add('hidden');
             }
@@ -1947,17 +2128,17 @@
       await window.fsSetDoc(window.fsDoc(window.db, window.fPath('notes'), noteKey), { data: currentNotes });
     }
 
-    function highlightSelection(e) {
+    function highlightSelection(e, colorClass = 'bg-yellow-300') {
       if(e) { e.preventDefault(); e.stopPropagation(); }
       document.getElementById('exam-selection-tooltip').classList.add('hidden'); 
       if (!activeSelectionRange) return;
       const span = document.createElement('span'); 
-      span.className = 'highlighted-text bg-yellow-300 text-slate-900 cursor-pointer rounded px-1 transition-colors'; 
+      span.className = `highlighted-text ${colorClass} text-slate-900 cursor-pointer rounded px-1 transition-colors`; 
       span.dataset.id = 'h_' + Date.now();
       
       if (wrapRangeWithSpanSafely(activeSelectionRange, span)) {
           window.getSelection().removeAllRanges(); 
-          currentNotes.push({ id: span.dataset.id, partIdx: currentPartIdx, quote: span.textContent, text: null });
+          currentNotes.push({ id: span.dataset.id, partIdx: currentPartIdx, quote: span.textContent, text: null, color: colorClass });
           saveCurrentNotesToCloud();
       } else {
           showModalMsg("Error", "Could not highlight. Please select a smaller block of text without overlapping structural styles.");
@@ -2053,7 +2234,7 @@
             while(node = walker.nextNode()) {
                if(node.nodeValue.includes(n.quote) && !node.parentNode.classList.contains('highlighted-text')) {
                   const cls = n.text === null 
-                     ? 'highlighted-text bg-yellow-300 text-slate-900 cursor-pointer rounded px-1 transition-colors' 
+                     ? `highlighted-text ${n.color || 'bg-yellow-300'} text-slate-900 cursor-pointer rounded px-1 transition-colors` 
                      : 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500';
                   
                   const fragment = document.createDocumentFragment();
@@ -2244,7 +2425,7 @@
         const div = document.createElement('div'); div.className = 'bg-white p-4 rounded border border-slate-300 shadow-sm relative mb-4';
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
         const mkLbl = t => `<label class="block text-xs font-bold text-slate-500 mt-3 mb-1">${t}</label>`;
-        const mkToolbar = () => `<div class="flex gap-1 bg-slate-100 p-1 rounded-t border border-b-0 border-slate-300 w-fit"><button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">B</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs italic rounded">I</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs underline rounded">U</button><div class="w-px h-4 bg-slate-300 mx-1 self-center"></div><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">• List</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">1. List</button></div>`;
+        const mkToolbar = () => `<div class="flex gap-1 bg-slate-100 p-1 rounded-t border border-b-0 border-slate-300 w-fit"><button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">B</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs italic rounded">I</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs underline rounded">U</button><div class="w-px h-4 bg-slate-300 mx-1 self-center"></div><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">• List</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">1. List</button><div class="w-px h-4 bg-slate-300 mx-1 self-center"></div><button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2 py-0.5 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded" title="Insert Gap Fill Blank">{_}</button><button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2 py-0.5 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded" title="Insert Drag & Drop Gap">[↓]</button></div>`;
         
         const editorId = `rich-text-${i}`;
         const toolbar = `<div class="flex gap-1 mb-1 mt-1">
@@ -2252,6 +2433,10 @@
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs italic rounded transition" title="Italic">I</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs underline rounded transition" title="Underline">U</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Bullet List">• List</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold rounded transition" title="Insert Gap Fill Blank">{_}</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold rounded transition" title="Insert Drag & Drop Gap">[↓]</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
             <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'table', '${q.type}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Insert Table">▦ Table</button>
             <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'flow', '${q.type}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Insert Flowchart">↓ Flow</button>
         </div>`;
@@ -2427,17 +2612,20 @@
       const schedSec = document.getElementById('student-schedule-section');
       const schedList = document.getElementById('student-schedule-list');
       const bottomSec = document.getElementById('bottom-student-sections');
+      const toolbar = document.getElementById('student-toolbar'); // <--- NEW
       
       if(!cid) { 
           list.innerHTML = '<div class="p-6 text-slate-500">Select a class first.</div>'; 
           if(bottomSec) bottomSec.classList.add('hidden'); 
           if(schedSec) schedSec.classList.add('hidden');
+          if(toolbar) toolbar.classList.add('hidden'); // <--- NEW
           return; 
       }
       
       const cls = CLASSES.find(c => c.id === cid);
       if(!cls) return;
       if(bottomSec) bottomSec.classList.remove('hidden');
+      if(toolbar) toolbar.classList.remove('hidden'); // <--- NEW
 
       const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
@@ -2449,46 +2637,43 @@
         </div>`;
       };
 
-      if(schedSec && schedList) {
-          const classSchedules = SCHEDULES.filter(s => s.className === cls.name);
-          const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-          if(classSchedules.length > 0) {
-              schedSec.classList.remove('hidden');
-              schedSec.classList.add('flex');
-              let schedHtml = '';
-              daysOrder.forEach(day => {
-                  const dayScheds = classSchedules.filter(s => s.dayOfWeek === day);
-                  if(dayScheds.length > 0) {
-                      schedHtml += `<div class="bg-indigo-100 px-6 py-2 font-bold text-indigo-900 shadow-inner border-y border-indigo-200">${day}</div>`;
-                      schedHtml += dayScheds.map(s => {
-                          const lessonTests = (s.assignedTests || []).map(tid => renderTestItem(tid)).join('');
-                          return `
-                            <div class="p-6 bg-white hover:bg-slate-50 transition border-b border-slate-100">
-                               <div class="flex justify-between items-center cursor-pointer" onclick="document.getElementById('sched-tests-${s.id}').classList.toggle('hidden')">
-                                  <div>
-                                     <h3 class="font-black text-xl text-slate-800 mb-1">${s.time}</h3>
-                                     <p class="text-sm font-medium text-slate-500 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-400"></span> ${s.topic || 'General Practice'}</p>
-                                  </div>
-                                  <button class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold px-4 py-2 rounded-full hover:bg-indigo-100 transition shadow-sm">${s.assignedTests?.length ? `View Materials (${s.assignedTests.length}) ↓` : 'No Materials'}</button>
-                               </div>
-                               <div id="sched-tests-${s.id}" class="hidden mt-6 pt-4 border-t border-slate-100 space-y-1">
-                                  ${lessonTests || '<p class="text-xs text-slate-500 italic p-2 bg-slate-100 rounded">No specific tests assigned to this lesson.</p>'}
-                               </div>
-                            </div>
-                          `;
-                      }).join('');
-                  }
-              });
-              schedList.innerHTML = schedHtml;
-          } else {
-              schedSec.classList.add('hidden');
-              schedSec.classList.remove('flex');
-          }
+      if (schedSec) {
+          schedSec.classList.remove('hidden');
+          schedSec.classList.add('flex');
+          window.renderCalendar('student');
       }
       
       let allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials assigned to this course yet.</p>';
       if (cls.assignedTests && cls.assignedTests.length) {
-          allTestsHtml = cls.assignedTests.map(tid => renderTestItem(tid)).join('');
+          const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
+          const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
+          const sort = document.getElementById('student-test-sort')?.value || 'default';
+          
+          // 1. Map IDs to actual test objects
+          let testObjects = cls.assignedTests
+              .map(tid => TEST_BANK.find(x => x.id === tid))
+              .filter(t => t !== undefined);
+              
+          // 2. Filter by search query and module
+          testObjects = testObjects.filter(t => {
+              const matchQuery = t.title.toLowerCase().includes(query) || (t.topics && t.topics.join(' ').toLowerCase().includes(query));
+              const matchMod = mod === 'all' || t.module === mod;
+              return matchQuery && matchMod;
+          });
+          
+          // 3. Sort alphabetically if requested
+          if (sort === 'az') {
+              testObjects.sort((a, b) => a.title.localeCompare(b.title));
+          } else if (sort === 'za') {
+              testObjects.sort((a, b) => b.title.localeCompare(a.title));
+          }
+          
+          // 4. Render to HTML
+          if (testObjects.length) {
+              allTestsHtml = testObjects.map(t => renderTestItem(t.id)).join('');
+          } else if (query || mod !== 'all') {
+              allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials match your search or filter.</p>';
+          }
       }
       list.innerHTML = allTestsHtml;
       
@@ -2666,7 +2851,20 @@
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
           passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `<h2 class="text-2xl font-bold mb-6">${p.title}</h2>${media}<div class="passage-text text-justify">${htmlText}</div>`;
+          
+          // Generate the toggle button ONLY in Practice Mode (Time-Free)
+          let sampleToggleBtn = '';
+          if (isTimeFree && (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking')) {
+              sampleToggleBtn = `
+              <div class="mb-4 border-t border-slate-200 pt-4 mt-2">
+                  <button onclick="document.getElementById('passage-text-content').classList.toggle('hidden')" class="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition flex items-center gap-2">
+                      👁️ Show/Hide Text (Sample Essay)
+                  </button>
+              </div>`;
+          }
+
+          // Inject the button right between the media (picture) and the text passage
+          passageContainer.innerHTML = `<h2 class="text-2xl font-bold mb-6">${p.title}</h2>${media}${sampleToggleBtn}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
@@ -3759,22 +3957,180 @@
     }
 
     // --- TIMETABLE & ATTENDANCE LOGIC ---
-    function promptCreateSchedule() {
+    let currentCalDate = new Date();
+
+    window.changeCalendarMonth = function(dir, role) {
+        currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+        window.renderCalendar(role);
+    }
+
+    window.renderCalendar = function(role) {
+        const year = currentCalDate.getFullYear();
+        const month = currentCalDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        let gridHtml = '';
+        // Blank cells before the 1st of the month
+        for (let i = 0; i < firstDay; i++) {
+            gridHtml += `<div class="p-2 border border-transparent"></div>`;
+        }
+        
+        // NEW: Get the exact local date based on the user's timezone
+        const today = new Date();
+        const localTodayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            const isToday = localTodayStr === dateStr;
+            
+            let daySchedules = SCHEDULES.filter(s => s.date === dateStr);
+            if (role === 'student') {
+                const cid = document.getElementById('student-class-select').value;
+                const cls = CLASSES.find(c => c.id === cid);
+                if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name);
+            }
+            
+            const hasClass = daySchedules.length > 0;
+            const badgeColor = role === 'student' ? 'bg-indigo-500' : 'bg-blue-500';
+            const badgeHtml = hasClass ? `<div class="mt-2 w-2 h-2 rounded-full ${badgeColor} mx-auto shadow-sm"></div>` : '';
+            
+            let classesStr = "p-2 min-h-[70px] border rounded-lg cursor-pointer transition flex flex-col items-center justify-start hover:shadow-md";
+            if (isToday) classesStr += " bg-slate-800 font-bold text-white border-slate-900";
+            else classesStr += " bg-white text-slate-700 border-slate-200 hover:border-slate-400";
+            if (hasClass && !isToday) classesStr += role === 'student' ? " ring-2 ring-indigo-200 border-indigo-300 bg-indigo-50" : " ring-2 ring-blue-200 border-blue-300 bg-blue-50";
+
+            gridHtml += `<div onclick="selectDate('${dateStr}', '${role}')" class="${classesStr}">
+                <span class="${isToday ? '' : 'mt-1'}">${day}</span>
+                ${badgeHtml}
+            </div>`;
+        }
+        
+        if (role === 'teacher') {
+            document.getElementById('teacher-cal-month').textContent = `${monthNames[month]} ${year}`;
+            document.getElementById('teacher-cal-grid').innerHTML = gridHtml;
+            document.getElementById('timetable-list').innerHTML = '<p class="text-sm text-slate-500 italic mt-10 text-center">Click a day on the calendar to view or add class schedules.</p>';
+            document.getElementById('teacher-selected-date-label').textContent = 'Select a date';
+            
+            const students = USERS.filter(u => u.role === 'student');
+            document.getElementById('attendance-export-list').innerHTML = students.map(st => `
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2 last:border-0 last:pb-0">
+                    <span class="font-bold text-slate-700">${st.user}</span>
+                    <button onclick="exportAttendancePDF('${st.user}')" class="text-[11px] bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 font-bold rounded shadow-sm transition">Export PDF</button>
+                </div>
+            `).join('');
+            
+        } else if (role === 'student') {
+            document.getElementById('student-cal-month').textContent = `${monthNames[month]} ${year}`;
+            document.getElementById('student-cal-grid').innerHTML = gridHtml;
+        }
+    }
+
+    // A Wrapper so toggleEditorTab remains unbroken
+    window.renderTimetable = function() {
+        window.renderCalendar('teacher');
+    }
+
+    window.selectDate = function(dateStr, role) {
+        const displayDate = new Date(dateStr).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        
+        if (role === 'teacher') {
+            document.getElementById('teacher-selected-date-label').textContent = displayDate;
+            const dayScheds = SCHEDULES.filter(s => s.date === dateStr);
+            
+            let html = `<button onclick="promptCreateSchedule('${dateStr}')" class="w-full bg-blue-50 text-blue-700 font-bold py-2.5 rounded-lg mb-4 border border-blue-200 hover:bg-blue-100 transition shadow-sm">+ Add Lesson on this Day</button>`;
+            
+            if (dayScheds.length === 0) {
+                html += '<p class="text-sm text-slate-500 italic text-center mt-6">No schedules for this date.</p>';
+            } else {
+                html += dayScheds.map(s => `
+                    <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm mb-3">
+                        <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
+                            <div>
+                                <span class="font-black text-blue-900 block text-lg">${s.className}</span>
+                                <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded inline-block mt-1 shadow-sm">${s.time}</span>
+                            </div>
+                            <div class="flex gap-1 shrink-0">
+                                <button onclick="editSchedule('${s.id}')" class="text-[10px] px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded shadow-sm transition">Edit</button>
+                                <button onclick="deleteSchedule('${s.id}', '${dateStr}')" class="text-[10px] px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded shadow-sm transition">Del</button>
+                            </div>
+                        </div>
+                        <div class="text-sm font-medium text-slate-600 mb-2 mt-1">Topic: <span class="font-bold">${s.topic || 'General Practice'}</span></div>
+                        ${s.assignedTests && s.assignedTests.length ? `<div class="text-[10px] text-slate-500 uppercase font-bold mb-3 border-t pt-2 border-slate-100">📎 ${s.assignedTests.length} Material(s) Attached</div>` : ''}
+                        <button onclick="promptAttendance('${s.id}')" class="w-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200 hover:border-blue-200 font-bold py-2 rounded-md text-xs transition shadow-sm">Mark Attendance</button>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('timetable-list').innerHTML = html;
+        } else {
+            // Build the Student's pop-up modal
+            let dayScheds = SCHEDULES.filter(s => s.date === dateStr);
+            const cid = document.getElementById('student-class-select').value;
+            const cls = CLASSES.find(c => c.id === cid);
+            if (cls) dayScheds = dayScheds.filter(s => s.className === cls.name);
+            
+            document.getElementById('day-modal-title').textContent = displayDate;
+            const content = document.getElementById('day-modal-content');
+            
+            if (dayScheds.length === 0) {
+                content.innerHTML = '<p class="text-slate-500 italic mt-4">No scheduled classes or tasks for this day.</p>';
+            } else {
+                content.innerHTML = dayScheds.map(s => {
+                    const renderTestItem = (tid) => {
+                        const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
+                        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
+                        return `
+                        <div class="flex justify-between items-center p-3 border border-slate-200 bg-white shadow-sm mb-2 rounded-md hover:border-indigo-300 transition">
+                          <div class="truncate pr-2"><span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase mr-2">${t.module}</span><span class="font-bold text-slate-800 text-sm truncate">${t.title}</span></div>
+                          <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); startTest('${t.id}')" class="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-4 rounded text-xs shadow transition">Start</button>
+                        </div>`;
+                    };
+                    const lessonTests = (s.assignedTests || []).map(tid => renderTestItem(tid)).join('');
+                    
+                    return `
+                    <div class="p-5 bg-indigo-50 border border-indigo-100 rounded-xl shadow-sm mb-4">
+                        <h3 class="font-black text-2xl text-slate-800 mb-1">${s.time}</h3>
+                        <p class="text-sm font-bold text-slate-500 flex items-center gap-2 mb-4"><span class="w-2 h-2 rounded-full bg-indigo-400"></span> ${s.topic || 'General Practice'}</p>
+                        <div class="border-t border-indigo-200 pt-4">
+                            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest mb-3">Assigned Materials</h4>
+                            ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No specific tests assigned to this lesson.</p>'}
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            document.getElementById('student-day-modal').classList.remove('hidden');
+        }
+    }
+
+    function promptCreateSchedule(dateStr = '') {
         if(CLASSES.length === 0) { showModalMsg("Error", "Create a Class first."); return; }
+        if(!dateStr) dateStr = new Date().toISOString().split('T')[0];
+
         let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-        let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => `<option value="${d}">${d}</option>`).join('');
 
         document.getElementById('modal-title').textContent = "Schedule a Lesson";
         document.getElementById('modal-message').innerHTML = `
-            <select id="sched-class" class="w-full border p-2 mb-3 rounded font-bold text-blue-800 outline-none" onchange="window.updateSchedTestOptions()">${classOpts}</select>
+            <label class="block text-sm font-bold text-slate-700 mb-1 mt-2">Class</label>
+            <select id="sched-class" class="w-full border-2 border-slate-200 p-2 mb-3 rounded-md font-bold text-blue-800 outline-none focus:border-blue-500" onchange="window.updateSchedTestOptions()">${classOpts}</select>
+            
             <div class="flex gap-2 mb-3">
-                <select id="sched-day-of-week" class="w-1/2 border p-2 rounded outline-none">${days}</select>
-                <input type="text" id="sched-time" placeholder="Time (e.g. 10:00 AM)" class="w-1/2 border p-2 rounded outline-none">
+                <div class="w-1/2">
+                   <label class="block text-sm font-bold text-slate-700 mb-1">Date</label>
+                   <input type="date" id="sched-date" value="${dateStr}" class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
+                </div>
+                <div class="w-1/2">
+                   <label class="block text-sm font-bold text-slate-700 mb-1">Time</label>
+                   <input type="time" id="sched-time" class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
+                </div>
             </div>
-            <input type="text" id="sched-topic" placeholder="Topic Focus (e.g. Reading Part 1)" class="w-full border p-2 mb-4 rounded outline-none">
+            
+            <label class="block text-sm font-bold text-slate-700 mb-1">Topic</label>
+            <input type="text" id="sched-topic" placeholder="Topic Focus (e.g. Reading Part 1)" class="w-full border-2 border-slate-200 p-2 mb-4 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
             
             <label class="block text-sm font-bold text-slate-700 mb-1">Assign Materials to this Lesson:</label>
-            <div id="sched-tests-container" class="max-h-40 overflow-y-auto border border-slate-200 p-3 rounded bg-slate-50 text-sm text-slate-500 italic space-y-2">
+            <div id="sched-tests-container" class="max-h-40 overflow-y-auto border-2 border-slate-200 p-3 rounded-md bg-slate-50 text-sm text-slate-500 italic space-y-2 shadow-inner">
                Please select a class first...
             </div>
         `;
@@ -3788,7 +4144,7 @@
             const cls = CLASSES.find(c => c.name === clsName);
             const container = document.getElementById('sched-tests-container');
             if(!cls || !cls.assignedTests || cls.assignedTests.length === 0) {
-                container.innerHTML = "No tests assigned to this class yet. Assign tests in the 'Classes' tab first.";
+                container.innerHTML = "No tests assigned to this class yet. Assign tests in the 'Dashboard' tab first.";
                 return;
             }
             container.innerHTML = cls.assignedTests.map(tid => {
@@ -3801,19 +4157,25 @@
         document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
         document.getElementById('modal-confirm').onclick = async () => {
             const cls = document.getElementById('sched-class').value;
-            const dayOfWeek = document.getElementById('sched-day-of-week').value;
-            const time = document.getElementById('sched-time').value;
+            const date = document.getElementById('sched-date').value;
+            const timeRaw = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
             const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
 
-            if(cls && time) {
-                const newSched = { id: 'sch_'+Date.now(), className: cls, dayOfWeek, time, topic, assignedTests: selectedTests, dateAdded: new Date().toLocaleDateString() };
+            if(cls && date && timeRaw) {
+                // convert standard military time input to AM/PM for readability
+                const [h, m] = timeRaw.split(':');
+                const time = `${h%12||12}:${m} ${h>=12?'PM':'AM'}`;
+
+                const newSched = { id: 'sch_'+Date.now(), className: cls, date, time, topic, assignedTests: selectedTests, dateAdded: new Date().toLocaleDateString() };
                 SCHEDULES.push(newSched);
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), newSched.id), newSched);
                 document.getElementById('custom-modal').classList.add('hidden');
-                renderTimetable();
+                
+                window.renderCalendar('teacher');
+                window.selectDate(date, 'teacher');
             } else {
-                alert("Please select a class and enter a time.");
+                alert("Please select a class, date, and time.");
             }
         };
     }
@@ -3823,26 +4185,34 @@
         if(!sched) return;
 
         let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.name}" ${c.name === sched.className ? 'selected' : ''}>${c.name}</option>`).join('');
-        let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map(d => `<option value="${d}" ${d === sched.dayOfWeek ? 'selected' : ''}>${d}</option>`).join('');
 
         document.getElementById('modal-title').textContent = "Edit Schedule";
         document.getElementById('modal-message').innerHTML = `
-            <select id="sched-class" class="w-full border p-2 mb-3 rounded font-bold text-blue-800 outline-none" onchange="window.updateSchedTestOptions()">${classOpts}</select>
+            <label class="block text-sm font-bold text-slate-700 mb-1 mt-2">Class</label>
+            <select id="sched-class" class="w-full border-2 border-slate-200 p-2 mb-3 rounded-md font-bold text-blue-800 outline-none focus:border-blue-500" onchange="window.updateSchedTestOptions()">${classOpts}</select>
+            
             <div class="flex gap-2 mb-3">
-                <select id="sched-day-of-week" class="w-1/2 border p-2 rounded outline-none">${days}</select>
-                <input type="text" id="sched-time" placeholder="Time (e.g. 10:00 AM)" value="${sched.time}" class="w-1/2 border p-2 rounded outline-none">
+                <div class="w-1/2">
+                   <label class="block text-sm font-bold text-slate-700 mb-1">Date</label>
+                   <input type="date" id="sched-date" value="${sched.date}" class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
+                </div>
+                <div class="w-1/2">
+                   <label class="block text-sm font-bold text-slate-700 mb-1">Time Text</label>
+                   <input type="text" id="sched-time" value="${sched.time}" placeholder="e.g. 10:00 AM" class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
+                </div>
             </div>
-            <input type="text" id="sched-topic" placeholder="Topic Focus (e.g. Reading Part 1)" value="${sched.topic}" class="w-full border p-2 mb-4 rounded outline-none">
+            
+            <label class="block text-sm font-bold text-slate-700 mb-1">Topic</label>
+            <input type="text" id="sched-topic" value="${sched.topic}" placeholder="Topic Focus (e.g. Reading Part 1)" class="w-full border-2 border-slate-200 p-2 mb-4 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
             
             <label class="block text-sm font-bold text-slate-700 mb-1">Assign Materials to this Lesson:</label>
-            <div id="sched-tests-container" class="max-h-40 overflow-y-auto border border-slate-200 p-3 rounded bg-slate-50 text-sm text-slate-500 space-y-2">
+            <div id="sched-tests-container" class="max-h-40 overflow-y-auto border-2 border-slate-200 p-3 rounded-md bg-slate-50 text-sm text-slate-500 space-y-2 shadow-inner">
             </div>
         `;
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.remove('hidden');
         document.getElementById('custom-modal').classList.remove('hidden');
 
-        // Dynamically load tests available to the selected class and pre-check assigned ones
         window.updateSchedTestOptions = () => {
             const clsName = document.getElementById('sched-class').value;
             const cls = CLASSES.find(c => c.name === clsName);
@@ -3864,124 +4234,168 @@
         document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
         document.getElementById('modal-confirm').onclick = async () => {
             const cls = document.getElementById('sched-class').value;
-            const dayOfWeek = document.getElementById('sched-day-of-week').value;
+            const date = document.getElementById('sched-date').value;
             const time = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
             const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
 
-            if(cls && time) {
+            if(cls && date && time) {
                 sched.className = cls;
-                sched.dayOfWeek = dayOfWeek;
+                sched.date = date;
                 sched.time = time;
                 sched.topic = topic;
                 sched.assignedTests = selectedTests;
                 
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), sched.id), sched);
                 document.getElementById('custom-modal').classList.add('hidden');
-                renderTimetable();
+                
+                window.renderCalendar('teacher');
+                window.selectDate(date, 'teacher');
             } else {
-                alert("Please select a class and enter a time.");
+                alert("Please fill out the class, date, and time fields.");
             }
         };
     }
 
-    window.deleteSchedule = function(id) {
-        showConfirm("Delete Schedule", "Are you sure you want to remove this lesson from the timetable? This will also clear its attendance records.", async () => {
+    window.deleteSchedule = function(id, dateStr) {
+        showConfirm("Delete Schedule", "Are you sure you want to remove this lesson from the calendar? This will also wipe its attendance records.", async () => {
             SCHEDULES = SCHEDULES.filter(s => s.id !== id);
             await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('schedules'), id));
             
-            // Cleanup associated attendance to keep the database clean
+            // Cleanup associated attendance
             const attToDelete = ATTENDANCE.filter(a => a.scheduleId === id);
             ATTENDANCE = ATTENDANCE.filter(a => a.scheduleId !== id);
             for(let a of attToDelete) {
                 await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('attendance'), a.id));
             }
-            renderTimetable();
+            window.renderCalendar('teacher');
+            if (dateStr) window.selectDate(dateStr, 'teacher');
         });
     }
 
-    function renderTimetable() {
-        const list = document.getElementById('timetable-list');
-        const daysOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    window.promptAttendance = function(scheduleId) {
+        const sched = SCHEDULES.find(s => s.id === scheduleId);
+        if(!sched) return;
 
-        if(SCHEDULES.length === 0) {
-            list.innerHTML = '<p class="text-sm text-slate-500 italic">No schedules created.</p>';
-        } else {
-            let html = '';
-            daysOrder.forEach(day => {
-                const dayScheds = SCHEDULES.filter(s => s.dayOfWeek === day);
-                if(dayScheds.length > 0) {
-                    html += `<h4 class="font-bold text-slate-700 bg-slate-200 px-3 py-1.5 rounded mt-5 mb-3 border-l-4 border-slate-500">${day}</h4>`;
-                    html += dayScheds.map(s => `
-                        <div class="bg-white border border-slate-200 p-4 rounded shadow-sm mb-3">
-                            <div class="flex justify-between items-start mb-1">
-                                <div>
-                                    <span class="font-bold text-blue-800 block">${s.className}</span>
-                                    <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded inline-block mt-1">${s.time}</span>
-                                </div>
-                                <div class="flex gap-1 shrink-0">
-                                    <button onclick="editSchedule('${s.id}')" class="text-[11px] px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded border border-slate-200 transition">Edit</button>
-                                    <button onclick="deleteSchedule('${s.id}')" class="text-[11px] px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded border border-rose-200 transition">Del</button>
-                                </div>
-                            </div>
-                            <div class="text-sm text-slate-600 mb-3 mt-2">Topic: ${s.topic || 'General Practice'}</div>
-                            ${s.assignedTests && s.assignedTests.length ? `<div class="text-[10px] text-slate-500 uppercase font-bold mb-3 border-t pt-2 border-slate-100">📎 ${s.assignedTests.length} Material(s) Attached</div>` : ''}
-                            <button onclick="promptAttendance('${s.id}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold py-1.5 rounded text-sm transition">Mark Attendance</button>
-                        </div>
-                    `).join('');
-                }
-            });
-            list.innerHTML = html;
+        const cls = CLASSES.find(c => c.name === sched.className);
+        if(!cls) {
+            alert("Could not find the associated class.");
+            return;
         }
 
-        const students = USERS.filter(u => u.role === 'student');
-        document.getElementById('attendance-export-list').innerHTML = students.map(st => `
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2 last:border-0 last:pb-0">
-                <span class="font-bold text-slate-700">${st.user}</span>
-                <button onclick="exportAttendancePDF('${st.user}')" class="text-xs bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 font-bold rounded">Export PDF Report</button>
-            </div>
-        `).join('');
-    }
+        const students = cls.enrolledStudents || [];
+        if (students.length === 0) {
+            alert("No students are currently enrolled in this class.");
+            return;
+        }
 
-    function promptAttendance(scheduleId) {
-        const sched = SCHEDULES.find(s => s.id === scheduleId);
-        const students = USERS.filter(u => u.role === 'student'); // Realistically, filter by class enrolled, but we show all for simplicity
+        let html = `<div class="max-h-[60vh] overflow-y-auto pr-2 space-y-3">`;
         
-        let checks = students.map(st => {
-            const hasAttended = ATTENDANCE.find(a => a.scheduleId === scheduleId && a.student === st.user);
-            return `<label class="flex items-center space-x-2 mb-1"><input type="checkbox" id="att_${st.user}" ${hasAttended ? 'checked' : ''} class="w-4 h-4 text-blue-600"> <span>${st.user}</span></label>`;
-        }).join('');
+        students.forEach(st => {
+            // Check if there is an existing record to load
+            const existing = ATTENDANCE.find(a => a.scheduleId === scheduleId && a.student === st);
+            const currentStatus = existing ? existing.status : 'on_time';
+
+            html += `
+            <div class="p-3 border border-slate-200 rounded-lg bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-2 shadow-sm transition-colors duration-200" id="att-card-${st}">
+                <div class="font-bold text-slate-800">${st}</div>
+                <select id="att-status-${st}" class="border border-slate-300 rounded px-2 py-1.5 text-sm outline-none focus:border-blue-500 font-bold shadow-sm cursor-pointer">
+                    <option value="on_time" ${currentStatus === 'on_time' ? 'selected' : ''}>✅ Present (On Time)</option>
+                    <option value="late" ${currentStatus === 'late' ? 'selected' : ''}>⚠️ Present (Late)</option>
+                    <option value="absent_adv" ${currentStatus === 'absent_adv' ? 'selected' : ''}>❌ Absent (Advance Permission)</option>
+                    <option value="absent_late" ${currentStatus === 'absent_late' ? 'selected' : ''}>❌ Absent (Late Permission)</option>
+                    <option value="absent_none" ${currentStatus === 'absent_none' ? 'selected' : ''}>❗ Absent (No Permission)</option>
+                </select>
+            </div>
+            `;
+        });
+        
+        html += `</div>`;
 
         document.getElementById('modal-title').textContent = `Attendance: ${sched.className}`;
-        document.getElementById('modal-message').innerHTML = `<p class="mb-2 text-sm font-bold text-blue-600">${sched.time} - ${sched.topic}</p><div class="max-h-40 overflow-y-auto p-2 bg-slate-50 border rounded">${checks}</div>`;
+        document.getElementById('modal-message').innerHTML = `<p class="text-sm text-slate-500 font-medium mb-4">Date: ${sched.date} &bull; Time: ${sched.time}</p>` + html;
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.remove('hidden');
         document.getElementById('custom-modal').classList.remove('hidden');
 
+        // Add dynamic color styling to the dropdowns based on status
+        students.forEach(st => {
+            const sel = document.getElementById(`att-status-${st}`);
+            const card = document.getElementById(`att-card-${st}`);
+            if(sel && card) {
+                sel.addEventListener('change', function() {
+                    sel.className = "border rounded px-2 py-1.5 text-sm outline-none font-bold shadow-sm cursor-pointer ";
+                    card.className = "p-3 border rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-2 shadow-sm transition-colors duration-200 ";
+                    
+                    if(this.value.includes('absent')) {
+                        sel.className += "border-rose-300 text-rose-700 bg-white focus:border-rose-500";
+                        card.className += "bg-rose-50 border-rose-200";
+                    } else if(this.value === 'late') {
+                        sel.className += "border-amber-300 text-amber-700 bg-white focus:border-amber-500";
+                        card.className += "bg-amber-50 border-amber-200";
+                    } else {
+                        sel.className += "border-emerald-300 text-emerald-700 bg-white focus:border-emerald-500";
+                        card.className += "bg-emerald-50 border-emerald-200";
+                    }
+                });
+                // Trigger once immediately to set initial colors
+                sel.dispatchEvent(new Event('change'));
+            }
+        });
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        
         document.getElementById('modal-confirm').onclick = async () => {
-            for (let st of students) {
-                const isChecked = document.getElementById(`att_${st.user}`).checked;
-                const recordId = `${scheduleId}_${st.user}`;
-                const existingIdx = ATTENDANCE.findIndex(a => a.scheduleId === scheduleId && a.student === st.user);
+            document.getElementById('modal-confirm').textContent = "Saving...";
+            
+            // Loop through all students and save their exact selected status to the cloud
+            for(let st of students) {
+                const status = document.getElementById(`att-status-${st}`).value;
+                const existingIdx = ATTENDANCE.findIndex(a => a.scheduleId === scheduleId && a.student === st);
                 
-                if (isChecked && existingIdx === -1) {
-                    const record = { id: recordId, scheduleId, student: st.user, date: new Date().toLocaleDateString(), topic: sched.topic, className: sched.className };
-                    ATTENDANCE.push(record);
-                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('attendance'), recordId), record);
-                } else if (!isChecked && existingIdx !== -1) {
-                    ATTENDANCE.splice(existingIdx, 1);
-                    await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('attendance'), recordId));
+                if(existingIdx >= 0) {
+                    ATTENDANCE[existingIdx].status = status;
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('attendance'), ATTENDANCE[existingIdx].id), ATTENDANCE[existingIdx]);
+                } else {
+                    const newAtt = {
+                        id: 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2,9),
+                        scheduleId: scheduleId,
+                        date: sched.date,
+                        student: st,
+                        status: status,
+                        className: sched.className
+                    };
+                    ATTENDANCE.push(newAtt);
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('attendance'), newAtt.id), newAtt);
                 }
             }
+            
+            document.getElementById('modal-confirm').textContent = "Confirm";
             document.getElementById('custom-modal').classList.add('hidden');
-            showModalMsg("Saved", "Attendance records updated.");
+            
+            // Re-render the calendar to show the saved state
+            window.renderCalendar('teacher');
+            window.selectDate(sched.date, 'teacher');
         };
     }
 
-    function exportAttendancePDF(studentName) {
+    window.exportAttendancePDF = function(studentName) {
         // Collect Data
         const studentAttendance = ATTENDANCE.filter(a => a.student === studentName);
         const studentTests = SUBMISSIONS.filter(s => s.student === studentName);
+
+        // Calculate actual attendance metrics
+        const presentCount = studentAttendance.filter(a => a.status === 'on_time' || a.status === 'late' || !a.status).length;
+        const absentCount = studentAttendance.length - presentCount;
+
+        // Status Dictionary for beautiful print formatting
+        const statusMap = {
+            'on_time': '<span style="color: #10b981; font-weight: bold;">✅ On Time</span>',
+            'late': '<span style="color: #f59e0b; font-weight: bold;">⚠️ Late</span>',
+            'absent_adv': '<span style="color: #ef4444; font-weight: bold;">❌ Absent (Advance Permission)</span>',
+            'absent_late': '<span style="color: #ef4444; font-weight: bold;">❌ Absent (Late Permission)</span>',
+            'absent_none': '<span style="color: #dc2626; font-weight: bold;">❗ Absent (No Permission)</span>'
+        };
 
         // Generate HTML Report
         const printWindow = window.open('', '_blank');
@@ -3991,34 +4405,37 @@
         <head>
             <title>Student Report - ${studentName}</title>
             <style>
-                body { font-family: Arial, sans-serif; color: #333; padding: 40px; }
-                h1 { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
-                h2 { color: #374151; margin-top: 30px; font-size: 18px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                th, td { border: 1px solid #d1d5db; padding: 10px; text-align: left; }
-                th { background-color: #f3f4f6; color: #1f2937; }
-                .summary { background: #eff6ff; padding: 15px; border-radius: 8px; margin-top: 20px; border: 1px solid #bfdbfe; }
+                body { font-family: Arial, sans-serif; color: #333; padding: 40px; line-height: 1.5; }
+                h1 { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 10px; }
+                h2 { color: #374151; margin-top: 30px; font-size: 18px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+                th, td { border: 1px solid #d1d5db; padding: 12px; text-align: left; }
+                th { background-color: #f3f4f6; color: #1f2937; font-weight: bold; }
+                .summary { background: #eff6ff; padding: 20px; border-radius: 8px; margin-top: 25px; border: 1px solid #bfdbfe; font-size: 15px; }
             </style>
         </head>
         <body>
             <h1>IELTS LMS - Student Report</h1>
-            <p><strong>Candidate:</strong> ${studentName}</p>
-            <p><strong>Date Generated:</strong> ${new Date().toLocaleDateString()}</p>
+            <p style="margin: 5px 0;"><strong>Candidate:</strong> ${studentName}</p>
+            <p style="margin: 5px 0;"><strong>Date Generated:</strong> ${new Date().toLocaleDateString()}</p>
             
             <div class="summary">
-                <strong>Summary:</strong> Total Lessons Attended: ${studentAttendance.length} | Total Tests Submitted: ${studentTests.length}
+                <strong>Overall Summary:</strong><br><br>
+                &bull; Total Lessons Tracked: <strong>${studentAttendance.length}</strong><br>
+                &bull; Present (Including Late): <strong style="color: #10b981;">${presentCount}</strong> | Absent: <strong style="color: #ef4444;">${absentCount}</strong><br>
+                &bull; Total Tests Submitted: <strong>${studentTests.length}</strong>
             </div>
 
             <h2>📚 Class Attendance Schedule</h2>
             <table>
-                <tr><th>Date</th><th>Class</th><th>Topic / Focus</th></tr>
-                ${studentAttendance.length ? studentAttendance.map(a => `<tr><td>${a.date}</td><td>${a.className}</td><td>${a.topic}</td></tr>`).join('') : '<tr><td colspan="3">No records found.</td></tr>'}
+                <tr><th>Date</th><th>Class</th><th>Topic / Focus</th><th>Attendance Status</th></tr>
+                ${studentAttendance.length ? studentAttendance.map(a => `<tr><td>${a.date}</td><td>${a.className}</td><td>${a.topic}</td><td>${statusMap[a.status] || '<span style="color: #10b981; font-weight: bold;">✅ Present</span>'}</td></tr>`).join('') : '<tr><td colspan="4">No records found.</td></tr>'}
             </table>
 
             <h2>📝 Test & Material Completion</h2>
             <table>
                 <tr><th>Date</th><th>Test Name</th><th>Score / Status</th></tr>
-                ${studentTests.length ? studentTests.map(t => `<tr><td>${t.date}</td><td>${t.testName}</td><td>${t.score}</td></tr>`).join('') : '<tr><td colspan="3">No tests submitted yet.</td></tr>'}
+                ${studentTests.length ? studentTests.map(t => `<tr><td>${t.date}</td><td>${t.testName}</td><td><strong>${t.score}</strong></td></tr>`).join('') : '<tr><td colspan="3">No tests submitted yet.</td></tr>'}
             </table>
             
             <scr` + `ipt>
