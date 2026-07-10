@@ -599,9 +599,9 @@
         <span id="editor-autosave-status" class="text-xs font-bold text-emerald-400 opacity-0 transition-opacity">Autosaved</span>
         <button id="editor-logout" onclick="logout()" class="px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Logout</button>
         <button id="editor-back-bank" onclick="exitBuilder()" class="hidden px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Cancel Edit</button>
-        <!-- Teacher Editor Preview Button -->
-        <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-4 py-2 bg-purple-600 font-bold rounded hover:bg-purple-700 text-white transition shadow flex items-center gap-1">👁️ Preview</button>
-        <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-4 py-2 bg-emerald-600 font-bold rounded hover:bg-emerald-700 transition shadow">Save Test Data</button>
+        <!-- Upgraded Editor Controls -->
+        <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 font-bold rounded-lg hover:from-indigo-600 hover:to-purple-700 text-white transition shadow-md flex items-center gap-2">👁️ Preview</button>
+        <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 font-bold rounded-lg hover:from-emerald-600 hover:to-teal-700 text-white transition shadow-md flex items-center gap-2">💾 Save Test Data</button>
       </div>
     </header>
 
@@ -722,59 +722,70 @@
     </div>
 
     <!-- Test Builder -->
-    <div id="editor-view-builder" class="flex-1 flex-col overflow-hidden bg-white hidden">
-      <div class="bg-slate-200 px-6 py-2 flex space-x-2 border-b border-slate-300" id="editor-tabs"></div>
+    <div id="editor-view-builder" class="flex-1 flex-col overflow-hidden bg-[#f8fafc] hidden">
+      <!-- Upgraded Tabs Bar -->
+      <div class="bg-slate-200/50 px-6 pt-3 flex space-x-2 border-b border-slate-300 shadow-inner" id="editor-tabs"></div>
+      
       <div class="flex flex-1 overflow-hidden" id="builder-split">
-        <div class="w-1/2 p-6 border-r border-slate-300 overflow-y-auto bg-white flex flex-col" id="builder-left">
-          <h2 class="text-lg font-bold mb-4 border-b pb-2 text-slate-800">1. Content Details</h2>
-          <label class="block font-bold mb-1 text-sm text-slate-600" id="edit-title-label">Part Title</label>
-          <input type="text" id="edit-passage-title" class="w-full border p-2 rounded mb-3 focus:ring-blue-500 font-bold">
+        <!-- Left Panel: Content -->
+        <div class="w-1/2 p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10" id="builder-left">
+          <h2 class="text-xl font-black mb-6 border-b border-slate-100 pb-3 text-slate-800 flex items-center gap-2">📝 1. Content Details</h2>
+          
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" id="edit-title-label">Part Title</label>
+          <input type="text" id="edit-passage-title" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 focus:ring-0 focus:border-blue-500 font-bold text-slate-800 transition-colors shadow-sm outline-none">
           
           <div id="builder-media-fields">
             <div id="audio-field-container">
-              <label class="block font-bold mb-1 text-sm text-slate-600">Audio URL (Optional)</label>
-              <input type="text" id="edit-audio-url" class="w-full border p-2 rounded mb-3 text-sm text-blue-600 font-mono">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Audio URL (Optional)</label>
+              <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="https://...">
             </div>
             <div id="image-field-container" class="hidden">
-              <label class="block font-bold mb-1 text-sm text-slate-600">Part Image (Task 1 Chart, etc.)</label>
-              <div class="relative border-2 border-dashed border-slate-400 bg-slate-50 mt-1 mb-3 flex flex-col items-center justify-center min-h-[150px] cursor-pointer overflow-hidden focus:ring-2 focus:ring-blue-500" tabindex="0" onclick="document.getElementById('edit-part-image-file').click()" onpaste="handlePartImagePaste(event)">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Part Image (Task 1 Chart, etc.)</label>
+              <div class="relative border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-colors mt-1 mb-5 flex flex-col items-center justify-center min-h-[160px] cursor-pointer rounded-xl overflow-hidden outline-none focus:ring-2 focus:ring-blue-500" tabindex="0" onclick="document.getElementById('edit-part-image-file').click()" onpaste="handlePartImagePaste(event)">
                   <div id="part-image-preview-container" class="w-full text-center"></div>
               </div>
               <input type="file" id="edit-part-image-file" class="hidden" accept="image/*" onchange="handlePartImageFile(event)">
             </div>
           </div>
           
-          <div class="flex justify-between items-end mb-1">
-              <label class="block font-bold text-sm text-slate-600" id="edit-text-label">Prompt / Passage Text</label>
-              <div class="flex gap-1 bg-slate-100 p-1 rounded border border-slate-200">
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Bold">B</button>
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 hover:bg-slate-200 text-slate-700 text-sm italic rounded transition" title="Italic">I</button>
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 hover:bg-slate-200 text-slate-700 text-sm underline rounded transition" title="Underline">U</button>
+          <div class="flex justify-between items-end mb-0 mt-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1" id="edit-text-label">Prompt / Passage Text</label>
+              
+              <!-- Upgraded Main Toolbar -->
+              <div class="flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 shadow-inner">
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
                   <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Bullet List">• List</button>
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-1 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded transition" title="Numbered List">1. List</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">• List</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">1. List</button>
                   <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank')" class="px-2 py-1 hover:bg-blue-100 text-blue-700 text-sm font-bold rounded transition" title="Insert Gap Fill Blank">{_}</button>
-                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop')" class="px-2 py-1 hover:bg-blue-100 text-blue-700 text-sm font-bold rounded transition" title="Insert Drag & Drop Gap">[↓]</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank')" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition" title="Insert Gap Fill Blank">{_} Blank</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop')" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
               </div>
           </div>
-          <div class="relative flex-1 min-h-[200px] flex flex-col">
-             <div id="edit-passage-text" class="rich-editor flex-1 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 leading-relaxed outline-none" style="font-family: inherit !important; font-size: 1rem !important;" contenteditable="true" oninput="window.triggerEditorAutosave()"></div>
+          <div class="relative flex-1 min-h-[300px] flex flex-col">
+             <div id="edit-passage-text" class="rich-editor flex-1 bg-white border border-slate-300 rounded-b-lg rounded-tl-lg p-5 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 leading-relaxed outline-none transition-all" style="font-family: inherit !important; font-size: 1rem !important;" contenteditable="true" oninput="window.triggerEditorAutosave()"></div>
           </div>
         </div>
-        <div class="w-1/2 p-6 overflow-y-auto bg-slate-50" id="builder-right">
-          <h2 class="text-lg font-bold mb-4 border-b pb-2 text-slate-800">2. Manage Questions</h2>
-          <div class="mb-6 bg-white p-4 border rounded shadow-sm flex gap-2">
-            <select id="new-q-type" class="flex-1 border p-2 rounded text-sm font-medium"></select>
-            <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-3 py-2 rounded font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap">＋ Add</button>
-            <button onclick="openAIGenerator()" class="bg-purple-600 text-white px-3 py-2 rounded font-bold shadow hover:bg-purple-700 text-sm whitespace-nowrap flex items-center gap-1 transition">✨ AI Auto-Gen</button>
+        
+        <!-- Right Panel: Questions -->
+        <div class="w-1/2 p-8 overflow-y-auto bg-slate-50" id="builder-right">
+          <h2 class="text-xl font-black mb-6 border-b border-slate-200 pb-3 text-slate-800 flex items-center gap-2">⚙️ 2. Manage Questions</h2>
+          
+          <!-- Upgraded Action Bar -->
+          <div class="mb-8 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex gap-3 items-center sticky top-0 z-20">
+            <select id="new-q-type" class="flex-1 border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer"></select>
+            <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add Question</button>
+            <div class="w-px h-8 bg-slate-200"></div>
+            <button onclick="openAIGenerator()" class="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:shadow-md text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5">✨ AI Auto-Gen</button>
           </div>
-          <div id="editor-questions-list" class="space-y-4 pb-32"></div>
+          
+          <div id="editor-questions-list" class="space-y-6 pb-32"></div>
         </div>
       </div>
     </div>
   </div>
-
   <!-- EXAM UI -->
   <div id="exam-ui" class="hidden h-screen flex flex-col bg-white overflow-hidden relative">
     <header class="bg-slate-900 text-white flex justify-between items-center px-4 py-2 shrink-0 shadow-md z-40">
@@ -2409,15 +2420,23 @@
 
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
-      document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => `<button onclick="saveCurrentEditorPart(); loadEditorPart(${i})" class="px-5 py-2 font-bold transition ${currentEditorPartIdx===i?'bg-white text-blue-800 border-t-4 border-blue-600':'bg-slate-300 text-slate-600'}">Part ${i+1}</button>`).join('');
+      
+      // Modern Tab Styling
+      document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => 
+        `<button onclick="saveCurrentEditorPart(); loadEditorPart(${i})" 
+          class="px-6 py-2.5 font-bold rounded-t-lg transition-all border-x border-t ${currentEditorPartIdx===i ? 'bg-white text-blue-700 border-slate-300 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] border-b-white translate-y-[1px]' : 'bg-slate-100 text-slate-500 border-transparent hover:bg-slate-200 hover:text-slate-700 border-b-slate-300'}">
+          Part ${i+1}
+        </button>`
+      ).join('');
+      
       document.getElementById('edit-passage-title').value = p.title||'';
       document.getElementById('edit-audio-url').value = p.audioUrl||'';
       
       const imgContainer = document.getElementById('part-image-preview-container');
       if (p.image) {
-          imgContainer.innerHTML = `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-2 py-1 rounded shadow" onclick="event.stopPropagation(); removePartImage()">Clear Image</button></div><img src="${p.image}" class="max-h-[200px] mx-auto block pointer-events-none select-none">`;
+          imgContainer.innerHTML = `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-3 py-1.5 rounded-md shadow-md font-bold transition" onclick="event.stopPropagation(); removePartImage()">✕ Clear Image</button></div><img src="${p.image}" class="max-h-[200px] mx-auto block pointer-events-none select-none rounded-lg shadow-sm">`;
       } else {
-          imgContainer.innerHTML = `<div class="text-slate-500 pointer-events-none my-8" id="part-image-placeholder">Paste or click to upload image</div>`;
+          imgContainer.innerHTML = `<div class="text-slate-400 font-medium pointer-events-none my-8 flex flex-col items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Paste or click to upload image</div>`;
       }
       
       const passTxt = document.getElementById('edit-passage-text');
@@ -2428,91 +2447,122 @@
     function renderEditorQuestions() {
       const list = document.getElementById('editor-questions-list'); list.innerHTML = '';
       APP_DATA.parts[currentEditorPartIdx].questions.forEach((q, i) => {
-        const div = document.createElement('div'); div.className = 'bg-white p-4 rounded border border-slate-300 shadow-sm relative mb-4';
+        const div = document.createElement('div'); 
+        div.className = 'bg-white rounded-xl border border-slate-200 shadow-sm relative transition-all hover:shadow-md overflow-hidden';
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
-        const mkLbl = t => `<label class="block text-xs font-bold text-slate-500 mt-3 mb-1">${t}</label>`;
-        const mkToolbar = () => `<div class="flex gap-1 bg-slate-100 p-1 rounded-t border border-b-0 border-slate-300 w-fit"><button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">B</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs italic rounded">I</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs underline rounded">U</button><div class="w-px h-4 bg-slate-300 mx-1 self-center"></div><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">• List</button><button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-0.5 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded">1. List</button><div class="w-px h-4 bg-slate-300 mx-1 self-center"></div><button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2 py-0.5 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded" title="Insert Gap Fill Blank">{_}</button><button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2 py-0.5 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded" title="Insert Drag & Drop Gap">[↓]</button></div>`;
+        const mkLbl = (t) => `<label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mt-4 first:mt-0">${t}</label>`;
         
-        const editorId = `rich-text-${i}`;
-        const toolbar = `<div class="flex gap-1 mb-1 mt-1">
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Bold">B</button>
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs italic rounded transition" title="Italic">I</button>
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs underline rounded transition" title="Underline">U</button>
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Bullet List">• List</button>
+        // Contextual Inner Toolbar
+        const mkToolbar = () => `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
             <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-            <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold rounded transition" title="Insert Gap Fill Blank">{_}</button>
-            <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-bold rounded transition" title="Insert Drag & Drop Gap">[↓]</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">• List</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">1. List</button>
             <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-            <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'table', '${q.type}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Insert Table">▦ Table</button>
-            <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'flow', '${q.type}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded transition" title="Insert Flowchart">↓ Flow</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition" title="Insert Gap Fill Blank">{_} Blank</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
         </div>`;
         
-        let html = `<div class="absolute top-2 right-2 flex gap-1">`;
-        if (i > 0) html += `<button onclick="moveEditorQuestion(${i}, -1)" class="text-slate-500 hover:bg-slate-100 font-bold px-2 rounded border border-slate-200 transition" title="Move Up">↑</button>`;
-        if (i < APP_DATA.parts[currentEditorPartIdx].questions.length - 1) html += `<button onclick="moveEditorQuestion(${i}, 1)" class="text-slate-500 hover:bg-slate-100 font-bold px-2 rounded border border-slate-200 transition" title="Move Down">↓</button>`;
-        html += `<button onclick="APP_DATA.parts[currentEditorPartIdx].questions.splice(${i},1); renderEditorQuestions(); triggerEditorAutosave();" class="text-rose-500 hover:bg-rose-50 text-xs font-bold px-2 border border-rose-200 rounded transition" title="Delete Block">X</button></div>`;
-        html += `<div class="text-sm font-bold text-blue-700 uppercase mb-2 border-b pb-1 pr-24">Block ${i+1}: ${q.type}</div>`;
+        const editorId = `rich-text-${i}`;
+        const advToolbar = `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 shadow-inner w-full">
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition">{_} Blank</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition">[↓] Drop</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+            <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'table', '${q.type}')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">▦ Table</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'flow', '${q.type}')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">↓ Flow</button>
+        </div>`;
+        
+        // Structured Header for the Block
+        let html = `
+        <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="bg-blue-100 text-blue-800 font-black text-[10px] px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">Block ${i+1}</span>
+                <span class="text-sm font-bold text-slate-700 capitalize">${q.type.replace(/_/g, ' ')}</span>
+            </div>
+            <div class="flex gap-2">
+                ${i > 0 ? `<button onclick="moveEditorQuestion(${i}, -1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Up">↑</button>` : ''}
+                ${i < APP_DATA.parts[currentEditorPartIdx].questions.length - 1 ? `<button onclick="moveEditorQuestion(${i}, 1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Down">↓</button>` : ''}
+                <div class="w-px h-7 bg-slate-300 mx-1"></div>
+                <button onclick="APP_DATA.parts[currentEditorPartIdx].questions.splice(${i},1); renderEditorQuestions(); triggerEditorAutosave();" class="w-7 h-7 flex items-center justify-center bg-rose-50 border border-rose-200 rounded hover:bg-rose-500 hover:text-white text-rose-500 font-bold transition shadow-sm" title="Delete Block">✕</button>
+            </div>
+        </div>
+        <div class="p-5 flex flex-col gap-1">`;
         
         const isHotspot = q.type === 'map_labelling_hotspots';
-        html += `<div class="flex gap-2">${mkLbl('IDs (csv)')}<input type="text" class="q-ids border p-1 w-full text-sm font-mono ${isHotspot ? 'bg-slate-100 text-slate-500' : ''}" value="${q.ids.join(',')}" ${isHotspot ? 'readonly title="Auto-generated from map hotspots"' : ''}>${mkLbl('Pts')}<input type="number" class="q-points border p-1 w-16 text-sm" value="${q.points||1}"></div>`;
-        html += `${mkLbl('Instruction')}${mkToolbar()}<div class="q-inst rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[60px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.instruction||''}</div>`;
+        const baseInputClass = "border-2 border-slate-200 p-2.5 rounded-lg text-sm font-medium text-slate-800 outline-none focus:border-blue-500 transition-colors w-full";
+        const answerInputClass = "border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-lg text-sm font-bold text-emerald-900 outline-none focus:border-emerald-500 transition-colors w-full shadow-inner";
+
+        html += `<div class="grid grid-cols-2 gap-4 mb-2">
+                    <div>${mkLbl('IDs (csv)')}<input type="text" class="q-ids ${baseInputClass} font-mono ${isHotspot ? 'bg-slate-100 text-slate-500' : ''}" value="${q.ids.join(',')}" ${isHotspot ? 'readonly title="Auto-generated from map hotspots"' : ''}></div>
+                    <div>${mkLbl('Points')}<input type="number" class="q-points ${baseInputClass}" value="${q.points||1}"></div>
+                 </div>`;
+                 
+        html += `<div>${mkLbl('Instruction')}${mkToolbar()}<div class="q-inst rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[70px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.instruction||''}</div></div>`;
         
         if (q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
-           html += `${mkLbl('Question Text')}${mkToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[60px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div>`;
+           html += `<div>${mkLbl('Question Text')}${mkToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[70px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            if(q.type === 'multiple_choice') {
-               html += `${mkLbl('Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
-               html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-multi mr-2" ${q.multi ? 'checked' : ''} onchange="APP_DATA.parts[currentEditorPartIdx].questions[${i}].multi = this.checked; saveCurrentEditorPart(); renderEditorQuestions();"> Allow multiple selections (Checkboxes)</label></div>`;
+               html += `<div>${mkLbl('Options (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[100px]">${formatArr(q.options)}</textarea></div>`;
+               html += `<div class="mt-1 mb-2"><label class="flex items-center text-sm font-bold text-slate-700 cursor-pointer bg-slate-50 border border-slate-200 px-4 py-3 rounded-lg hover:bg-slate-100 transition"><input type="checkbox" class="q-multi mr-3 w-4 h-4 text-blue-600 rounded" ${q.multi ? 'checked' : ''} onchange="APP_DATA.parts[currentEditorPartIdx].questions[${i}].multi = this.checked; saveCurrentEditorPart(); renderEditorQuestions();"> Allow multiple selections (Checkboxes)</label></div>`;
                if (q.multi) {
-                   html += `${mkLbl('Answers (ID:Ans) — Use / for multiple valid options')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+                   html += `<div>${mkLbl('Answers (ID:Ans) — Use / for multiple valid')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
                } else {
-                   html += `${mkLbl('Correct Answer (Use / for multiple valid, e.g. color / colour)')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+                   html += `<div>${mkLbl('Correct Answer (Use / for multiple valid)')}<input type="text" class="q-correct ${answerInputClass}" value="${esc(q.correctAnswers?.[q.ids[0]])}"></div>`;
                }
            } else {
-               html += `${mkLbl('Correct Answer (Use / for multiple valid, e.g. color / colour)')}<input type="text" class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm font-bold" value="${esc(q.correctAnswers?.[q.ids[0]])}">`;
+               html += `<div>${mkLbl('Correct Answer (Use / for multiple valid)')}<input type="text" class="q-correct ${answerInputClass}" value="${esc(q.correctAnswers?.[q.ids[0]])}"></div>`;
            }
         } else if (q.type === 'essay' || q.type === 'audio_record') {
-           // Basics
+           // Basics handled by default flow
         } else if (q.type === 'matching_info') {
-           html += `${mkLbl('Row Statements (1/line)')}<textarea class="q-text border p-1 w-full text-sm">${q.text||''}</textarea>`;
-           html += `${mkLbl('Columns / Options (1/line)')}<textarea class="q-opts border p-1 w-full text-sm">${formatArr(q.options)}</textarea>`;
-           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+           html += `<div>${mkLbl('Row Statements (1/line)')}<textarea class="q-text ${baseInputClass} min-h-[100px]">${q.text||''}</textarea></div>`;
+           html += `<div>${mkLbl('Columns / Options (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[100px]">${formatArr(q.options)}</textarea></div>`;
+           html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[100px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
         } else if (q.type === 'map_labelling_hotspots') {
-           html += `${mkLbl('Map Image (Click to add gaps)')}`;
-           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 mt-1 mb-3 flex flex-col items-center justify-center min-h-[150px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
-                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-2 py-1 rounded shadow" onclick="event.stopPropagation(); removeMapImage(${i})">Clear Image</button></div><img src="${q.image}" class="max-w-full w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 pointer-events-none my-8">Paste or click to upload map image</div>`}
+           html += `<div>${mkLbl('Map Image (Click to add gaps)')}`;
+           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 hover:bg-blue-50 transition mt-1 mb-4 flex flex-col items-center justify-center min-h-[160px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden rounded-xl" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
+                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow" onclick="event.stopPropagation(); removeMapImage(${i})">✕ Clear</button></div><img src="${q.image}" class="max-w-full w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 font-medium pointer-events-none my-8">Paste or click to upload map image</div>`}
                         ${(q.hotspots || []).map(h => `<div class="absolute bg-white border-2 border-blue-600 rounded flex items-center justify-center text-xs font-bold text-blue-900 shadow-md cursor-pointer hover:bg-rose-100 hover:border-rose-500 transition-colors z-10" style="left:${h.x}%; top:${h.y}%; transform:translate(-50%,-50%); width:32px; height:32px;" onclick="removeHotspot(event, ${i}, ${h.id})" title="Click to remove gap ${h.id}">${h.id}</div>`).join('')}
-                    </div>`;
+                    </div></div>`;
            html += `<input type="file" id="map-file-${i}" class="hidden" accept="image/*" onchange="handleMapFile(event, ${i})">`;
-           html += `${mkLbl('Map Options / Labels (1/line)')}<textarea class="q-opts border p-1 w-full text-sm" placeholder="e.g. Cookery room\nGames room">${formatArr(q.options)}</textarea>`;
-           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+           html += `<div>${mkLbl('Map Options / Labels (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[100px]" placeholder="e.g. Cookery room\nGames room">${formatArr(q.options)}</textarea></div>`;
+           html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[100px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
         } else if (q.type === 'map_labelling_grid') {
-           html += `${mkLbl('Map Image (Optional)')}`;
-           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 mt-1 mb-3 flex flex-col items-center justify-center min-h-[100px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
-                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-2 py-1 rounded shadow" onclick="event.stopPropagation(); removeMapImage(${i})">Clear Image</button></div><img src="${q.image}" class="max-w-[400px] w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 pointer-events-none my-4">Paste or click to upload map image</div>`}
+           html += `<div>${mkLbl('Map Image (Optional)')}`;
+           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 hover:bg-blue-50 transition mt-1 mb-4 flex flex-col items-center justify-center min-h-[140px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden rounded-xl" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
+                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow" onclick="event.stopPropagation(); removeMapImage(${i})">✕ Clear</button></div><img src="${q.image}" class="max-w-[400px] w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 font-medium pointer-events-none my-4">Paste or click to upload map image</div>`}
                         <input type="file" id="map-file-${i}" class="hidden" accept="image/*" onchange="handleMapFile(event, ${i})">
-                    </div>`;
-           html += `${mkLbl('Row Statements (1/line matching IDs)')}<textarea class="q-text border p-1 w-full text-sm" placeholder="e.g. Quilt Shop\nHandicrafts Museum">${q.text||''}</textarea>`;
-           html += `${mkLbl('Columns / Map Letters (1/line)')}<textarea class="q-opts border p-1 w-full text-sm" placeholder="e.g. A\nB\nC\nD">${formatArr(q.options)}</textarea>`;
-           html += `${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+                    </div></div>`;
+           html += `<div>${mkLbl('Row Statements (1/line matching IDs)')}<textarea class="q-text ${baseInputClass} min-h-[100px]" placeholder="e.g. Quilt Shop\nHandicrafts Museum">${q.text||''}</textarea></div>`;
+           html += `<div>${mkLbl('Columns / Map Letters (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[80px]" placeholder="e.g. A\nB\nC\nD">${formatArr(q.options)}</textarea></div>`;
+           html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
         } else {
            if (q.type === 'fill_blanks' || q.type === 'dnd_list') {
-               html += toolbar;
-               html += `<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-2 rounded-b min-h-[100px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div>`;
+               html += `<div>${mkLbl('Passage Text With Gaps')}${advToolbar}<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            } else {
-               html += mkToolbar();
-               html += `<div class="q-text rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[100px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div>`;
+               html += `<div>${mkLbl('Text')}${mkToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            }
            
            if (q.type !== 'fill_blanks') {
-               html += `<textarea class="q-opts border p-1 w-full text-sm mt-2">${formatArr(q.options)}</textarea>`;
+               html += `<div>${mkLbl('Options Bank (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[80px]">${formatArr(q.options)}</textarea></div>`;
            }
-           html += `${mkLbl('Answers (ID:Ans) — Use / for multiple valid options')}<textarea class="q-correct border border-emerald-300 bg-emerald-50 p-1 w-full text-sm">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea>`;
+           html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
            if (q.type === 'dnd_list' || q.type === 'matching_headings') {
-              html += `<div class="mt-2"><label class="flex items-center text-sm font-bold text-slate-600 cursor-pointer"><input type="checkbox" class="q-reus mr-2" ${q.reusable ? 'checked' : ''}> Options are Reusable (can be used multiple times)</label></div>`;
+              html += `<div class="mt-1 mb-2"><label class="flex items-center text-sm font-bold text-slate-700 cursor-pointer bg-slate-50 border border-slate-200 px-4 py-3 rounded-lg hover:bg-slate-100 transition"><input type="checkbox" class="q-reus mr-3 w-4 h-4 text-blue-600 rounded" ${q.reusable ? 'checked' : ''}> Options are Reusable (can be used multiple times)</label></div>`;
            }
         }
-        html += `${mkLbl('Explanation')}${mkToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-2 rounded-b rounded-tr min-h-[60px]" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div>`;
-        div.innerHTML = html; list.appendChild(div);
+        
+        html += `<div>${mkLbl('Explanation (Optional)')}${mkToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
+        
+        html += `</div>`; // Close wrapper
+        div.innerHTML = html; 
+        list.appendChild(div);
       });
     }
 
