@@ -898,7 +898,7 @@
   <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
     window.initFirebaseSystem = async function() {
@@ -929,6 +929,7 @@
             window.fsCollection = collection;
             window.fsGetDocs = getDocs;
             window.fsDeleteDoc = deleteDoc;
+            window.fsOnSnapshot = onSnapshot;
             window.fPath = (col) => col;
 
             loaderText.innerHTML = "Authenticating Connection...<br><br><span class='text-xs'>If this fails, ensure you enabled Anonymous Sign-in in Firebase.</span>";
@@ -1242,11 +1243,33 @@
                 await seedCloudData();
             } else {
                 document.getElementById('cloud-loader-text').textContent = "Fetching Tests & Classes...";
-                const tSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('tests')));
-                TEST_BANK = tSnap.docs.map(d => d.data());
 
-                const cSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('classes')));
-                CLASSES = cSnap.docs.map(d => d.data());
+// 1. Real-time listener for Tests
+await new Promise((resolve) => {
+    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), (snapshot) => {
+        TEST_BANK = snapshot.docs.map(d => d.data());
+        
+        // Re-render UI immediately if a user is currently logged in
+        if (currentUser) {
+            if (currentUser.role === 'teacher') renderTestBank();
+            else renderStudentDashboard();
+        }
+        resolve(); // Allows the boot sequence to continue on the first load
+    });
+});
+
+// 2. Real-time listener for Classes (Needed for instant Test Assignments)
+await new Promise((resolve) => {
+    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), (snapshot) => {
+        CLASSES = snapshot.docs.map(d => d.data());
+        
+        if (currentUser) {
+            if (currentUser.role === 'teacher') renderClasses();
+            else renderStudentDashboard();
+        }
+        resolve();
+    });
+});
 
                 const sSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('submissions')));
                 SUBMISSIONS = sSnap.docs.map(d => d.data());
