@@ -521,7 +521,7 @@
             <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full border-2 border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500 font-bold text-slate-700 bg-white">
             </select>
           </div>
-        </div> <!-- ✨ THIS WAS THE MISSING /div ✨ -->
+        </div>
 
         <!-- Right Column: Weekly Schedule -->
         <div class="lg:col-span-7 flex flex-col">
@@ -1094,13 +1094,11 @@
         
         editor.focus();
         
-        // Flattened HTML string with tighter padding (pt-3 px-3 pb-1.5 and mb-1) to eliminate bottom spacing
         const htmlToInsert = `<div class="relative bg-amber-50 border-l-4 border-amber-500 pt-3 px-3 pb-1.5 my-2 pr-8 text-sm text-amber-900 shadow-sm" contenteditable="false"><button type="button" onclick="this.parentElement.remove()" contenteditable="false" class="absolute top-1 right-2 text-amber-400 hover:text-rose-500 font-bold text-xl leading-none cursor-pointer" title="Remove this feedback block">&times;</button><strong>${text}</strong><div contenteditable="true" class="text-slate-700 block mt-2 mb-1 p-2 bg-white border border-dashed border-amber-300 rounded outline-none focus:border-solid focus:border-amber-500 min-h-[40px]">[Write specific feedback here...]</div></div><p><br></p>`;
         
         document.execCommand('insertHTML', false, htmlToInsert);
     };
 
-    // Helper to process, compress and convert Map images to prevent Firebase payload limit errors
     window.processImageFile = function(file, callback) {
         if (!file || !file.type.startsWith('image/')) return;
         const reader = new FileReader();
@@ -1114,7 +1112,7 @@
                 canvas.width = w; canvas.height = h;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
-                callback(canvas.toDataURL('image/jpeg', 0.8)); // Output compressed JPEG
+                callback(canvas.toDataURL('image/jpeg', 0.8)); 
             };
             img.src = e.target.result;
         };
@@ -1198,7 +1196,6 @@
         window.triggerEditorAutosave();
     };
 
-    // PART LEVEL IMAGE HANDLERS
     window.handlePartImagePaste = function(e) {
         e.preventDefault();
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -1232,60 +1229,116 @@
         window.triggerEditorAutosave();
     };
 
-    // --- CLOUD SYNC SYSTEM ---
+    // --- FULLY REAL-TIME CLOUD SYNC SYSTEM ---
     window.bootLMS = async function() {
         try {
-            document.getElementById('cloud-loader-text').textContent = "Fetching LMS Users...";
+            document.getElementById('cloud-loader-text').textContent = "Initializing App...";
+            
+            // 1. Initial check to seed data if empty
             const uSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('users')));
-            USERS = uSnap.docs.map(d => d.data());
+            let initialUsers = uSnap.docs.map(d => d.data());
 
-            if (USERS.length === 0) {
+            if (initialUsers.length === 0) {
                 await seedCloudData();
-            } else {
-                document.getElementById('cloud-loader-text').textContent = "Fetching Tests & Classes...";
-
-// 1. Real-time listener for Tests
-await new Promise((resolve) => {
-    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), (snapshot) => {
-        TEST_BANK = snapshot.docs.map(d => d.data());
-        
-        // Re-render UI immediately if a user is currently logged in
-        if (currentUser) {
-            if (currentUser.role === 'teacher') renderTestBank();
-            else renderStudentDashboard();
-        }
-        resolve(); // Allows the boot sequence to continue on the first load
-    });
-});
-
-// 2. Real-time listener for Classes (Needed for instant Test Assignments)
-await new Promise((resolve) => {
-    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), (snapshot) => {
-        CLASSES = snapshot.docs.map(d => d.data());
-        
-        if (currentUser) {
-            if (currentUser.role === 'teacher') renderClasses();
-            else renderStudentDashboard();
-        }
-        resolve();
-    });
-});
-
-                const sSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('submissions')));
-                SUBMISSIONS = sSnap.docs.map(d => d.data());
-
-                const schedSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('schedules')));
-                SCHEDULES = schedSnap.docs.map(d => d.data());
-
-                const attSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('attendance')));
-                ATTENDANCE = attSnap.docs.map(d => d.data());
-                
-                const nSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('notes')));
-                nSnap.docs.forEach(d => { ALL_NOTES[d.id] = d.data().data; });
-
-                const fSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('flashcards')));
-                fSnap.docs.forEach(d => { FLASHCARDS[d.id] = d.data().data; });
             }
+
+            document.getElementById('cloud-loader-text').textContent = "Establishing Real-Time Connections...";
+
+            // 2. Setup a smart UI refresher so active screens update when data changes in the background
+            let refreshTimeout = null;
+            const triggerUIRefresh = () => {
+                if(refreshTimeout) clearTimeout(refreshTimeout);
+                refreshTimeout = setTimeout(() => {
+                    if (!currentUser) return;
+                    if (currentUser.role === 'teacher') {
+                        const editorUI = document.getElementById('editor-ui');
+                        if (!editorUI.classList.contains('hidden')) {
+                            renderTestBank();
+                            renderClasses();
+                            renderStudentsList();
+                            if(!document.getElementById('editor-view-timetable').classList.contains('hidden')) {
+                                window.renderCalendar('teacher');
+                            }
+                        }
+                        if (!document.getElementById('editor-view-subs').classList.contains('hidden')) {
+                            renderSubmissions();
+                        }
+                    } else {
+                        const startScreen = document.getElementById('start-screen');
+                        if (!startScreen.classList.contains('hidden')) {
+                             const sel = document.getElementById('student-class-select');
+                             initStudentDashboard(sel ? sel.value : null); // Preserve dropdown selection
+                        }
+                    }
+                }, 100);
+            };
+
+            // 3. Attach real-time listeners to all collections simultaneously
+            await Promise.all([
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => {
+                        USERS = snap.docs.map(d => d.data());
+                        if (currentUser && currentUser.role === 'student') {
+                             const me = USERS.find(u => u.user === currentUser.user);
+                             if(me) { currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); }
+                        }
+                        triggerUIRefresh();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), snap => {
+                        TEST_BANK = snap.docs.map(d => d.data());
+                        triggerUIRefresh();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => {
+                        CLASSES = snap.docs.map(d => d.data());
+                        triggerUIRefresh();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('submissions')), snap => {
+                        SUBMISSIONS = snap.docs.map(d => d.data());
+                        triggerUIRefresh();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('schedules')), snap => {
+                        SCHEDULES = snap.docs.map(d => d.data());
+                        triggerUIRefresh();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('attendance')), snap => {
+                        ATTENDANCE = snap.docs.map(d => d.data());
+                        triggerUIRefresh();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => {
+                        ALL_NOTES = {};
+                        snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data);
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => {
+                        FLASHCARDS = {};
+                        snap.docs.forEach(d => FLASHCARDS[d.id] = d.data().data);
+                        if (currentUser && currentUser.role === 'student' && !document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
+                            renderFlashcardPanel();
+                        }
+                        resolve();
+                    });
+                })
+            ]);
 
             document.getElementById('cloud-loader').classList.add('hidden');
             checkAuth();
@@ -1484,7 +1537,7 @@ await new Promise((resolve) => {
           if(bankView) bankView.classList.remove('hidden'); 
           renderTestBank(); 
           renderClasses();
-          window.toggleDashboardView('tests'); // Default to Tests sub-tab
+          window.toggleDashboardView('tests');
       }
       if (tab === 'classes') { 
           const classView = document.getElementById('editor-view-classes');
@@ -1524,7 +1577,6 @@ await new Promise((resolve) => {
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
         const c = modColors[t.module];
         
-        // Check which classes this test is currently assigned to
         const assignedClasses = CLASSES.filter(cls => cls.assignedTests && cls.assignedTests.includes(t.id)).map(cls => cls.name);
         const assignedBadge = assignedClasses.length > 0 
             ? `<div class="mt-1 mb-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded truncate" title="Assigned to: ${assignedClasses.join(', ')}">📖 ${assignedClasses.join(', ')}</div>`
@@ -1544,7 +1596,6 @@ await new Promise((resolve) => {
       }).join('') : '<div class="col-span-full text-center text-slate-500 py-10">No tests in the cloud. Create one!</div>';
     }
 
-    // New Function to handle direct assignment from the Test Bank
     window.promptAssignTest = function(tid) {
       const test = TEST_BANK.find(t => t.id === tid);
       if (!test) return;
@@ -1636,8 +1687,6 @@ await new Promise((resolve) => {
       });
     }
 
-    function renderSubmissions() { renderClasses(); } // Reroute old save triggers to update classes
-
     function renderClasses() {
       const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
       const filteredClasses = CLASSES.filter(c => c.name.toLowerCase().includes(query));
@@ -1713,7 +1762,6 @@ await new Promise((resolve) => {
       }).join('');
     }
 
-    // ✨ NEW: Delete Submission Function
     window.deleteSubmission = function(id) {
         showConfirm("Delete Submission", "Are you sure you want to permanently delete this student's submission?", async () => {
             SUBMISSIONS = SUBMISSIONS.filter(s => s.id !== id);
@@ -1755,7 +1803,6 @@ await new Promise((resolve) => {
         document.getElementById('modal-cancel').classList.remove('hidden');
         document.getElementById('custom-modal').classList.remove('hidden');
         
-        // ✨ THE FIX: Wire up the Cancel button to close the modal
         document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
         
         document.getElementById('modal-confirm').onclick = async () => {
@@ -1811,14 +1858,12 @@ await new Promise((resolve) => {
     window.insertGap = function(type, blockIdx) {
       let idToUse = 1;
       
-      // If triggered from inside a specific question block, find the next available ID
       if (typeof blockIdx !== 'undefined' && blockIdx !== null) {
           const blockEl = document.getElementById('editor-questions-list').children[blockIdx];
           if (blockEl) {
               const idsInput = blockEl.querySelector('.q-ids');
               let ids = [];
               
-              // 1. Get the current IDs defined in the input box
               if (idsInput && !idsInput.readOnly) {
                   ids = idsInput.value.split(',').map(n => Number(n.trim())).filter(n => !isNaN(n));
               }
@@ -1826,14 +1871,11 @@ await new Promise((resolve) => {
                   ids = APP_DATA.parts[currentEditorPartIdx].questions[blockIdx].ids;
               }
               
-              // 2. Check the rich editor to see which IDs have already been placed
               const qTextEl = blockEl.querySelector('.q-text.rich-editor');
               const currentHtml = qTextEl ? qTextEl.innerHTML : '';
               
-              // 3. Pick the first ID from the list that isn't found in the text yet
               idToUse = ids.find(id => !currentHtml.includes(`{${type}:${id}}`));
               
-              // Fallback: If all are used (or none exist), default to the first ID in the array
               if (idToUse === undefined && ids.length > 0) {
                   idToUse = ids[0];
               }
@@ -2111,7 +2153,7 @@ await new Promise((resolve) => {
                if(fcDivdr) fcDivdr.classList.add('hidden'); 
                
                if(hlGroup) hlGroup.classList.remove('hidden');
-               if(hlExtra) hlExtra.classList.toggle('hidden', !isTimeFree); // Hide extra colors if restricted mode
+               if(hlExtra) hlExtra.classList.toggle('hidden', !isTimeFree); 
                
                if(noteBtn) noteBtn.classList.remove('hidden');
                if(hlDivdr) hlDivdr.classList.remove('hidden');
@@ -2308,7 +2350,6 @@ await new Promise((resolve) => {
       const audioField = document.getElementById('audio-field-container');
       const imageField = document.getElementById('image-field-container');
       
-      // Module specific rendering
       if (APP_DATA.module === 'listening' || APP_DATA.module === 'speaking') {
           media.classList.remove('hidden');
           audioField.classList.remove('hidden');
@@ -2444,7 +2485,6 @@ await new Promise((resolve) => {
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
       
-      // Modern Tab Styling
       document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => 
         `<button onclick="saveCurrentEditorPart(); loadEditorPart(${i})" 
           class="px-6 py-2.5 font-bold rounded-t-lg transition-all border-x border-t ${currentEditorPartIdx===i ? 'bg-white text-blue-700 border-slate-300 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] border-b-white translate-y-[1px]' : 'bg-slate-100 text-slate-500 border-transparent hover:bg-slate-200 hover:text-slate-700 border-b-slate-300'}">
@@ -2475,7 +2515,6 @@ await new Promise((resolve) => {
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
         const mkLbl = (t) => `<label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mt-4 first:mt-0">${t}</label>`;
         
-        // Contextual Inner Toolbar
         const mkToolbar = () => `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
@@ -2501,7 +2540,6 @@ await new Promise((resolve) => {
             <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'flow', '${q.type}')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">↓ Flow</button>
         </div>`;
         
-        // Structured Header for the Block
         let html = `
         <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -2542,7 +2580,6 @@ await new Promise((resolve) => {
                html += `<div>${mkLbl('Correct Answer (Use / for multiple valid)')}<input type="text" class="q-correct ${answerInputClass}" value="${esc(q.correctAnswers?.[q.ids[0]])}"></div>`;
            }
         } else if (q.type === 'essay' || q.type === 'audio_record') {
-           // Basics handled by default flow
         } else if (q.type === 'matching_info') {
            html += `<div>${mkLbl('Row Statements (1/line)')}<textarea class="q-text ${baseInputClass} min-h-[100px]">${q.text||''}</textarea></div>`;
            html += `<div>${mkLbl('Columns / Options (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[100px]">${formatArr(q.options)}</textarea></div>`;
@@ -2583,7 +2620,7 @@ await new Promise((resolve) => {
         
         html += `<div>${mkLbl('Explanation (Optional)')}${mkToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
         
-        html += `</div>`; // Close wrapper
+        html += `</div>`; 
         div.innerHTML = html; 
         list.appendChild(div);
       });
@@ -2661,7 +2698,7 @@ await new Promise((resolve) => {
       });
     }
 
-    function initStudentDashboard() {
+    function initStudentDashboard(preserveCid = null) {
       document.getElementById('student-name-display').textContent = currentUser.user;
       
       const isPaid = currentUser.isPaid === true;
@@ -2669,16 +2706,21 @@ await new Promise((resolve) => {
       document.getElementById('student-main-content').classList.toggle('hidden', !isPaid);
       
       if(isPaid) {
-          // Filter classes to ONLY show ones this specific user is assigned to
           const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
           const sel = document.getElementById('student-class-select');
           
+          const currentVal = preserveCid !== null ? preserveCid : sel.value;
+
           if (myClasses.length === 0) {
               sel.innerHTML = '<option value="">-- No Classes Assigned --</option>';
               sel.disabled = true;
           } else {
               sel.innerHTML = '<option value="">-- Choose Class --</option>' + myClasses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
               sel.disabled = false;
+              
+              if (currentVal && myClasses.find(c => c.id === currentVal)) {
+                  sel.value = currentVal;
+              }
               renderStudentDashboard();
           }
       }
@@ -2689,22 +2731,21 @@ await new Promise((resolve) => {
       const list = document.getElementById('student-tests-list');
       const prog = document.getElementById('student-progress-section');
       const schedSec = document.getElementById('student-schedule-section');
-      const schedList = document.getElementById('student-schedule-list');
       const bottomSec = document.getElementById('bottom-student-sections');
-      const toolbar = document.getElementById('student-toolbar'); // <--- NEW
+      const toolbar = document.getElementById('student-toolbar'); 
       
       if(!cid) { 
           list.innerHTML = '<div class="p-6 text-slate-500">Select a class first.</div>'; 
           if(bottomSec) bottomSec.classList.add('hidden'); 
           if(schedSec) schedSec.classList.add('hidden');
-          if(toolbar) toolbar.classList.add('hidden'); // <--- NEW
+          if(toolbar) toolbar.classList.add('hidden'); 
           return; 
       }
       
       const cls = CLASSES.find(c => c.id === cid);
       if(!cls) return;
       if(bottomSec) bottomSec.classList.remove('hidden');
-      if(toolbar) toolbar.classList.remove('hidden'); // <--- NEW
+      if(toolbar) toolbar.classList.remove('hidden'); 
 
       const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
@@ -2728,26 +2769,22 @@ await new Promise((resolve) => {
           const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
           const sort = document.getElementById('student-test-sort')?.value || 'default';
           
-          // 1. Map IDs to actual test objects
           let testObjects = cls.assignedTests
               .map(tid => TEST_BANK.find(x => x.id === tid))
               .filter(t => t !== undefined);
               
-          // 2. Filter by search query and module
           testObjects = testObjects.filter(t => {
               const matchQuery = t.title.toLowerCase().includes(query) || (t.topics && t.topics.join(' ').toLowerCase().includes(query));
               const matchMod = mod === 'all' || t.module === mod;
               return matchQuery && matchMod;
           });
           
-          // 3. Sort alphabetically if requested
           if (sort === 'az') {
               testObjects.sort((a, b) => a.title.localeCompare(b.title));
           } else if (sort === 'za') {
               testObjects.sort((a, b) => b.title.localeCompare(a.title));
           }
           
-          // 4. Render to HTML
           if (testObjects.length) {
               allTestsHtml = testObjects.map(t => renderTestItem(t.id)).join('');
           } else if (query || mod !== 'all') {
@@ -2756,7 +2793,6 @@ await new Promise((resolve) => {
       }
       list.innerHTML = allTestsHtml;
       
-      // Calculate Student Progress Metrics
       const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
       const totalTests = cls.assignedTests?.length || 0;
       const completedTestIds = [...new Set(mySubs.map(s => s.testId))]; 
