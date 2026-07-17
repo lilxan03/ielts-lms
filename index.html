@@ -300,6 +300,41 @@
     </div>
   </div>
 
+  <!-- BULK IMPORT MODAL -->
+  <div id="csv-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[950px] max-w-[95vw] max-h-[90vh]">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+        <h2 class="text-xl font-bold text-slate-800">📋 Bulk Import Questions</h2>
+        <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+      </div>
+      <div class="p-6 overflow-y-auto flex-1">
+        <p class="text-sm text-slate-600 mb-4">Type manually into the grid below, or <strong class="text-blue-600">click the first box and paste directly from Excel</strong> to auto-fill everything!</p>
+        
+        <div class="border border-slate-200 rounded-lg mb-3 overflow-hidden shadow-sm">
+            <table class="w-full text-left border-collapse" id="bulk-import-table">
+                <thead class="bg-slate-100 border-b border-slate-200">
+                    <tr class="text-xs text-slate-500 uppercase tracking-wider">
+                        <th class="p-3 font-bold w-[15%]">Type</th>
+                        <th class="p-3 font-bold w-[20%]">Instruction</th>
+                        <th class="p-3 font-bold w-[25%]">Question Text</th>
+                        <th class="p-3 font-bold w-[20%]">Options (comma sep)</th>
+                        <th class="p-3 font-bold w-[20%]">Answer</th>
+                    </tr>
+                </thead>
+                <tbody id="bulk-import-tbody" class="divide-y divide-slate-100" onpaste="handleGridPaste(event)">
+                    <!-- JS will inject rows here -->
+                </tbody>
+            </table>
+        </div>
+        <button onclick="addBulkImportRow()" class="text-blue-600 hover:text-blue-800 font-bold text-sm flex items-center gap-1 transition-colors">+ Add Row</button>
+      </div>
+      <div class="p-4 border-t border-slate-200 bg-white rounded-b-xl flex justify-end gap-3 shrink-0">
+        <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold">Cancel</button>
+        <button onclick="processBulkImport()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow">Import Questions</button>
+      </div>
+    </div>
+  </div>
+
   <!-- UNIFIED SELECTION TOOLTIP (Exam & Review) -->
   <div id="exam-selection-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 animate-pop">
     <div id="tooltip-hl-group" class="flex items-center gap-2 px-2 py-1 hidden">
@@ -554,6 +589,8 @@
                 <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search materials..." class="flex-1 min-w-[150px] border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                 <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
                   <option value="all">All Modules</option><option value="reading">Read</option><option value="listening">Listen</option><option value="writing">Write</option><option value="speaking">Speak</option>
+                <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
+                  <option value="all">All Tags</option>
                 </select>
                 <select id="student-test-sort" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
                   <option value="default">Default</option><option value="az">A-Z</option><option value="za">Z-A</option>
@@ -773,11 +810,11 @@
         <div class="w-1/2 p-8 overflow-y-auto bg-slate-50" id="builder-right">
           <h2 class="text-xl font-black mb-6 border-b border-slate-200 pb-3 text-slate-800 flex items-center gap-2">⚙️ 2. Manage Questions</h2>
           
-          <!-- Upgraded Action Bar -->
-          <div class="mb-8 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex gap-3 items-center sticky top-0 z-20">
-            <select id="new-q-type" class="flex-1 border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer"></select>
-            <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add Question</button>
-            <div class="w-px h-8 bg-slate-200"></div>
+          <div class="mb-8 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center sticky top-0 z-20">
+            <select id="new-q-type" class="flex-1 border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer min-w-[150px]"></select>
+            <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add</button>
+            <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
+            <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5">📥 Bulk Import</button>
             <button onclick="openAIGenerator()" class="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:shadow-md text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5">✨ AI Auto-Gen</button>
           </div>
           
@@ -788,39 +825,62 @@
   </div>
   <!-- EXAM UI -->
   <div id="exam-ui" class="hidden h-screen flex flex-col bg-white overflow-hidden relative">
-    <header class="bg-slate-900 text-white flex justify-between items-center px-4 py-2 shrink-0 shadow-md z-40">
+    <!-- Dummy element to prevent existing JavaScript color logic from breaking -->
+    <div id="exam-module-bar" class="hidden"></div>
+    
+    <!-- NEW UNIFIED, CAPTIVATING HEADER -->
+    <header class="bg-white border-b border-slate-200 flex justify-between items-center px-6 py-3 shrink-0 shadow-[0_4px_20px_rgba(0,0,0,0.03)] z-40">
+      
+      <!-- Left: Test Title & Part Badge -->
       <div class="flex items-center gap-4">
-        <span class="text-xs text-slate-400 uppercase tracking-wider font-bold">Candidate:</span>
-        <span id="exam-candidate-name" class="font-bold text-blue-300">Student</span>
-        <!-- Exam Preview Badge -->
-        <span id="exam-preview-badge" class="hidden bg-purple-500 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded animate-pulse shadow-md">Preview</span>
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow text-white font-black text-xl">
+           I
+        </div>
+        <div class="flex flex-col">
+          <span id="exam-module-title" class="font-black text-slate-800 text-lg leading-none mb-1">IELTS Exam Simulator</span>
+          <div class="flex items-center gap-2">
+             <span id="part-indicator" class="text-[10px] uppercase font-bold tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 shadow-sm">Part 1</span>
+             <span id="exam-preview-badge" class="hidden bg-purple-100 text-purple-700 border border-purple-200 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full animate-pulse shadow-sm">Preview</span>
+          </div>
+        </div>
       </div>
-      <div class="flex items-center gap-6">
-        <div class="flex items-center bg-slate-800 rounded px-4 py-1.5 border border-slate-700 shadow-inner gap-2">
-          <span id="timer-label" class="text-[10px] text-slate-400 uppercase tracking-wide font-bold">Time</span>
-          <span id="timer-display" class="font-mono text-xl w-20 text-center text-emerald-400">00:00</span>
+
+      <!-- Center: Floating Timer -->
+      <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
+        <div class="bg-slate-800 rounded-full px-6 py-1.5 flex items-center gap-3 shadow-md border border-slate-700">
+           <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+           <span id="timer-display" class="font-mono text-xl font-bold text-white tracking-widest drop-shadow-sm">00:00</span>
+           <div class="w-px h-4 bg-slate-600"></div>
+           <span id="timer-label" class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Elapsed</span>
         </div>
-        <div class="flex items-center space-x-4">
-          <button onclick="toggleNotesPanel()" class="text-slate-400 hover:text-white flex flex-col items-center transition" title="Toggle Notes">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            <span class="text-[9px] font-bold">NOTES</span>
-          </button>
-          <button onclick="openSettings()" class="text-slate-400 hover:text-white flex flex-col items-center transition">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><circle cx="12" cy="12" r="3"></circle><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path></svg>
-            <span class="text-[9px] font-bold">SETTINGS</span>
-          </button>
-          <span id="autosave-status" class="text-xs font-bold text-emerald-400 opacity-0 transition-opacity">Saved</span>
-          <button onclick="exitTest()" class="text-slate-400 hover:text-white flex flex-col items-center">
-            <span id="exam-action-btn-text" class="text-[10px] mt-1 font-bold text-rose-400 border border-rose-400 px-2 py-1 rounded">SUBMIT TEST</span>
-          </button>
-        </div>
+      </div>
+
+      <!-- Right: Controls & Actions -->
+      <div class="flex items-center gap-4">
+         <div class="hidden md:flex flex-col text-right mr-2">
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Candidate</span>
+            <span id="exam-candidate-name" class="font-bold text-slate-700 text-sm leading-none">Student</span>
+         </div>
+         
+         <div class="w-px h-8 bg-slate-200 hidden md:block"></div>
+
+         <div class="flex items-center gap-2">
+            <span id="autosave-status" class="text-xs font-bold text-emerald-500 opacity-0 transition-opacity mr-1">✓ Saved</span>
+            
+            <button onclick="toggleNotesPanel()" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="My Notes">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            
+            <button onclick="openSettings()" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Settings">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+
+            <button onclick="exitTest()" class="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-black text-xs transition-colors shadow-sm flex items-center border border-rose-200 hover:border-rose-600 tracking-wide uppercase">
+              <span id="exam-action-btn-text">Submit Test</span>
+            </button>
+         </div>
       </div>
     </header>
-
-    <div class="bg-blue-700 text-white px-4 py-2 font-semibold flex justify-between items-center shrink-0 z-30 shadow" id="exam-module-bar">
-      <span id="exam-module-title">IELTS Exam Simulator</span>
-      <span id="part-indicator">Part 1</span>
-    </div>
 
     <!-- Exam Content Area -->
     <div class="flex flex-1 overflow-hidden theme-bg-main relative" id="split-container">
@@ -2036,6 +2096,106 @@
         window.triggerEditorAutosave();
     };
 
+    // --- REPLACEMENT AI GENERATOR FUNCTION ---
+    window.generateAIQuestions = async function() {
+        const textInput = document.getElementById('ai-source-text').value.trim();
+        const imgPreview = document.getElementById('ai-image-preview').src;
+        const hasImage = !document.getElementById('ai-image-preview').classList.contains('hidden');
+        
+        if (!textInput && !hasImage) {
+            showModalMsg("Error", "Please upload an image or paste text for the AI to analyze.");
+            return;
+        }
+
+        // Show loading state
+        document.getElementById('ai-loading').classList.remove('hidden');
+        document.getElementById('ai-loading').classList.add('flex');
+        document.getElementById('ai-generate-btn').disabled = true;
+
+        // ⚠️ INSERT YOUR ACTUAL OPENAI API KEY HERE (sk-...)
+        const apiKey = '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'; 
+        
+        try {
+            const contentArray = [];
+            
+            // 1. Add Text Prompt (OpenAI format)
+            if (textInput) {
+                contentArray.push({ 
+                    type: "text", 
+                    text: `Analyze the following IELTS test content. Extract the reading/listening passage (if any) and all questions. Format your response strictly as JSON with the structure: { "passage": "The text...", "questions": [ { "type": "multiple_choice", "text": "Question text", "options": ["A", "B"], "answer": "A" } ] }\n\nContent: ${textInput}` 
+                });
+            }
+            
+            // 2. Add Image Data (OpenAI format)
+            if (hasImage && imgPreview.startsWith('data:image')) {
+                // OpenAI can take the full data:image URI directly
+                contentArray.push({
+                    type: "image_url",
+                    image_url: { url: imgPreview }
+                });
+                
+                if (!textInput) {
+                    contentArray.push({ 
+                        type: "text", 
+                        text: 'Analyze this image of an IELTS test. Extract the reading passage and all questions. Format your response strictly as JSON with the structure: { "passage": "The text...", "questions": [ { "type": "multiple_choice", "text": "Question text", "options": ["A", "B"], "answer": "A" } ] }' 
+                    });
+                }
+            }
+
+            // 3. Make the API Call to OpenAI
+            const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}` // OpenAI requires the key here!
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini", // Use gpt-4o or gpt-4o-mini for vision support
+                    response_format: { type: "json_object" }, // Force valid JSON
+                    messages: [
+                        {
+                            role: "user",
+                            content: contentArray
+                        }
+                    ]
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || "OpenAI API Error");
+            }
+
+            const data = await response.json();
+            // 4. Extract data using OpenAI's response structure
+            const aiText = data.choices[0].message.content; 
+            
+            // Parse the AI's JSON response
+            const parsedData = JSON.parse(aiText);
+            console.log("Extracted AI Data:", parsedData);
+            
+            // Apply Passage to Editor
+            if (parsedData.passage) {
+                document.getElementById('edit-passage-text').innerHTML = parsedData.passage;
+            }
+            
+            // Alert success
+            showModalMsg("AI Success", "Data extracted successfully! The passage has been placed in the editor. Check your browser console to see the JSON output of the questions.");
+            
+            // Close the modal
+            document.getElementById('ai-generator-modal').classList.add('hidden');
+            
+        } catch (err) {
+            console.error("AI Generation Error:", err);
+            showModalMsg("AI Error", "Failed to generate test. Make sure your API key is correct. Details: " + err.message);
+        } finally {
+            // Hide loading state
+            document.getElementById('ai-loading').classList.add('hidden');
+            document.getElementById('ai-loading').classList.remove('flex');
+            document.getElementById('ai-generate-btn').disabled = false;
+        }
+    };
+
     function quickAddTeacherVocab(e) {
       e.preventDefault(); e.stopPropagation(); document.getElementById('editor-selection-tooltip').classList.add('hidden');
       const term = window.getSelection().toString().trim();
@@ -2515,7 +2675,7 @@
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
         const mkLbl = (t) => `<label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mt-4 first:mt-0">${t}</label>`;
         
-        const mkToolbar = () => `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
+        const mkStandardToolbar = () => `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
@@ -2525,6 +2685,20 @@
             <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
             <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition" title="Insert Gap Fill Blank">{_} Blank</button>
             <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
+        </div>`;
+
+        const mkExplanationToolbar = () => `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">• List</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">1. List</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition" title="Insert Gap Fill Blank">{_} Blank</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+            <button type="button" onmousedown="event.preventDefault(); window.insertVideo()" class="px-2.5 py-1 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded shadow-sm transition" title="Insert Local Video File">🎥 Video</button>
         </div>`;
         
         const editorId = `rich-text-${i}`;
@@ -2538,6 +2712,7 @@
             <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
             <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'table', '${q.type}')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">▦ Table</button>
             <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'flow', '${q.type}')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">↓ Flow</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
         </div>`;
         
         let html = `
@@ -2564,10 +2739,10 @@
                     <div>${mkLbl('Points')}<input type="number" class="q-points ${baseInputClass}" value="${q.points||1}"></div>
                  </div>`;
                  
-        html += `<div>${mkLbl('Instruction')}${mkToolbar()}<div class="q-inst rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[70px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.instruction||''}</div></div>`;
+        html += `<div>${mkLbl('Instruction')}${mkStandardToolbar()}<div class="q-inst rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[70px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.instruction||''}</div></div>`;
         
         if (q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
-           html += `<div>${mkLbl('Question Text')}${mkToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[70px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
+           html += `<div>${mkLbl('Question Text')}${mkStandardToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            if(q.type === 'multiple_choice') {
                html += `<div>${mkLbl('Options (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[100px]">${formatArr(q.options)}</textarea></div>`;
                html += `<div class="mt-1 mb-2"><label class="flex items-center text-sm font-bold text-slate-700 cursor-pointer bg-slate-50 border border-slate-200 px-4 py-3 rounded-lg hover:bg-slate-100 transition"><input type="checkbox" class="q-multi mr-3 w-4 h-4 text-blue-600 rounded" ${q.multi ? 'checked' : ''} onchange="APP_DATA.parts[currentEditorPartIdx].questions[${i}].multi = this.checked; saveCurrentEditorPart(); renderEditorQuestions();"> Allow multiple selections (Checkboxes)</label></div>`;
@@ -2618,7 +2793,7 @@
            }
         }
         
-        html += `<div>${mkLbl('Explanation (Optional)')}${mkToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
+        html += `<div>${mkLbl('Explanation (Optional)')}${mkExplanationToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
         
         html += `</div>`; 
         div.innerHTML = html; 
@@ -2628,11 +2803,151 @@
 
     function addEditorQuestion() {
       const type = document.getElementById('new-q-type').value;
-      const ids = [Date.now()%10000]; 
+      
+      // Auto-calculate sequential ID
+      let maxId = 0;
+      APP_DATA.parts[currentEditorPartIdx].questions.forEach(q => {
+          (q.ids || []).forEach(id => { if (id > maxId) maxId = id; });
+      });
+      const nextId = maxId + 1;
+      
+      const ids = [nextId]; 
       const newQ = { blockId: 'b'+Date.now(), type, ids, instruction: "New Q", correctAnswers:{} };
       APP_DATA.parts[currentEditorPartIdx].questions.push(newQ); renderEditorQuestions();
       triggerEditorAutosave();
     }
+    
+    window.addBulkImportRow = function() {
+        const tbody = document.getElementById('bulk-import-tbody');
+        const tr = document.createElement('tr');
+        tr.className = "import-row hover:bg-slate-50 transition-colors";
+        tr.innerHTML = `
+            <td class="p-2 align-top"><select class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-type focus:border-blue-500 font-medium bg-white" data-col="0"><option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop</option><option value="tfng">True/False</option><option value="ynng">Yes/No</option><option value="matching_headings">Matching Headings</option><option value="matching_info">Matching Info</option><option value="map_labelling_hotspots">Map (Hotspots)</option><option value="map_labelling_grid">Map (Grid)</option><option value="essay">Essay / Writing</option></select></td>
+            <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-inst focus:border-blue-500 resize-none h-14 bg-white" placeholder="Instruction" data-col="1"></textarea></td>
+            <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-text focus:border-blue-500 resize-none h-14 bg-white" placeholder="Question Text" data-col="2"></textarea></td>
+            <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-opts focus:border-blue-500 resize-none h-14 bg-white" placeholder="A, B, C" data-col="3"></textarea></td>
+            <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-ans focus:border-blue-500 resize-none h-14 font-bold text-emerald-700 bg-white" placeholder="Answer" data-col="4"></textarea></td>
+        `;
+        tbody.appendChild(tr);
+    };
+
+    window.openCSVImport = function() {
+        document.getElementById('bulk-import-tbody').innerHTML = ''; 
+        for(let i=0; i<3; i++) window.addBulkImportRow(); // Start with 3 blank rows
+        document.getElementById('csv-import-modal').classList.remove('hidden');
+    };
+
+    window.handleGridPaste = function(e) {
+        const text = (e.clipboardData || window.clipboardData).getData('text');
+        
+        if (text.includes('\t') || text.includes('\n')) {
+            e.preventDefault(); 
+            
+            const targetCell = e.target.closest('td');
+            if (!targetCell) return;
+            
+            const targetRow = targetCell.closest('tr');
+            const tbody = document.getElementById('bulk-import-tbody');
+            const rows = Array.from(tbody.children);
+            
+            const startRowIdx = rows.indexOf(targetRow);
+            const startColIdx = parseInt(e.target.dataset.col || 0);
+
+            const pasteRows = text.split('\n').filter(row => row.trim() || row.includes('\t'));
+            
+            pasteRows.forEach((pasteRow, i) => {
+                const pasteCols = pasteRow.split('\t');
+                const targetRowIdx = startRowIdx + i;
+                
+                while (tbody.children.length <= targetRowIdx) {
+                    window.addBulkImportRow();
+                }
+                
+                const tr = tbody.children[targetRowIdx];
+                const inputs = [tr.querySelector('.row-type'), tr.querySelector('.row-inst'), tr.querySelector('.row-text'), tr.querySelector('.row-opts'), tr.querySelector('.row-ans')];
+
+                pasteCols.forEach((pasteVal, j) => {
+                    const targetColIdx = startColIdx + j;
+                    if (targetColIdx < inputs.length) {
+                        const input = inputs[targetColIdx];
+                        const val = pasteVal.trim();
+                        
+                        if (targetColIdx === 0) {
+                            const rawType = val.toLowerCase();
+                            let type = 'multiple_choice';
+                            if (rawType.includes('gap') || rawType.includes('fill') || rawType.includes('blank')) type = 'fill_blanks';
+                            else if (rawType.includes('drag') || rawType.includes('drop') || rawType === 'dnd_list') type = 'dnd_list';
+                            else if (rawType.includes('true') || rawType.includes('tfng')) type = 'tfng';
+                            else if (rawType.includes('yes') || rawType.includes('ynng')) type = 'ynng';
+                            else if (rawType.includes('heading')) type = 'matching_headings';
+                            else if (rawType.includes('info') || (rawType.includes('grid') && !rawType.includes('map'))) type = 'matching_info';
+                            else if (rawType.includes('hotspot') || (rawType.includes('map') && !rawType.includes('grid'))) type = 'map_labelling_hotspots';
+                            else if (rawType.includes('map') && rawType.includes('grid')) type = 'map_labelling_grid';
+                            else if (rawType.includes('essay') || rawType.includes('writing')) type = 'essay';
+                            
+                            input.value = type;
+                        } else {
+                            input.value = val;
+                        }
+                    }
+                });
+            });
+        }
+    };
+
+    window.processBulkImport = function() {
+        saveCurrentEditorPart();
+        const rows = document.querySelectorAll('.import-row');
+        let importedCount = 0;
+        
+        // Find highest existing ID in this part
+        let currentMaxId = 0;
+        APP_DATA.parts[currentEditorPartIdx].questions.forEach(q => {
+            (q.ids || []).forEach(id => { if (id > currentMaxId) currentMaxId = id; });
+        });
+        
+        rows.forEach((row, i) => {
+            const type = row.querySelector('.row-type').value;
+            const inst = row.querySelector('.row-inst').value.trim();
+            const text = row.querySelector('.row-text').value.trim();
+            const optsRaw = row.querySelector('.row-opts').value.trim();
+            const ans = row.querySelector('.row-ans').value.trim();
+
+            if (!text && !ans && !inst) return; // Skip blank rows
+
+            // Sequential ID logic
+            currentMaxId++; 
+            const newId = currentMaxId;
+            
+            let options = optsRaw ? optsRaw.split(',').map(o => o.trim()).filter(Boolean) : [];
+
+            const newBlock = {
+                blockId: 'b' + Date.now() + i,
+                type: type,
+                ids: [newId],
+                points: 1,
+                instruction: inst || "Answer the question.",
+                text: text,
+                options: options,
+                explanation: "",
+                correctAnswers: {}
+            };
+
+            newBlock.correctAnswers[newId] = ans;
+            APP_DATA.parts[currentEditorPartIdx].questions.push(newBlock);
+            importedCount++;
+        });
+
+        if (importedCount === 0) {
+            showModalMsg("Import Failed", "All rows were empty. Please fill in the grid or paste from Excel.");
+            return;
+        }
+
+        document.getElementById('csv-import-modal').classList.add('hidden');
+        renderEditorQuestions();
+        triggerEditorAutosave();
+        showModalMsg("Success", `Imported ${importedCount} questions successfully!`);
+    };
     
     function moveEditorQuestion(idx, dir) {
       saveCurrentEditorPart(); 
@@ -2644,7 +2959,7 @@
         triggerEditorAutosave();
       }
     }
-    
+
     function saveCurrentEditorPart() {
       const p = APP_DATA.parts[currentEditorPartIdx];
       p.title = document.getElementById('edit-passage-title').value;
@@ -2768,15 +3083,27 @@
           const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
           const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
           const sort = document.getElementById('student-test-sort')?.value || 'default';
+          const tagSelect = document.getElementById('student-test-filter-tag');
+          const selectedTag = tagSelect ? tagSelect.value : 'all';
           
           let testObjects = cls.assignedTests
               .map(tid => TEST_BANK.find(x => x.id === tid))
               .filter(t => t !== undefined);
+
+          if (tagSelect && testObjects.length > 0) {
+              let allTags = new Set();
+              testObjects.forEach(t => {
+                  if (t.topics) t.topics.forEach(tag => allTags.add(tag));
+              });
+              tagSelect.innerHTML = `<option value="all">All Tags</option>` + 
+                  Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
+          }
               
           testObjects = testObjects.filter(t => {
               const matchQuery = t.title.toLowerCase().includes(query) || (t.topics && t.topics.join(' ').toLowerCase().includes(query));
               const matchMod = mod === 'all' || t.module === mod;
-              return matchQuery && matchMod;
+              const matchTag = selectedTag === 'all' || (t.topics && t.topics.includes(selectedTag));
+              return matchQuery && matchMod && matchTag;
           });
           
           if (sort === 'az') {
@@ -3149,7 +3476,7 @@
 
            // ✨ NEW: Removed explicit text-sizes so .draggable-item inherits the global scalable font size. Increased px/py paddings.
            if (APP_DATA.module === 'listening') {
-               content = `<div class="flex flex-col lg:flex-row gap-8 items-start justify-start"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium"></p><div class="flex flex-col gap-2 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
+               content = `<div class="flex flex-col md:flex-row flex-wrap gap-8 items-start justify-start w-full"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium"></p><div class="flex flex-col gap-2 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
            } else {
                content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
            }
@@ -3185,7 +3512,7 @@
                </div>`;
            }
 
-           content = `<div class="flex flex-col lg:flex-row gap-8 items-start justify-start w-full">
+           content = `<div class="flex flex-col lg:flex-row flex-wrap gap-8 items-start justify-start w-full">
                <div class="leading-relaxed overflow-x-auto max-w-full flex-1 selection-wrapper text-center bg-slate-50 p-4 border border-slate-100 rounded-xl">
                    ${mapHtml || '<div class="italic text-slate-400">Map image not provided.</div>'}
                </div>
@@ -3246,7 +3573,7 @@
            content = table;
         } else if(q.type === 'essay') {
            let txt = pt(rawText);
-           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\s+/).filter(Boolean).length}</span></div>`;
+           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\\s+/).filter(Boolean).length}</span></div>`;
         } else if(q.type === 'audio_record') {
            let txt = pt(rawText);
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
@@ -3505,7 +3832,7 @@
         
         if (testMode !== 'free' && !isPreviewMode) {
           const clsId = document.getElementById('student-class-select').value;
-          const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title, className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers, score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
+          const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title, className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers: JSON.parse(JSON.stringify(answers)), score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
           
           SUBMISSIONS.unshift(sub);
           try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); }
@@ -4944,6 +5271,44 @@
         document.execCommand('insertHTML', false, temp.innerHTML);
         if (window.triggerEditorAutosave) window.triggerEditorAutosave();
     });
+    window.insertVideo = function() {
+        // Create a hidden dynamic file input
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'video/*';
+    
+        fileInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Warn users about large video files which could bloat local storage/Firebase limits
+            if (file.size > 15 * 1024 * 1024) { // 15MB Limit check
+                alert("Video file is too large! Please compress it under 15MB before uploading.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const base64Video = ev.target.result;
+            
+                // Inject a native HTML5 video player block directly into the editor pane
+                const html = `
+                    <div class="my-4 p-2 bg-slate-100 rounded border border-slate-300 inline-block max-w-xl" contenteditable="false">
+                        <video controls src="${base64Video}" class="w-full max-h-[360px] rounded bg-black shadow-inner"></video>
+                        <div class="text-xs text-slate-500 mt-1 font-sans font-medium text-center">🎥 Embedded Explanation Video</div>
+                    </div>
+                    <p><br></p>
+                `;
+            
+                document.execCommand('insertHTML', false, html);
+                if (window.triggerEditorAutosave) window.triggerEditorAutosave();
+            };
+        
+            reader.readAsDataURL(file);
+        };
+
+        fileInput.click();
+    };
   </script>
 </body>
 </html>
