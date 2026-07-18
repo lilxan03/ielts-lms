@@ -307,6 +307,14 @@
         </div>
       </div>
 
+      <!-- Part Selection Area -->
+      <div id="part-selection-container" class="mb-6 border-t border-slate-200 pt-4 hidden">
+        <label class="block text-sm font-bold text-slate-700 mb-2">Select Parts to Practice:</label>
+        <div id="part-checkboxes" class="flex flex-wrap gap-3">
+           <!-- JS will inject checkboxes here -->
+        </div>
+      </div>
+
       <div class="flex justify-end gap-3">
         <button onclick="document.getElementById('test-mode-modal').classList.add('hidden')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
         <button onclick="confirmStartTest()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow">Start Test 🚀</button>
@@ -3214,13 +3222,40 @@
 
     function openModeSelection(tid) {
       pendingTestId = tid;
+      
+      const t = TEST_BANK.find(x => x.id === tid);
+      const partContainer = document.getElementById('part-selection-container');
+      const partCheckboxes = document.getElementById('part-checkboxes');
+      
+      // Auto-generate checkboxes for however many parts the test has
+      if (t && t.parts && t.parts.length > 0) {
+          partContainer.classList.remove('hidden');
+          partCheckboxes.innerHTML = t.parts.map((p, idx) => `
+              <label class="flex items-center space-x-2 cursor-pointer bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition shadow-sm">
+                  <input type="checkbox" class="part-select-cb w-4 h-4 text-blue-600 rounded focus:ring-blue-500" value="${idx}" checked>
+                  <span class="font-bold text-slate-700 text-sm">${p.title || 'Part ' + (idx + 1)}</span>
+              </label>
+          `).join('');
+      } else {
+          partContainer.classList.add('hidden');
+      }
+      
       document.getElementById('test-mode-modal').classList.remove('hidden');
     }
 
     function confirmStartTest() {
+      // Gather which checkboxes are checked
+      const checkboxes = document.querySelectorAll('.part-select-cb:checked');
+      const selectedParts = Array.from(checkboxes).map(cb => parseInt(cb.value));
+      
+      if (selectedParts.length === 0) {
+          showModalMsg("Selection Required", "Please select at least one part to start the test.");
+          return;
+      }
+      
       document.getElementById('test-mode-modal').classList.add('hidden');
       if (pendingTestId) {
-          startTest(pendingTestId);
+          startTest(pendingTestId, selectedParts); // Pass the chosen parts!
       }
     }
 
@@ -3237,9 +3272,15 @@
       }
     }
 
-    function startTest(tid) {
+    function startTest(tid, selectedParts = null) {
       const t = TEST_BANK.find(x => x.id === tid); if(!t) return;
       APP_DATA = JSON.parse(JSON.stringify(t)); 
+      
+      // Cut out the unselected parts from the active test data
+      if (selectedParts && selectedParts.length > 0) {
+          APP_DATA.parts = APP_DATA.parts.filter((p, index) => selectedParts.includes(index));
+      }
+      
       answers = {}; reviewStatus = {};
       isPreviewMode = false; 
       
