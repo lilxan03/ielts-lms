@@ -125,8 +125,8 @@
     body.size-large #questions-container .text-xs, body.size-large #review-right-pane .text-xs { font-size: 1rem !important; }
     body.size-xl #questions-container .text-xs, body.size-xl #review-right-pane .text-xs { font-size: 1.15rem !important; }
     
-    .draggable-item { cursor: grab; font-size: inherit; } .draggable-item:active { cursor: grabbing; }
-    .drop-zone { transition: all 0.2s; }
+    .draggable-item { cursor: grab; font-size: inherit; white-space: normal !important; word-break: break-word; height: auto !important; line-height: normal;} .draggable-item:active { cursor: grabbing; }
+    .drop-zone { transition: all 0.2s; height: auto !important; min-height: 1.8em; vertical-align: middle; display: flex; align-items: center; justify-content: center; text-align: center; }
     .drop-zone.drag-over { background-color: #dbeafe !important; border-color: #3b82f6 !important; border-style: solid !important; }
     .drop-zone-options.drag-over { background-color: #f1f5f9; border-color: #94a3b8; border-style: dashed; }
 
@@ -252,14 +252,28 @@
       </div>
       <div class="p-5 overflow-y-auto flex-1 bg-slate-100">
         <div class="bg-white p-4 rounded border border-slate-300 shadow-sm mb-5">
-          <h3 class="font-bold text-sm text-slate-600 uppercase mb-3 border-b pb-2">Add New Word</h3>
-          <div class="grid grid-cols-2 gap-3 mb-3">
-            <div><label class="block text-xs font-bold text-slate-500 mb-1">Term / Phrase *</label><input type="text" id="tv-term" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="e.g. ubiquitous"></div>
-            <div><label class="block text-xs font-bold text-slate-500 mb-1">Pronunciation (Optional)</label><input type="text" id="tv-pron" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono" placeholder="e.g. /juːˈbɪk.wɪ.təs/"></div>
+          <div class="flex justify-between items-center border-b pb-2 mb-3">
+            <h3 class="font-bold text-sm text-slate-600 uppercase">Add New Word</h3>
+            <button onclick="toggleVocabBulk()" id="tv-bulk-toggle-btn" class="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">📥 Bulk Paste from Excel</button>
           </div>
-          <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">English Definition</label><input type="text" id="tv-eng" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Present, appearing, or found everywhere."></div>
-          <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">Vietnamese Meaning</label><input type="text" id="tv-vi" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Có mặt ở khắp nơi"></div>
-          <button onclick="addTeacherVocab()" class="w-full bg-blue-600 text-white font-bold py-2 rounded shadow hover:bg-blue-700 transition">Add to Test List</button>
+          
+          <!-- Bulk Import Area -->
+          <div id="tv-bulk-area" class="hidden mb-3 animate-fade-in-up">
+            <label class="block text-xs font-bold text-slate-500 mb-2">Paste columns from Excel/Sheets: <br><span class="font-mono text-blue-600">Term ➔ Pronunciation ➔ English ➔ Vietnamese</span></label>
+            <textarea id="tv-bulk-input" class="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none h-28 mb-3 bg-slate-50" placeholder="apple&#9;/ˈæp.əl/&#9;A round fruit with red or green skin&#9;Quả táo..."></textarea>
+            <button onclick="processVocabBulk()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded shadow hover:bg-emerald-700 transition">Import Vocabulary Rows</button>
+          </div>
+
+          <!-- Single Word Area -->
+          <div id="tv-single-area">
+            <div class="grid grid-cols-2 gap-3 mb-3">
+              <div><label class="block text-xs font-bold text-slate-500 mb-1">Term / Phrase *</label><input type="text" id="tv-term" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="e.g. ubiquitous"></div>
+              <div><label class="block text-xs font-bold text-slate-500 mb-1">Pronunciation (Optional)</label><input type="text" id="tv-pron" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono" placeholder="e.g. /juːˈbɪk.wɪ.təs/"></div>
+            </div>
+            <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">English Definition</label><input type="text" id="tv-eng" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Present, appearing, or found everywhere."></div>
+            <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">Vietnamese Meaning</label><input type="text" id="tv-vi" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Có mặt ở khắp nơi"></div>
+            <button onclick="addTeacherVocab()" class="w-full bg-blue-600 text-white font-bold py-2 rounded shadow hover:bg-blue-700 transition">Add to Test List</button>
+          </div>
         </div>
         <h3 class="font-bold text-sm text-slate-600 uppercase mb-2">Current List</h3>
         <div id="tv-list" class="space-y-2"></div>
@@ -1910,6 +1924,52 @@
       triggerEditorAutosave();
     }
     
+    window.toggleVocabBulk = function() {
+      const single = document.getElementById('tv-single-area');
+      const bulk = document.getElementById('tv-bulk-area');
+      const btn = document.getElementById('tv-bulk-toggle-btn');
+      
+      if (single.classList.contains('hidden')) {
+        single.classList.remove('hidden');
+        bulk.classList.add('hidden');
+        btn.innerHTML = '✍️ Single Manual Entry';
+      } else {
+        single.classList.add('hidden');
+        bulk.classList.remove('hidden');
+        btn.innerHTML = '📥 Bulk Paste from Excel';
+      }
+    };
+
+    window.processVocabBulk = function() {
+      const text = document.getElementById('tv-bulk-input').value.trim();
+      if(!text) {
+        showModalMsg("Empty", "Please paste some data from Excel first.");
+        return;
+      }
+      
+      const lines = text.split('\n');
+      let count = 0;
+      
+      lines.forEach(line => {
+        const parts = line.split('\t'); // Reads the Excel columns based on standard 'tab' spacing
+        if(parts[0] && parts[0].trim()) {
+          APP_DATA.vocab.push({
+            term: parts[0].trim(),
+            pron: (parts[1] || '').trim(),
+            eng: (parts[2] || '').trim(),
+            vi: (parts[3] || '').trim()
+          });
+          count++;
+        }
+      });
+      
+      document.getElementById('tv-bulk-input').value = '';
+      toggleVocabBulk(); // Swap back to standard view
+      renderTeacherVocab();
+      triggerEditorAutosave();
+      showModalMsg("Success", `Imported ${count} vocabulary words!`);
+    };
+
     window.execCmd = function(command, value = null) {
       document.execCommand(command, false, value);
       window.triggerEditorAutosave();
@@ -3205,7 +3265,9 @@
       document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
       
       clearInterval(timerInterval);
-      timeLeft = isTimeFree ? 0 : (APP_DATA.module==='listening'?40*60:APP_DATA.module==='writing'?60*60:APP_DATA.module==='speaking'?15*60:60*60);
+      let customMins = parseInt(document.getElementById('custom-time-input').value);
+      let defaultSecs = (APP_DATA.module==='listening'?40*60:APP_DATA.module==='writing'?60*60:APP_DATA.module==='speaking'?15*60:60*60);
+      timeLeft = isTimeFree ? 0 : (customMins > 0 ? customMins * 60 : defaultSecs);
       document.getElementById('timer-label').textContent = isTimeFree ? 'Elapsed' : 'Time Left';
       timerInterval = setInterval(() => {
         isTimeFree ? timeLeft++ : timeLeft--;
@@ -3463,7 +3525,7 @@
                    ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)"
                    ${hasAns ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>
                   <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[26px] h-[26px] bg-white border border-slate-800 text-slate-800 text-base font-bold rounded-sm cursor-pointer hover:bg-slate-100 transition shrink-0 select-none">${id}</span>
-                  <span class="px-2 min-w-[100px] text-center text-base ${hasAns ? 'font-bold text-blue-900' : 'text-slate-400 italic'} whitespace-nowrap pointer-events-none">${hasAns ? ans : 'Drop answer here'}</span>
+                  <span class="px-2 min-w-[100px] text-center text-base ${hasAns ? 'font-bold text-blue-900' : 'text-slate-400 italic'} pointer-events-none">${hasAns ? ans : 'Drop answer here'}</span>
               </span>`;
               txt = txt.split(`{drop:${id}}`).join(dropZoneHtml);
            });
@@ -3830,9 +3892,9 @@
           }));
         }
         
-        if (testMode !== 'free' && !isPreviewMode) {
+        if (!isPreviewMode) {
           const clsId = document.getElementById('student-class-select').value;
-          const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title, className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers: JSON.parse(JSON.stringify(answers)), score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
+          const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title + (testMode === 'free' ? ' (Practice)' : ''), className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers: JSON.parse(JSON.stringify(answers)), score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
           
           SUBMISSIONS.unshift(sub);
           try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); }
