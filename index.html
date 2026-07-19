@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1e293b">
   <title>IELTS LMS - Cloud Connected</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -76,6 +79,33 @@
     .theme-text-main { color: var(--text-main); }
     .theme-q-block { background-color: var(--q-bg); border-color: var(--q-border); }
 
+    /* MOBILE RESPONSIVE FIXES */
+    @media (max-width: 768px) {
+        /* Stack the exam UI vertically on phones */
+        #split-container { flex-direction: column !important; }
+        #passage-container { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
+        #questions-container { width: 100% !important; flex: 1 !important; height: 60vh !important; }
+        
+        /* Rotate the resizer bar to be horizontal */
+        #resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
+        #resizer > div { width: 30px !important; height: 4px !important; }
+
+        /* Squeeze modals to fit phone screens */
+        .w-96, .w-\\[400px\\], .w-\\[500px\\], .w-\\[550px\\], .w-\\[600px\\], .w-\\[700px\\], .w-\\[800px\\], .w-\\[950px\\] {
+            width: 100% !important;
+            max-width: 95vw !important;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Adjust payment wall on phones */
+        #student-payment-warning > div { flex-direction: column !important; }
+        #student-payment-warning .lg\\:w-3\\/5, #student-payment-warning .lg\\:w-2\\/5 { width: 100% !important; border-left: none !important; }
+        
+        /* Make palettes scrollable instead of squished */
+        #palette-container { justify-content: flex-start !important; }
+    }
+
     /* Dark Theme */
     body.theme-dark { background-color: #0f172a !important; color: #f1f5f9 !important; --bg-main: #0f172a; --bg-sec: #1e293b; --text-main: #f1f5f9; --text-sec: #cbd5e1; --q-bg: #1e293b; --q-border: #334155; }
     body.theme-dark #split-container, body.theme-dark #review-ui { background-color: var(--bg-main) !important; }
@@ -111,13 +141,13 @@
     body.theme-pastel #split-container .border-slate-200, body.theme-pastel #split-container .border-slate-300, body.theme-pastel #split-container .border-slate-400,
     body.theme-pastel #review-ui .border-slate-200, body.theme-pastel #review-ui .border-slate-300, body.theme-pastel #review-ui .border-slate-400 { border-color: #d5c4a1 !important; }
 
-    .passage-text { font-size: var(--font-scale) !important; line-height: 1.8 !important; transition: font-size 0.3s; }
+    .passage-text { font-size: calc(var(--font-scale) * 0.88) !important; line-height: 1.7 !important; transition: font-size 0.3s; }
     .passage-text p { margin-bottom: 1.5rem; }
     
     #questions-container, #questions-container div:not(.draggable-item), #questions-container p, #questions-container label span, #questions-container .drop-zone,
     #questions-container td, #questions-container th, #questions-container li, #questions-container input, #questions-container select, #questions-container textarea,
     #review-right-pane, #review-right-pane div, #review-right-pane p, #review-right-pane td, #review-right-pane th, #review-right-pane li, #review-right-pane textarea, #writing-textarea {
-        font-size: var(--font-scale); line-height: 1.6; transition: font-size 0.3s;
+        font-size: calc(var(--font-scale) * 0.88); line-height: 1.7; transition: font-size 0.3s; font-family: inherit;
     }
 
     body.size-large #questions-container .text-sm, body.size-large #review-right-pane .text-sm, body.size-large #passage-container .text-sm, body.size-large #review-left-pane .text-sm { font-size: 1.15rem !important; line-height: 1.7 !important; }
@@ -132,6 +162,12 @@
 
     .vocab-word { border-bottom: 2px dotted #2563eb; cursor: pointer; color: #1d4ed8; font-weight: 600; transition: all 0.2s; }
     .vocab-word:hover { background-color: #dbeafe; border-bottom-color: #1e40af; }
+
+    .highlighted-text {
+        color: #0f172a !important; /* Force high-contrast dark text in all themes */
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+    }
 
     .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
     .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
@@ -520,7 +556,7 @@
       <div class="mb-4">
         <h3 class="font-semibold mb-2 text-slate-700">Color Theme</h3>
         <div class="flex gap-2">
-          <button onclick="applyTheme('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 font-medium">Standard</button>
+          <button onclick="applyTheme('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 font-medium text-slate-700">Standard</button>
           <button onclick="applyTheme('dark')" class="flex-1 py-2 border bg-slate-900 text-white rounded hover:bg-slate-800 font-medium">Dark</button>
           <button onclick="applyTheme('pastel')" class="flex-1 py-2 border bg-[#fdf6e3] text-[#586e75] rounded hover:bg-[#eee8d5] font-medium">Pastel</button>
         </div>
@@ -528,9 +564,9 @@
       <div class="mb-6">
         <h3 class="font-semibold mb-2 text-slate-700">Text Size</h3>
         <div class="flex gap-2">
-          <button onclick="applyFontSize('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-base font-medium">Standard</button>
-          <button onclick="applyFontSize('large')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-lg font-medium">Large</button>
-          <button onclick="applyFontSize('xl')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-xl font-medium">X-Large</button>
+          <button onclick="applyFontSize('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-base font-medium text-slate-700">Standard</button>
+          <button onclick="applyFontSize('large')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-lg font-medium text-slate-700">Large</button>
+          <button onclick="applyFontSize('xl')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-xl font-medium text-slate-700">X-Large</button>
         </div>
       </div>
       <button onclick="closeSettings()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow">Done</button>
@@ -556,10 +592,44 @@
     <!-- Main Content Container (Pushed up into the blue banner) -->
     <div class="bg-white p-6 lg:p-8 rounded-2xl shadow-xl text-left shrink-0 -mt-16 relative z-10 animate-fade-in-up border border-slate-100 mx-4 lg:mx-8 mb-12">
       
-      <!-- Payment Warning Banner -->
-      <div id="student-payment-warning" class="hidden bg-rose-50 border-l-4 border-rose-500 p-6 rounded-r-lg mb-8">
-         <h2 class="text-rose-800 font-bold text-xl mb-2">Access Restricted: Payment Required</h2>
-         <p class="text-rose-600">Your account is currently inactive. Please complete your tuition payment with your teacher to unlock your tests and classes.</p>
+      <!-- NEW IMMERSIVE PAYMENT CHECKOUT WALL -->
+      <div id="student-payment-warning" class="hidden w-full mb-8">
+         <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 flex flex-col lg:flex-row">
+            
+            <!-- Left: Pricing Plans -->
+            <div class="p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-rose-500/20 border border-rose-500/30 rounded-full text-rose-300 text-xs font-black uppercase tracking-widest mb-6 w-max">
+                   <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> Access Locked
+                </div>
+                <h2 class="text-3xl font-black text-white mb-3">Unlock Your Course Materials</h2>
+                <p class="text-indigo-200 mb-8 font-medium">Select a study plan to pay your tuition and automatically unlock your timetable, materials, and practice exams.</p>
+                
+                <div class="space-y-4" id="checkout-plans-container">
+                    <!-- Javascript will generate plans here -->
+                </div>
+            </div>
+
+            <!-- Right: VietQR Gateway -->
+            <div class="bg-white p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-l border-slate-200 relative">
+                <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
+                <img src="https://vietqr.net/portal/v3/images/vietqr.svg" class="h-8 mb-6 opacity-80" alt="VietQR">
+                
+                <div class="p-2 bg-white rounded-xl shadow-lg border-2 border-slate-100 mb-6 relative group">
+                    <img id="vietqr-image" src="" class="w-56 h-56 object-contain rounded-lg transition-all group-hover:scale-105" alt="Bank QR Code">
+                </div>
+
+                <div class="text-center w-full mb-6">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total to Pay</div>
+                    <div id="vietqr-amount" class="text-3xl font-black text-emerald-600 tracking-tight">0 ₫</div>
+                    <div class="bg-slate-50 border border-slate-200 rounded p-2 mt-3 font-mono text-sm text-slate-600 break-all shadow-inner">Msg: <span id="vietqr-desc" class="font-bold text-slate-900"></span></div>
+                </div>
+
+                <button id="btn-verify-pay" onclick="simulateAutoPayment()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black rounded-xl shadow-[0_10px_20px_-10px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-lg">
+                    Check Payment Status 🔄
+                </button>
+                <p class="text-[10px] text-slate-400 text-center mt-3 font-medium">Click this button after scanning to securely verify your transfer.</p>
+            </div>
+         </div>
       </div>
 
       <div id="student-toolbar" class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md pb-4 pt-4 mb-6 border-b border-slate-200 flex flex-wrap gap-2 -mx-8 px-8 shadow-sm">
@@ -681,37 +751,59 @@
         </div>
 
         <div id="dash-view-tests" class="flex flex-col gap-6 animate-fade-in-up">
-          <div class="flex justify-between items-center border-b border-slate-200 pb-4">
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Test Bank (Cloud)</h2>
-            <div class="flex gap-2">
-              <button onclick="createNewTest('reading')" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-blue-700 text-sm transition">+ Reading</button>
-              <button onclick="createNewTest('listening')" class="bg-cyan-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-cyan-700 text-sm transition">+ Listening</button>
-              <button onclick="createNewTest('writing')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-emerald-700 text-sm transition">+ Writing</button>
-              <button onclick="createNewTest('speaking')" class="bg-amber-500 text-white px-4 py-2 rounded-lg font-bold shadow-sm hover:bg-amber-600 text-sm transition">+ Speaking</button>
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+            <div>
+              <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                 <span class="text-3xl">📚</span> Test Bank
+              </h2>
+              <p class="text-sm text-slate-500 font-medium mt-1">Manage and assign your cloud-synced materials</p>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
+              <button onclick="createNewTest('reading')" class="bg-gradient-to-br from-blue-500 to-blue-700 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">📖 Reading</button>
+              <button onclick="createNewTest('listening')" class="bg-gradient-to-br from-cyan-500 to-cyan-700 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🎧 Listening</button>
+              <button onclick="createNewTest('writing')" class="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">✍️ Writing</button>
+              <button onclick="createNewTest('speaking')" class="bg-gradient-to-br from-amber-400 to-amber-600 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🗣️ Speaking</button>
             </div>
           </div>
-          <div class="flex flex-col sm:flex-row gap-3 bg-white p-3 rounded-lg shadow-sm border border-slate-200">
-            <input type="text" id="bank-search" onkeyup="renderTestBank()" placeholder="Search tests by title or tag..." class="flex-1 border-2 border-slate-200 rounded-md px-4 py-2 text-sm focus:border-blue-500 focus:ring-0 outline-none transition font-medium text-slate-700">
-            <select id="bank-filter-mod" onchange="renderTestBank()" class="border-2 border-slate-200 rounded-md px-4 py-2 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 transition">
+
+          <div class="flex flex-col sm:flex-row gap-3 bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 items-center">
+            <div class="relative flex-1 w-full">
+               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span class="text-slate-400">🔍</span>
+               </div>
+               <input type="text" id="bank-search" onkeyup="renderTestBank()" placeholder="Search tests by title or tag..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
+            </div>
+            <select id="bank-filter-mod" onchange="renderTestBank()" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
               <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
             </select>
-            <select id="bank-sort" onchange="renderTestBank()" class="border-2 border-slate-200 rounded-md px-4 py-2 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 transition">
+            <select id="bank-sort" onchange="renderTestBank()" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
               <option value="newest">Newest First</option><option value="az">A-Z</option><option value="za">Z-A</option>
             </select>
           </div>
-          <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"></div>
+          
+          <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"></div>
         </div>
 
         <div id="dash-view-classes" class="hidden flex-col gap-6 animate-fade-in-up">
-          <div class="flex justify-between items-center border-b border-slate-200 pb-4">
-            <h2 class="text-2xl font-black text-slate-800 tracking-tight">Classes & Submissions</h2>
-            <div class="flex gap-3">
-               <button onclick="clearAllSubmissions()" class="px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg font-bold text-sm shadow-sm hover:bg-rose-100 transition">Clear Submissions</button>
-               <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition">＋ New Class</button>
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+            <div>
+              <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                 <span class="text-3xl">👥</span> Classes & Submissions
+              </h2>
+              <p class="text-sm text-slate-500 font-medium mt-1">Manage your student groups and grade their work</p>
+            </div>
+            <div class="flex gap-3 mt-4 md:mt-0">
+               <button onclick="clearAllSubmissions()" class="px-5 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-bold text-sm shadow-sm hover:bg-rose-100 hover:text-rose-700 transition flex items-center gap-2">🗑️ Clear Submissions</button>
+               <button onclick="promptCreateClass()" class="bg-gradient-to-br from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition hover:-translate-y-0.5 flex items-center gap-2">＋ New Class</button>
             </div>
           </div>
-          <div>
-            <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-200 rounded-lg px-5 py-3 text-base focus:border-blue-500 focus:ring-0 outline-none shadow-sm transition font-medium text-slate-700 bg-white">
+          <div class="bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+            <div class="relative w-full">
+               <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <span class="text-slate-400">🔍</span>
+               </div>
+               <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-base focus:border-indigo-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
+            </div>
           </div>
           <div id="classes-list" class="space-y-6"></div>
         </div>
@@ -732,12 +824,53 @@
 
     <!-- Students & Payments -->
     <div id="editor-view-students" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-5xl mx-auto">
+      <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
           <h2 class="text-2xl font-bold text-slate-800">Students & Payment Control</h2>
           <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Add Student</button>
         </div>
-        <div id="students-list" class="space-y-4 pb-20"></div>
+        
+        <!-- NEW BILLING SETTINGS PANEL -->
+        <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm mb-8">
+           <h3 class="font-bold text-lg text-slate-800 mb-5 flex justify-between items-center">
+              <span class="flex items-center gap-2">💳 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-black">Global Pricing & VietQR Setup</span></span>
+              <button onclick="saveBillingSettings()" id="btn-save-billing" class="text-sm bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-bold shadow transition">Save Settings</button>
+           </h3>
+           <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5 border-b border-slate-100 pb-5">
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Bank ID (e.g., MB, VCB, ACB)</label><input type="text" id="bill-bank-id" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Account Number</label><input type="text" id="bill-bank-acc" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition font-mono"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Account Name</label><input type="text" id="bill-bank-name" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition uppercase"></div>
+           </div>
+           <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block" title="Used as base fee for new classes">Default Fee/Lesson</label><input type="number" id="bill-fee" class="w-full border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-lg font-bold text-emerald-900 outline-none focus:border-emerald-500 transition"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Lessons / Month</label><input type="number" id="bill-lpm" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Combo Disc (%)</label><input type="number" id="bill-disc-combo" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-lg font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 10"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Disc (%)</label><input type="number" id="bill-disc-course" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-lg font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 20"></div>
+           </div>
+           
+           <div class="col-span-1 md:col-span-4 border-t border-slate-100 pt-5 mt-5">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Custom Receiving QR Code (Overrides Auto-VietQR)</label>
+              <div class="flex items-center gap-4">
+                  <input type="file" id="bill-custom-qr" accept="image/*" onchange="window.handleCustomQR(event)" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition">
+                  <img id="bill-custom-qr-preview" src="" class="h-16 rounded shadow-sm hidden object-contain bg-slate-50 border border-slate-200">
+                  <button id="bill-custom-qr-clear" onclick="window.clearCustomQR()" class="hidden text-xs text-rose-500 bg-rose-50 px-3 py-2 rounded-md font-bold hover:bg-rose-100 transition shadow-sm">Remove Custom QR</button>
+              </div>
+           </div>
+        </div>
+
+        <!-- NEW PACKAGES & BUNDLES PANEL -->
+        <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm mb-8">
+           <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+               <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                  📦 <span class="bg-gradient-to-r from-purple-600 to-fuchsia-600 bg-clip-text text-transparent font-black">Course Bundles & Packages</span>
+               </h3>
+               <button onclick="window.promptCreatePackage()" class="text-sm bg-purple-50 text-purple-700 hover:bg-purple-100 px-4 py-1.5 rounded-lg font-bold transition shadow-sm border border-purple-200">+ Create Bundle</button>
+           </div>
+           <p class="text-sm text-slate-500 mb-5">Group multiple classes together and set a unified fee per lesson.</p>
+           <div id="packages-pricing-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+
+        <div id="students-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"></div>
       </div>
     </div>
 
@@ -1069,6 +1202,8 @@
     let SUBMISSIONS = [];
     let SCHEDULES = [];
     let ATTENDANCE = [];
+    let PACKAGES = []; // <--- NEW: Stores our bundles!
+    let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
 
     let APP_DATA = { module: 'reading', parts: [], vocab: [] };
@@ -1419,9 +1554,21 @@
                         }
                         resolve();
                     });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => {
+                        if (snap.exists()) BILLING_SETTINGS = snap.data();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => {
+                        PACKAGES = snap.docs.map(d => d.data());
+                        resolve();
+                    });
                 })
             ]);
-
+            
             document.getElementById('cloud-loader').classList.add('hidden');
             checkAuth();
 
@@ -1460,6 +1607,8 @@
         CLASSES = [{ id: "c_demo", name: "Demo Class", assignedTests: ["t_read_1", "t_write_1", "t_speak_1"] }];
         for(let c of CLASSES) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
         
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'), BILLING_SETTINGS);
+
         console.log("Cloud Seeding Complete");
     }
 
@@ -1670,9 +1819,9 @@
           <h3 class="font-bold text-slate-900 truncate">${t.title}</h3>
           ${assignedBadge}
           <div class="flex gap-2 mt-auto pt-4 border-t border-slate-100">
-            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 font-bold py-1.5 rounded text-sm transition text-slate-700">Edit</button>
-            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-1.5 rounded text-sm transition">Assign</button>
-            <button onclick="deleteTest('${t.id}')" class="px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded text-sm transition">Del</button>
+            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Edit Test">✏️</button>
+            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>
+            <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>
           </div>
         </div>`;
       }).join('') : '<div class="col-span-full text-center text-slate-500 py-10">No tests in the cloud. Create one!</div>';
@@ -1780,9 +1929,15 @@
         
         return `
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            <div class="bg-slate-100 px-5 py-4 border-b border-slate-200 flex justify-between items-center">
+            <div class="bg-slate-100 px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
-                <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-sm">Delete Class</button>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-sm">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
+                        <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-700 font-bold outline-none text-right bg-transparent border-none p-0 focus:ring-0">
+                    </div>
+                    <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-sm shrink-0">Delete</button>
+                </div>
             </div>
             <div class="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-slate-200">
                 
@@ -1852,16 +2007,24 @@
         });
     };
 
+    window.updateClassFee = async function(cid, fee) {
+        const cls = CLASSES.find(c => c.id === cid);
+        if(cls) {
+            cls.feePerLesson = Number(fee);
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+        }
+    };
+
     function promptCreateClass() { 
       showInputPrompt("New Class", "Name:", async (name) => { 
-        const newCls = {id:'c_'+Date.now(), name, assignedTests:[], enrolledStudents:[]};
+        const newCls = {id:'c_'+Date.now(), name, assignedTests:[], enrolledStudents:[], feePerLesson: BILLING_SETTINGS.feePerLesson || 100000};
         CLASSES.push(newCls); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), newCls.id), newCls);
         renderClasses(); 
       }); 
     }
     
-    async function deleteClass(id) { 
+    async function deleteClass(id) {
       CLASSES = CLASSES.filter(c => c.id !== id); 
       await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('classes'), id));
       renderClasses(); 
@@ -2417,19 +2580,71 @@
       }
     });
 
-    function wrapRangeWithSpanSafely(range, span) {
-        try {
-            range.surroundContents(span);
-            return true;
-        } catch(e) {
-            try {
-                const fragment = range.extractContents();
-                span.appendChild(fragment);
-                range.insertNode(span);
-                return true;
-            } catch(err2) { return false; }
+    window.safeHighlightRange = function(range, colorClass, noteId, isNote = false) {
+        const root = range.commonAncestorContainer.nodeType === Node.TEXT_NODE 
+                     ? range.commonAncestorContainer.parentNode 
+                     : range.commonAncestorContainer;
+
+        const treeWalker = document.createTreeWalker(
+            root,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: function(node) {
+                    if (!range.intersectsNode(node)) return NodeFilter.FILTER_REJECT;
+                    if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                    if (['TEXTAREA', 'INPUT', 'SELECT', 'SCRIPT', 'STYLE'].includes(node.parentNode.nodeName)) return NodeFilter.FILTER_REJECT;
+                    if (node.parentNode.classList && node.parentNode.classList.contains('highlighted-text')) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            },
+            false
+        );
+
+        const nodes = [];
+        let currentNode;
+        while (currentNode = treeWalker.nextNode()) {
+            nodes.push(currentNode);
         }
-    }
+
+        if (nodes.length === 0) return null;
+
+        const wrappedQuotes = [];
+        const cls = isNote 
+            ? 'highlighted-text bg-amber-200 cursor-pointer border-b-2 border-amber-500'
+            : `highlighted-text ${colorClass} cursor-pointer transition-colors`;
+
+        nodes.forEach((node, index) => {
+            const isFirst = node === range.startContainer;
+            const isLast = node === range.endContainer;
+
+            let startOffset = isFirst ? range.startOffset : 0;
+            let endOffset = isLast ? range.endOffset : node.nodeValue.length;
+
+            if (startOffset >= endOffset) return;
+
+            const textToWrap = node.nodeValue.substring(startOffset, endOffset);
+            if (!textToWrap.trim()) return;
+
+            wrappedQuotes.push(textToWrap);
+
+            const beforeText = node.nodeValue.substring(0, startOffset);
+            const afterText = node.nodeValue.substring(endOffset);
+
+            const span = document.createElement('span');
+            span.className = cls;
+            span.dataset.id = noteId;
+            span.textContent = textToWrap;
+
+            const fragment = document.createDocumentFragment();
+            if (beforeText) fragment.appendChild(document.createTextNode(beforeText));
+            fragment.appendChild(span);
+            if (afterText) fragment.appendChild(document.createTextNode(afterText));
+
+            node.parentNode.replaceChild(fragment, node);
+        });
+
+        return wrappedQuotes;
+    };
     
     async function saveCurrentNotesToCloud() {
       if (!currentUser || !APP_DATA || !APP_DATA.id || isPreviewMode) return;
@@ -2442,16 +2657,17 @@
       if(e) { e.preventDefault(); e.stopPropagation(); }
       document.getElementById('exam-selection-tooltip').classList.add('hidden'); 
       if (!activeSelectionRange) return;
-      const span = document.createElement('span'); 
-      span.className = `highlighted-text ${colorClass} text-slate-900 cursor-pointer rounded px-1 transition-colors`; 
-      span.dataset.id = 'h_' + Date.now();
       
-      if (wrapRangeWithSpanSafely(activeSelectionRange, span)) {
+      const noteId = 'h_' + Date.now();
+      const quotes = window.safeHighlightRange(activeSelectionRange, colorClass, noteId, false);
+      
+      if (quotes && quotes.length > 0) {
           window.getSelection().removeAllRanges(); 
-          currentNotes.push({ id: span.dataset.id, partIdx: currentPartIdx, quote: span.textContent, text: null, color: colorClass });
+          const fullText = quotes.join(' ');
+          currentNotes.push({ id: noteId, partIdx: currentPartIdx, quote: quotes, displayQuote: fullText, text: null, color: colorClass });
           saveCurrentNotesToCloud();
       } else {
-          showModalMsg("Error", "Could not highlight. Please select a smaller block of text without overlapping structural styles.");
+          showModalMsg("Error", "Could not highlight. Please select standard text without overlapping structural styles.");
       }
     }
 
@@ -2461,18 +2677,19 @@
       if (!activeSelectionRange) return;
       const selectedText = activeSelectionRange.toString();
       showInputPrompt("Add Note", `Note for: "${selectedText.substring(0,30)}..."`, (noteText) => {
-        const noteId = 'n_' + Date.now(); const span = document.createElement('span');
-        span.className = 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500'; 
-        span.dataset.id = noteId;
+        const noteId = 'n_' + Date.now(); 
+
+        const quotes = window.safeHighlightRange(activeSelectionRange, '', noteId, true);
         
-        if (wrapRangeWithSpanSafely(activeSelectionRange, span)) {
+        if (quotes && quotes.length > 0) {
             window.getSelection().removeAllRanges();
-            currentNotes.push({ id: noteId, partIdx: currentPartIdx, quote: selectedText, text: noteText });
+            const fullText = quotes.join(' ');
+            currentNotes.push({ id: noteId, partIdx: currentPartIdx, quote: quotes, displayQuote: fullText, text: noteText });
             saveCurrentNotesToCloud();
             renderNotesPanel(); 
             if(!isNotesPanelOpen) toggleNotesPanel();
         } else {
-            showModalMsg("Error", "Could not create note. Please select a smaller block of text without overlapping structural styles.");
+            showModalMsg("Error", "Could not create note. Please select standard text.");
         }
       });
     }
@@ -2482,9 +2699,14 @@
       document.getElementById('clear-highlight-tooltip').classList.add('hidden'); 
       if (!activeHighlightNode) return;
       const noteId = activeHighlightNode.dataset.id; 
-      const parent = activeHighlightNode.parentNode;
-      while (activeHighlightNode.firstChild) parent.insertBefore(activeHighlightNode.firstChild, activeHighlightNode);
-      parent.removeChild(activeHighlightNode);
+      
+      const spans = document.querySelectorAll(`.highlighted-text[data-id="${noteId}"]`);
+      spans.forEach(span => {
+          const parent = span.parentNode;
+          while (span.firstChild) parent.insertBefore(span.firstChild, span);
+          parent.removeChild(span);
+      });
+      
       currentNotes = currentNotes.filter(n => n.id !== noteId); 
       saveCurrentNotesToCloud();
       renderNotesPanel();
@@ -2503,22 +2725,24 @@
       if (activeNotes.length === 0) {
         list.innerHTML = `<div class="text-center text-slate-400 mt-10">Select text in the passage to add a note.</div>`;
       } else {
-        list.innerHTML = activeNotes.map(n => `
-          <div class="bg-white border border-slate-200 p-3 rounded shadow-sm relative">
+        list.innerHTML = activeNotes.map(n => {
+          const displayTxt = n.displayQuote || (Array.isArray(n.quote) ? n.quote.join(' ') : n.quote);
+          return `<div class="bg-white border border-slate-200 p-3 rounded shadow-sm relative">
             <button onclick="deleteNote('${n.id}')" class="absolute top-2 right-2 text-slate-400 hover:text-rose-500">&times;</button>
-            <p class="text-xs text-slate-500 italic mb-2 border-l-2 border-amber-400 pl-2">"${n.quote}"</p>
+            <p class="text-xs text-slate-500 italic mb-2 border-l-2 border-amber-400 pl-2">"${displayTxt}"</p>
             <p class="font-medium text-slate-800 text-sm">${n.text}</p>
-          </div>`).join('');
+          </div>`;
+        }).join('');
       }
     }
 
     function deleteNote(id) {
-      const span = document.querySelector(`.highlighted-text[data-id="${id}"]`);
-      if(span) {
-        const parent = span.parentNode;
-        while (span.firstChild) parent.insertBefore(span.firstChild, span);
-        parent.removeChild(span);
-      }
+      const spans = document.querySelectorAll(`.highlighted-text[data-id="${id}"]`);
+      spans.forEach(span => {
+          const parent = span.parentNode;
+          while (span.firstChild) parent.insertBefore(span.firstChild, span);
+          parent.removeChild(span);
+      });
       currentNotes = currentNotes.filter(n => n.id !== id);
       saveCurrentNotesToCloud();
       renderNotesPanel();
@@ -2534,33 +2758,42 @@
          if(notesToRestore.length === 0) return;
 
          notesToRestore.forEach(n => {
-            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
-                acceptNode: function(node) {
-                    if (['TEXTAREA', 'INPUT', 'SELECT', 'SCRIPT', 'STYLE'].includes(node.parentNode.nodeName)) return NodeFilter.FILTER_REJECT;
-                    return NodeFilter.FILTER_ACCEPT;
+            const quotes = Array.isArray(n.quote) ? n.quote : [n.quote];
+
+            quotes.forEach(qStr => {
+                if (!qStr || !qStr.trim()) return;
+                
+                const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+                    acceptNode: function(node) {
+                        if (['TEXTAREA', 'INPUT', 'SELECT', 'SCRIPT', 'STYLE'].includes(node.parentNode.nodeName)) return NodeFilter.FILTER_REJECT;
+                        return NodeFilter.FILTER_ACCEPT;
+                    }
+                }, false);
+                
+                let node;
+                while(node = walker.nextNode()) {
+                   if(node.nodeValue.includes(qStr) && !node.parentNode.classList.contains('highlighted-text')) {
+                      const cls = n.text === null 
+                         ? `highlighted-text ${n.color || 'bg-yellow-300'} cursor-pointer transition-colors` 
+                         : 'highlighted-text bg-amber-200 cursor-pointer border-b-2 border-amber-500';
+                      
+                      const fragment = document.createDocumentFragment();
+                      const parts = node.nodeValue.split(qStr);
+                      parts.forEach((part, i) => {
+                         fragment.appendChild(document.createTextNode(part));
+                         if(i < parts.length - 1) {
+                            const span = document.createElement('span');
+                            span.className = cls; 
+                            span.dataset.id = n.id; 
+                            span.textContent = qStr;
+                            fragment.appendChild(span);
+                         }
+                      });
+                      node.parentNode.replaceChild(fragment, node);
+                      break; 
+                   }
                 }
-            }, false);
-            let node;
-            while(node = walker.nextNode()) {
-               if(node.nodeValue.includes(n.quote) && !node.parentNode.classList.contains('highlighted-text')) {
-                  const cls = n.text === null 
-                     ? `highlighted-text ${n.color || 'bg-yellow-300'} text-slate-900 cursor-pointer rounded px-1 transition-colors` 
-                     : 'highlighted-text bg-amber-200 text-slate-900 cursor-pointer rounded px-1 border-b-2 border-amber-500';
-                  
-                  const fragment = document.createDocumentFragment();
-                  const parts = node.nodeValue.split(n.quote);
-                  parts.forEach((part, i) => {
-                     fragment.appendChild(document.createTextNode(part));
-                     if(i < parts.length - 1) {
-                        const span = document.createElement('span');
-                        span.className = cls; span.dataset.id = n.id; span.textContent = n.quote;
-                        fragment.appendChild(span);
-                     }
-                  });
-                  node.parentNode.replaceChild(fragment, node);
-                  break; 
-               }
-            }
+            });
          });
       });
     }
@@ -3085,10 +3318,13 @@
       document.getElementById('student-name-display').textContent = currentUser.user;
       
       const isPaid = currentUser.isPaid === true;
-      document.getElementById('student-payment-warning').classList.toggle('hidden', isPaid);
       document.getElementById('student-main-content').classList.toggle('hidden', !isPaid);
       
+      const warnContainer = document.getElementById('student-payment-warning');
+
       if(isPaid) {
+          warnContainer.classList.add('hidden');
+          warnContainer.innerHTML = ''; // Clear it out
           const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
           const sel = document.getElementById('student-class-select');
           
@@ -3106,7 +3342,256 @@
               }
               renderStudentDashboard();
           }
+      } else {
+          warnContainer.classList.remove('hidden');
+          if (currentUser.paymentStatus === 'pending') {
+              warnContainer.innerHTML = `
+                 <div class="bg-blue-50 border border-blue-200 rounded-2xl p-10 text-center shadow-inner flex flex-col items-center">
+                    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-100 text-blue-500 mb-5 shadow-sm animate-pulse border-4 border-white">
+                       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <h2 class="text-2xl font-black text-blue-900 mb-2">Awaiting Verification</h2>
+                    <p class="text-blue-600 font-medium max-w-lg mx-auto">Your payment notification has been sent to the teacher. Once they verify the transaction, this page will automatically unlock your course materials.</p>
+                 </div>
+              `;
+          } else {
+              renderStudentCheckout();
+          }
       }
+    }
+
+    const formatVND = (amt) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amt);
+
+    function renderStudentCheckout() {
+        let classOpts = '';
+        
+        if (PACKAGES.length > 0) {
+            classOpts += `<optgroup label="--- Bundled Packages ---">`;
+            classOpts += PACKAGES.map(p => `<option value="pkg_${p.id}">📦 ${p.name}</option>`).join('');
+            classOpts += `</optgroup>`;
+        }
+        
+        if (!classOpts) classOpts = `<option value="">No packages available</option>`;
+
+        
+        const lpmDefault = BILLING_SETTINGS.lessonsPerMonth || 12;
+
+        document.getElementById('student-payment-warning').innerHTML = `
+         <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl shadow-2xl overflow-hidden border border-blue-500 flex flex-col lg:flex-row">
+            <div class="p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 border border-white/30 rounded-full text-white text-xs font-black uppercase tracking-widest mb-6 w-max shadow-sm">
+                   <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Access Locked
+                </div>
+                <h2 class="text-3xl font-black text-white mb-3">Unlock Your Course</h2>
+                <p class="text-blue-100 mb-6 font-medium">Customize your study plan below to calculate your tuition.</p>
+                
+                <div class="flex gap-4 mb-6">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-1.5">Select Course or Bundle</label>
+                        <select id="checkout-course" class="w-full bg-blue-700/50 border border-blue-500 text-white p-2.5 rounded-lg outline-none focus:bg-white focus:text-blue-900 focus:border-white font-bold transition-colors shadow-inner" onchange="window.updateCheckoutMath()">
+                            ${classOpts}
+                        </select>
+                    </div>
+                    <div class="w-[120px]" id="checkout-lpm-container">
+                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-1.5" title="Lessons per month">Lessons/Mo</label>
+                        <input type="number" id="checkout-lpm" value="${lpmDefault}" min="1" max="100" class="w-full bg-blue-700/50 border border-blue-500 text-white p-2.5 rounded-lg outline-none focus:bg-white focus:text-blue-900 focus:border-white font-bold text-center transition-colors shadow-inner" oninput="window.updateCheckoutMath()">
+                    </div>
+                </div>
+
+                <!-- Package Info Block -->
+                <div id="checkout-package-info" class="hidden bg-blue-900/40 border border-blue-500/50 rounded-xl p-4 mb-6 shadow-inner"></div>
+
+                <div class="space-y-4" id="checkout-plans-container"></div>
+            </div>
+            <div class="bg-white p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-l border-blue-100 relative">
+                <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-400 to-blue-600"></div>
+                <h3 class="text-xl font-black text-blue-900 mb-6 uppercase tracking-wider flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg> Scan to Pay</h3>
+                
+                <div class="p-2 bg-white rounded-xl shadow-lg border-2 border-blue-50 mb-6 relative group">
+                    <img id="vietqr-image" src="" class="w-56 h-56 object-contain rounded-lg transition-all group-hover:scale-105" alt="Bank QR Code">
+                </div>
+
+                <div class="text-center w-full mb-6">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total to Pay</div>
+                    <div id="vietqr-amount" class="text-3xl font-black text-blue-600 tracking-tight">0 ₫</div>
+                    <div class="bg-blue-50 border border-blue-100 rounded p-2 mt-3 font-mono text-sm text-blue-800 break-all shadow-inner">Msg: <span id="vietqr-desc" class="font-bold text-blue-900"></span></div>
+                </div>
+
+                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" class="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-black rounded-xl shadow-[0_10px_20px_-10px_rgba(59,130,246,0.5)] transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-lg">
+                    I Have Transferred the Money ✓
+                </button>
+                <p class="text-[10px] text-slate-400 text-center mt-3 font-medium">Click this button to notify your teacher and request access.</p>
+            </div>
+         </div>
+        `;
+
+        window.updateCheckoutMath();
+    }
+
+    window.updateCheckoutMath = function() {
+        const courseSel = document.getElementById('checkout-course');
+        const selVal = courseSel ? courseSel.value : null;
+
+        const lpmContainer = document.getElementById('checkout-lpm-container');
+        const infoContainer = document.getElementById('checkout-package-info');
+        
+        let fpl = BILLING_SETTINGS.feePerLesson || 100000;
+        
+        if (selVal && selVal.startsWith('pkg_')) {
+            // It's a Package!
+            if (lpmContainer) lpmContainer.classList.remove('hidden'); // SHOW IT FOR BUNDLES TOO
+            
+            const pkgId = selVal.replace('pkg_', '');
+            const pkg = PACKAGES.find(p => p.id === pkgId);
+            
+            if (pkg && infoContainer) {
+                const classNames = (pkg.classes || []).map(cid => CLASSES.find(c => c.id === cid)?.name).filter(Boolean);
+                infoContainer.innerHTML = `
+                    <h4 class="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-2 flex items-center gap-1">📦 Bundle Includes:</h4>
+                    <ul class="text-sm font-medium text-white space-y-1">
+                        ${classNames.map(n => `<li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-emerald-400"></span> ${n}</li>`).join('')}
+                    </ul>
+                `;
+                infoContainer.classList.remove('hidden');
+                
+                if (pkg.feePerLesson) fpl = pkg.feePerLesson; 
+            }
+        } else {
+            // It's a Single Class
+            if (lpmContainer) lpmContainer.classList.remove('hidden');
+            if (infoContainer) infoContainer.classList.add('hidden');
+
+            const cls = CLASSES.find(c => c.id === selVal);
+            if (cls && cls.feePerLesson) fpl = cls.feePerLesson;
+        }
+
+        const lpmInput = document.getElementById('checkout-lpm');
+        const lpm = parseInt(lpmInput ? lpmInput.value : (BILLING_SETTINGS.lessonsPerMonth || 12)) || 1;
+        
+        const p1Raw = fpl * lpm;
+        const p2Raw = fpl * lpm * 2;
+        const p2Disc = p2Raw * (1 - ((BILLING_SETTINGS.discCombo || 10) / 100));
+        const p4Raw = fpl * lpm * 4;
+        const p4Disc = p4Raw * (1 - ((BILLING_SETTINGS.discCourse || 20) / 100));
+
+        window.checkoutPlans = [
+            { id: 1, title: '1 Month Standard', lessons: lpm, raw: p1Raw, final: p1Raw, label: 'Pay as you go' },
+            { id: 2, title: '2 Month Combo', lessons: lpm*2, raw: p2Raw, final: p2Disc, label: `Save ${BILLING_SETTINGS.discCombo || 10}%`, pop: true },
+            { id: 4, title: 'Full Course (4M)', lessons: lpm*4, raw: p4Raw, final: p4Disc, label: `Save ${BILLING_SETTINGS.discCourse || 20}%` }
+        ];
+
+        const ctn = document.getElementById('checkout-plans-container');
+        if (ctn) {
+            ctn.innerHTML = window.checkoutPlans.map((p, idx) => `
+                <div onclick="selectPaymentPackage(${idx})" id="pkg-card-${idx}" class="relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-blue-700/40 border-blue-500/50 hover:border-blue-300 group overflow-hidden">
+                    ${p.pop ? `<div class="absolute top-0 right-0 bg-gradient-to-r from-emerald-400 to-teal-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-bl-lg shadow-sm z-10">Most Popular</div>` : ''}
+                    <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+                    <div class="z-10 flex-1">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div id="pkg-radio-${idx}" class="w-4 h-4 rounded-full border-2 border-blue-300 flex items-center justify-center transition-colors shrink-0"></div>
+                            <h4 id="pkg-title-${idx}" class="font-bold text-lg text-white transition-colors">${p.title} <span class="opacity-80 font-normal text-sm ml-1">(${p.lessons} Lessons)</span></h4>
+                        </div>
+                    </div>
+                    <div class="text-right z-10 flex flex-col items-end justify-center shrink-0 pl-4">
+                        ${p.raw > p.final ? `<div id="pkg-raw-${idx}" class="text-sm line-through mb-0.5 text-blue-300 transition-colors font-semibold">${formatVND(p.raw)}</div>` : ''}
+                        <div id="pkg-price-${idx}" class="font-black text-xl text-white transition-colors">${formatVND(p.final)}</div>
+                        ${p.label !== 'Pay as you go' ? `<div class="text-[10px] font-bold text-blue-900 mt-1.5 uppercase tracking-widest bg-amber-400 px-2 py-0.5 rounded inline-block shadow-sm">${p.label}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        selectPaymentPackage(0); // Auto-select the first visible option
+        if(window.checkoutPlans.length > 1) selectPaymentPackage(1); // Or the popular one if available
+    };
+
+    window.selectPaymentPackage = function(idx) {
+        if (!window.checkoutPlans || !window.checkoutPlans[idx]) return;
+        window.selectedCheckoutPlan = idx;
+        const pkg = window.checkoutPlans[idx];
+        
+        window.checkoutPlans.forEach((_, i) => {
+            const card = document.getElementById(`pkg-card-${i}`);
+            const radio = document.getElementById(`pkg-radio-${i}`);
+            const title = document.getElementById(`pkg-title-${i}`);
+            const price = document.getElementById(`pkg-price-${i}`);
+            const rawPrice = document.getElementById(`pkg-raw-${i}`);
+            
+            if(card && radio && title && price) {
+                if (i === idx) {
+                    card.className = "relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-white border-white shadow-lg group overflow-hidden transform scale-[1.02]";
+                    radio.className = "w-4 h-4 rounded-full border-2 border-blue-600 flex items-center justify-center transition-colors shrink-0";
+                    radio.innerHTML = `<div class="w-2 h-2 rounded-full bg-blue-600"></div>`;
+                    title.className = "font-bold text-lg text-blue-900 transition-colors";
+                    price.className = "font-black text-xl text-blue-700 transition-colors";
+                    if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-slate-400 transition-colors font-semibold";
+                } else {
+                    card.className = "relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-blue-700/40 border-blue-500/50 hover:border-blue-300 group overflow-hidden";
+                    radio.className = "w-4 h-4 rounded-full border-2 border-blue-300 flex items-center justify-center transition-colors shrink-0";
+                    radio.innerHTML = ``;
+                    title.className = "font-bold text-lg text-white transition-colors";
+                    price.className = "font-black text-xl text-white transition-colors";
+                    if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-blue-300 transition-colors font-semibold";
+                }
+            }
+        });
+
+        const courseSel = document.getElementById('checkout-course');
+        let courseName = 'Course';
+        if (courseSel && courseSel.options[courseSel.selectedIndex]) {
+            courseName = courseSel.options[courseSel.selectedIndex].text.replace('📦 ', '');
+        }
+        const msg = `${currentUser.user} - ${courseName}`;
+        
+        if (BILLING_SETTINGS.customQR) {
+            document.getElementById('vietqr-image').src = BILLING_SETTINGS.customQR;
+            document.getElementById('vietqr-desc').textContent = "Use Custom QR above & ref: " + currentUser.user;
+        } else {
+            const qrUrl = `https://img.vietqr.io/image/${BILLING_SETTINGS.bankId}-${BILLING_SETTINGS.bankAcc}-compact2.png?amount=${pkg.final}&addInfo=${encodeURIComponent(msg)}&accountName=${encodeURIComponent(BILLING_SETTINGS.bankName)}`;
+            document.getElementById('vietqr-image').src = qrUrl;
+            document.getElementById('vietqr-desc').textContent = msg;
+        }
+        document.getElementById('vietqr-amount').textContent = formatVND(pkg.final);
+    }
+
+    window.simulateAutoPayment = function() { } // Legacy placeholder
+
+    window.notifyTeacherPayment = async function() {
+        const courseSel = document.getElementById('checkout-course');
+        if (!courseSel || !courseSel.value) {
+            showModalMsg("Notice", "Please select a course to enroll in first.");
+            return;
+        }
+        const selVal = courseSel.value;
+        const courseName = courseSel.options[courseSel.selectedIndex].text;
+        
+        const btn = document.getElementById('btn-verify-pay');
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Sending Notification...`;
+        
+        const pkg = window.checkoutPlans[window.selectedCheckoutPlan];
+        currentUser.paymentStatus = 'pending';
+        currentUser.pendingInfo = `${courseName} (${pkg.title})`;
+        
+        // Save which actual class IDs they are requesting
+        if (selVal.startsWith('pkg_')) {
+            const packageObj = PACKAGES.find(p => p.id === selVal.replace('pkg_', ''));
+            currentUser.pendingClasses = packageObj ? packageObj.classes : [];
+        } else {
+            currentUser.pendingClasses = [selVal];
+        }
+        
+        const cloudUserIdx = USERS.findIndex(u => u.user === currentUser.user);
+        if (cloudUserIdx > -1) {
+            USERS[cloudUserIdx].paymentStatus = 'pending';
+            USERS[cloudUserIdx].pendingInfo = currentUser.pendingInfo;
+            USERS[cloudUserIdx].pendingClasses = currentUser.pendingClasses;
+        }
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+        
+        sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+        
+        initStudentDashboard(); 
     }
 
     function renderStudentDashboard() {
@@ -3323,9 +3808,43 @@
     function initResizer() {
       const r = document.getElementById('resizer'), l = document.getElementById('passage-container'), s = document.getElementById('split-container');
       let drag = false;
-      r.onmousedown = () => { drag = true; document.body.style.cursor = 'col-resize'; l.style.userSelect = 'none'; };
-      document.onmousemove = e => { if(!drag) return; let w = ((e.clientX - s.getBoundingClientRect().left)/s.getBoundingClientRect().width)*100; l.style.width = `${Math.max(20, Math.min(w,80))}%`; };
-      document.onmouseup = () => { if(drag) { drag = false; document.body.style.cursor=''; l.style.userSelect=''; } };
+      
+      const startDrag = (e) => { 
+          drag = true; 
+          document.body.style.cursor = window.innerWidth <= 768 ? 'row-resize' : 'col-resize'; 
+          l.style.userSelect = 'none'; 
+      };
+      
+      const onDrag = (e) => { 
+          if(!drag) return;
+          // Support both mouse and touch events
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          
+          if (window.innerWidth <= 768) {
+              // Mobile: Vertical resizing
+              let h = ((clientY - s.getBoundingClientRect().top)/s.getBoundingClientRect().height)*100; 
+              l.style.height = `${Math.max(20, Math.min(h,80))}vh`; 
+          } else {
+              // Desktop: Horizontal resizing
+              let w = ((clientX - s.getBoundingClientRect().left)/s.getBoundingClientRect().width)*100; 
+              l.style.width = `${Math.max(20, Math.min(w,80))}%`; 
+          }
+      };
+      
+      const endDrag = () => { 
+          if(drag) { drag = false; document.body.style.cursor=''; l.style.userSelect=''; } 
+      };
+
+      // Mouse events
+      r.onmousedown = startDrag;
+      document.onmousemove = onDrag;
+      document.onmouseup = endDrag;
+      
+      // Touch events for mobile
+      r.addEventListener('touchstart', startDrag, {passive: false});
+      document.addEventListener('touchmove', onDrag, {passive: false});
+      document.addEventListener('touchend', endDrag);
     }
 
     function startListeningAudio() {
@@ -3405,7 +3924,7 @@
           }
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `<h2 class="text-2xl font-bold mb-6">${p.title} (Transcript)</h2>${media}<div class="passage-text text-justify">${htmlText}</div>`;
+          passageContainer.innerHTML = `<h2 class="text-xl font-bold mb-6">${p.title} (Transcript)</h2>${media}<div class="passage-text text-justify">${htmlText}</div>`;
       } else {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
@@ -3423,7 +3942,7 @@
           }
 
           // Inject the button right between the media (picture) and the text passage
-          passageContainer.innerHTML = `<h2 class="text-2xl font-bold mb-6">${p.title}</h2>${media}${sampleToggleBtn}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
+          passageContainer.innerHTML = `<h2 class="text-xl font-bold mb-6">${p.title}</h2>${media}${sampleToggleBtn}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
@@ -3533,13 +4052,13 @@
 
            if (q.type === 'multiple_choice' && q.multi) {
                const selectedVals = q.ids.map(id => answers[id]).filter(Boolean);
-               content = `<div class="font-bold mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
+               content = `<div class="mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
                   let oText = pt(o); 
                   const isChecked = selectedVals.includes(o);
                   return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="checkbox" value="${o.replace(/'/g,"\\'")}" ${isChecked?'checked':''} onchange="handleMultiAns('${q.ids.join(',')}', this)" class="w-4 h-4 text-blue-600 rounded border-slate-300"><span>${oText}</span></label>`
                }).join('')}</div>`;
            } else {
-               content = `<div class="font-bold mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
+               content = `<div class="mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
                   let oText = pt(o); 
                   return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${o.replace(/'/g,"\\'")}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${oText}</span></label>`
                }).join('')}</div>`;
@@ -4475,30 +4994,282 @@
       document.getElementById('student-fc-modal').classList.remove('hidden');
     }
    // --- STUDENTS & PAYMENTS LOGIC ---
+    let tempCustomQRBase64 = null;
+
+    window.handleCustomQR = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            tempCustomQRBase64 = ev.target.result;
+            const preview = document.getElementById('bill-custom-qr-preview');
+            preview.src = tempCustomQRBase64;
+            preview.classList.remove('hidden');
+            document.getElementById('bill-custom-qr-clear').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.clearCustomQR = function() {
+        tempCustomQRBase64 = null;
+        document.getElementById('bill-custom-qr').value = '';
+        document.getElementById('bill-custom-qr-preview').classList.add('hidden');
+        document.getElementById('bill-custom-qr-clear').classList.add('hidden');
+    };
+
+    window.deleteSubmission = function(id) {
+        showConfirm("Delete Submission", "Are you sure you want to permanently delete this student's submission?", async () => {
+            SUBMISSIONS = SUBMISSIONS.filter(s => s.id !== id);
+            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('submissions'), String(id)));
+            renderClasses(); 
+        });
+    };
+
+    // Save individual class fees to Firebase instantly
+    window.deleteSubmission = function(id) {
+        showConfirm("Delete Submission", "Are you sure you want to permanently delete this student's submission?", async () => {
+            SUBMISSIONS = SUBMISSIONS.filter(s => s.id !== id);
+            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('submissions'), String(id)));
+            renderClasses(); 
+        });
+    };
+
+    // Save individual package fees to Firebase instantly
+    window.updatePackageFee = async function(pid, fee) {
+        const pkg = PACKAGES.find(p => p.id === pid);
+        if(pkg) {
+            pkg.feePerLesson = fee ? Number(fee) : null; 
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('packages'), pkg.id), pkg);
+        }
+    };
+
     function renderStudentsList() {
+        document.getElementById('bill-bank-id').value = BILLING_SETTINGS.bankId || 'MB';
+        document.getElementById('bill-bank-acc').value = BILLING_SETTINGS.bankAcc || '';
+        document.getElementById('bill-bank-name').value = BILLING_SETTINGS.bankName || '';
+        document.getElementById('bill-fee').value = BILLING_SETTINGS.feePerLesson || 100000;
+        document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
+        document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
+        document.getElementById('bill-disc-course').value = BILLING_SETTINGS.discCourse || 20;
+
+        if (BILLING_SETTINGS.customQR) {
+            tempCustomQRBase64 = BILLING_SETTINGS.customQR;
+            const preview = document.getElementById('bill-custom-qr-preview');
+            preview.src = tempCustomQRBase64;
+            preview.classList.remove('hidden');
+            document.getElementById('bill-custom-qr-clear').classList.remove('hidden');
+        } else {
+            window.clearCustomQR();
+        }
+
+        // Render the Course Pricing boxes
+        const coursePricingList = document.getElementById('course-pricing-list');
+        if (coursePricingList) {
+            if (CLASSES.length === 0) {
+                coursePricingList.innerHTML = `<div class="col-span-full text-slate-400 italic text-sm">No classes created yet. Create classes in the Dashboard tab first.</div>`;
+            } else {
+                coursePricingList.innerHTML = CLASSES.map(cls => `
+                    <div class="flex flex-col justify-center bg-slate-50 p-3 rounded-lg border border-slate-200 hover:border-emerald-300 transition-colors">
+                        <span class="font-bold text-slate-700 text-sm mb-2 truncate" title="${cls.name}">${cls.name}</span>
+                        <div class="flex items-center justify-between gap-2 bg-white px-2 py-1.5 border border-slate-200 rounded">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fee/Lesson:</span>
+                            <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || ''}" placeholder="${BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 border-none bg-transparent p-0 text-sm font-black text-emerald-600 outline-none focus:ring-0 text-right">
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Render the Packages list
+        const pkgList = document.getElementById('packages-pricing-list');
+        if (pkgList) {
+            if (PACKAGES.length === 0) {
+                pkgList.innerHTML = `<div class="col-span-full text-slate-400 italic text-sm">No packages created yet.</div>`;
+            } else {
+                pkgList.innerHTML = PACKAGES.map(p => {
+                    const clsCount = p.classes ? p.classes.length : 0;
+                    return `
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-slate-800 text-lg">${p.name}</h4>
+                            <div class="flex gap-2">
+                                <button onclick="window.editPackage('${p.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold bg-blue-50 px-2 py-1 rounded shadow-sm border border-blue-100">Edit</button>
+                                <button onclick="window.deletePackage('${p.id}')" class="text-rose-500 hover:text-rose-700 text-xs font-bold bg-rose-50 px-2 py-1 rounded shadow-sm border border-rose-100">Delete</button>
+                            </div>
+                        </div>
+                        <div class="text-xs font-bold text-purple-600 bg-purple-100 px-2 py-1 rounded inline-block w-max mb-4 border border-purple-200">Includes ${clsCount} Courses</div>
+                        <div class="flex items-center justify-between mt-auto border-t border-slate-200 pt-3">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fee/Lesson:</span>
+                            <input type="number" onchange="window.updatePackageFee('${p.id}', this.value)" value="${p.feePerLesson || ''}" placeholder="${BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-700 font-black outline-none text-right bg-white border border-slate-200 rounded px-2 py-1 shadow-sm focus:border-emerald-400">
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
         const list = document.getElementById('students-list');
         const students = USERS.filter(u => u.role === 'student');
-        list.innerHTML = students.map(s => `
-            <div class="bg-white border border-slate-200 p-4 rounded flex justify-between items-center shadow-sm">
-                <div>
-                    <h3 class="font-bold text-lg text-slate-800">${s.user}</h3>
-                    <p class="text-xs text-slate-500">Created: ${s.createdAt || 'N/A'}</p>
+        
+        const pending = students.filter(s => !s.isPaid && s.paymentStatus === 'pending');
+        const others = students.filter(s => s.isPaid || s.paymentStatus !== 'pending');
+
+        const renderCard = (s, isPending) => `
+            <div class="bg-white border border-slate-200 p-5 rounded-xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50' : ''}">
+                <div class="flex justify-between items-start mb-4 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-3">
+                    <div>
+                        <h3 class="font-black text-xl text-slate-800 flex items-center gap-2"><span class="w-8 h-8 rounded-full ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-700'} flex items-center justify-center text-sm font-bold">👤</span> ${s.user}</h3>
+                        <p class="text-xs text-slate-500 mt-1 ml-10">Joined: ${s.createdAt || 'N/A'}</p>
+                        ${isPending && s.pendingInfo ? `<p class="text-sm font-bold text-rose-700 mt-2 ml-10 bg-rose-100/50 px-2 py-1 rounded inline-block border border-rose-200 shadow-sm">💸 Request: ${s.pendingInfo}</p>` : ''}
+                    </div>
+                    <span class="text-xs uppercase tracking-widest font-black px-2.5 py-1 rounded ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending ? 'bg-rose-500 text-white shadow-sm animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
                 </div>
-                <div class="flex items-center gap-4">
-                    <span class="text-sm font-bold ${s.isPaid ? 'text-emerald-600' : 'text-rose-500'}">${s.isPaid ? 'Payment Confirmed ✓' : 'Unpaid ✗'}</span>
-                    <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="px-3 py-1 text-sm font-bold text-white rounded ${s.isPaid ? 'bg-slate-400 hover:bg-slate-500' : 'bg-emerald-600 hover:bg-emerald-700'} transition">
-                        ${s.isPaid ? 'Revoke Access' : 'Mark as Paid'}
-                    </button>
-                </div>
+                <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="w-full py-2.5 text-sm font-bold rounded-lg shadow-sm border ${s.isPaid ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50' : (isPending ? 'bg-rose-500 border-transparent text-white hover:bg-rose-600' : 'bg-gradient-to-r from-emerald-500 to-teal-600 border-transparent text-white hover:from-emerald-600 hover:to-teal-700')} transition">
+                    ${s.isPaid ? 'Revoke Access (Lock)' : (isPending ? '✓ Approve Payment & Auto-Enroll' : 'Manual Override: Grant Access')}
+                </button>
             </div>
+        `;
+
+        let html = '';
+        if (pending.length > 0) {
+            html += `<h4 class="font-black text-rose-600 mb-3 uppercase tracking-widest text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span> Action Required (Student Waiting)</h4>`;
+            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">` + pending.map(s => renderCard(s, true)).join('') + `</div>`;
+        }
+        
+        html += `<h4 class="font-black text-slate-400 mb-3 uppercase tracking-widest text-sm">All Students</h4>`;
+        html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">` + others.map(s => renderCard(s, false)).join('') + `</div>`;
+        
+        list.innerHTML = html;
+    }
+
+    // Modal to create packages
+    window.promptCreatePackage = function() {
+        if(CLASSES.length === 0) { showModalMsg("Error", "Create some classes first before grouping them into a package."); return; }
+        
+        const classChecks = CLASSES.map(c => `
+            <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-100 rounded border border-slate-200 mb-2 bg-white shadow-sm transition">
+                <input type="checkbox" class="pkg-class-cb w-4 h-4 text-purple-600 rounded" value="${c.id}">
+                <span class="font-bold text-sm text-slate-700">${c.name}</span>
+            </label>
         `).join('');
+
+        document.getElementById('modal-title').textContent = "Create New Bundle";
+        document.getElementById('modal-message').innerHTML = `
+            <div class="mb-3">
+                <label class="block text-xs font-bold text-slate-500 mb-1">Package Name</label>
+                <input type="text" id="pkg-name" placeholder="e.g. Master IELTS VIP Bundle" class="w-full border-2 border-slate-200 p-2 rounded focus:border-purple-500 outline-none font-bold text-slate-800">
+            </div>
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-slate-500 mb-1">Base Fee per Lesson (VND)</label>
+                <input type="number" id="pkg-fee" placeholder="e.g. 150000" class="w-full border-2 border-slate-200 p-2 rounded focus:border-purple-500 outline-none font-bold text-emerald-600">
+            </div>
+            <div class="mb-2">
+                <label class="block text-xs font-bold text-slate-500 mb-2">Select Courses to Include:</label>
+                <div class="max-h-40 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-200 shadow-inner">${classChecks}</div>
+            </div>
+        `;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = async () => {
+            const name = document.getElementById('pkg-name').value.trim();
+            const fee = Number(document.getElementById('pkg-fee').value);
+            const selectedClasses = Array.from(document.querySelectorAll('.pkg-class-cb:checked')).map(cb => cb.value);
+
+            if(name && fee > 0 && selectedClasses.length > 0) {
+                const newPkg = { id: 'pkg_' + Date.now(), name, feePerLesson: fee, classes: selectedClasses };
+                PACKAGES.push(newPkg);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('packages'), newPkg.id), newPkg);
+                document.getElementById('custom-modal').classList.add('hidden');
+                renderStudentsList();
+            } else {
+                alert("Please enter a name, a valid fee per lesson, and select at least one class.");
+            }
+        };
+    }
+
+    window.editPackage = function(pid) {
+        const pkg = PACKAGES.find(p => p.id === pid);
+        if(!pkg) return;
+
+        const classChecks = CLASSES.map(c => `
+            <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-100 rounded border border-slate-200 mb-2 bg-white shadow-sm transition">
+                <input type="checkbox" class="pkg-class-cb w-4 h-4 text-purple-600 rounded" value="${c.id}" ${(pkg.classes || []).includes(c.id) ? 'checked' : ''}>
+                <span class="font-bold text-sm text-slate-700">${c.name}</span>
+            </label>
+        `).join('');
+
+        document.getElementById('modal-title').textContent = "Edit Bundle";
+        document.getElementById('modal-message').innerHTML = `
+            <div class="mb-3">
+                <label class="block text-xs font-bold text-slate-500 mb-1">Package Name</label>
+                <input type="text" id="pkg-name" value="${pkg.name}" class="w-full border-2 border-slate-200 p-2 rounded focus:border-purple-500 outline-none font-bold text-slate-800">
+            </div>
+            <div class="mb-2">
+                <label class="block text-xs font-bold text-slate-500 mb-2">Select Courses to Include:</label>
+                <div class="max-h-40 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-200 shadow-inner">${classChecks}</div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-2 italic">Note: You can change the Fee/Lesson directly on the package card.</p>
+        `;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = async () => {
+            const name = document.getElementById('pkg-name').value.trim();
+            const selectedClasses = Array.from(document.querySelectorAll('.pkg-class-cb:checked')).map(cb => cb.value);
+
+            if(name && selectedClasses.length > 0) {
+                pkg.name = name;
+                pkg.classes = selectedClasses;
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('packages'), pkg.id), pkg);
+                document.getElementById('custom-modal').classList.add('hidden');
+                renderStudentsList();
+            } else {
+                alert("Please enter a name and select at least one class.");
+            }
+        };
+    }
+
+    window.deletePackage = async function(id) {
+        showConfirm("Delete Bundle", "Remove this package? Students who already bought it will keep their classes.", async () => {
+            PACKAGES = PACKAGES.filter(p => p.id !== id);
+            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('packages'), id));
+            renderStudentsList();
+        });
+    }
+
+    async function saveBillingSettings() {
+        const btn = document.getElementById('btn-save-billing');
+        btn.textContent = "Saving..."; btn.disabled = true;
+        
+        BILLING_SETTINGS = {
+            bankId: document.getElementById('bill-bank-id').value.trim(),
+            bankAcc: document.getElementById('bill-bank-acc').value.trim(),
+            bankName: document.getElementById('bill-bank-name').value.trim().toUpperCase(),
+            feePerLesson: Number(document.getElementById('bill-fee').value) || 100000,
+            lessonsPerMonth: Number(document.getElementById('bill-lpm').value) || 12,
+            discCombo: Number(document.getElementById('bill-disc-combo').value) || 0,
+            discCourse: Number(document.getElementById('bill-disc-course').value) || 0,
+            customQR: tempCustomQRBase64
+        };
+
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'), BILLING_SETTINGS);
+            showModalMsg("Saved", "Pricing and Banking settings updated. Students will see the new configurations automatically.");
+        } catch (e) {
+            showModalMsg("Error", "Could not save settings to cloud.");
+        }
+        btn.textContent = "Save Settings"; btn.disabled = false;
     }
 
     function promptCreateStudent() {
         showInputPrompt("Add Student", "Enter new student username:", async (username) => {
             if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
             showInputPrompt("Password", `Enter password for ${username}:`, async (password) => {
-                const newStudent = { user: username, pass: password, role: 'student', isPaid: true, createdAt: new Date().toLocaleDateString() };
+                const newStudent = { user: username, pass: password, role: 'student', isPaid: true, paymentStatus: 'paid', pendingClasses: null, createdAt: new Date().toLocaleDateString() };
                 USERS.push(newStudent);
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newStudent);
                 renderStudentsList();
@@ -4510,8 +5281,32 @@
         const user = USERS.find(u => u.user === username);
         if(user) {
             user.isPaid = status;
+            user.paymentStatus = status ? 'paid' : 'unpaid';
+            
+            // AUTOMATIC ENROLLMENT MAGIC:
+            // If we are granting access (status=true) and they requested specific classes...
+            if (status && user.pendingClasses && Array.isArray(user.pendingClasses)) {
+                for (let cid of user.pendingClasses) {
+                    const cls = CLASSES.find(c => c.id === cid);
+                    if (cls) {
+                        if (!cls.enrolledStudents) cls.enrolledStudents = [];
+                        if (!cls.enrolledStudents.includes(username)) {
+                            cls.enrolledStudents.push(username);
+                            // Save class update to cloud
+                            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+                        }
+                    }
+                }
+            }
+
+            if (status) {
+                user.pendingInfo = null; // Clear request string
+                user.pendingClasses = null; // Clear array
+            }
+
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), user);
             renderStudentsList();
+            renderClasses(); // Update class list numbers
         }
     }
 
