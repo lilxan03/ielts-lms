@@ -632,11 +632,17 @@
          </div>
       </div>
 
-      <div id="student-toolbar" class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md pb-4 pt-4 mb-6 border-b border-slate-200 flex flex-wrap gap-2 -mx-8 px-8 shadow-sm">
-        <button onclick="document.getElementById('student-main-content').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">⚙️ Class & Mode</button>
-        <button onclick="document.getElementById('student-schedule-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 text-slate-700 hover:text-indigo-700 font-bold rounded-lg transition text-sm">📅 Timetable</button>
-        <button onclick="document.getElementById('bottom-student-sections').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">📚 Library</button>
-        <button onclick="document.getElementById('student-progress-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 text-slate-700 hover:text-emerald-700 font-bold rounded-lg transition text-sm">📈 Progress & Feedback</button>
+      <div id="student-toolbar" class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md pb-4 pt-4 mb-6 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4 -mx-8 px-8 shadow-sm">
+        <div class="flex flex-wrap gap-2">
+            <button onclick="document.getElementById('student-main-content').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">⚙️ Class & Mode</button>
+            <button onclick="document.getElementById('student-schedule-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 text-slate-700 hover:text-indigo-700 font-bold rounded-lg transition text-sm">📅 Timetable</button>
+            <button onclick="document.getElementById('bottom-student-sections').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">📚 Library</button>
+            <button onclick="document.getElementById('student-progress-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 text-slate-700 hover:text-emerald-700 font-bold rounded-lg transition text-sm">📈 Progress & Feedback</button>
+        </div>
+        
+        <button onclick="window.startFullExam()" class="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-lg transition shadow-md text-sm flex items-center gap-2 border border-blue-500 hover:-translate-y-0.5">
+            🎓 START FULL MOCK EXAM
+        </button>
       </div>
 
       <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-8 scroll-mt-24">
@@ -671,6 +677,8 @@
         </div>
       </div>
       
+      </div>
+
       <!-- Bottom Section: Library & Progress -->
       <div id="bottom-student-sections" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 hidden scroll-mt-24">
           <!-- Course Material Library -->
@@ -681,6 +689,7 @@
                 <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search materials..." class="flex-1 min-w-[150px] border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
                 <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
                   <option value="all">All Modules</option><option value="reading">Read</option><option value="listening">Listen</option><option value="writing">Write</option><option value="speaking">Speak</option>
+                </select>
                 <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
                   <option value="all">All Tags</option>
                 </select>
@@ -776,13 +785,16 @@
             <select id="bank-filter-mod" onchange="renderTestBank()" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
               <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
             </select>
+            <select id="bank-filter-tag" onchange="renderTestBank()" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
+              <option value="all">All Tags</option>
+            </select>
             <select id="bank-sort" onchange="renderTestBank()" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
               <option value="newest">Newest First</option><option value="az">A-Z</option><option value="za">Z-A</option>
             </select>
           </div>
           
           <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"></div>
-        </div>
+        </div> <!-- This closes dash-view-tests -->
 
         <div id="dash-view-classes" class="hidden flex-col gap-6 animate-fade-in-up">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
@@ -833,23 +845,19 @@
         <!-- NEW BILLING SETTINGS PANEL -->
         <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm mb-8">
            <h3 class="font-bold text-lg text-slate-800 mb-5 flex justify-between items-center">
-              <span class="flex items-center gap-2">💳 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-black">Global Pricing & VietQR Setup</span></span>
+              <span class="flex items-center gap-2">💳 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-black">Global Pricing & QR Setup</span></span>
               <button onclick="saveBillingSettings()" id="btn-save-billing" class="text-sm bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-bold shadow transition">Save Settings</button>
            </h3>
-           <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5 border-b border-slate-100 pb-5">
-              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Bank ID (e.g., MB, VCB, ACB)</label><input type="text" id="bill-bank-id" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition"></div>
-              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Account Number</label><input type="text" id="bill-bank-acc" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition font-mono"></div>
-              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Account Name</label><input type="text" id="bill-bank-name" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition uppercase"></div>
-           </div>
-           <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+           
+           <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5 border-b border-slate-100 pb-5">
               <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block" title="Used as base fee for new classes">Default Fee/Lesson</label><input type="number" id="bill-fee" class="w-full border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-lg font-bold text-emerald-900 outline-none focus:border-emerald-500 transition"></div>
               <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Lessons / Month</label><input type="number" id="bill-lpm" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition"></div>
               <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Combo Disc (%)</label><input type="number" id="bill-disc-combo" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-lg font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 10"></div>
               <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Disc (%)</label><input type="number" id="bill-disc-course" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-lg font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 20"></div>
            </div>
            
-           <div class="col-span-1 md:col-span-4 border-t border-slate-100 pt-5 mt-5">
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Custom Receiving QR Code (Overrides Auto-VietQR)</label>
+           <div class="col-span-1 md:col-span-4 mt-5">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Custom Receiving QR Code (Required for Payments)</label>
               <div class="flex items-center gap-4">
                   <input type="file" id="bill-custom-qr" accept="image/*" onchange="window.handleCustomQR(event)" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition">
                   <img id="bill-custom-qr-preview" src="" class="h-16 rounded shadow-sm hidden object-contain bg-slate-50 border border-slate-200">
@@ -866,7 +874,7 @@
                </h3>
                <button onclick="window.promptCreatePackage()" class="text-sm bg-purple-50 text-purple-700 hover:bg-purple-100 px-4 py-1.5 rounded-lg font-bold transition shadow-sm border border-purple-200">+ Create Bundle</button>
            </div>
-           <p class="text-sm text-slate-500 mb-5">Group multiple classes together and set a unified fee per lesson.</p>
+           <p class="text-sm text-slate-500 mb-5">Group multiple classes together and sell them at a fixed discount price.</p>
            <div id="packages-pricing-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
@@ -923,8 +931,15 @@
         <div class="w-1/2 p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10" id="builder-left">
           <h2 class="text-xl font-black mb-6 border-b border-slate-100 pb-3 text-slate-800 flex items-center gap-2">📝 1. Content Details</h2>
           
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" id="edit-title-label">Part Title</label>
-          <input type="text" id="edit-passage-title" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 focus:ring-0 focus:border-blue-500 font-bold text-slate-800 transition-colors shadow-sm outline-none">
+          <div class="flex justify-between items-end mb-1">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" id="edit-title-label">Part Title / Main Prompt</label>
+              <div class="flex flex-wrap gap-1 bg-slate-100 px-2 py-1 rounded-t-lg border border-b-0 border-slate-300 shadow-inner">
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] font-bold rounded transition">B</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] italic rounded transition">I</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] underline rounded transition">U</button>
+              </div>
+          </div>
+          <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-3 rounded-b-lg rounded-tl-lg mb-5 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white" style="min-height: 60px;" oninput="window.triggerEditorAutosave()"></div>
           
           <div id="builder-media-fields">
             <div id="audio-field-container">
@@ -1220,6 +1235,9 @@
     let currentPartIdx = 0;
     let currentBlockIdx = 0;
     let timerInterval, autosaveTimeout;
+    window.isFullExamMode = false;
+    window.fullExamSequence = [];
+    window.fullExamCurrentIndex = 0;
     let draggedData = null; 
     let mediaRecorder = null;
     let audioChunks = [];
@@ -1794,11 +1812,25 @@
       const query = (document.getElementById('bank-search')?.value || '').toLowerCase();
       const mod = document.getElementById('bank-filter-mod')?.value || 'all';
       const sort = document.getElementById('bank-sort')?.value || 'newest';
+      
+      const tagSelect = document.getElementById('bank-filter-tag');
+      const selectedTag = tagSelect ? tagSelect.value : 'all';
+
+      // Dynamically populate the tags dropdown based on all tests in the bank
+      if (tagSelect && TEST_BANK.length > 0) {
+          let allTags = new Set();
+          TEST_BANK.forEach(t => {
+              if (t.topics) t.topics.forEach(tag => allTags.add(tag));
+          });
+          tagSelect.innerHTML = `<option value="all">All Tags</option>` + 
+              Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
+      }
 
       let filtered = TEST_BANK.filter(t => {
           const matchQuery = t.title.toLowerCase().includes(query) || (t.topics && t.topics.join(' ').toLowerCase().includes(query));
           const matchMod = mod === 'all' || t.module === mod;
-          return matchQuery && matchMod;
+          const matchTag = selectedTag === 'all' || (t.topics && t.topics.includes(selectedTag));
+          return matchQuery && matchMod && matchTag;
       });
 
       if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
@@ -2943,17 +2975,74 @@
       triggerEditorAutosave();
     }
 
+    // --- DRAG & DROP FOR PART TABS ---
+    let dragPartSourceIdx = null;
+
+    window.partDragStart = function(e, idx) {
+        saveCurrentEditorPart(); 
+        dragPartSourceIdx = idx;
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => e.target.classList.add('opacity-50'), 10);
+    };
+    
+    window.partDragOver = function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        e.currentTarget.classList.add('bg-blue-50');
+    };
+    
+    window.partDragLeave = function(e) {
+        e.currentTarget.classList.remove('bg-blue-50');
+    };
+    
+    window.partDragEnd = function(e) {
+        e.currentTarget.classList.remove('opacity-50', 'bg-blue-50');
+    };
+    
+    window.partDrop = function(e, targetIdx) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('bg-blue-50', 'opacity-50');
+        if (dragPartSourceIdx !== null && dragPartSourceIdx !== targetIdx) {
+            const moved = APP_DATA.parts.splice(dragPartSourceIdx, 1)[0];
+            APP_DATA.parts.splice(targetIdx, 0, moved);
+            
+            // Re-align the current view so we don't accidentally switch screens
+            if (currentEditorPartIdx === dragPartSourceIdx) {
+                currentEditorPartIdx = targetIdx;
+            } else if (dragPartSourceIdx < currentEditorPartIdx && targetIdx >= currentEditorPartIdx) {
+                currentEditorPartIdx--;
+            } else if (dragPartSourceIdx > currentEditorPartIdx && targetIdx <= currentEditorPartIdx) {
+                currentEditorPartIdx++;
+            }
+            
+            triggerEditorAutosave();
+            loadEditorPart(currentEditorPartIdx);
+        }
+        dragPartSourceIdx = null;
+    };
+
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
       
       document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => 
-        `<button onclick="saveCurrentEditorPart(); loadEditorPart(${i})" 
-          class="px-6 py-2.5 font-bold rounded-t-lg transition-all border-x border-t ${currentEditorPartIdx===i ? 'bg-white text-blue-700 border-slate-300 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] border-b-white translate-y-[1px]' : 'bg-slate-100 text-slate-500 border-transparent hover:bg-slate-200 hover:text-slate-700 border-b-slate-300'}">
+        `<button 
+          draggable="true" 
+          ondragstart="window.partDragStart(event, ${i})" 
+          ondragover="window.partDragOver(event)" 
+          ondrop="window.partDrop(event, ${i})" 
+          ondragleave="window.partDragLeave(event)" 
+          ondragend="window.partDragEnd(event)"
+          onclick="saveCurrentEditorPart(); loadEditorPart(${i})" 
+          class="px-6 py-2.5 font-bold rounded-t-lg transition-all border-x border-t flex items-center gap-2 cursor-grab active:cursor-grabbing ${currentEditorPartIdx===i ? 'bg-white text-blue-700 border-slate-300 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] border-b-white translate-y-[1px]' : 'bg-slate-100 text-slate-500 border-transparent hover:bg-slate-200 hover:text-slate-700 border-b-slate-300'}" title="Drag to reorder parts">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 pointer-events-none"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
           Part ${i+1}
         </button>`
       ).join('');
       
-      document.getElementById('edit-passage-title').value = p.title||'';
+      const titleEl = document.getElementById('edit-passage-title');
+      if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = p.title||'';
+      else titleEl.innerHTML = p.title||'';
+      
       document.getElementById('edit-audio-url').value = p.audioUrl||'';
       
       const imgContainer = document.getElementById('part-image-preview-container');
@@ -3263,7 +3352,8 @@
 
     function saveCurrentEditorPart() {
       const p = APP_DATA.parts[currentEditorPartIdx];
-      p.title = document.getElementById('edit-passage-title').value;
+      const titleEl = document.getElementById('edit-passage-title');
+      p.title = titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA' ? titleEl.value : titleEl.innerHTML;
       p.audioUrl = document.getElementById('edit-audio-url').value;
       
       const passTxt = document.getElementById('edit-passage-text');
@@ -3572,6 +3662,7 @@
         const pkg = window.checkoutPlans[window.selectedCheckoutPlan];
         currentUser.paymentStatus = 'pending';
         currentUser.pendingInfo = `${courseName} (${pkg.title})`;
+        currentUser.pendingLessons = pkg.lessons; // Tracks the lessons they bought!
         
         // Save which actual class IDs they are requesting
         if (selVal.startsWith('pkg_')) {
@@ -3586,6 +3677,7 @@
             USERS[cloudUserIdx].paymentStatus = 'pending';
             USERS[cloudUserIdx].pendingInfo = currentUser.pendingInfo;
             USERS[cloudUserIdx].pendingClasses = currentUser.pendingClasses;
+            USERS[cloudUserIdx].pendingLessons = currentUser.pendingLessons;
         }
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
         
@@ -3601,12 +3693,14 @@
       const schedSec = document.getElementById('student-schedule-section');
       const bottomSec = document.getElementById('bottom-student-sections');
       const toolbar = document.getElementById('student-toolbar'); 
+      const mockSec = document.getElementById('student-mock-exam-section');
       
       if(!cid) { 
           list.innerHTML = '<div class="p-6 text-slate-500">Select a class first.</div>'; 
           if(bottomSec) bottomSec.classList.add('hidden'); 
           if(schedSec) schedSec.classList.add('hidden');
           if(toolbar) toolbar.classList.add('hidden'); 
+          if(mockSec) { mockSec.classList.add('hidden'); mockSec.classList.remove('flex'); }
           return; 
       }
       
@@ -3614,6 +3708,7 @@
       if(!cls) return;
       if(bottomSec) bottomSec.classList.remove('hidden');
       if(toolbar) toolbar.classList.remove('hidden'); 
+      if(mockSec) { mockSec.classList.remove('hidden'); mockSec.classList.add('flex'); }
 
       const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
@@ -3632,6 +3727,7 @@
       }
       
       let allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials assigned to this course yet.</p>';
+
       if (cls.assignedTests && cls.assignedTests.length) {
           const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
           const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
@@ -3667,10 +3763,10 @@
           
           if (testObjects.length) {
               allTestsHtml = testObjects.map(t => renderTestItem(t.id)).join('');
-          } else if (query || mod !== 'all') {
+          } else if (query || mod !== 'all' || selectedTag !== 'all') {
               allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials match your search or filter.</p>';
           }
-      }
+      } 
       list.innerHTML = allTestsHtml;
       
       const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
@@ -3757,15 +3853,85 @@
       }
     }
 
-    function startTest(tid, selectedParts = null) {
-      const t = TEST_BANK.find(x => x.id === tid); if(!t) return;
-      APP_DATA = JSON.parse(JSON.stringify(t)); 
-      
-      // Cut out the unselected parts from the active test data
-      if (selectedParts && selectedParts.length > 0) {
-          APP_DATA.parts = APP_DATA.parts.filter((p, index) => selectedParts.includes(index));
+    window.startFullExam = function() {
+        // Pull directly from the GLOBAL Test Bank
+        const allListening = TEST_BANK.filter(t => t.module === 'listening');
+        const allReading = TEST_BANK.filter(t => t.module === 'reading');
+        const allWriting = TEST_BANK.filter(t => t.module === 'writing');
+
+        if (!allListening.length || !allReading.length || !allWriting.length) {
+            showModalMsg("Cannot Start", "Your global Test Bank is missing tests. Ensure you have created at least 1 Listening, 1 Reading, and 1 Writing test in the system.");
+            return;
+        }
+
+        // Synthetic Generator: Mixes & matches parts from ALL available tests to form a unique mock exam
+        const generateSyntheticTest = (moduleName, requiredParts, sourceTests) => {
+            let selectedParts = [];
+            for (let i = 0; i < requiredParts; i++) {
+                // Find all parts at this specific index (e.g., all "Part 1s") that ACTUALLY have questions
+                let validPartsForThisIndex = sourceTests
+                    .map(t => t.parts[i])
+                    .filter(p => p && p.questions && p.questions.length > 0);
+                
+                if (validPartsForThisIndex.length > 0) {
+                    let randomPart = validPartsForThisIndex[Math.floor(Math.random() * validPartsForThisIndex.length)];
+                    let clonedPart = JSON.parse(JSON.stringify(randomPart));
+                    clonedPart.title = `Part ${i + 1}`; // Enforce strict naming (1 -> 2 -> 3)
+                    selectedParts.push(clonedPart);
+                } else {
+                    // Fallback: If no "Part X" exists anywhere, grab ANY valid part from this module
+                    let allValidPartsAnywhere = sourceTests.flatMap(t => t.parts).filter(p => p && p.questions && p.questions.length > 0);
+                    if (allValidPartsAnywhere.length > 0) {
+                        let randomPart = allValidPartsAnywhere[Math.floor(Math.random() * allValidPartsAnywhere.length)];
+                        let clonedPart = JSON.parse(JSON.stringify(randomPart));
+                        clonedPart.title = `Part ${i + 1}`;
+                        selectedParts.push(clonedPart);
+                    }
+                }
+            }
+
+            return {
+                id: 'mock_' + moduleName + '_' + Date.now(),
+                title: `Full Mock Exam - ${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}`,
+                module: moduleName,
+                topics: ['Generated Mock Exam'],
+                parts: selectedParts,
+                vocab: []
+            };
+        };
+
+        const synthListening = generateSyntheticTest('listening', 4, allListening);
+        const synthReading = generateSyntheticTest('reading', 3, allReading);
+        const synthWriting = generateSyntheticTest('writing', 2, allWriting);
+
+        if (!synthListening.parts.length || !synthReading.parts.length || !synthWriting.parts.length) {
+            showModalMsg("Cannot Start", "Some tests in your bank are completely empty. Please ensure tests have actual content and questions.");
+            return;
+        }
+
+        window.isFullExamMode = true;
+        window.fullExamSequence = [synthListening, synthReading, synthWriting];
+        window.fullExamCurrentIndex = 0;
+
+        showConfirm("Start Full Exam", "This will start a timed mock exam consisting of Listening (40m), Reading (60m), and Writing (60m). The parts have been dynamically mixed and matched from your entire Test Bank to create a completely unique test! Make sure you have roughly 2.5 hours available.", () => {
+            testMode = 'restricted';
+            isTimeFree = false;
+            startTest(null, null, window.fullExamSequence[0]);
+        });
+    };
+
+    function startTest(tid, selectedParts = null, syntheticTestObj = null) {
+      if (syntheticTestObj) {
+          APP_DATA = syntheticTestObj;
+      } else {
+          const t = TEST_BANK.find(x => x.id === tid); if(!t) return;
+          APP_DATA = JSON.parse(JSON.stringify(t)); 
+          
+          if (selectedParts && selectedParts.length > 0) {
+              APP_DATA.parts = selectedParts.map(idx => APP_DATA.parts[idx]).filter(Boolean);
+          }
       }
-      
+
       answers = {}; reviewStatus = {};
       isPreviewMode = false; 
       
@@ -3784,20 +3950,20 @@
       document.getElementById('exam-ui').classList.remove('hidden');
       document.getElementById('exam-candidate-name').textContent = currentUser.user;
       document.getElementById('exam-preview-badge').classList.add('hidden');
-      document.getElementById('exam-module-title').textContent = APP_DATA.title;
-      document.getElementById('exam-action-btn-text').textContent = "SUBMIT TEST";
+      document.getElementById('exam-module-title').textContent = APP_DATA.title + (window.isFullExamMode ? ` (Full Exam - Section ${window.fullExamCurrentIndex + 1}/3)` : '');
+      document.getElementById('exam-action-btn-text').textContent = window.isFullExamMode ? (window.fullExamCurrentIndex < 2 ? "NEXT SECTION" : "SUBMIT EXAM") : "SUBMIT TEST";
       
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
       document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
       
       clearInterval(timerInterval);
-      let customMins = parseInt(document.getElementById('custom-time-input').value);
+      let customMins = parseInt(document.getElementById('custom-time-input') ? document.getElementById('custom-time-input').value : 0);
       let defaultSecs = (APP_DATA.module==='listening'?40*60:APP_DATA.module==='writing'?60*60:APP_DATA.module==='speaking'?15*60:60*60);
-      timeLeft = isTimeFree ? 0 : (customMins > 0 ? customMins * 60 : defaultSecs);
+      timeLeft = isTimeFree ? 0 : (customMins > 0 && !window.isFullExamMode ? customMins * 60 : defaultSecs);
       document.getElementById('timer-label').textContent = isTimeFree ? 'Elapsed' : 'Time Left';
       timerInterval = setInterval(() => {
         isTimeFree ? timeLeft++ : timeLeft--;
-        if(!isTimeFree && timeLeft <= 0) { clearInterval(timerInterval); exitTest(); return; }
+        if(!isTimeFree && timeLeft <= 0) { clearInterval(timerInterval); window.exitTest(true); return; }
         const h = Math.floor(timeLeft/3600), m = Math.floor((timeLeft%3600)/60), s = timeLeft%60;
         document.getElementById('timer-display').textContent = `${h>0?h+':':''}${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
       }, 1000);
@@ -3924,7 +4090,24 @@
           }
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `<h2 class="text-xl font-bold mb-6">${p.title} (Transcript)</h2>${media}<div class="passage-text text-justify">${htmlText}</div>`;
+          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${htmlText}</div>`;
+      } else if (APP_DATA.module === 'writing' && !isTimeFree) {
+          // EXAM MODE WRITING: Hide the sample essay (p.text) and move questions to the left!
+          passageContainer.classList.remove('hidden');
+          resizer.classList.remove('hidden');
+          passageContainer.style.width = '50%'; 
+          
+          let leftHtml = p.questions.map((q) => `
+              <div class="mb-6 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
+                  ${q.instruction ? `<h3 class="font-black text-slate-800 text-lg mb-3">${q.instruction}</h3>` : ''}
+                  <div class="text-base text-slate-700 leading-relaxed">${q.text || ''}</div>
+              </div>
+          `).join('');
+          
+          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title}</div><div id="passage-text-content" class="passage-text">${leftHtml}</div>`;
+          
+          if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
+          if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
       } else {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
@@ -3942,7 +4125,7 @@
           }
 
           // Inject the button right between the media (picture) and the text passage
-          passageContainer.innerHTML = `<h2 class="text-xl font-bold mb-6">${p.title}</h2>${media}${sampleToggleBtn}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
+          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title}</div>${media}${sampleToggleBtn}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
@@ -4195,6 +4378,9 @@
            content = table;
         } else if(q.type === 'essay') {
            let txt = pt(rawText);
+           if (APP_DATA.module === 'writing' && !isTimeFree) {
+               txt = '';
+           }
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\\s+/).filter(Boolean).length}</span></div>`;
         } else if(q.type === 'audio_record') {
            let txt = pt(rawText);
@@ -4206,12 +4392,13 @@
 
         let leftoverBadges = Array.from(unplacedIds).map(id => makeBadge(id)).join('');
 
-        // ✨ NEW: Only render the instruction block if it actually contains something useful
         let instructionHtml = '';
         const cleanInst = (q.instruction || '').trim();
         const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
         
-        if (leftoverBadges || hasInst) {
+        if (APP_DATA.module === 'writing' && !isTimeFree) {
+            if (leftoverBadges) instructionHtml = `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>`;
+        } else if (leftoverBadges || hasInst) {
             instructionHtml = `
             <div class="flex flex-col gap-2">
                 ${leftoverBadges ? `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>` : ''}
@@ -4415,10 +4602,8 @@
       });
     }
 
-    function exitTest() {
-      const title = isPreviewMode ? "End Preview" : "Submit Test";
-      const desc = isPreviewMode ? "End preview and check results?" : "Are you sure you want to finish?";
-      showConfirm(title, desc, async () => {
+    window.exitTest = function(autoSubmit = false) {
+      const proceed = async () => {
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
         
         const examAudio = document.getElementById('exam-listening-audio');
@@ -4454,21 +4639,58 @@
         
         if (!isPreviewMode) {
           const clsId = document.getElementById('student-class-select').value;
-          const sub = { id: Date.now(), student: currentUser.user, testId: APP_DATA.id, testName: APP_DATA.title + (testMode === 'free' ? ' (Practice)' : ''), className: CLASSES.find(c=>c.id===clsId)?.name||'', date: new Date().toLocaleDateString(), answers: JSON.parse(JSON.stringify(answers)), score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade' };
+          const sub = { 
+              id: Date.now(), 
+              student: currentUser.user, 
+              testId: APP_DATA.id, 
+              testName: APP_DATA.title + (testMode === 'free' ? ' (Practice)' : '') + (window.isFullExamMode ? ' (Full Exam)' : ''), 
+              className: CLASSES.find(c=>c.id===clsId)?.name||'', 
+              date: new Date().toLocaleDateString(), 
+              answers: JSON.parse(JSON.stringify(answers)), 
+              score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade',
+              syntheticData: window.isFullExamMode ? JSON.parse(JSON.stringify(APP_DATA)) : null
+          };
           
           SUBMISSIONS.unshift(sub);
           try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); }
           catch(e) { console.error("Cloud Error saving submission:", e); }
         }
 
-        if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-           document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div>`;
+        if (window.isFullExamMode) {
+            window.fullExamCurrentIndex++;
+            if (window.fullExamCurrentIndex < window.fullExamSequence.length) {
+                showModalMsg("Section Complete", "Moving to the next section in 3 seconds...");
+                setTimeout(() => {
+                    document.getElementById('custom-modal').classList.add('hidden');
+                    const nextStep = window.fullExamSequence[window.fullExamCurrentIndex];
+                    
+                    // FIXED: We pass the entire synthetic test object directly to startTest!
+                    startTest(null, null, nextStep);
+                    
+                }, 3000);
+            } else {
+                window.isFullExamMode = false;
+                document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Full Exam Complete!</div><p class="text-sm text-slate-500 mt-2">All your responses have been recorded.</p>`;
+                document.getElementById('results-modal').classList.remove('hidden');
+            }
         } else {
-           document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p>`;
+            if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
+               document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div>`;
+            } else {
+               document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p>`;
+            }
+            document.getElementById('results-modal').classList.remove('hidden');
         }
-        document.getElementById('results-modal').classList.remove('hidden');
-      });
-    }
+      };
+
+      if (autoSubmit) {
+          proceed();
+      } else {
+          const title = isPreviewMode ? "End Preview" : (window.isFullExamMode ? "Submit Section" : "Submit Test");
+          const desc = isPreviewMode ? "End preview and check results?" : (window.isFullExamMode ? "Are you sure you want to finish this section early? You will be moved to the next skill." : "Are you sure you want to finish?");
+          showConfirm(title, desc, proceed);
+      }
+    };
     
     function exitToDashboard() { 
       document.getElementById('results-modal').classList.add('hidden'); 
@@ -4538,8 +4760,13 @@
     function openGradingView(subId) {
       const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
       
-      const test = TEST_BANK.find(t => t.id === sub.testId);
-      if(!test) { showModalMsg("Error", "Original test deleted."); return; }
+      let test;
+      if (sub.syntheticData) {
+          test = sub.syntheticData;
+      } else {
+          test = TEST_BANK.find(t => t.id === sub.testId);
+          if(!test) { showModalMsg("Error", "Original test deleted."); return; }
+      }
       
       APP_DATA = test; answers = sub.answers || {};
       
@@ -4552,8 +4779,16 @@
 
     function reviewPastSubmission(subId) {
       const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
-      APP_DATA = TEST_BANK.find(t => t.id === sub.testId); if(!APP_DATA) return;
-      answers = sub.answers;
+      
+      let test;
+      if (sub.syntheticData) {
+          test = sub.syntheticData;
+      } else {
+          test = TEST_BANK.find(t => t.id === sub.testId);
+          if(!test) return;
+      }
+      
+      APP_DATA = test; answers = sub.answers;
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('review-ui').classList.remove('hidden');
       document.getElementById('review-module-badge').textContent = APP_DATA.module;
@@ -4572,7 +4807,7 @@
         } else if(APP_DATA.module === 'writing') {
            txt = txt.replace(/\n/g, '<br>');
         }
-        lHtml += `<h2 class="text-xl font-bold mb-4 mt-8 first:mt-0">${p.title}</h2>`;
+        lHtml += `<div class="passage-text font-bold mb-4 mt-8 first:mt-0">${p.title}</div>`;
         if(p.audioUrl) lHtml += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4"></audio>`;
         if(p.image) lHtml += `<div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded text-center"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
         lHtml += `<div class="leading-relaxed text-slate-800 text-lg selection-wrapper">${txt}</div>`;
@@ -5044,9 +5279,6 @@
     };
 
     function renderStudentsList() {
-        document.getElementById('bill-bank-id').value = BILLING_SETTINGS.bankId || 'MB';
-        document.getElementById('bill-bank-acc').value = BILLING_SETTINGS.bankAcc || '';
-        document.getElementById('bill-bank-name').value = BILLING_SETTINGS.bankName || '';
         document.getElementById('bill-fee').value = BILLING_SETTINGS.feePerLesson || 100000;
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
@@ -5060,24 +5292,6 @@
             document.getElementById('bill-custom-qr-clear').classList.remove('hidden');
         } else {
             window.clearCustomQR();
-        }
-
-        // Render the Course Pricing boxes
-        const coursePricingList = document.getElementById('course-pricing-list');
-        if (coursePricingList) {
-            if (CLASSES.length === 0) {
-                coursePricingList.innerHTML = `<div class="col-span-full text-slate-400 italic text-sm">No classes created yet. Create classes in the Dashboard tab first.</div>`;
-            } else {
-                coursePricingList.innerHTML = CLASSES.map(cls => `
-                    <div class="flex flex-col justify-center bg-slate-50 p-3 rounded-lg border border-slate-200 hover:border-emerald-300 transition-colors">
-                        <span class="font-bold text-slate-700 text-sm mb-2 truncate" title="${cls.name}">${cls.name}</span>
-                        <div class="flex items-center justify-between gap-2 bg-white px-2 py-1.5 border border-slate-200 rounded">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fee/Lesson:</span>
-                            <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || ''}" placeholder="${BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 border-none bg-transparent p-0 text-sm font-black text-emerald-600 outline-none focus:ring-0 text-right">
-                        </div>
-                    </div>
-                `).join('');
-            }
         }
 
         // Render the Packages list
@@ -5113,13 +5327,18 @@
         const pending = students.filter(s => !s.isPaid && s.paymentStatus === 'pending');
         const others = students.filter(s => s.isPaid || s.paymentStatus !== 'pending');
 
-        const renderCard = (s, isPending) => `
+        const renderCard = (s, isPending) => {
+            const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
+            const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
+            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-indigo-600 font-bold ml-2 border-l border-slate-300 pl-2">Remaining Lessons: ${remaining}/${s.totalLessonsPaid}</span>` : '';
+
+            return `
             <div class="bg-white border border-slate-200 p-5 rounded-xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50' : ''}">
                 <div class="flex justify-between items-start mb-4 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-3">
                     <div>
                         <h3 class="font-black text-xl text-slate-800 flex items-center gap-2"><span class="w-8 h-8 rounded-full ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-700'} flex items-center justify-center text-sm font-bold">👤</span> ${s.user}</h3>
-                        <p class="text-xs text-slate-500 mt-1 ml-10">Joined: ${s.createdAt || 'N/A'}</p>
-                        ${isPending && s.pendingInfo ? `<p class="text-sm font-bold text-rose-700 mt-2 ml-10 bg-rose-100/50 px-2 py-1 rounded inline-block border border-rose-200 shadow-sm">💸 Request: ${s.pendingInfo}</p>` : ''}
+                        <p class="text-xs text-slate-500 mt-1 ml-10">Joined: ${s.createdAt || 'N/A'} ${lessonsBadge}</p>
+                        ${isPending && s.pendingInfo ? `<p class="text-sm font-bold text-rose-700 mt-2 ml-10 bg-rose-100/50 px-2 py-1 rounded inline-block border border-rose-200 shadow-sm">💸 Request: ${s.pendingInfo} (${s.pendingLessons || '?'} Lessons)</p>` : ''}
                     </div>
                     <span class="text-xs uppercase tracking-widest font-black px-2.5 py-1 rounded ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending ? 'bg-rose-500 text-white shadow-sm animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
                 </div>
@@ -5127,7 +5346,8 @@
                     ${s.isPaid ? 'Revoke Access (Lock)' : (isPending ? '✓ Approve Payment & Auto-Enroll' : 'Manual Override: Grant Access')}
                 </button>
             </div>
-        `;
+            `;
+        };
 
         let html = '';
         if (pending.length > 0) {
@@ -5246,9 +5466,9 @@
         btn.textContent = "Saving..."; btn.disabled = true;
         
         BILLING_SETTINGS = {
-            bankId: document.getElementById('bill-bank-id').value.trim(),
-            bankAcc: document.getElementById('bill-bank-acc').value.trim(),
-            bankName: document.getElementById('bill-bank-name').value.trim().toUpperCase(),
+            bankId: BILLING_SETTINGS.bankId || 'MB',
+            bankAcc: BILLING_SETTINGS.bankAcc || '',
+            bankName: BILLING_SETTINGS.bankName || '',
             feePerLesson: Number(document.getElementById('bill-fee').value) || 100000,
             lessonsPerMonth: Number(document.getElementById('bill-lpm').value) || 12,
             discCombo: Number(document.getElementById('bill-disc-combo').value) || 0,
@@ -5284,7 +5504,6 @@
             user.paymentStatus = status ? 'paid' : 'unpaid';
             
             // AUTOMATIC ENROLLMENT MAGIC:
-            // If we are granting access (status=true) and they requested specific classes...
             if (status && user.pendingClasses && Array.isArray(user.pendingClasses)) {
                 for (let cid of user.pendingClasses) {
                     const cls = CLASSES.find(c => c.id === cid);
@@ -5292,7 +5511,6 @@
                         if (!cls.enrolledStudents) cls.enrolledStudents = [];
                         if (!cls.enrolledStudents.includes(username)) {
                             cls.enrolledStudents.push(username);
-                            // Save class update to cloud
                             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
                         }
                     }
@@ -5300,13 +5518,20 @@
             }
 
             if (status) {
-                user.pendingInfo = null; // Clear request string
-                user.pendingClasses = null; // Clear array
+                // ADD the lessons they just purchased to their account balance
+                if (user.pendingLessons) {
+                    user.totalLessonsPaid = (user.totalLessonsPaid || 0) + user.pendingLessons;
+                } else if (!user.totalLessonsPaid) {
+                    user.totalLessonsPaid = BILLING_SETTINGS.lessonsPerMonth || 12; // Fallback for manual approval
+                }
+                user.pendingInfo = null; 
+                user.pendingClasses = null; 
+                user.pendingLessons = null;
             }
 
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), user);
             renderStudentsList();
-            renderClasses(); // Update class list numbers
+            renderClasses(); 
         }
     }
 
@@ -5823,12 +6048,16 @@
 
     window.exportAttendancePDF = function(studentName) {
         // Collect Data
+        const studentObj = USERS.find(u => u.user === studentName);
         const studentAttendance = ATTENDANCE.filter(a => a.student === studentName);
         const studentTests = SUBMISSIONS.filter(s => s.student === studentName);
 
         // Calculate actual attendance metrics
         const presentCount = studentAttendance.filter(a => a.status === 'on_time' || a.status === 'late' || !a.status).length;
         const absentCount = studentAttendance.length - presentCount;
+        
+        const totalPaid = studentObj?.totalLessonsPaid || 0;
+        const remaining = totalPaid > 0 ? Math.max(0, totalPaid - studentAttendance.length) : 'N/A';
 
         // Status Dictionary for beautiful print formatting
         const statusMap = {
@@ -5864,6 +6093,8 @@
             <div class="summary">
                 <strong>Overall Summary:</strong><br><br>
                 &bull; Total Lessons Tracked: <strong>${studentAttendance.length}</strong><br>
+                &bull; Enrolled / Paid Lessons: <strong>${totalPaid || 'Not Specified'}</strong><br>
+                &bull; Lessons Remaining: <strong style="color: #2563eb;">${remaining}</strong><br>
                 &bull; Present (Including Late): <strong style="color: #10b981;">${presentCount}</strong> | Absent: <strong style="color: #ef4444;">${absentCount}</strong><br>
                 &bull; Total Tests Submitted: <strong>${studentTests.length}</strong>
             </div>
@@ -6207,6 +6438,35 @@
 
         fileInput.click();
     };
+  </script>
+<!-- SECURITY: Anti-Inspect and View Source Protection -->
+  <script>
+    // 1. Disable Right-Click (Context Menu)
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+
+    // 2. Disable standard DevTools and View Source keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if (
+        e.key === 'F12' || // F12
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) || // Ctrl+Shift+I
+        (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) || // Ctrl+Shift+J
+        (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) || // Ctrl+Shift+C
+        (e.ctrlKey && (e.key === 'U' || e.key === 'u')) || // Ctrl+U (View Source)
+        (e.ctrlKey && (e.key === 'S' || e.key === 's'))    // Ctrl+S (Save Page)
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // 3. Prevent dragging images to new tabs to see their source
+    document.addEventListener('dragstart', function(e) {
+      if (e.target.nodeName === 'IMG') {
+          e.preventDefault();
+      }
+    });
   </script>
 </body>
 </html>
