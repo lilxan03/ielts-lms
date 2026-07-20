@@ -8,6 +8,7 @@
   <meta name="theme-color" content="#1e293b">
   <title>IELTS LMS - Cloud Connected</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://8x8.vc/vpaas-magic-cookie-47e2654478b445e6bd48936cfdf0072e/external_api.js"></script>
   <style>
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -91,7 +92,7 @@
         #resizer > div { width: 30px !important; height: 4px !important; }
 
         /* Squeeze modals to fit phone screens */
-        .w-96, .w-\\[400px\\], .w-\\[500px\\], .w-\\[550px\\], .w-\\[600px\\], .w-\\[700px\\], .w-\\[800px\\], .w-\\[950px\\] {
+        .w-96, .w-\[400px\], .w-\[500px\], .w-\[550px\], .w-\[600px\], .w-\[700px\], .w-\[800px\], .w-\[950px\] {
             width: 100% !important;
             max-width: 95vw !important;
             margin-left: auto;
@@ -100,7 +101,7 @@
 
         /* Adjust payment wall on phones */
         #student-payment-warning > div { flex-direction: column !important; }
-        #student-payment-warning .lg\\:w-3\\/5, #student-payment-warning .lg\\:w-2\\/5 { width: 100% !important; border-left: none !important; }
+        #student-payment-warning .lg\:w-3\/5, #student-payment-warning .lg\:w-2\/5 { width: 100% !important; border-left: none !important; }
         
         /* Make palettes scrollable instead of squished */
         #palette-container { justify-content: flex-start !important; }
@@ -573,6 +574,62 @@
     </div>
   </div>
 
+  <!-- AVAILABILITY MODAL (TEACHER) -->
+  <div id="availability-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh]">
+          <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+              <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">⚙️ Booking Availability Settings</h2>
+              <button onclick="document.getElementById('availability-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+          </div>
+          <div class="p-6 overflow-y-auto flex-1 bg-white">
+              <div class="mb-6 flex items-center gap-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <label class="font-bold text-slate-700 text-sm uppercase tracking-widest">Appointment Duration:</label>
+                  <select id="avail-duration" class="border border-slate-300 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-700 bg-white shadow-sm">
+                      <option value="30">30 mins</option>
+                      <option value="45">45 mins</option>
+                      <option value="60">1 hour</option>
+                      <option value="90">1.5 hours</option>
+                      <option value="120">2 hours</option>
+                  </select>
+              </div>
+              <h3 class="font-bold text-slate-700 mb-4 border-b pb-2">Weekly Recurring Hours</h3>
+              <p class="text-sm text-slate-500 mb-4">Set when you are regularly available. Students can book appointments automatically within these limits.</p>
+              <div id="avail-weekly-grid" class="space-y-4"></div>
+          </div>
+          <div class="p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl flex justify-end gap-3 shrink-0">
+              <button onclick="document.getElementById('availability-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-bold transition">Cancel</button>
+              <button onclick="window.saveAvailability()" id="btn-save-avail" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition">Save Availability</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- STUDENT BOOKING MODAL -->
+  <div id="student-booking-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[85vh]">
+          <div class="p-5 border-b border-indigo-200 flex justify-between items-center bg-indigo-50 rounded-t-xl shrink-0">
+              <h2 class="text-xl font-black text-indigo-900 flex items-center gap-2">📅 Book an Appointment</h2>
+              <button onclick="document.getElementById('student-booking-modal').classList.add('hidden')" class="text-indigo-400 hover:text-indigo-700 font-bold text-2xl leading-none">&times;</button>
+          </div>
+          <div class="p-6 overflow-y-auto flex-1 flex flex-col md:flex-row gap-6">
+              <!-- Left: Date Picker -->
+              <div class="md:w-1/2 md:border-r border-slate-200 md:pr-6 shrink-0">
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">1. Select Date:</label>
+                  <input type="date" id="book-date" class="w-full border-2 border-slate-200 p-3 rounded-lg focus:border-indigo-500 font-bold text-slate-700 outline-none mb-4 shadow-sm" onchange="window.generateBookingSlots()">
+                  <div id="book-date-preview" class="text-sm text-slate-500 italic bg-slate-50 p-3 rounded border border-slate-100 shadow-inner">Select a date above to see available slots.</div>
+              </div>
+              <!-- Right: Slots -->
+              <div class="md:w-1/2 flex flex-col flex-1 h-[300px] md:h-auto">
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">2. Available Slots:</label>
+                  <div id="book-slots-container" class="space-y-3 flex-1 overflow-y-auto pr-1"></div>
+              </div>
+          </div>
+          <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 rounded-b-xl shrink-0">
+              <button onclick="document.getElementById('student-booking-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-bold">Cancel</button>
+              <button onclick="window.confirmBooking()" id="btn-confirm-booking" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed">Confirm Booking</button>
+          </div>
+      </div>
+  </div>
+
   <!-- START SCREEN (STUDENT DASHBOARD) -->
   <div id="start-screen" class="hidden h-screen w-full relative bg-slate-50 overflow-y-auto">
     <!-- Blue Header Banner -->
@@ -660,7 +717,7 @@
         <div class="lg:col-span-7 flex flex-col">
           <div id="student-schedule-section" class="bg-white border border-indigo-200 rounded-lg shadow-sm overflow-hidden hidden flex-col h-full min-h-[350px] scroll-mt-24">
              <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-200 flex justify-between items-center gap-2">
-               <h2 class="font-bold text-indigo-900 text-lg">Monthly Class Timetable</h2>
+               <h2 class="font-bold text-indigo-900 text-lg flex items-center gap-3">📅 Monthly Timetable <button onclick="window.openStudentBooking()" class="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-full shadow transition font-black uppercase tracking-wide border border-indigo-800">＋ Book Class</button></h2>
                <div class="flex items-center gap-2">
                  <button onclick="changeCalendarMonth(-1, 'student')" class="px-2 py-1 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100 font-bold shadow-sm">&larr;</button>
                  <span id="student-cal-month" class="font-bold text-indigo-900 min-w-[130px] text-center uppercase tracking-wide">Month Year</span>
@@ -709,37 +766,51 @@
 
   <!-- EDITOR UI -->
   <div id="editor-ui" class="hidden h-screen flex flex-col bg-slate-100 z-50 relative">
-    <header class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
-      <div class="flex items-center gap-6">
-        <h1 class="text-xl font-bold">🛠 Teacher Dashboard</h1>
-        
-        <div class="flex bg-slate-900 rounded-md p-1 shadow-inner space-x-1" id="editor-main-tabs">
-          <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Dashboard</button>
-          <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Students/Pay</button>
-          <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Timetable</button>
+    <header class="bg-slate-800 text-white px-6 py-3 flex justify-between items-center shrink-0 shadow-md min-h-[64px] transition-all">
+      <!-- LEFT SECTION -->
+      <div class="flex items-center gap-4 flex-1">
+        <!-- Default State: Logo & Tabs -->
+        <div id="editor-default-header" class="flex items-center gap-8">
+            <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                <span class="text-blue-400">🛠</span> LMS <span class="font-light text-slate-400">| Teacher</span>
+            </h1>
+            <div class="flex bg-slate-900/60 rounded-lg p-1 shadow-inner space-x-1 border border-slate-700/50" id="editor-main-tabs">
+              <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Dashboard</button>
+              <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Students/Pay</button>
+              <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Timetable</button>
+              <button onclick="toggleEditorTab('landing')" id="tab-btn-landing" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Landing Page</button>
+            </div>
         </div>
 
-        <div id="editor-builder-controls" class="hidden items-center gap-3 bg-slate-700 rounded px-3 py-1.5 shadow-inner">
-          <button onclick="editCurrentTestMeta()" class="text-sm font-bold text-blue-300 hover:text-blue-100 flex items-center gap-1 transition" title="Edit Test Info">
-            <span id="builder-test-name" class="truncate max-w-[200px]">Editing Test...</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-          </button>
-          <div class="h-4 w-px bg-slate-500 mx-2"></div>
-          <button onclick="openTeacherVocabModal()" class="text-sm font-bold text-emerald-400 hover:text-emerald-200 transition mr-2 flex items-center gap-1">🗂️ Test Vocab</button>
-          <div class="flex items-center">
-            <label class="text-xs text-slate-300 mr-2 uppercase tracking-wide font-bold" id="editor-parts-label">Parts:</label>
-            <select id="editor-part-count" onchange="updatePartCount(this.value)" class="bg-slate-900 text-white text-sm border border-slate-600 rounded px-2 py-1 outline-none font-medium"></select>
-          </div>
+        <!-- Builder State: Back Button & Controls -->
+        <div id="editor-builder-controls" class="hidden items-center gap-4 animate-fade-in-up flex-1">
+            <button id="editor-back-bank" onclick="exitBuilder()" class="text-slate-400 hover:text-white transition flex items-center gap-1.5 font-bold text-sm bg-slate-700/50 hover:bg-slate-700 px-3 py-2 rounded-lg border border-slate-600 shadow-sm">
+                &larr; Back
+            </button>
+            <div class="h-6 w-px bg-slate-600"></div>
+            <button onclick="editCurrentTestMeta()" class="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-700 transition cursor-pointer" title="Edit Test Info">
+                <span id="builder-test-name" class="font-bold text-lg text-white truncate max-w-[400px]">Editing Test...</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-hover:text-blue-400"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <div class="h-6 w-px bg-slate-600"></div>
+            <button onclick="openTeacherVocabModal()" class="text-sm font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-400/10 px-3 py-2 rounded-lg border border-emerald-400/20 transition flex items-center gap-1.5 shadow-sm">🗂️ Vocab Bank</button>
+            <div class="flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-700 shadow-inner">
+                <label class="text-xs text-slate-400 uppercase tracking-widest font-bold">Parts:</label>
+                <select id="editor-part-count" onchange="updatePartCount(this.value)" class="bg-transparent text-white text-sm font-bold outline-none cursor-pointer"></select>
+            </div>
         </div>
       </div>
 
-      <div class="flex gap-3 items-center">
-        <span id="editor-autosave-status" class="text-xs font-bold text-emerald-400 opacity-0 transition-opacity">Autosaved</span>
-        <button id="editor-logout" onclick="logout()" class="px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Logout</button>
-        <button id="editor-back-bank" onclick="exitBuilder()" class="hidden px-4 py-2 bg-slate-600 rounded hover:bg-slate-500 transition font-medium">Cancel Edit</button>
-        <!-- Upgraded Editor Controls -->
-        <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 font-bold rounded-lg hover:from-indigo-600 hover:to-purple-700 text-white transition shadow-md flex items-center gap-2">👁️ Preview</button>
-        <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 font-bold rounded-lg hover:from-emerald-600 hover:to-teal-700 text-white transition shadow-md flex items-center gap-2">💾 Save Test Data</button>
+      <!-- RIGHT SECTION -->
+      <div class="flex gap-3 items-center shrink-0">
+        <span id="editor-autosave-status" class="text-xs font-bold text-slate-400 opacity-0 transition-opacity w-20 text-right whitespace-nowrap">Autosaved</span>
+        
+        <!-- Default State: Logout -->
+        <button id="editor-logout" onclick="logout()" class="px-5 py-2 bg-slate-700 hover:bg-rose-600 text-white rounded-lg transition font-bold text-sm shadow-sm border border-slate-600 hover:border-rose-500">Logout</button>
+        
+        <!-- Builder State: Preview & Save -->
+        <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-5 py-2 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500 hover:text-white font-bold rounded-lg transition shadow-sm items-center gap-1.5 text-sm">👁️ Preview</button>
+        <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-6 py-2 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-white transition shadow-sm items-center gap-1.5 text-sm border border-blue-700">💾 Save Test</button>
       </div>
     </header>
 
@@ -887,7 +958,10 @@
       <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
           <h2 class="text-2xl font-bold text-slate-800">Monthly Timetable & Attendance</h2>
-          <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Schedule Class</button>
+          <div class="flex gap-2">
+            <button onclick="window.openAvailabilitySettings()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded font-bold shadow-sm flex items-center gap-2 text-sm transition">⚙️ Booking Settings</button>
+            <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm text-sm transition">＋ Schedule Class</button>
+          </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
           
@@ -1217,7 +1291,8 @@
     let SUBMISSIONS = [];
     let SCHEDULES = [];
     let ATTENDANCE = [];
-    let PACKAGES = []; // <--- NEW: Stores our bundles!
+    let PACKAGES = []; 
+    let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
 
@@ -1580,6 +1655,12 @@
                     });
                 }),
                 new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => {
+                        if (snap.exists()) AVAILABILITY = snap.data();
+                        resolve();
+                    });
+                }),
+                new Promise(resolve => {
                     window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => {
                         PACKAGES = snap.docs.map(d => d.data());
                         resolve();
@@ -1767,19 +1848,45 @@
     }
 
     function toggleEditorTab(tab) {
-      ['bank', 'classes', 'builder', 'students', 'timetable'].forEach(t => {
+      ['bank', 'classes', 'builder', 'students', 'timetable', 'landing'].forEach(t => {
           const el = document.getElementById(`editor-view-${t}`);
           if (el) el.classList.add('hidden');
       });
-      ['bank', 'classes', 'students', 'timetable'].forEach(t => {
+      ['bank', 'classes', 'students', 'timetable', 'landing'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
         if(b) b.className = t===tab ? 'px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition' : 'px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition';
       });
-      document.getElementById('editor-builder-controls').classList.add('hidden');
-      document.getElementById('editor-logout').classList.remove('hidden');
-      document.getElementById('editor-back-bank').classList.add('hidden');
-      document.getElementById('editor-preview-test').classList.add('hidden');
-      document.getElementById('editor-save-test').classList.add('hidden');
+
+      if (tab === 'builder') {
+        document.getElementById('editor-view-builder').classList.remove('hidden');
+        document.getElementById('editor-view-builder').classList.add('flex');
+        
+        // Hide dashboard elements
+        document.getElementById('editor-default-header').classList.add('hidden');
+        document.getElementById('editor-default-header').classList.remove('flex');
+        document.getElementById('editor-logout').classList.add('hidden');
+        
+        // Show builder elements
+        document.getElementById('editor-builder-controls').classList.remove('hidden');
+        document.getElementById('editor-builder-controls').classList.add('flex');
+        document.getElementById('editor-preview-test').classList.remove('hidden');
+        document.getElementById('editor-preview-test').classList.add('flex');
+        document.getElementById('editor-save-test').classList.remove('hidden');
+        document.getElementById('editor-save-test').classList.add('flex');
+      } else {
+        // Show dashboard elements
+        document.getElementById('editor-default-header').classList.remove('hidden');
+        document.getElementById('editor-default-header').classList.add('flex');
+        document.getElementById('editor-logout').classList.remove('hidden');
+        
+        // Hide builder elements
+        document.getElementById('editor-builder-controls').classList.add('hidden');
+        document.getElementById('editor-builder-controls').classList.remove('flex');
+        document.getElementById('editor-preview-test').classList.add('hidden');
+        document.getElementById('editor-preview-test').classList.remove('flex');
+        document.getElementById('editor-save-test').classList.add('hidden');
+        document.getElementById('editor-save-test').classList.remove('flex');
+      }
 
       if (tab === 'bank') { 
           const bankView = document.getElementById('editor-view-bank');
@@ -1795,15 +1902,9 @@
       }
       if (tab === 'students') { document.getElementById('editor-view-students').classList.remove('hidden'); renderStudentsList(); }
       if (tab === 'timetable') { document.getElementById('editor-view-timetable').classList.remove('hidden'); renderTimetable(); }
-      if (tab === 'builder') {
-        document.getElementById('editor-view-builder').classList.remove('hidden');
-        document.getElementById('editor-view-builder').classList.add('flex');
-        document.getElementById('editor-builder-controls').classList.remove('hidden');
-        document.getElementById('editor-builder-controls').classList.add('flex');
-        document.getElementById('editor-logout').classList.add('hidden');
-        document.getElementById('editor-back-bank').classList.remove('hidden');
-        document.getElementById('editor-preview-test').classList.remove('hidden');
-        document.getElementById('editor-save-test').classList.remove('hidden');
+      if (tab === 'landing') { 
+          document.getElementById('editor-view-landing').classList.remove('hidden'); 
+          window.populateLandingPageEditor(); 
       }
     }
 
@@ -3171,7 +3272,7 @@
            if (q.type === 'fill_blanks' || q.type === 'dnd_list') {
                html += `<div>${mkLbl('Passage Text With Gaps')}${advToolbar}<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            } else {
-               html += `<div>${mkLbl('Text')}${mkToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
+               html += `<div>${mkLbl('Text')}${mkStandardToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            }
            
            if (q.type !== 'fill_blanks') {
@@ -5638,6 +5739,8 @@
                         </div>
                         <div class="text-sm font-medium text-slate-600 mb-2 mt-1">Topic: <span class="font-bold">${s.topic || 'General Practice'}</span></div>
                         ${s.assignedTests && s.assignedTests.length ? `<div class="text-[10px] text-slate-500 uppercase font-bold mb-3 border-t pt-2 border-slate-100">📎 ${s.assignedTests.length} Material(s) Attached</div>` : ''}
+                        
+                        <button onclick="joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 text-indigo-600 border border-indigo-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-2 flex justify-center items-center gap-1">🎥 Join Live Video Class</button>
                         <button onclick="promptAttendance('${s.id}')" class="w-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200 hover:border-blue-200 font-bold py-2 rounded-md text-xs transition shadow-sm">Mark Attendance</button>
                     </div>
                 `).join('');
@@ -5672,6 +5775,9 @@
                     <div class="p-5 bg-indigo-50 border border-indigo-100 rounded-xl shadow-sm mb-4">
                         <h3 class="font-black text-2xl text-slate-800 mb-1">${s.time}</h3>
                         <p class="text-sm font-bold text-slate-500 flex items-center gap-2 mb-4"><span class="w-2 h-2 rounded-full bg-indigo-400"></span> ${s.topic || 'General Practice'}</p>
+                        
+                        <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md mb-4 flex items-center justify-center gap-2 animate-pulse hover:animate-none">🎥 Join Live Video Class</button>
+
                         <div class="border-t border-indigo-200 pt-4">
                             <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest mb-3">Assigned Materials</h4>
                             ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No specific tests assigned to this lesson.</p>'}
@@ -6120,6 +6226,375 @@
         printWindow.document.write(html);
         printWindow.document.close();
     }
+
+    // --- BOOKING SYSTEM LOGIC ---
+    const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    window.buildAvailRowHtml = function(dayIdx, start, end, isFirst) {
+        return `
+        <div class="flex items-center gap-3 group avail-row animate-fade-in-up mb-2 last:mb-0">
+            <input type="time" class="avail-start border border-slate-300 focus:border-blue-500 p-1.5 rounded-md font-mono text-sm text-slate-700 outline-none transition w-28 text-center bg-white shadow-sm" value="${start}">
+            <span class="text-slate-400 font-medium">-</span>
+            <input type="time" class="avail-end border border-slate-300 focus:border-blue-500 p-1.5 rounded-md font-mono text-sm text-slate-700 outline-none transition w-28 text-center bg-white shadow-sm" value="${end}">
+            
+            <div class="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity ml-2">
+                <button onclick="window.removeAvailBlock(this, ${dayIdx})" class="p-1.5 text-slate-500 hover:text-rose-600 transition rounded hover:bg-rose-50" title="Remove">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                </button>
+                ${isFirst ? `
+                <button onclick="window.addAvailBlock(${dayIdx})" class="p-1.5 text-slate-500 hover:text-blue-600 transition rounded hover:bg-blue-50" title="Add time block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                </button>
+                <button onclick="window.copyAvailBlock(${dayIdx})" class="p-1.5 text-slate-500 hover:text-indigo-600 transition rounded hover:bg-indigo-50" title="Copy time to all days">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                </button>
+                ` : ''}
+            </div>
+        </div>`;
+    };
+
+    window.buildAvailEmptyHtml = function(dayIdx) {
+        return `
+        <div class="flex items-center gap-3 avail-empty-state h-[38px]">
+            <span class="text-sm text-slate-400 italic w-[240px]">Unavailable</span>
+            <div class="flex items-center gap-1 opacity-60 hover:opacity-100 transition-opacity ml-2">
+                <button onclick="window.addAvailBlock(${dayIdx})" class="p-1.5 text-slate-500 hover:text-blue-600 transition rounded hover:bg-blue-50" title="Add time block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                </button>
+            </div>
+        </div>`;
+    };
+
+    window.openAvailabilitySettings = function() {
+        document.getElementById('avail-duration').value = AVAILABILITY.duration || 60;
+        
+        let html = '';
+        for(let i=0; i<7; i++) {
+            const dayBlocks = (AVAILABILITY.schedule && AVAILABILITY.schedule[i]) ? AVAILABILITY.schedule[i] : [];
+            
+            html += `
+            <div class="flex items-start gap-4 py-4 border-b border-slate-100 last:border-0" id="avail-day-container-${i}">
+                <div class="w-12 font-bold text-slate-700 pt-1.5 text-sm uppercase">${DAYS[i]}</div>
+                <div class="flex-1 flex flex-col" id="avail-day-${i}">
+                    ${dayBlocks.length > 0 ? dayBlocks.map((b, bIdx) => window.buildAvailRowHtml(i, b.start, b.end, bIdx === 0)).join('') : window.buildAvailEmptyHtml(i)}
+                </div>
+            </div>`;
+        }
+        document.getElementById('avail-weekly-grid').innerHTML = html;
+        document.getElementById('availability-modal').classList.remove('hidden');
+    };
+
+    window.addAvailBlock = function(dayIdx) {
+        const container = document.getElementById(`avail-day-${dayIdx}`);
+        const emptyLbl = container.querySelector('.avail-empty-state');
+        if(emptyLbl) emptyLbl.remove();
+        
+        const isFirst = container.querySelectorAll('.avail-row').length === 0;
+        
+        const div = document.createElement('div');
+        div.innerHTML = window.buildAvailRowHtml(dayIdx, "09:00", "17:00", isFirst);
+        container.appendChild(div.firstElementChild); 
+    };
+
+    window.removeAvailBlock = function(btn, dayIdx) {
+        const container = document.getElementById(`avail-day-${dayIdx}`);
+        const row = btn.closest('.avail-row');
+        row.remove();
+        
+        const remainingRows = container.querySelectorAll('.avail-row');
+        if(remainingRows.length === 0) {
+            container.innerHTML = window.buildAvailEmptyHtml(dayIdx);
+        } else {
+            // Re-render remaining to ensure the top one has the tools
+            const times = Array.from(remainingRows).map(r => ({
+                start: r.querySelector('.avail-start').value,
+                end: r.querySelector('.avail-end').value
+            }));
+            container.innerHTML = times.map((t, idx) => window.buildAvailRowHtml(dayIdx, t.start, t.end, idx === 0)).join('');
+        }
+    };
+
+    window.copyAvailBlock = function(sourceDayIdx) {
+        const sourceContainer = document.getElementById(`avail-day-${sourceDayIdx}`);
+        const rows = sourceContainer.querySelectorAll('.avail-row');
+        const times = Array.from(rows).map(r => ({
+            start: r.querySelector('.avail-start').value,
+            end: r.querySelector('.avail-end').value
+        }));
+
+        for(let i=0; i<7; i++) {
+            if (i !== sourceDayIdx) {
+                const targetContainer = document.getElementById(`avail-day-${i}`);
+                if (times.length > 0) {
+                    targetContainer.innerHTML = times.map((t, idx) => window.buildAvailRowHtml(i, t.start, t.end, idx === 0)).join('');
+                } else {
+                    targetContainer.innerHTML = window.buildAvailEmptyHtml(i);
+                }
+            }
+        }
+        showModalMsg("Copied", `Schedule copied from ${DAYS[sourceDayIdx]} to all other days.`);
+    };
+
+    window.saveAvailability = async function() {
+        const btn = document.getElementById('btn-save-avail');
+        btn.textContent = "Saving..."; btn.disabled = true;
+        
+        const newAvail = {
+            duration: Number(document.getElementById('avail-duration').value) || 60,
+            schedule: {}
+        };
+        
+        for(let i=0; i<7; i++) {
+            newAvail.schedule[i] = [];
+            const container = document.getElementById(`avail-day-${i}`);
+            const blocks = container.querySelectorAll('.avail-row');
+            blocks.forEach(b => {
+                const start = b.querySelector('.avail-start').value;
+                const end = b.querySelector('.avail-end').value;
+                if(start && end) newAvail.schedule[i].push({start, end});
+            });
+        }
+        
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'availability'), newAvail);
+            AVAILABILITY = newAvail;
+            document.getElementById('availability-modal').classList.add('hidden');
+            showModalMsg("Saved", "Your weekly booking availability has been updated.");
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not save availability.");
+        }
+        btn.textContent = "Save Availability"; btn.disabled = false;
+    };
+
+    let selectedBookingSlot = null;
+
+    window.openStudentBooking = function() {
+        const cid = document.getElementById('student-class-select').value;
+        if (!cid) {
+            showModalMsg("Notice", "Please select a class from the top left dropdown first before booking an appointment.");
+            return;
+        }
+
+        document.getElementById('book-date').value = '';
+        document.getElementById('book-date-preview').innerHTML = "Select a date above to see available slots.";
+        document.getElementById('book-slots-container').innerHTML = '';
+        document.getElementById('btn-confirm-booking').disabled = true;
+        selectedBookingSlot = null;
+        document.getElementById('student-booking-modal').classList.remove('hidden');
+    };
+
+    function parseTimeToMins(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+    
+    function formatMinsToTime(mins) {
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    }
+
+    function formatTime12(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const h12 = h % 12 || 12;
+        return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+    }
+
+    window.generateBookingSlots = function() {
+        const dateStr = document.getElementById('book-date').value;
+        const container = document.getElementById('book-slots-container');
+        document.getElementById('btn-confirm-booking').disabled = true;
+        selectedBookingSlot = null;
+        
+        if(!dateStr) {
+            container.innerHTML = '';
+            document.getElementById('book-date-preview').innerHTML = "Select a date above to see available slots.";
+            return;
+        }
+        
+        const dateObj = new Date(dateStr);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        if (dateObj < today) {
+            container.innerHTML = '<div class="p-4 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-sm font-bold shadow-sm">❌ Cannot book an appointment in the past.</div>';
+            document.getElementById('book-date-preview').innerHTML = "<span class='text-rose-500 font-bold'>Invalid date selected.</span>";
+            return;
+        }
+
+        const dayOfWeek = dateObj.getDay(); // 0-6
+        const dayBlocks = (AVAILABILITY.schedule && AVAILABILITY.schedule[dayOfWeek]) ? AVAILABILITY.schedule[dayOfWeek] : [];
+        
+        document.getElementById('book-date-preview').innerHTML = `<span class='text-indigo-600 font-bold'>Showing slots for ${dateObj.toLocaleDateString(undefined, {weekday: 'long', month: 'long', day: 'numeric'})}</span>`;
+        
+        if (dayBlocks.length === 0) {
+            container.innerHTML = '<div class="p-4 bg-slate-50 text-slate-500 border border-slate-200 rounded-lg text-sm italic shadow-sm">Your teacher is completely unavailable on this day. Please select a different date.</div>';
+            return;
+        }
+
+        const dayScheds = SCHEDULES.filter(s => s.date === dateStr);
+        const bookedIntervals = dayScheds.map(s => {
+            const match = s.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if(match) {
+                let h = parseInt(match[1]);
+                let m = parseInt(match[2]);
+                const ampm = match[3].toUpperCase();
+                if(ampm === 'PM' && h < 12) h += 12;
+                if(ampm === 'AM' && h === 12) h = 0;
+                const startMins = h * 60 + m;
+                // Treat existing scheduled items as blocking a full duration slot
+                return { start: startMins, end: startMins + (AVAILABILITY.duration || 60) };
+            }
+            return null;
+        }).filter(Boolean);
+
+        let slotsHtml = '';
+        const dur = AVAILABILITY.duration || 60;
+        let hasSlots = false;
+
+        dayBlocks.forEach(b => {
+            let startMins = parseTimeToMins(b.start);
+            const endMins = parseTimeToMins(b.end);
+            
+            while (startMins + dur <= endMins) {
+                const slotStartMins = startMins;
+                const slotEndMins = startMins + dur;
+                
+                // Logic: A slot is blocked if (StartA < EndB) and (EndA > StartB)
+                const isOverlapping = bookedIntervals.some(booked => {
+                    return (slotStartMins < booked.end) && (slotEndMins > booked.start);
+                });
+
+                if (!isOverlapping) {
+                    const startStr24 = formatMinsToTime(slotStartMins);
+                    const endStr24 = formatMinsToTime(slotEndMins);
+                    const start12 = formatTime12(startStr24);
+                    const end12 = formatTime12(endStr24);
+                    
+                    slotsHtml += `
+                    <div onclick="window.selectBookingSlot('${startStr24}')" id="slot-card-${startStr24.replace(':','')}" class="p-4 border-2 border-slate-200 bg-white rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition flex justify-between items-center group shadow-sm hover:shadow-md">
+                        <div>
+                            <div class="font-black text-indigo-900 text-lg">${start12} - ${end12}</div>
+                            <div class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">${dur} minutes</div>
+                        </div>
+                        <div class="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 flex items-center justify-center bg-white transition-colors" id="slot-radio-${startStr24.replace(':','')}"></div>
+                    </div>`;
+                    hasSlots = true;
+                }
+                
+                startMins += dur;
+            }
+        });
+        
+        if(!hasSlots) {
+            container.innerHTML = '<div class="p-4 bg-slate-50 text-slate-500 border border-slate-200 rounded-lg text-sm italic shadow-sm">All available slots are already booked for this day. Try another date.</div>';
+        } else {
+            container.innerHTML = slotsHtml;
+        }
+    };
+
+    window.selectBookingSlot = function(slotVal) {
+        document.querySelectorAll('[id^="slot-card-"]').forEach(el => {
+            el.className = "p-4 border-2 border-slate-200 bg-white rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition flex justify-between items-center group shadow-sm hover:shadow-md";
+        });
+        document.querySelectorAll('[id^="slot-radio-"]').forEach(el => {
+            el.className = "w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 flex items-center justify-center bg-white transition-colors";
+            el.innerHTML = '';
+        });
+        
+        const cardId = `slot-card-${slotVal.replace(':','')}`;
+        const radioId = `slot-radio-${slotVal.replace(':','')}`;
+        
+        const card = document.getElementById(cardId);
+        const radio = document.getElementById(radioId);
+        if(card && radio) {
+            card.className = "p-4 border-2 border-indigo-600 bg-indigo-50 rounded-xl cursor-pointer transition flex justify-between items-center shadow-md transform scale-[1.02]";
+            radio.className = "w-6 h-6 rounded-full border-2 border-indigo-600 flex items-center justify-center bg-white transition-colors";
+            radio.innerHTML = '<div class="w-3 h-3 bg-indigo-600 rounded-full"></div>';
+        }
+        
+        selectedBookingSlot = slotVal;
+        document.getElementById('btn-confirm-booking').disabled = false;
+    };
+
+    window.confirmBooking = async function() {
+        if (!selectedBookingSlot) return;
+        
+        const dateStr = document.getElementById('book-date').value;
+        const cid = document.getElementById('student-class-select').value;
+        const cls = CLASSES.find(c => c.id === cid);
+        
+        if (!cls) {
+            showModalMsg("Error", "Class not found.");
+            return;
+        }
+
+        const btn = document.getElementById('btn-confirm-booking');
+        btn.textContent = "Booking..."; btn.disabled = true;
+
+        const time12 = formatTime12(selectedBookingSlot);
+
+        const newSched = { 
+            id: 'sch_'+Date.now(), 
+            className: cls.name, 
+            date: dateStr, 
+            time: time12, 
+            topic: `Booking: ${currentUser.user}`, 
+            assignedTests: [], 
+            attendingStudents: [currentUser.user], 
+            dateAdded: new Date().toLocaleDateString() 
+        };
+        
+        SCHEDULES.push(newSched);
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), newSched.id), newSched);
+            document.getElementById('student-booking-modal').classList.add('hidden');
+            window.renderCalendar('student');
+            
+            showModalMsg("Booking Confirmed! 🎉", `Your class is scheduled for ${new Date(dateStr).toLocaleDateString()} at ${time12}. Check your timetable.`);
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not save booking.");
+        }
+        
+        btn.textContent = "Confirm Booking"; btn.disabled = false;
+    };
+
+    // --- LIVE VIDEO CLASS LOGIC (JaaS) ---
+    let jitsiAPI = null;
+
+    window.joinLiveClass = function(scheduleId, topic) {
+        document.getElementById('live-class-title').innerHTML = `🔴 Live Class: ${topic}`;
+        document.getElementById('live-class-overlay').classList.remove('hidden');
+
+        // Clean schedule ID to ensure a valid room name
+        const cleanId = scheduleId.replace(/[^a-zA-Z0-9]/g, '');
+        
+        const options = {
+            // Note: JaaS requires your tenant ID in the room name
+            roomName: `vpaas-magic-cookie-47e2654478b445e6bd48936cfdf0072e/IELTSClass_${cleanId}`,
+            width: '100%',
+            height: '100%',
+            parentNode: document.getElementById('jaas-container'),
+            jwt: "eyJraWQiOiJ2cGFhcy1tYWdpYy1jb29raWUtNDdlMjY1NDQ3OGI0NDVlNmJkNDg5MzZjZmRmMDA3MmUvNmE2ZjI5LVNBTVBMRV9BUFAiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJqaXRzaSIsImlzcyI6ImNoYXQiLCJpYXQiOjE3ODQ1NzM4ODgsImV4cCI6MTc4NDU4MTA4OCwibmJmIjoxNzg0NTczODgzLCJzdWIiOiJ2cGFhcy1tYWdpYy1jb29raWUtNDdlMjY1NDQ3OGI0NDVlNmJkNDg5MzZjZmRmMDA3MmUiLCJjb250ZXh0Ijp7ImZlYXR1cmVzIjp7ImxpdmVzdHJlYW1pbmciOmZhbHNlLCJmaWxlLXVwbG9hZCI6ZmFsc2UsIm91dGJvdW5kLWNhbGwiOmZhbHNlLCJzaXAtb3V0Ym91bmQtY2FsbCI6ZmFsc2UsInRyYW5zY3JpcHRpb24iOmZhbHNlLCJsaXN0LXZpc2l0b3JzIjpmYWxzZSwicmVjb3JkaW5nIjpmYWxzZSwiZmxpcCI6ZmFsc2V9LCJ1c2VyIjp7ImhpZGRlbi1mcm9tLXJlY29yZGVyIjpmYWxzZSwibW9kZXJhdG9yIjp0cnVlLCJuYW1lIjoiVGVzdCBVc2VyIiwiaWQiOiJnb29nbGUtb2F1dGgyfDEwOTgxODQzMTE2ODY3NjkwMTA2MCIsImF2YXRhciI6IiIsImVtYWlsIjoidGVzdC51c2VyQGNvbXBhbnkuY29tIn19LCJyb29tIjoiKiJ9.SVq_5Q5TsoF_SSyb2Ih5fsd_8mUXJyEjzbENVahJdhoWYal8BDs5rry6LsPzOxp2jcCnk1mUvSjp1kODXCu6WZis6mW-BtOjDXyzXVsQVP-Bk78DThBmcoV0KK3L_gLlfN0oAza17BAg5HMIVb7C-F62T0AInluljrGGFkcPErunmCVCprAv6rWN3GZ2xtJ_koEy49VAj6e-b3X41chvUykSInY0ATQtidrneUCtbP_DjyMAkO7qY-gd1vZoG5GwWrEMbw5FEZgTv66tD47FiX99l7GBg_BvKRyNpP9a1RnzlVIj8vloIycsTR8SKA759CYw4rmnTncEniyQ5HD_LQ",
+            userInfo: {
+                displayName: currentUser ? currentUser.user : 'Guest Student'
+            }
+        };
+        
+        // Initialize the paid JaaS API wrapper
+        jitsiAPI = new JitsiMeetExternalAPI("8x8.vc", options);
+    };
+
+    window.leaveLiveClass = function() {
+        if (jitsiAPI) {
+            jitsiAPI.dispose();
+            jitsiAPI = null;
+        }
+        document.getElementById('live-class-overlay').classList.add('hidden');
+    };
+
   // --- AUTONOMOUS AI EXTRACTOR LOGIC ---
     let aiUploadedImageBase64 = null;
     let aiUploadedImageMime = null;
