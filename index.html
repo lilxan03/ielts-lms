@@ -217,51 +217,39 @@
     <div id="cloud-loader-text" class="text-blue-100/70 font-mono text-sm max-w-xl text-center px-4">Initializing secure database connection</div>
   </div>
 
-  <!-- AUTHENTICATION & LANDING UI -->
-  <div id="auth-ui" class="hidden h-screen w-full bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 absolute z-[200] overflow-y-auto overflow-x-hidden">
+  <!-- AUTHENTICATION UI -->
+  <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 absolute z-[200] overflow-hidden">
     <!-- Decorative background elements -->
     <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 7s;"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 9s;"></div>
     
-    <div class="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-center p-6 gap-8 lg:gap-16 min-h-screen py-12 relative z-10">
-        
-        <!-- LEFT COLUMN: Public Landing Page (Mission & Features) -->
-        <div id="public-profile-content" class="w-full lg:w-1/2 animate-fade-in-up text-white">
-            <!-- Populated via JavaScript -->
+    <div class="bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[400px] relative z-10 animate-fade-in-up border border-white/20">
+      <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700 mb-2">IELTS LMS</h1>
+      <p class="text-center text-slate-500 mb-8 font-medium" id="auth-subtitle">Login to your account</p>
+      
+      <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
+
+      <div class="space-y-5">
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
+          <input type="text" id="auth-user" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="e.g. student123">
         </div>
-
-        <!-- RIGHT COLUMN: Login / Register Box -->
-        <div class="w-full lg:w-[450px] shrink-0 bg-white/95 backdrop-blur-sm p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-white/20 animate-fade-in-up" style="animation-delay: 0.1s;">
-          <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700 mb-2">IELTS LMS</h1>
-          <p class="text-center text-slate-500 mb-8 font-medium" id="auth-subtitle">Login to your account</p>
-          
-          <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
-
-          <div class="space-y-5">
-            <div>
-              <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
-              <input type="text" id="auth-user" class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="e.g. student123">
-            </div>
-            <div>
-              <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
-              <input type="password" id="auth-pass" class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="••••••••">
-            </div>
-            
-            <div id="auth-role-group" class="hidden">
-              <label class="block text-sm font-bold text-slate-700 mb-1">I am a...</label>
-              <div class="flex gap-2">
-                <button onclick="setAuthRole('student')" id="auth-role-student" class="flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded-lg transition">Student</button>
-                <button onclick="setAuthRole('teacher')" id="auth-role-teacher" class="flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-lg transition hover:bg-slate-50">Teacher</button>
-              </div>
-            </div>
-
-            <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3.5 rounded-xl shadow-lg mt-4 text-lg tracking-wide">Log In</button>
-            
-            <div class="text-center mt-6 pt-4 border-t border-slate-100">
-                <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-sm font-bold text-blue-600 hover:text-blue-800 transition">Need an account? Sign up</button>
-            </div>
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
+          <input type="password" id="auth-pass" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="••••••••">
+        </div>
+        
+        <div id="auth-role-group" class="hidden">
+          <label class="block text-sm font-bold text-slate-700 mb-1">I am a...</label>
+          <div class="flex gap-2">
+            <button onclick="setAuthRole('student')" id="auth-role-student" class="flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded-lg transition">Student</button>
+            <button onclick="setAuthRole('teacher')" id="auth-role-teacher" class="flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-lg transition hover:bg-slate-50">Teacher</button>
           </div>
         </div>
+
+        <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
+      </div>
+
     </div>
   </div>
 
@@ -729,7 +717,6 @@
           <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Dashboard</button>
           <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Students/Pay</button>
           <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Timetable</button>
-          <button onclick="toggleEditorTab('landing')" id="tab-btn-landing" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Landing Page</button>
         </div>
 
         <div id="editor-builder-controls" class="hidden items-center gap-3 bg-slate-700 rounded px-3 py-1.5 shadow-inner">
@@ -854,7 +841,7 @@
           <h2 class="text-2xl font-bold text-slate-800">Students & Payment Control</h2>
           <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Add Student</button>
         </div>
-
+        
         <!-- NEW BILLING SETTINGS PANEL -->
         <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm mb-8">
            <h3 class="font-bold text-lg text-slate-800 mb-5 flex justify-between items-center">
@@ -930,75 +917,6 @@
                <div id="attendance-export-list" class="space-y-3 max-h-[250px] overflow-y-auto pr-1"></div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Landing Page Editor -->
-    <div id="editor-view-landing" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-6xl mx-auto pb-20">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <h2 class="text-2xl font-bold text-slate-800">Landing Page & Public Profile</h2>
-          <button onclick="window.savePublicProfile()" id="btn-save-profile" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-2.5 rounded-lg font-bold shadow-md transition flex items-center gap-2">💾 Save Landing Page</button>
-        </div>
-        
-        <div class="bg-white border border-slate-200 p-8 rounded-xl shadow-sm">
-           <p class="text-sm text-slate-500 mb-6">Edit the welcome screen that guests and potential students see before they log in.</p>
-           
-           <div class="space-y-6">
-              <div class="flex flex-col md:flex-row gap-6">
-                  <div class="flex-1">
-                      <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Mission Title / Catchphrase</label>
-                      <input type="text" id="pp-mission-title" class="w-full border-2 border-slate-200 p-3 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition shadow-sm">
-                  </div>
-                  <div class="flex-1">
-                      <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Profile / Hero Image (Optional)</label>
-                      <div class="flex items-center gap-4 bg-slate-50 p-2 border-2 border-slate-200 rounded-lg">
-                          <input type="file" id="pp-hero-upload" accept="image/*" onchange="window.handlePPHero(event)" class="w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer transition">
-                          <img id="pp-hero-preview" src="" class="h-12 w-12 rounded-full shadow-md hidden object-cover bg-white border-2 border-white shrink-0">
-                          <button id="pp-hero-clear" onclick="window.clearPPHero()" class="hidden text-xs text-rose-600 bg-rose-100 px-3 py-2 rounded-md font-bold hover:bg-rose-200 transition shadow-sm shrink-0">Remove</button>
-                      </div>
-                  </div>
-              </div>
-
-              <div>
-                  <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Mission Statement / Short Blog (Rich Text)</label>
-                  <div class="flex flex-wrap gap-1.5 bg-slate-100 px-4 py-2.5 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
-                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-3 py-1.5 bg-white border border-slate-200 shadow-sm text-sm font-bold rounded text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">B</button>
-                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-3 py-1.5 bg-white border border-slate-200 shadow-sm text-sm italic rounded text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">I</button>
-                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-3 py-1.5 bg-white border border-slate-200 shadow-sm text-sm underline rounded text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition">U</button>
-                  </div>
-                  <div id="pp-mission-text" class="rich-editor w-full border-2 border-slate-300 p-5 rounded-b-lg font-medium text-slate-700 outline-none focus:border-blue-500 transition min-h-[150px] bg-white text-lg leading-relaxed shadow-sm" contenteditable="true"></div>
-              </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-slate-100 pt-6">
-                  <div>
-                      <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Teacher Achievements (1 per line)</label>
-                      <textarea id="pp-achievements" class="w-full border-2 border-slate-200 p-4 rounded-lg text-sm text-slate-700 outline-none focus:border-amber-500 transition h-40 resize-y shadow-sm leading-relaxed" placeholder="Band 8.5 Overall\n5 Years Experience"></textarea>
-                  </div>
-                  <div>
-                      <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Platform Features (1 per line)</label>
-                      <textarea id="pp-features" class="w-full border-2 border-slate-200 p-4 rounded-lg text-sm text-slate-700 outline-none focus:border-emerald-500 transition h-40 resize-y shadow-sm leading-relaxed" placeholder="Full Mock Exams\nAI Grading\nInteractive Tracking"></textarea>
-                  </div>
-              </div>
-
-              <!-- NEW PDF UPLOAD SECTION -->
-              <div class="border-t border-slate-100 pt-6">
-                  <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Public Resources (PDF Downloads)</label>
-                  <p class="text-xs text-slate-400 mb-3">Upload syllabuses, study guides, or sample materials for guests to download.</p>
-                  
-                  <div class="bg-slate-50 p-4 border-2 border-dashed border-slate-300 rounded-xl mb-3 flex items-center justify-center relative hover:bg-blue-50 transition cursor-pointer" onclick="document.getElementById('pp-pdf-upload').click()">
-                      <input type="file" id="pp-pdf-upload" accept="application/pdf" onchange="window.handlePPPdf(event)" class="hidden">
-                      <div class="text-center pointer-events-none">
-                          <span class="text-2xl mb-1 block">📄</span>
-                          <span class="font-bold text-blue-700 text-sm">Click to Upload PDF</span>
-                          <p class="text-[10px] text-slate-400 mt-1">Max 5MB per file</p>
-                      </div>
-                  </div>
-                  <div id="pp-pdf-list" class="space-y-2"></div>
-              </div>
-
-           </div>
         </div>
       </div>
     </div>
@@ -1300,12 +1218,6 @@
     let SCHEDULES = [];
     let ATTENDANCE = [];
     let PACKAGES = []; // <--- NEW: Stores our bundles!
-    let PUBLIC_PROFILE = { 
-        missionTitle: "Master IELTS with Me", 
-        missionText: "My mission is to help dedicated students achieve their dream band score through structured, realistic practice.", 
-        features: ["Full Mock Exam Simulator", "AI-Powered Grading", "Interactive Audio & Drag-Drop", "Detailed Analytics"], 
-        achievements: ["Band 8.5 Overall", "5+ Years Teaching Experience", "Hundreds of Successful Students"] 
-    };
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
 
@@ -1668,14 +1580,11 @@
                     });
                 }),
                 new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => {
-                        if (snap.exists()) PUBLIC_PROFILE = snap.data();
-                        if(document.getElementById('auth-ui') && !document.getElementById('auth-ui').classList.contains('hidden')) {
-                            window.renderPublicProfile();
-                        }
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => {
+                        PACKAGES = snap.docs.map(d => d.data());
                         resolve();
                     });
-                }),
+                })
             ]);
             
             document.getElementById('cloud-loader').classList.add('hidden');
@@ -1726,7 +1635,6 @@
         document.getElementById('auth-ui').classList.remove('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
-        if(window.renderPublicProfile) window.renderPublicProfile(); // Render Landing Page
       } else {
         document.getElementById('auth-ui').classList.add('hidden');
         if (currentUser.role === 'teacher') openEditor();
@@ -1859,11 +1767,11 @@
     }
 
     function toggleEditorTab(tab) {
-      ['bank', 'classes', 'builder', 'students', 'timetable', 'landing'].forEach(t => {
+      ['bank', 'classes', 'builder', 'students', 'timetable'].forEach(t => {
           const el = document.getElementById(`editor-view-${t}`);
           if (el) el.classList.add('hidden');
       });
-      ['bank', 'classes', 'students', 'timetable', 'landing'].forEach(t => {
+      ['bank', 'classes', 'students', 'timetable'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
         if(b) b.className = t===tab ? 'px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition' : 'px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition';
       });
@@ -1887,10 +1795,6 @@
       }
       if (tab === 'students') { document.getElementById('editor-view-students').classList.remove('hidden'); renderStudentsList(); }
       if (tab === 'timetable') { document.getElementById('editor-view-timetable').classList.remove('hidden'); renderTimetable(); }
-      if (tab === 'landing') { 
-          document.getElementById('editor-view-landing').classList.remove('hidden'); 
-          window.populateLandingPageEditor(); 
-      }
       if (tab === 'builder') {
         document.getElementById('editor-view-builder').classList.remove('hidden');
         document.getElementById('editor-view-builder').classList.add('flex');
@@ -5375,13 +5279,20 @@
     };
 
     function renderStudentsList() {
-        document.getElementById('bill-bank-id').value = BILLING_SETTINGS.bankId || 'MB';
-        document.getElementById('bill-bank-acc').value = BILLING_SETTINGS.bankAcc || '';
-        document.getElementById('bill-bank-name').value = BILLING_SETTINGS.bankName || '';
         document.getElementById('bill-fee').value = BILLING_SETTINGS.feePerLesson || 100000;
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
         document.getElementById('bill-disc-course').value = BILLING_SETTINGS.discCourse || 20;
+
+        if (BILLING_SETTINGS.customQR) {
+            tempCustomQRBase64 = BILLING_SETTINGS.customQR;
+            const preview = document.getElementById('bill-custom-qr-preview');
+            preview.src = tempCustomQRBase64;
+            preview.classList.remove('hidden');
+            document.getElementById('bill-custom-qr-clear').classList.remove('hidden');
+        } else {
+            window.clearCustomQR();
+        }
 
         // Render the Packages list
         const pkgList = document.getElementById('packages-pricing-list');
@@ -5623,176 +5534,6 @@
             renderClasses(); 
         }
     }
-
-    // --- PUBLIC PROFILE & LANDING PAGE LOGIC ---
-    window.tempPPHeroBase64 = null;
-    window.tempPPPdfs = [];
-
-    window.populateLandingPageEditor = function() {
-        document.getElementById('pp-mission-title').value = PUBLIC_PROFILE.missionTitle || '';
-        document.getElementById('pp-mission-text').innerHTML = PUBLIC_PROFILE.missionText || '';
-        document.getElementById('pp-features').value = (PUBLIC_PROFILE.features || []).join('\n');
-        document.getElementById('pp-achievements').value = (PUBLIC_PROFILE.achievements || []).join('\n');
-        
-        if (PUBLIC_PROFILE.heroImage) {
-            window.tempPPHeroBase64 = PUBLIC_PROFILE.heroImage;
-            document.getElementById('pp-hero-preview').src = PUBLIC_PROFILE.heroImage;
-            document.getElementById('pp-hero-preview').classList.remove('hidden');
-            document.getElementById('pp-hero-clear').classList.remove('hidden');
-        } else {
-            window.clearPPHero();
-        }
-
-        window.tempPPPdfs = PUBLIC_PROFILE.pdfs ? JSON.parse(JSON.stringify(PUBLIC_PROFILE.pdfs)) : [];
-        window.renderPPPdfList();
-    };
-
-    window.handlePPHero = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        window.processImageFile(file, (base64) => {
-            window.tempPPHeroBase64 = base64;
-            const preview = document.getElementById('pp-hero-preview');
-            preview.src = base64;
-            preview.classList.remove('hidden');
-            document.getElementById('pp-hero-clear').classList.remove('hidden');
-        });
-    };
-
-    window.clearPPHero = function() {
-        window.tempPPHeroBase64 = null;
-        const upload = document.getElementById('pp-hero-upload');
-        if(upload) upload.value = '';
-        const preview = document.getElementById('pp-hero-preview');
-        if(preview) preview.classList.add('hidden');
-        const clearBtn = document.getElementById('pp-hero-clear');
-        if(clearBtn) clearBtn.classList.add('hidden');
-    };
-
-    // --- PDF Logic ---
-    window.handlePPPdf = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        // Firestore limits documents to strictly 1MB. Base64 encoding adds ~33% to the size.
-        // Safe limit is ~700KB.
-        if (file.size > 700 * 1024) {
-            showModalMsg("File Too Large", "Firestore Cloud Database has a strict 1MB limit per document. Please compress your PDF to under 700KB.");
-            e.target.value = '';
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            window.tempPPPdfs.push({
-                name: file.name,
-                data: ev.target.result // Base64 PDF
-            });
-            window.renderPPPdfList();
-            e.target.value = ''; // Reset input
-        };
-        reader.readAsDataURL(file);
-    };
-
-    window.removePPPdf = function(index) {
-        window.tempPPPdfs.splice(index, 1);
-        window.renderPPPdfList();
-    };
-
-    window.renderPPPdfList = function() {
-        const list = document.getElementById('pp-pdf-list');
-        if (!list) return;
-        
-        if (window.tempPPPdfs.length === 0) {
-            list.innerHTML = '<div class="text-xs text-slate-400 italic">No PDFs uploaded.</div>';
-            return;
-        }
-
-        list.innerHTML = window.tempPPPdfs.map((pdf, i) => `
-            <div class="flex items-center justify-between bg-white border border-slate-200 p-2.5 rounded-lg shadow-sm">
-                <div class="flex items-center gap-3 overflow-hidden">
-                    <span class="text-rose-600 text-lg leading-none">📄</span>
-                    <span class="text-sm font-bold text-slate-700 truncate">${pdf.name}</span>
-                </div>
-                <button onclick="window.removePPPdf(${i})" class="text-rose-500 hover:bg-rose-50 p-1.5 rounded transition shrink-0" title="Delete PDF">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                </button>
-            </div>
-        `).join('');
-    };
-
-    // --- Rendering Public View ---
-    window.renderPublicProfile = function() {
-        const c = document.getElementById('public-profile-content');
-        if(!c) return;
-        
-        const imgHtml = PUBLIC_PROFILE.heroImage ? `<img src="${PUBLIC_PROFILE.heroImage}" class="w-24 h-24 lg:w-32 lg:h-32 object-cover rounded-full border-4 border-white/20 shadow-xl mb-6">` : '';
-        
-        let pdfsHtml = '';
-        if (PUBLIC_PROFILE.pdfs && PUBLIC_PROFILE.pdfs.length > 0) {
-            pdfsHtml = `
-                <h3 class="text-2xl font-bold text-white mb-5 mt-8 flex items-center gap-3">📚 Free Resources</h3>
-                <div class="flex flex-col gap-3">
-                    ${PUBLIC_PROFILE.pdfs.map(pdf => `
-                        <a href="${pdf.data}" download="${pdf.name}" class="flex items-center justify-between bg-white/10 hover:bg-white/20 border border-white/20 p-4 rounded-xl transition backdrop-blur-sm group">
-                            <div class="flex items-center gap-4 overflow-hidden">
-                                <span class="bg-rose-500 text-white w-10 h-10 rounded-lg flex items-center justify-center font-black shadow-md shrink-0">PDF</span>
-                                <span class="text-white font-bold truncate">${pdf.name}</span>
-                            </div>
-                            <span class="bg-white text-blue-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm group-hover:scale-105 transition-transform shrink-0">Download</span>
-                        </a>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        c.innerHTML = `
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 p-8 lg:p-12 rounded-3xl shadow-2xl">
-                ${imgHtml}
-                <h1 class="text-4xl lg:text-5xl font-black text-white mb-6 leading-tight drop-shadow-md">${PUBLIC_PROFILE.missionTitle || 'Master IELTS'}</h1>
-                <div class="text-blue-100 text-lg leading-relaxed mb-10 font-medium">${PUBLIC_PROFILE.missionText || ''}</div>
-                
-                <div class="bg-indigo-950/60 rounded-2xl p-6 lg:p-8 mb-8 border border-indigo-400/30 shadow-inner">
-                    <h3 class="text-2xl font-bold text-white mb-5 flex items-center gap-3">🏆 My Achievements</h3>
-                    <ul class="space-y-4">
-                        ${(PUBLIC_PROFILE.achievements || []).map(a => `<li class="flex items-center gap-4 text-indigo-50 font-medium text-lg"><span class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 to-amber-500 text-amber-900 flex items-center justify-center text-sm shrink-0 font-black shadow-md">★</span> ${a}</li>`).join('')}
-                    </ul>
-                </div>
-
-                <h3 class="text-2xl font-bold text-white mb-5 flex items-center gap-3">🚀 Platform Features</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    ${(PUBLIC_PROFILE.features || []).map(f => `<div class="bg-blue-600/30 border border-blue-400/40 p-4 rounded-xl flex items-center gap-4 shadow-sm hover:bg-blue-600/50 transition"><span class="w-7 h-7 rounded-full bg-emerald-400 text-emerald-900 flex items-center justify-center text-sm shrink-0 font-black shadow-inner">✓</span><span class="text-blue-50 font-bold text-sm lg:text-base leading-tight">${f}</span></div>`).join('')}
-                </div>
-                
-                ${pdfsHtml}
-            </div>
-        `;
-    };
-
-    window.savePublicProfile = async function() {
-        const btn = document.getElementById('btn-save-profile');
-        const originalText = btn.innerHTML;
-        btn.textContent = "Saving..."; btn.disabled = true;
-        
-        PUBLIC_PROFILE = {
-            missionTitle: document.getElementById('pp-mission-title').value.trim(),
-            missionText: document.getElementById('pp-mission-text').innerHTML,
-            features: document.getElementById('pp-features').value.split('\n').map(s=>s.trim()).filter(Boolean),
-            achievements: document.getElementById('pp-achievements').value.split('\n').map(s=>s.trim()).filter(Boolean),
-            heroImage: window.tempPPHeroBase64 || null,
-            pdfs: window.tempPPPdfs || [] // Saves PDFs!
-        };
-
-        try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), PUBLIC_PROFILE);
-            showModalMsg("Saved", "Your Landing Page and Public Profile have been updated successfully!");
-        } catch (e) {
-            console.error("Save Profile Error:", e);
-            // This will now show the exact Firebase error message on the screen!
-            showModalMsg("Cloud Error", e.message || "Could not save profile. Your PDF might be too large.");
-        }
-        btn.innerHTML = originalText; btn.disabled = false;
-    };
 
     // --- TIMETABLE & ATTENDANCE LOGIC ---
     let currentCalDate = new Date();
