@@ -5878,7 +5878,7 @@
                         <div class="text-sm font-medium text-slate-600 mb-2 mt-1">Topic: <span class="font-bold">${s.topic || 'General Practice'}</span></div>
                         ${s.assignedTests && s.assignedTests.length ? `<div class="text-[10px] text-slate-500 uppercase font-bold mb-3 border-t pt-2 border-slate-100">📎 ${s.assignedTests.length} Material(s) Attached</div>` : ''}
                         
-                        <button onclick="joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 text-indigo-600 border border-indigo-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-2 flex justify-center items-center gap-1">🎥 Join Live Video Class</button>
+                        <button onclick="window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 text-indigo-600 border border-indigo-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-2 flex justify-center items-center gap-1">🎥 Join Live Video Class</button>
                         <button onclick="promptAttendance('${s.id}')" class="w-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200 hover:border-blue-200 font-bold py-2 rounded-md text-xs transition shadow-sm">Mark Attendance</button>
                     </div>
                 `).join('');
@@ -5914,10 +5914,7 @@
                         <h3 class="font-black text-2xl text-slate-800 mb-1">${s.time}</h3>
                         <p class="text-sm font-bold text-slate-500 flex items-center gap-2 mb-4"><span class="w-2 h-2 rounded-full bg-indigo-400"></span> ${s.topic || 'General Practice'}</p>
                         
-                        <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md mb-4 flex items-center justify-center gap-2 animate-pulse hover:animate-none">🎥 Join Live Video Class</button>
-
-                        <div class="border-t border-indigo-200 pt-4">
-                            <h4 class="text-xs font-black text-indigo-800 uppercase tracking-widest mb-3">Assigned Materials</h4>
+                        <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md mb-4 flex items-center justify-center gap-2 animate-pulse hover:animate-none">🎥 Join Live Video Class</button>
                             ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No specific tests assigned to this lesson.</p>'}
                         </div>
                     </div>`;
@@ -7119,25 +7116,46 @@
     let jitsiAPI = null;
 
     window.joinLiveClass = function(scheduleId, topic) {
+        let overlay = document.getElementById('live-class-overlay');
+        
+        // SELF-HEAL: Auto-inject the Video HTML if it is missing!
+        if (!overlay) {
+            const overlayHtml = `
+            <div id="live-class-overlay" class="hidden fixed inset-0 bg-slate-900 z-[999] flex flex-col">
+                <div class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
+                    <h2 id="live-class-title" class="text-xl font-bold flex items-center gap-2">🔴 Live Class</h2>
+                    <button onclick="window.leaveLiveClass()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        End Call
+                    </button>
+                </div>
+                <div id="jaas-container" class="flex-1 w-full h-full bg-black"></div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', overlayHtml);
+            overlay = document.getElementById('live-class-overlay');
+        }
+
         document.getElementById('live-class-title').innerHTML = `🔴 Live Class: ${topic}`;
-        document.getElementById('live-class-overlay').classList.remove('hidden');
+        overlay.classList.remove('hidden');
+
+        // Clean out any old iframe so they don't stack up
+        const container = document.getElementById('jaas-container');
+        container.innerHTML = '';
 
         // Clean schedule ID to ensure a valid room name
         const cleanId = scheduleId.replace(/[^a-zA-Z0-9]/g, '');
         
         const options = {
-            // Note: JaaS requires your tenant ID in the room name
             roomName: `vpaas-magic-cookie-47e2654478b445e6bd48936cfdf0072e/IELTSClass_${cleanId}`,
             width: '100%',
             height: '100%',
-            parentNode: document.getElementById('jaas-container'),
+            parentNode: container,
             jwt: "eyJraWQiOiJ2cGFhcy1tYWdpYy1jb29raWUtNDdlMjY1NDQ3OGI0NDVlNmJkNDg5MzZjZmRmMDA3MmUvNmE2ZjI5LVNBTVBMRV9BUFAiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJqaXRzaSIsImlzcyI6ImNoYXQiLCJpYXQiOjE3ODQ1NzM4ODgsImV4cCI6MTc4NDU4MTA4OCwibmJmIjoxNzg0NTczODgzLCJzdWIiOiJ2cGFhcy1tYWdpYy1jb29raWUtNDdlMjY1NDQ3OGI0NDVlNmJkNDg5MzZjZmRmMDA3MmUiLCJjb250ZXh0Ijp7ImZlYXR1cmVzIjp7ImxpdmVzdHJlYW1pbmciOmZhbHNlLCJmaWxlLXVwbG9hZCI6ZmFsc2UsIm91dGJvdW5kLWNhbGwiOmZhbHNlLCJzaXAtb3V0Ym91bmQtY2FsbCI6ZmFsc2UsInRyYW5zY3JpcHRpb24iOmZhbHNlLCJsaXN0LXZpc2l0b3JzIjpmYWxzZSwicmVjb3JkaW5nIjpmYWxzZSwiZmxpcCI6ZmFsc2V9LCJ1c2VyIjp7ImhpZGRlbi1mcm9tLXJlY29yZGVyIjpmYWxzZSwibW9kZXJhdG9yIjp0cnVlLCJuYW1lIjoiVGVzdCBVc2VyIiwiaWQiOiJnb29nbGUtb2F1dGgyfDEwOTgxODQzMTE2ODY3NjkwMTA2MCIsImF2YXRhciI6IiIsImVtYWlsIjoidGVzdC51c2VyQGNvbXBhbnkuY29tIn19LCJyb29tIjoiKiJ9.SVq_5Q5TsoF_SSyb2Ih5fsd_8mUXJyEjzbENVahJdhoWYal8BDs5rry6LsPzOxp2jcCnk1mUvSjp1kODXCu6WZis6mW-BtOjDXyzXVsQVP-Bk78DThBmcoV0KK3L_gLlfN0oAza17BAg5HMIVb7C-F62T0AInluljrGGFkcPErunmCVCprAv6rWN3GZ2xtJ_koEy49VAj6e-b3X41chvUykSInY0ATQtidrneUCtbP_DjyMAkO7qY-gd1vZoG5GwWrEMbw5FEZgTv66tD47FiX99l7GBg_BvKRyNpP9a1RnzlVIj8vloIycsTR8SKA759CYw4rmnTncEniyQ5HD_LQ",
             userInfo: {
                 displayName: currentUser ? currentUser.user : 'Guest Student'
             }
         };
         
-        // Initialize the paid JaaS API wrapper
         jitsiAPI = new JitsiMeetExternalAPI("8x8.vc", options);
     };
 
@@ -7146,7 +7164,10 @@
             jitsiAPI.dispose();
             jitsiAPI = null;
         }
-        document.getElementById('live-class-overlay').classList.add('hidden');
+        const container = document.getElementById('jaas-container');
+        if(container) container.innerHTML = '';
+        const overlay = document.getElementById('live-class-overlay');
+        if(overlay) overlay.classList.add('hidden');
     };
 
   // --- AUTONOMOUS AI EXTRACTOR LOGIC ---
