@@ -197,6 +197,18 @@
     }
     .animate-float { animation: float 4s ease-in-out infinite; }
 
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    
+    @keyframes scaleUp {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .animate-scale-up { animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
     /* Beautiful Primary Button */
     .btn-primary {
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -221,6 +233,38 @@
     <div id="cloud-loader-text" class="text-blue-100/70 font-mono text-sm max-w-xl text-center px-4">Initializing secure database connection</div>
   </div>
 
+  <!-- NEW: PUBLIC STOREFRONT (LANDING PAGE) -->
+  <div id="public-landing-ui" class="hidden h-screen w-full bg-[#f4f7fb] overflow-y-auto font-sans relative z-[150] animate-fade-in">
+      
+      <!-- Hero Section -->
+      <div class="bg-blue-900 pt-20 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden text-center">
+          <div class="absolute top-[-20%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 animate-float"></div>
+          <div class="absolute bottom-[-20%] left-[-10%] w-72 h-72 bg-sky-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20 animate-float" style="animation-delay: 2s;"></div>
+          
+          <div class="max-w-4xl mx-auto relative z-10 animate-fade-in-up" id="public-profile-content">
+              <!-- Content injected via JS -->
+          </div>
+      </div>
+
+      <!-- Packages Section -->
+      <div class="max-w-6xl mx-auto -mt-20 relative z-20 px-4 pb-20">
+          <div class="bg-white rounded-2xl shadow-xl p-8 border border-blue-50">
+              <h2 class="text-3xl font-black text-center text-blue-950 mb-2">Premium Study Packages</h2>
+              <p class="text-center text-slate-500 mb-10 font-medium">Select a bundle to start your journey today.</p>
+              <div id="public-packages-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <!-- Packages injected via JS -->
+              </div>
+          </div>
+          
+          <div class="mt-12 text-center">
+              <button onclick="window.showAuthFromLanding()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xl px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                  Create Free Account to Start &rarr;
+              </button>
+              <p class="text-sm text-slate-500 mt-4 font-bold">🎁 Sign up today and get 50 Free Gems!</p>
+          </div>
+      </div>
+  </div>
+
   <!-- AUTHENTICATION UI -->
   <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 absolute z-[200] overflow-hidden">
     <!-- Decorative background elements -->
@@ -242,16 +286,12 @@
           <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
           <input type="password" id="auth-pass" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="••••••••">
         </div>
-        
-        <div id="auth-role-group" class="hidden">
-          <label class="block text-sm font-bold text-slate-700 mb-1">I am a...</label>
-          <div class="flex gap-2">
-            <button onclick="setAuthRole('student')" id="auth-role-student" class="flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded-lg transition">Student</button>
-            <button onclick="setAuthRole('teacher')" id="auth-role-teacher" class="flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded-lg transition hover:bg-slate-50">Teacher</button>
-          </div>
-        </div>
 
         <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
+        
+        <div class="text-center mt-4 pt-5 border-t border-slate-100">
+            <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
+        </div>
       </div>
 
     </div>
@@ -259,7 +299,7 @@
 
   <!-- SHARED MODALS -->
   <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
       <h2 id="modal-title" class="text-xl font-bold mb-4 text-slate-900"></h2>
       <p id="modal-message" class="mb-4 text-slate-700"></p>
       <input type="text" id="modal-input" class="hidden w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none" />
@@ -271,7 +311,7 @@
   </div>
 
   <div id="test-meta-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-[400px] shadow-2xl">
+    <div class="bg-white rounded-lg p-6 w-[400px] shadow-2xl animate-scale-up">
       <h2 id="meta-modal-heading" class="text-xl font-bold mb-4 text-slate-900">Test Settings</h2>
       <label class="block text-sm font-bold text-slate-700 mb-1">Test Title</label>
       <input type="text" id="meta-title-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none font-medium" />
@@ -287,7 +327,7 @@
   </div>
 
   <div id="teacher-vocab-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center">
-    <div class="bg-white rounded-lg w-[700px] max-h-[85vh] flex flex-col shadow-2xl">
+    <div class="bg-white rounded-lg w-[700px] max-h-[85vh] flex flex-col shadow-2xl animate-scale-up">
       <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-lg">
         <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">🗂️ Test Vocabulary Bank</h2>
         <button onclick="closeTeacherVocabModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
@@ -366,7 +406,7 @@
 
   <!-- BULK IMPORT MODAL -->
   <div id="csv-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[950px] max-w-[95vw] max-h-[90vh]">
+    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[950px] max-h-[90vh] animate-scale-up">
       <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
         <h2 class="text-xl font-bold text-slate-800">📋 Bulk Import Questions</h2>
         <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
@@ -469,7 +509,7 @@
   
   <!-- AI GENERATOR MODAL (AUTONOMOUS VISION & TEXT) -->
   <div id="ai-generator-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh] overflow-hidden">
+    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh] overflow-hidden animate-scale-up">
       <div class="bg-gradient-to-r from-purple-700 to-fuchsia-700 px-6 py-4 flex justify-between items-center text-white shrink-0">
         <h2 class="text-xl font-bold flex items-center gap-2">✨ Autonomous AI Extractor</h2>
         <button onclick="closeAIGenerator()" class="text-white hover:text-purple-200 font-bold text-2xl leading-none">&times;</button>
@@ -514,7 +554,7 @@
 
   <!-- RESULTS MODAL -->
   <div id="results-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-2xl p-8 w-[400px] shadow-2xl text-center transform transition-all">
+    <div class="bg-white rounded-2xl p-8 w-[400px] shadow-2xl text-center animate-scale-up">
       <h2 class="text-3xl font-black text-slate-800 mb-2">Test Complete!</h2>
       <div id="results-score-area" class="my-6 py-6 bg-slate-50 rounded-xl border border-slate-200"></div>
       <div class="flex gap-3 mt-8">
@@ -526,7 +566,7 @@
 
   <!-- STUDENT ADD FLASHCARD MODAL -->
   <div id="student-fc-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
       <h2 class="text-xl font-bold mb-4 text-slate-900">Add to Flashcards</h2>
       <label class="block text-sm font-bold text-slate-700 mb-1">Term / Selection</label>
       <input type="text" id="fc-term-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none font-bold" />
@@ -546,7 +586,7 @@
 
   <!-- STUDENT DAY SCHEDULE MODAL -->
   <div id="student-day-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl p-6 w-[550px] shadow-2xl max-h-[85vh] flex flex-col">
+    <div class="bg-white rounded-xl p-6 w-[550px] shadow-2xl max-h-[85vh] flex flex-col animate-scale-up">
       <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3">
         <h2 id="day-modal-title" class="text-2xl font-black text-indigo-900">Schedules</h2>
         <button onclick="document.getElementById('student-day-modal').classList.add('hidden')" class="text-slate-400 hover:text-rose-500 font-bold text-2xl leading-none">&times;</button>
@@ -557,7 +597,7 @@
 
   <!-- SETTINGS MODAL -->
   <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl">
+    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
       <h2 class="text-xl font-bold mb-4 text-slate-900">Display Settings</h2>
       <div class="mb-4">
         <h3 class="font-semibold mb-2 text-slate-700">Color Theme</h3>
@@ -581,7 +621,7 @@
 
   <!-- AVAILABILITY MODAL (TEACHER) -->
   <div id="availability-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh]">
+      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh] animate-scale-up">
           <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
               <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">⚙️ Booking Availability Settings</h2>
               <button onclick="document.getElementById('availability-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
@@ -610,7 +650,7 @@
 
   <!-- STUDENT BOOKING MODAL -->
   <div id="student-booking-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[85vh]">
+      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[85vh] animate-scale-up">
           <div class="p-5 border-b border-indigo-200 flex justify-between items-center bg-indigo-50 rounded-t-xl shrink-0">
               <h2 class="text-xl font-black text-indigo-900 flex items-center gap-2">📅 Book an Appointment</h2>
               <button onclick="document.getElementById('student-booking-modal').classList.add('hidden')" class="text-indigo-400 hover:text-indigo-700 font-bold text-2xl leading-none">&times;</button>
@@ -637,7 +677,7 @@
 
   <!-- GEM STORE MODAL -->
   <div id="gem-store-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[400] flex items-center justify-center backdrop-blur-md">
-      <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl shadow-2xl flex flex-col w-[800px] max-w-[95vw] border border-slate-700 overflow-hidden">
+      <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl shadow-2xl flex flex-col w-[800px] max-w-[95vw] border border-slate-700 overflow-hidden animate-scale-up">
           <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-6 flex justify-between items-center relative overflow-hidden shrink-0">
               <div class="absolute -right-4 -top-8 text-8xl opacity-20 pointer-events-none">💎</div>
               <h2 class="text-2xl font-black text-white flex items-center gap-2 drop-shadow-md z-10">💎 IELTS Gem Store</h2>
@@ -694,7 +734,7 @@
 
   <!-- STUDENT PROFILE & TARGETS MODAL -->
   <div id="student-profile-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[500px] max-h-[90vh] overflow-hidden">
+      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[500px] max-h-[90vh] overflow-hidden animate-scale-up">
           <div class="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-center relative">
               <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="absolute top-4 right-4 text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
               <div class="relative w-24 h-24 mx-auto mb-3 cursor-pointer group" onclick="document.getElementById('profile-avatar-upload').click()">
@@ -725,7 +765,7 @@
   </div>
 
   <!-- START SCREEN (STUDENT DASHBOARD) -->
-  <div id="start-screen" class="hidden h-screen w-full relative bg-[#f4f7fb] overflow-y-auto font-sans">
+  <div id="start-screen" class="hidden h-screen w-full relative bg-[#f4f7fb] overflow-y-auto font-sans animate-fade-in">
     
     <!-- Blue Header Banner -->
     <div class="bg-blue-900 pt-8 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden">
@@ -842,7 +882,7 @@
       </div>
 
       <!-- MAIN DASHBOARD GRID -->
-      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-6 hidden">
+      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-6 hidden animate-fade-in-up">
         
         <!-- LEFT COLUMN: Settings & Progress -->
         <div class="lg:col-span-4 flex flex-col gap-6">
@@ -924,7 +964,7 @@
   </div>
 
   <!-- EDITOR UI -->
-  <div id="editor-ui" class="hidden h-screen flex flex-col bg-[#f4f7fb] z-50 relative font-sans">
+  <div id="editor-ui" class="hidden h-screen flex flex-col bg-[#f4f7fb] z-50 relative font-sans animate-fade-in">
     <header class="bg-blue-900 text-white px-6 py-3 flex justify-between items-center shrink-0 shadow-md min-h-[72px] transition-all relative overflow-hidden z-40">
       <!-- Decorative Orbs -->
       <div class="absolute -top-24 -right-10 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 pointer-events-none"></div>
@@ -956,11 +996,17 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-300 group-hover:text-white"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>
             <div class="h-6 w-px bg-blue-700"></div>
+            
+            <!-- NEW: Toggle Layout Button -->
+            <button onclick="window.toggleBuilderLeftPanel()" class="text-sm font-bold text-sky-300 hover:text-white bg-sky-500/20 hover:bg-sky-500/40 px-4 py-2 rounded-xl border border-sky-400/30 transition flex items-center gap-1.5 shadow-sm" title="Toggle Passage Content View">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                Layout
+            </button>
+
             <button onclick="openTeacherVocabModal()" class="text-sm font-bold text-emerald-300 hover:text-emerald-100 bg-emerald-500/20 px-4 py-2 rounded-xl border border-emerald-400/30 transition flex items-center gap-1.5 shadow-sm">🗂️ Vocab Bank</button>
-            <div class="flex items-center gap-2 bg-blue-950/40 px-4 py-2 rounded-xl border border-blue-400/20 shadow-inner">
-                <label class="text-xs text-blue-200 uppercase tracking-widest font-bold">Parts:</label>
-                <select id="editor-part-count" onchange="updatePartCount(this.value)" class="bg-transparent text-white text-sm font-bold outline-none cursor-pointer"></select>
-            </div>
+            
+            <!-- NEW: Delete Part Button -->
+            <button onclick="window.deleteCurrentEditorPart()" class="text-sm font-bold text-rose-300 hover:text-white bg-rose-500/20 hover:bg-rose-500/40 px-4 py-2 rounded-xl border border-rose-400/30 transition flex items-center gap-1.5 shadow-sm" title="Delete Current Part">🗑️ Delete Part</button>
         </div>
       </div>
 
@@ -978,7 +1024,7 @@
       </div>
     </header>
 
-    <div id="editor-view-bank" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
+    <div id="editor-view-bank" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-7xl mx-auto pb-20">
         
         <div class="flex justify-center mb-8">
@@ -1059,7 +1105,7 @@
     </div>
 
     <!-- Submissions -->
-    <div id="editor-view-subs" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
+    <div id="editor-view-subs" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-5xl mx-auto space-y-6">
         <div class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
           <h2 class="text-2xl font-black text-blue-900">Student Submissions</h2>
@@ -1070,11 +1116,14 @@
     </div>
 
     <!-- Students & Payments -->
-    <div id="editor-view-students" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
+    <div id="editor-view-students" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
-          <h2 class="text-2xl font-black text-blue-900">Students & Payment Control</h2>
-          <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5">＋ Add Student</button>
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
+          <h2 class="text-2xl font-black text-blue-900">User & Payment Management</h2>
+          <div class="flex gap-3">
+            <button onclick="window.promptCreateTeacher()" class="bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm">＋ Add Teacher</button>
+            <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm">＋ Add Student</button>
+          </div>
         </div>
         
         <!-- NEW BILLING SETTINGS PANEL -->
@@ -1125,7 +1174,7 @@
     </div>
 
     <!-- Timetable & Attendance (Calendar View) -->
-    <div id="editor-view-timetable" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
+    <div id="editor-view-timetable" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-7xl mx-auto space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50 gap-4">
           <h2 class="text-2xl font-black text-blue-900">Monthly Timetable & Attendance</h2>
@@ -1167,14 +1216,88 @@
       </div>
     </div>
 
+    <!-- NEW: LANDING PAGE EDITOR -->
+    <div id="editor-view-landing" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
+        <div class="max-w-4xl mx-auto space-y-6">
+            <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
+                <div>
+                    <h2 class="text-2xl font-black text-blue-900">Public Storefront</h2>
+                    <p class="text-sm text-slate-500 mt-1">This is what unregistered students see when they visit your link.</p>
+                </div>
+                <button onclick="window.savePublicProfile()" id="btn-save-pub" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5">Save Changes</button>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-50 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+                    <!-- Hero Image -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Storefront Hero Image</label>
+                        <div class="flex items-center gap-4">
+                            <div class="w-20 h-20 rounded-full bg-slate-100 border-2 border-slate-200 overflow-hidden shrink-0">
+                                <img id="pp-hero-preview" src="" class="w-full h-full object-cover hidden">
+                            </div>
+                            <input type="file" id="pp-hero-upload" accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition" onchange="window.handlePPHero(event)">
+                        </div>
+                    </div>
+                    
+                    <!-- NEW: Official TRF Certificate -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">IELTS Certificate (TRF) <span class="text-emerald-500 border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 rounded ml-1">New</span></label>
+                        <div class="flex items-center gap-4">
+                            <div class="w-24 h-20 rounded-lg bg-slate-100 border-2 border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
+                                <img id="pp-trf-preview" src="" class="max-w-full max-h-full object-contain hidden z-10">
+                                <span id="pp-trf-placeholder" class="text-[10px] text-slate-400 font-bold absolute uppercase">No TRF</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <input type="file" id="pp-trf-upload" accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer transition" onchange="window.handlePPTrf(event)">
+                                <button onclick="window.clearPPTrf()" class="text-[10px] text-rose-500 bg-rose-50 hover:bg-rose-100 font-bold px-3 py-1.5 rounded-lg transition w-max uppercase tracking-wider">Remove TRF</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Main Headline</label>
+                    <input type="text" id="pp-title" class="w-full border-2 border-slate-200 p-3 rounded-xl font-black text-xl text-slate-800 outline-none focus:border-blue-500 transition" placeholder="e.g. Master IELTS with Teacher Sarah">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Sub-headline / Mission Statement</label>
+                    <textarea id="pp-mission" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-24 resize-none" placeholder="e.g. Join hundreds of students who have achieved Band 8.0+..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
+                            Platform Features <button onclick="window.addPPList('features')" class="text-blue-600 hover:underline">+ Add</button>
+                        </label>
+                        <div id="pp-features-list" class="space-y-2"></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
+                            My Achievements <button onclick="window.addPPList('achievements')" class="text-blue-600 hover:underline">+ Add</button>
+                        </label>
+                        <div id="pp-achievements-list" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Lead Magnet (Free Resources to attract signups)</label>
+                    <input type="file" id="pp-pdf-upload" accept="application/pdf,image/*" class="mb-3 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer transition" onchange="window.handlePPPdf(event)">
+                    <div id="pp-pdf-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Test Builder -->
-    <div id="editor-view-builder" class="flex-1 flex-col overflow-hidden bg-[#f8fafc] hidden">
+    <div id="editor-view-builder" class="flex-1 flex-col overflow-hidden bg-[#f8fafc] hidden animate-fade-in">
       <!-- Upgraded Tabs Bar -->
       <div class="bg-slate-200/50 px-6 pt-3 flex space-x-2 border-b border-slate-300 shadow-inner" id="editor-tabs"></div>
       
       <div class="flex flex-1 overflow-hidden" id="builder-split">
         <!-- Left Panel: Content -->
-        <div class="w-1/2 p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10" id="builder-left">
+        <div class="w-1/2 p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 transition-all duration-300" id="builder-left">
           <h2 class="text-xl font-black mb-6 border-b border-slate-100 pb-3 text-slate-800 flex items-center gap-2">📝 1. Content Details</h2>
           
           <div class="flex justify-between items-end mb-1">
@@ -1223,7 +1346,7 @@
         </div>
         
         <!-- Right Panel: Questions -->
-        <div class="w-1/2 p-8 overflow-y-auto bg-slate-50" id="builder-right">
+        <div class="w-1/2 p-8 overflow-y-auto bg-slate-50 transition-all duration-300" id="builder-right">
           <h2 class="text-xl font-black mb-6 border-b border-slate-200 pb-3 text-slate-800 flex items-center gap-2">⚙️ 2. Manage Questions</h2>
           
           <div class="mb-8 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center sticky top-0 z-20">
@@ -1240,7 +1363,7 @@
     </div>
   </div>
   <!-- EXAM UI -->
-  <div id="exam-ui" class="hidden h-screen flex flex-col bg-white overflow-hidden relative">
+  <div id="exam-ui" class="hidden h-screen flex flex-col bg-white overflow-hidden relative animate-fade-in">
     <!-- Dummy element to prevent existing JavaScript color logic from breaking -->
     <div id="exam-module-bar" class="hidden"></div>
     
@@ -1249,6 +1372,10 @@
       
       <!-- Left: Test Title & Part Badge -->
       <div class="flex items-center gap-4">
+        
+        <!-- NEW: Back Button (Only visible in Free Mode) -->
+        <button id="exam-back-btn" onclick="window.exitTestWithoutSaving()" class="hidden px-4 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 rounded-xl font-bold text-sm transition items-center gap-2 border border-slate-200 shadow-sm" title="Leave without saving">&larr; Back</button>
+
         <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow text-white font-black text-xl">
            I
         </div>
@@ -1266,8 +1393,6 @@
         <div class="bg-slate-800 rounded-full px-6 py-1.5 flex items-center gap-3 shadow-md border border-slate-700">
            <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
            <span id="timer-display" class="font-mono text-xl font-bold text-white tracking-widest drop-shadow-sm">00:00</span>
-           <div class="w-px h-4 bg-slate-600"></div>
-           <span id="timer-label" class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Elapsed</span>
         </div>
       </div>
 
@@ -1346,7 +1471,7 @@
   </div>
 
   <!-- REVIEW UI -->
-  <div id="review-ui" class="hidden h-screen flex flex-col bg-slate-100 z-[60] relative overflow-hidden">
+  <div id="review-ui" class="hidden h-screen flex flex-col bg-slate-100 z-[60] relative overflow-hidden animate-fade-in">
     <header class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
       <h1 class="text-xl font-bold flex items-center gap-3">📖 Detailed Review <span id="review-module-badge" class="bg-blue-600 text-[10px] uppercase px-2 py-1 rounded">Module</span></h1>
       <div class="flex gap-3">
@@ -1467,6 +1592,7 @@
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
+    let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
 
     let APP_DATA = { module: 'reading', parts: [], vocab: [] };
@@ -1852,6 +1978,15 @@
                         resolve();
                     });
                 }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => {
+                        if (snap.exists()) PUBLIC_PROFILE = snap.data();
+                        if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) {
+                            window.renderPublicProfile();
+                        }
+                        resolve();
+                    });
+                })
             ]);
             
             document.getElementById('cloud-loader').classList.add('hidden');
@@ -1899,32 +2034,36 @@
 
     function checkAuth() {
       if (!currentUser) {
-        document.getElementById('auth-ui').classList.remove('hidden');
+        // NEW: Show Storefront instead of naked login wall
+        document.getElementById('public-landing-ui').classList.remove('hidden');
+        window.renderPublicProfile();
+        
+        document.getElementById('auth-ui').classList.add('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
       } else {
         document.getElementById('auth-ui').classList.add('hidden');
+        document.getElementById('public-landing-ui').classList.add('hidden');
         if (currentUser.role === 'teacher') openEditor();
         else { initStudentDashboard(); document.getElementById('start-screen').classList.remove('hidden'); }
       }
     }
 
+    window.showAuthFromLanding = function() {
+        document.getElementById('public-landing-ui').classList.add('hidden');
+        document.getElementById('auth-ui').classList.remove('hidden');
+    };
+
     let authMode = 'login';
     function toggleAuthMode() {
       authMode = authMode === 'login' ? 'register' : 'login';
-      document.getElementById('auth-subtitle').textContent = authMode === 'login' ? 'Login to your account' : 'Create a new account';
-      document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'Log In' : 'Sign Up';
-      document.getElementById('auth-toggle-btn').textContent = authMode === 'login' ? 'Need an account? Sign up' : 'Already have an account? Log in';
-      document.getElementById('auth-role-group').classList.toggle('hidden', authMode === 'login');
+      document.getElementById('auth-subtitle').textContent = authMode === 'login' ? 'Login to your account' : 'Create a new student account';
+      document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'Log In' : 'Sign Up as Student';
+      
+      const toggleBtn = document.getElementById('auth-toggle-btn');
+      if(toggleBtn) toggleBtn.textContent = authMode === 'login' ? 'Need a student account? Sign up' : 'Already have an account? Log in';
+      
       document.getElementById('auth-error').classList.add('hidden');
-    }
-    
-    let selectedRegRole = 'student';
-    function setAuthRole(role) {
-      selectedRegRole = role;
-      const s = document.getElementById('auth-role-student'), t = document.getElementById('auth-role-teacher');
-      s.className = role === 'student' ? 'flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded transition' : 'flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded transition';
-      t.className = role === 'teacher' ? 'flex-1 py-2 border-2 border-blue-600 bg-blue-50 text-blue-800 font-bold rounded transition' : 'flex-1 py-2 border-2 border-slate-200 text-slate-600 font-bold rounded transition';
     }
 
     async function handleAuthSubmit() {
@@ -1937,8 +2076,10 @@
 
       try {
           if (authMode === 'register') {
-            if (USERS.find(x => x.user === u)) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up"; btn.disabled=false; return; }
-            currentUser = { user: u, pass: p, role: selectedRegRole };
+            if (USERS.find(x => x.user === u)) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up as Student"; btn.disabled=false; return; }
+            
+            // Force role to student for all public registrations
+            currentUser = { user: u, pass: p, role: 'student', isPaid: false, paymentStatus: 'unpaid', createdAt: new Date().toLocaleDateString() };
             USERS.push(currentUser); 
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
           } else {
@@ -1952,7 +2093,7 @@
       } catch (e) {
           console.error(e); err.textContent = 'Cloud network error. Try again.'; err.classList.remove('hidden');
       }
-      btn.textContent = authMode === 'register' ? 'Sign Up' : 'Log In'; btn.disabled = false;
+      btn.textContent = authMode === 'register' ? 'Sign Up as Student' : 'Log In'; btn.disabled = false;
     }
     
     function logout() {
@@ -2126,30 +2267,161 @@
       else if (sort === 'za') filtered.sort((a, b) => b.title.localeCompare(a.title));
 
       grid.innerHTML = filtered.length ? filtered.map(t => {
-        const modColors = { reading:'blue', listening:'sky', writing:'indigo', speaking:'cyan' };
+        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
         const c = modColors[t.module];
         
         const assignedClasses = CLASSES.filter(cls => cls.assignedTests && cls.assignedTests.includes(t.id)).map(cls => cls.name);
         const assignedBadge = assignedClasses.length > 0 
-            ? `<div class="mt-1 mb-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded truncate shadow-sm" title="Assigned to: ${assignedClasses.join(', ')}">📖 ${assignedClasses.join(', ')}</div>`
-            : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
+            ? `<div class="mt-1 mb-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded truncate" title="Assigned to: ${assignedClasses.join(', ')}">📖 ${assignedClasses.join(', ')}</div>`
+            : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
 
         return `
-        <div class="bg-white border border-blue-50 rounded-2xl shadow-sm hover:shadow-md transition p-6 flex flex-col group relative overflow-hidden">
-          <div class="flex justify-between items-start mb-3">
-              <span class="text-[10px] font-black px-2.5 py-1 rounded-md bg-${c}-50 border border-${c}-100 text-${c}-700 uppercase tracking-widest">${t.module}</span>
-              <span class="text-xs text-slate-400 font-bold bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">${t.parts.length} Part(s)</span>
-          </div>
-          <h3 class="font-black text-slate-800 text-lg leading-tight mb-2 group-hover:text-blue-700 transition-colors">${t.title}</h3>
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col">
+          <div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span><span class="text-xs text-slate-400 font-bold">${t.parts.length} Part(s)</span></div>
+          <h3 class="font-bold text-slate-900 truncate">${t.title}</h3>
           ${assignedBadge}
           <div class="flex gap-2 mt-auto pt-4 border-t border-slate-100">
-            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 text-slate-600 rounded-lg py-2 text-sm font-bold transition shadow-sm border border-slate-100 hover:border-blue-200" title="Edit Test">✏️ Edit</button>
-            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg py-2 text-sm font-bold transition shadow-sm border border-indigo-100 hover:border-indigo-200" title="Assign to Class">👥 Assign</button>
-            <button onclick="deleteTest('${t.id}')" class="w-10 shrink-0 bg-rose-50 hover:bg-rose-500 hover:text-white text-rose-500 rounded-lg py-2 text-sm font-bold transition shadow-sm border border-rose-100 hover:border-rose-500 flex justify-center items-center" title="Delete Test">🗑️</button>
+            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Edit Test">✏️</button>
+            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>
+            <button onclick="window.promptMergeTest('${t.id}')" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Merge Test">🔀</button>
+            <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>
           </div>
         </div>`;
-      }).join('') : '<div class="col-span-full text-center text-slate-500 py-10 bg-white rounded-2xl border border-slate-200 shadow-sm">No tests in the cloud. Create one!</div>';
+      }).join('') : '<div class="col-span-full text-center text-slate-500 py-10">No tests in the cloud. Create one!</div>';
     }
+
+    window.promptMergeTest = function(tid) {
+      const sourceTest = TEST_BANK.find(t => t.id === tid);
+      if (!sourceTest) return;
+
+      const compatibleTests = TEST_BANK.filter(t => t.module === sourceTest.module && t.id !== tid);
+      if (compatibleTests.length === 0) {
+          showModalMsg("Cannot Merge", `There are no other ${sourceTest.module} tests available to merge this into.`);
+          return;
+      }
+
+      let testOpts = compatibleTests.map(t => `<option value="${t.id}">${t.title}</option>`).join('');
+
+      document.getElementById('modal-title').textContent = `Merge: ${sourceTest.title}`;
+      document.getElementById('modal-message').innerHTML = `
+          <p class="text-sm text-slate-500 mb-4">Select the target test. All parts, questions, and vocabulary from this test will be appended to the target test.</p>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Merge into Target Test:</label>
+          <select id="merge-target-select" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-blue-800 outline-none focus:border-blue-500 bg-slate-50 mb-4 cursor-pointer">
+              ${testOpts}
+          </select>
+          <label class="flex items-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-rose-50 border border-slate-200 bg-white transition shadow-sm mt-2">
+              <input type="checkbox" id="merge-delete-source" class="w-4 h-4 text-rose-600 rounded cursor-pointer" checked>
+              <span class="font-bold text-sm text-rose-700">Delete this original test after merging</span>
+          </label>
+      `;
+      
+      document.getElementById('modal-input').classList.add('hidden');
+      document.getElementById('modal-cancel').classList.remove('hidden');
+      document.getElementById('custom-modal').classList.remove('hidden');
+
+      document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+      
+      document.getElementById('modal-confirm').onclick = async () => {
+          const btn = document.getElementById('modal-confirm');
+          btn.textContent = "Merging..."; btn.disabled = true;
+          
+          const targetId = document.getElementById('merge-target-select').value;
+          const deleteSource = document.getElementById('merge-delete-source').checked;
+          
+          try {
+              await window.executeMergeTest(tid, targetId, deleteSource);
+              document.getElementById('custom-modal').classList.add('hidden');
+              showModalMsg("Merge Successful! 🎉", "The test contents have been successfully merged. Question numbers were automatically recalculated to prevent conflicts.");
+          } catch (e) {
+              console.error(e);
+              showModalMsg("Error", "Could not complete the merge operation.");
+          }
+          
+          btn.textContent = "OK"; btn.disabled = false;
+      };
+    };
+
+    window.executeMergeTest = async function(sourceId, targetId, deleteSource) {
+        const sourceTest = TEST_BANK.find(t => t.id === sourceId);
+        const targetTest = TEST_BANK.find(t => t.id === targetId);
+        if (!sourceTest || !targetTest) throw new Error("Test not found");
+
+        // 1. Calculate max ID in the target test to offset the incoming source IDs
+        let currentMaxId = 0;
+        targetTest.parts.forEach(p => {
+            p.questions.forEach(q => {
+                (q.ids || []).forEach(id => {
+                    if (id > currentMaxId) currentMaxId = id;
+                });
+            });
+        });
+
+        // 2. Deep Clone source parts and remap all their IDs
+        let newParts = JSON.parse(JSON.stringify(sourceTest.parts));
+        newParts.forEach((p, pIndex) => {
+            // Automatically sequence the new part titles
+            p.title = `Part ${targetTest.parts.length + pIndex + 1}`;
+
+            p.questions.forEach(q => {
+                q.blockId += '_merged_' + Date.now();
+                let newIds = [];
+                let newCorrectAnswers = {};
+
+                (q.ids || []).forEach(oldId => {
+                    currentMaxId++;
+                    let newId = currentMaxId;
+                    newIds.push(newId);
+
+                    if (q.correctAnswers && q.correctAnswers[oldId] !== undefined) {
+                        newCorrectAnswers[newId] = q.correctAnswers[oldId];
+                    }
+
+                    // String replacement to safely update {blank:X}, {drop:X}, and loose inline numbers in texts
+                    if (q.text) {
+                        q.text = q.text.split(`{blank:${oldId}}`).join(`{blank:${newId}}`);
+                        q.text = q.text.split(`{drop:${oldId}}`).join(`{drop:${newId}}`);
+                        q.text = q.text.replace(new RegExp(`(^|[\\s>])(${oldId})([\\.\\)]?)(?=\\s|<|$)`, 'g'), `$1${newId}$3`);
+                    }
+                });
+
+                q.ids = newIds;
+                q.correctAnswers = newCorrectAnswers;
+            });
+        });
+
+        // 3. Append the parts and vocabulary
+        targetTest.parts.push(...newParts);
+        if (sourceTest.vocab && sourceTest.vocab.length > 0) {
+            if (!targetTest.vocab) targetTest.vocab = [];
+            targetTest.vocab.push(...JSON.parse(JSON.stringify(sourceTest.vocab)));
+        }
+
+        // 4. Save Target Test to DB
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), targetId), targetTest);
+
+        // 5. Delete Source Test if requested
+        if (deleteSource) {
+            TEST_BANK = TEST_BANK.filter(t => t.id !== sourceId);
+            
+            // Clean up class assignments associated with the deleted test
+            for (let c of CLASSES) {
+                if (c.assignedTests && c.assignedTests.includes(sourceId)) {
+                    c.assignedTests = c.assignedTests.filter(tid => tid !== sourceId);
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+                }
+            }
+            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('tests'), sourceId));
+
+            // Clean up any stray student notes associated with the deleted test
+            const noteIdsToDelete = Object.keys(ALL_NOTES).filter(k => k.endsWith(`_${sourceId}`));
+            for (let nid of noteIdsToDelete) {
+                delete ALL_NOTES[nid];
+                await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('notes'), nid));
+            }
+        }
+
+        renderTestBank();
+    };
 
     window.promptAssignTest = function(tid) {
       const test = TEST_BANK.find(t => t.id === tid);
@@ -3127,10 +3399,6 @@
       if(!APP_DATA.vocab) APP_DATA.vocab = [];
       document.getElementById('builder-test-name').textContent = APP_DATA.title;
       
-      const pSel = document.getElementById('editor-part-count'); pSel.innerHTML = '';
-      for(let i=1; i<= (APP_DATA.module==='listening'?4:3); i++) pSel.innerHTML += `<option value="${i}">${i}</option>`;
-      pSel.value = APP_DATA.parts.length;
-      
       const media = document.getElementById('builder-media-fields');
       const audioField = document.getElementById('audio-field-container');
       const imageField = document.getElementById('image-field-container');
@@ -3240,6 +3508,9 @@
       document.getElementById('exam-module-title').textContent = APP_DATA.title;
       document.getElementById('exam-action-btn-text').textContent = "EXIT PREVIEW";
 
+      const backBtn = document.getElementById('exam-back-btn');
+      if (backBtn) { backBtn.classList.remove('hidden'); backBtn.classList.add('flex'); }
+
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
       document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
 
@@ -3247,7 +3518,6 @@
       timeLeft = 0; 
       isTimeFree = true; 
       testMode = 'free';
-      document.getElementById('timer-label').textContent = 'Elapsed';
 
       timerInterval = setInterval(() => {
         timeLeft++;
@@ -3258,14 +3528,46 @@
       initResizer(); renderPart(0);
     }
 
-    function updatePartCount(cnt) {
-      saveCurrentEditorPart(); cnt = parseInt(cnt); const cur = APP_DATA.parts.length;
-      if(cnt > cur) for(let i=cur; i<cnt; i++) APP_DATA.parts.push({title:`Part ${i+1}`, text:"", questions:[]});
-      else if(cnt < cur) APP_DATA.parts = APP_DATA.parts.slice(0, cnt);
-      if(currentEditorPartIdx >= cnt) currentEditorPartIdx = cnt-1;
-      loadEditorPart(currentEditorPartIdx);
+    window.toggleBuilderLeftPanel = function() {
+        const leftPane = document.getElementById('builder-left');
+        const rightPane = document.getElementById('builder-right');
+        
+        if (leftPane.classList.contains('hidden')) {
+            // Restore View
+            leftPane.classList.remove('hidden');
+            rightPane.classList.remove('w-full');
+            rightPane.classList.add('w-1/2');
+        } else {
+            // Collapse View to make Questions Full Width
+            leftPane.classList.add('hidden');
+            rightPane.classList.remove('w-1/2');
+            rightPane.classList.add('w-full');
+        }
+    };
+
+    window.addEditorPart = function() {
+      saveCurrentEditorPart();
+      APP_DATA.parts.push({title:`Part ${APP_DATA.parts.length+1}`, text:"", questions:[]});
+      loadEditorPart(APP_DATA.parts.length - 1);
       triggerEditorAutosave();
-    }
+    };
+
+    window.deleteCurrentEditorPart = function() {
+      if (APP_DATA.parts.length <= 1) {
+          showModalMsg("Cannot Delete", "A test must have at least one part.");
+          return;
+      }
+      showConfirm("Delete Part", `Are you sure you want to delete "${APP_DATA.parts[currentEditorPartIdx].title}" and all its questions?`, () => {
+          APP_DATA.parts.splice(currentEditorPartIdx, 1);
+          // Renumber subsequent parts smoothly
+          APP_DATA.parts.forEach((p, idx) => {
+             if(p.title.startsWith("Part ")) p.title = `Part ${idx+1}`;
+          });
+          if(currentEditorPartIdx >= APP_DATA.parts.length) currentEditorPartIdx = APP_DATA.parts.length - 1;
+          loadEditorPart(currentEditorPartIdx);
+          triggerEditorAutosave();
+      });
+    };
 
     // --- DRAG & DROP FOR PART TABS ---
     let dragPartSourceIdx = null;
@@ -3329,7 +3631,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 pointer-events-none"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
           Part ${i+1}
         </button>`
-      ).join('');
+      ).join('') + `<button onclick="window.addEditorPart()" class="px-5 py-2 font-black text-blue-600 hover:text-blue-800 hover:bg-blue-100/50 rounded-t-lg transition flex items-center gap-1 shrink-0 mt-[2px] ml-2 border border-transparent hover:border-blue-200 border-b-0">+ Add Part</button>`;
       
       const titleEl = document.getElementById('edit-passage-title');
       if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = p.title||'';
@@ -3980,6 +4282,252 @@
         window.initStudentDashboard(); 
     };
 
+    // --- PUBLIC LANDING PAGE LOGIC ---
+    window.tempPPHero = null;
+    window.tempPPTrf = null;
+    window.tempPPFeatures = [];
+    window.tempPPAchievements = [];
+    window.tempPPPdfs = [];
+
+    window.populateLandingPageEditor = function() {
+        document.getElementById('pp-title').value = PUBLIC_PROFILE.missionTitle || '';
+        document.getElementById('pp-mission').value = PUBLIC_PROFILE.missionText || '';
+        
+        // Handle Hero Image
+        window.tempPPHero = PUBLIC_PROFILE.heroImage || null;
+        if(window.tempPPHero) {
+            document.getElementById('pp-hero-preview').src = window.tempPPHero;
+            document.getElementById('pp-hero-preview').classList.remove('hidden');
+        } else {
+            document.getElementById('pp-hero-preview').src = '';
+            document.getElementById('pp-hero-preview').classList.add('hidden');
+        }
+
+        // Handle TRF Image
+        window.tempPPTrf = PUBLIC_PROFILE.trfImage || null;
+        const trfPreview = document.getElementById('pp-trf-preview');
+        const trfPlaceholder = document.getElementById('pp-trf-placeholder');
+        if(window.tempPPTrf && trfPreview) {
+            trfPreview.src = window.tempPPTrf;
+            trfPreview.classList.remove('hidden');
+            if(trfPlaceholder) trfPlaceholder.classList.add('hidden');
+        } else if(trfPreview) {
+            trfPreview.src = '';
+            trfPreview.classList.add('hidden');
+            if(trfPlaceholder) trfPlaceholder.classList.remove('hidden');
+        }
+        
+        window.tempPPFeatures = [...(PUBLIC_PROFILE.features || [])];
+        window.tempPPAchievements = [...(PUBLIC_PROFILE.achievements || [])];
+        window.tempPPPdfs = [...(PUBLIC_PROFILE.pdfs || [])];
+        
+        window.renderPPList('features');
+        window.renderPPList('achievements');
+        window.renderPPPdfList();
+    };
+
+    window.handlePPHero = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            window.tempPPHero = ev.target.result;
+            document.getElementById('pp-hero-preview').src = window.tempPPHero;
+            document.getElementById('pp-hero-preview').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.handlePPTrf = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        // Allows high-res uploads but warns if excessively large
+        if (file.size > 8000000) { alert("File too large. Please upload an image under 8MB."); return; }
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            window.tempPPTrf = ev.target.result;
+            document.getElementById('pp-trf-preview').src = window.tempPPTrf;
+            document.getElementById('pp-trf-preview').classList.remove('hidden');
+            document.getElementById('pp-trf-placeholder').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.clearPPTrf = function() {
+        window.tempPPTrf = null;
+        document.getElementById('pp-trf-upload').value = '';
+        document.getElementById('pp-trf-preview').src = '';
+        document.getElementById('pp-trf-preview').classList.add('hidden');
+        document.getElementById('pp-trf-placeholder').classList.remove('hidden');
+    };
+
+    window.addPPList = function(type) {
+        if(type === 'features') window.tempPPFeatures.push('New Feature...');
+        if(type === 'achievements') window.tempPPAchievements.push('New Achievement...');
+        window.renderPPList(type);
+    };
+
+    window.renderPPList = function(type) {
+        const c = document.getElementById(`pp-${type}-list`);
+        const arr = type === 'features' ? window.tempPPFeatures : window.tempPPAchievements;
+        c.innerHTML = arr.map((item, i) => `
+            <div class="flex gap-2">
+                <input type="text" value="${item}" onchange="window.updatePPList('${type}', ${i}, this.value)" class="flex-1 border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500">
+                <button onclick="window.removePPList('${type}', ${i})" class="text-rose-500 font-bold px-2 hover:bg-rose-50 rounded">✕</button>
+            </div>
+        `).join('');
+    };
+
+    window.updatePPList = function(type, i, val) {
+        if(type === 'features') window.tempPPFeatures[i] = val;
+        if(type === 'achievements') window.tempPPAchievements[i] = val;
+    };
+
+    window.removePPList = function(type, i) {
+        if(type === 'features') window.tempPPFeatures.splice(i, 1);
+        if(type === 'achievements') window.tempPPAchievements.splice(i, 1);
+        window.renderPPList(type);
+    };
+
+    window.handlePPPdf = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 5000000) { alert("File too large. Max 5MB."); return; } // Prevent DB crash
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            window.tempPPPdfs.push({ name: file.name, data: ev.target.result });
+            window.renderPPPdfList();
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.renderPPPdfList = function() {
+        const c = document.getElementById('pp-pdf-list');
+        c.innerHTML = window.tempPPPdfs.map((p, i) => `
+            <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-200 text-sm">
+                <span class="truncate font-bold text-slate-700">${p.name}</span>
+                <button onclick="window.tempPPPdfs.splice(${i},1); window.renderPPPdfList()" class="text-rose-500 font-bold px-2 hover:bg-rose-100 rounded ml-2">✕</button>
+            </div>
+        `).join('');
+    };
+
+    window.savePublicProfile = async function() {
+        const btn = document.getElementById('btn-save-pub');
+        btn.textContent = 'Saving...'; btn.disabled = true;
+
+        PUBLIC_PROFILE = {
+            missionTitle: document.getElementById('pp-title').value.trim(),
+            missionText: document.getElementById('pp-mission').value.trim(),
+            heroImage: window.tempPPHero,
+            trfImage: window.tempPPTrf,
+            features: window.tempPPFeatures.filter(f => f.trim()),
+            achievements: window.tempPPAchievements.filter(a => a.trim()),
+            pdfs: window.tempPPPdfs
+        };
+
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), PUBLIC_PROFILE);
+            showModalMsg("Saved", "Your public storefront has been updated!");
+        } catch (e) {
+            console.error(e);
+            showModalMsg("Error", "Could not save public profile to cloud.");
+        }
+        btn.textContent = 'Save Changes'; btn.disabled = false;
+    };
+
+    window.renderPublicProfile = function() {
+        const c = document.getElementById('public-profile-content');
+        if(!c) return;
+        
+        const imgHtml = PUBLIC_PROFILE.heroImage ? `<img src="${PUBLIC_PROFILE.heroImage}" class="w-32 h-32 object-cover mx-auto rounded-full border-4 border-white/20 shadow-xl mb-6">` : '';
+        
+        let resourcesHtml = '';
+        if (PUBLIC_PROFILE.pdfs && PUBLIC_PROFILE.pdfs.length > 0) {
+            resourcesHtml = `
+                <div class="mt-12 pt-8 border-t border-white/10 text-left">
+                    <h3 class="text-xl font-bold text-white mb-4">🎁 Free Resources</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        ${PUBLIC_PROFILE.pdfs.map(f => `
+                            <div class="bg-white/10 border border-white/20 rounded-xl p-4 flex items-center justify-between shadow-sm">
+                                <div class="truncate text-blue-50 font-bold text-sm">${f.name}</div>
+                                <a href="${f.data}" download="${f.name}" class="shrink-0 bg-white text-blue-900 hover:bg-blue-50 px-3 py-1.5 rounded font-black text-xs transition">Download</a>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // NEW: Render the TRF Certificate
+        let trfHtml = '';
+        if (PUBLIC_PROFILE.trfImage) {
+            trfHtml = `
+                <div class="mt-10 mb-8 flex flex-col items-center justify-center">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-900/60 px-3 py-1 rounded-full mb-3 border border-emerald-400/30 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Verified Certificate</span>
+                    <img src="${PUBLIC_PROFILE.trfImage}" class="w-full max-w-sm rounded-xl shadow-2xl border-4 border-white/20 hover:scale-[1.02] transition duration-300 cursor-zoom-in bg-white" onclick="window.open(this.src, '_blank')" title="Click to enlarge">
+                </div>
+            `;
+        }
+
+        c.innerHTML = `
+            ${imgHtml}
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-md">${PUBLIC_PROFILE.missionTitle || 'Master IELTS'}</h1>
+            <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">${PUBLIC_PROFILE.missionText || ''}</p>
+            
+            ${trfHtml}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+                <div class="bg-black/20 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+                    <h3 class="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">🏆 Achievements</h3>
+                    <ul class="space-y-3">
+                        ${(PUBLIC_PROFILE.achievements || []).map(a => `<li class="flex items-start gap-3 text-blue-50"><span class="mt-1 text-amber-400">★</span> <span class="leading-snug">${a}</span></li>`).join('')}
+                    </ul>
+                </div>
+                <div class="bg-black/20 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+                    <h3 class="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">🚀 Platform Features</h3>
+                    <ul class="space-y-3">
+                        ${(PUBLIC_PROFILE.features || []).map(f => `<li class="flex items-start gap-3 text-blue-50"><span class="mt-1 text-emerald-400">✓</span> <span class="leading-snug">${f}</span></li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+            ${resourcesHtml}
+        `;
+
+        // Render Public Packages
+        const pgrid = document.getElementById('public-packages-grid');
+        if (pgrid) {
+            if (PACKAGES.length === 0) {
+                pgrid.innerHTML = `<div class="col-span-full text-center text-slate-500 italic bg-white p-10 rounded-2xl border border-slate-200">Course bundles opening soon. Check back later!</div>`;
+            } else {
+                pgrid.innerHTML = PACKAGES.map(p => {
+                    const classNames = (p.classes || []).map(cid => {
+                        const found = CLASSES.find(c => c.id === cid);
+                        return found ? found.name : '';
+                    }).filter(Boolean);
+                    
+                    return `
+                    <div class="bg-white border-2 border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all flex flex-col transform hover:-translate-y-1 relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10 flex flex-col h-full">
+                            <h3 class="text-xl font-black text-blue-950 mb-2">${p.name}</h3>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded inline-block w-max mb-4 border border-emerald-200">${classNames.length} Courses Included</p>
+                            <ul class="space-y-2 mb-6 flex-1">
+                                ${classNames.map(n => `<li class="text-sm font-medium text-slate-600 flex items-start gap-2"><span class="text-blue-500 mt-0.5 font-bold">✓</span> ${n}</li>`).join('')}
+                            </ul>
+                            <div class="mt-auto border-t border-slate-100 pt-4 flex items-center justify-between mb-4">
+                                <span class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Base Tuition</span>
+                                <span class="text-lg font-black text-emerald-600">${formatVND(p.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000)}<span class="text-xs text-slate-400 font-bold">/class</span></span>
+                            </div>
+                            <button onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Unlock Access</button>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+    };
+
     window.renderStudentDashboard = function renderStudentDashboard() {
       const cid = document.getElementById('student-class-select').value;
       const list = document.getElementById('student-tests-list');
@@ -4264,6 +4812,19 @@
       document.getElementById('exam-module-title').textContent = APP_DATA.title + (window.isFullExamMode ? ` (Full Exam - Section ${window.fullExamCurrentIndex + 1}/3)` : '');
       document.getElementById('exam-action-btn-text').textContent = window.isFullExamMode ? (window.fullExamCurrentIndex < 2 ? "NEXT SECTION" : "SUBMIT EXAM") : "SUBMIT TEST";
       
+      const backBtn = document.getElementById('exam-back-btn');
+      if (backBtn) {
+          if (testMode === 'free' || isPreviewMode) {
+              // Allow backing out during Time-Free Practice
+              backBtn.classList.remove('hidden');
+              backBtn.classList.add('flex');
+          } else {
+              // Hide the back button in Exam Mode / Full Mock Test to force submission!
+              backBtn.classList.add('hidden');
+              backBtn.classList.remove('flex');
+          }
+      }
+
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
       document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
       
@@ -4271,7 +4832,7 @@
       let customMins = parseInt(document.getElementById('custom-time-input') ? document.getElementById('custom-time-input').value : 0);
       let defaultSecs = (APP_DATA.module==='listening'?40*60:APP_DATA.module==='writing'?60*60:APP_DATA.module==='speaking'?15*60:60*60);
       timeLeft = isTimeFree ? 0 : (customMins > 0 && !window.isFullExamMode ? customMins * 60 : defaultSecs);
-      document.getElementById('timer-label').textContent = isTimeFree ? 'Elapsed' : 'Time Left';
+      
       timerInterval = setInterval(() => {
         isTimeFree ? timeLeft++ : timeLeft--;
         if(!isTimeFree && timeLeft <= 0) { clearInterval(timerInterval); window.exitTest(true); return; }
@@ -4912,6 +5473,27 @@
         pal.appendChild(div);
       });
     }
+
+    window.exitTestWithoutSaving = function() {
+      showConfirm("Leave Practice Mode", "Are you sure you want to go back? Your progress will NOT be saved and no score will be recorded.", () => {
+        clearInterval(timerInterval); 
+        document.getElementById('exam-ui').classList.add('hidden');
+        
+        const examAudio = document.getElementById('exam-listening-audio');
+        if (examAudio) { examAudio.pause(); examAudio.src = ''; }
+        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
+        if (practiceAudio) { practiceAudio.pause(); }
+        
+        if (isPreviewMode) {
+           isPreviewMode = false;
+           document.getElementById('editor-ui').classList.remove('hidden');
+           toggleEditorTab('builder');
+        } else {
+           document.getElementById('start-screen').classList.remove('hidden'); 
+           window.renderStudentDashboard(); 
+        }
+      });
+    };
 
     window.exitTest = function(autoSubmit = false) {
       const proceed = async () => {
@@ -5811,6 +6393,18 @@
         }
         btn.textContent = "Save Settings"; btn.disabled = false;
     }
+
+    window.promptCreateTeacher = function() {
+        showInputPrompt("Add Teacher", "Enter new teacher username:", async (username) => {
+            if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
+            showInputPrompt("Password", `Enter password for teacher ${username}:`, async (password) => {
+                const newTeacher = { user: username, pass: password, role: 'teacher', createdAt: new Date().toLocaleDateString() };
+                USERS.push(newTeacher);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newTeacher);
+                showModalMsg("Success", `Teacher account '${username}' created successfully.`);
+            });
+        });
+    };
 
     function promptCreateStudent() {
         showInputPrompt("Add Student", "Enter new student username:", async (username) => {
