@@ -689,173 +689,233 @@
       </div>
   </div>
 
+  <!-- STUDENT PROFILE & TARGETS MODAL -->
+  <div id="student-profile-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[500px] max-h-[90vh] overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-center relative">
+              <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="absolute top-4 right-4 text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
+              <div class="relative w-24 h-24 mx-auto mb-3 cursor-pointer group" onclick="document.getElementById('profile-avatar-upload').click()">
+                  <img id="profile-avatar-preview" src="" class="w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-slate-100">
+                  <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">Change</div>
+              </div>
+              <input type="file" id="profile-avatar-upload" accept="image/*" class="hidden" onchange="window.handleAvatarUpload(event)">
+              <h2 id="profile-name-display" class="text-xl font-black text-white">Student Name</h2>
+          </div>
+          <div class="p-8 bg-slate-50 flex-1 space-y-6">
+              <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                  <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b pb-2">My IELTS Goals</h3>
+                  <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">Target Band Score</label>
+                      <input type="number" step="0.5" id="profile-target-score" placeholder="e.g. 7.5" class="w-full border-2 border-slate-200 p-3 rounded-lg font-black text-blue-700 outline-none focus:border-blue-500 transition">
+                  </div>
+                  <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1.5">Official Test Date (Countdown)</label>
+                      <input type="date" id="profile-test-date" class="w-full border-2 border-slate-200 p-3 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500 transition">
+                  </div>
+              </div>
+          </div>
+          <div class="p-4 border-t border-slate-200 bg-white flex justify-end gap-3">
+              <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
+              <button onclick="window.saveStudentProfile()" id="btn-save-profile-data" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition">Save Profile</button>
+          </div>
+      </div>
+  </div>
+
   <!-- START SCREEN (STUDENT DASHBOARD) -->
-  <div id="start-screen" class="hidden h-screen w-full relative bg-slate-50 overflow-y-auto">
+  <div id="start-screen" class="hidden h-screen w-full relative bg-[#f4f7fb] overflow-y-auto font-sans">
+    
     <!-- Blue Header Banner -->
-    <div class="bg-gradient-to-r from-blue-800 to-indigo-700 pt-10 pb-24 px-6 shadow-md">
-      <header class="w-full px-4 lg:px-8 flex justify-between items-center">
-        <h1 class="text-3xl font-extrabold text-white tracking-tight">Student Dashboard</h1>
-        <div class="flex gap-4 items-center">
-          
-          <!-- NEW: GEM BALANCE WIDGET -->
-          <div onclick="window.openGemStore()" id="gem-balance-widget" class="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-orange-500 px-4 py-1.5 rounded-full border-2 border-amber-300 shadow-lg cursor-pointer transition transform hover:scale-105" title="Top Up Gems">
+    <div class="bg-blue-900 pt-8 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden">
+      <!-- Decorative Background Orbs -->
+      <div class="absolute top-[-20%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40"></div>
+      <div class="absolute bottom-[-20%] left-[-10%] w-72 h-72 bg-sky-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20"></div>
+
+      <header class="max-w-7xl mx-auto flex justify-between items-center relative z-10">
+        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3 drop-shadow-sm">
+           <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🎓</div>
+           Student Portal
+        </h1>
+        
+        <div class="flex gap-3 sm:gap-4 items-center">
+          <!-- GEM BALANCE WIDGET -->
+          <div onclick="window.openGemStore()" id="gem-balance-widget" class="flex items-center gap-1.5 bg-blue-950/40 hover:bg-blue-800/60 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-blue-400/30 shadow-sm cursor-pointer transition transform hover:scale-105" title="Top Up Gems">
              <span class="text-lg leading-none drop-shadow-sm">💎</span>
-             <span class="text-amber-950 font-black text-sm drop-shadow-sm" id="student-gem-display">0</span>
-             <span class="text-amber-900 text-[11px] font-black ml-1 bg-amber-300/80 px-1.5 rounded shadow-inner">＋</span>
+             <span class="text-blue-50 font-bold text-sm" id="student-gem-display">0</span>
+             <span class="text-blue-200 text-[10px] font-black ml-0.5 bg-blue-900 px-1.5 py-0.5 rounded shadow-inner">＋</span>
           </div>
 
-          <div class="flex items-center gap-3 bg-white/10 p-1.5 pr-4 rounded-full border border-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/20 transition shadow-sm" onclick="window.openStudentProfile()" title="Edit Profile & Goals">
-            <img id="header-student-avatar" src="https://ui-avatars.com/api/?name=Student&background=random" class="w-9 h-9 rounded-full object-cover bg-white shadow-inner border-2 border-white/50">
-            <div class="flex flex-col">
+          <!-- Profile Widget -->
+          <div class="flex items-center gap-3 bg-white/10 p-1.5 pr-4 rounded-xl border border-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/20 transition shadow-sm" onclick="window.openStudentProfile()" title="Edit Profile & Goals">
+            <img id="header-student-avatar" src="https://ui-avatars.com/api/?name=Student&background=random" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-white shadow-sm border border-white/30">
+            <div class="flex flex-col hidden sm:flex">
               <span class="text-white font-bold text-sm leading-none mb-1" id="student-name-display">Welcome</span>
-              <span class="text-indigo-200 text-[9px] font-black uppercase tracking-widest leading-none">⚙️ Edit Profile</span>
+              <span class="text-blue-300 text-[9px] font-black uppercase tracking-widest leading-none">⚙️ Profile</span>
             </div>
           </div>
 
-          <button onclick="logout()" class="px-4 py-2 bg-white/10 hover:bg-rose-500 hover:border-rose-500 text-white rounded-full font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md text-sm shrink-0">Logout</button>
+          <!-- Logout Button -->
+          <button onclick="logout()" class="p-2 sm:p-2.5 bg-white/10 hover:bg-rose-500 hover:border-rose-500 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0" title="Logout">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          </button>
         </div>
       </header>
     </div>
 
-    <!-- Main Content Container (Pushed up into the blue banner) -->
-    <div class="bg-white p-6 lg:p-8 rounded-2xl shadow-xl text-left shrink-0 -mt-16 relative z-10 animate-fade-in-up border border-slate-100 mx-4 lg:mx-8 mb-12">
-      
-      <!-- NEW TARGET GOALS WIDGET -->
-      <div id="student-target-widget" class="hidden bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-[0_10px_30px_rgba(0,0,0,0.1)] mb-8 border border-slate-800 relative overflow-hidden flex-col md:flex-row justify-between items-center gap-6">
-          <div class="absolute -right-10 -top-10 text-9xl opacity-5 pointer-events-none font-black">🎯</div>
-          <div class="flex flex-col md:flex-row items-center md:items-start gap-8 z-10 w-full">
-              <div class="text-center md:text-left shrink-0">
-                  <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">My IELTS Goal</h3>
-                  <div class="text-4xl font-black text-amber-400 drop-shadow-md" id="target-score-display">Band --</div>
+    <!-- Main Dashboard Container -->
+    <div class="max-w-7xl mx-auto -mt-20 relative z-20 px-4 lg:px-8 space-y-6 pb-20">
+
+      <!-- TARGET GOALS WIDGET -->
+      <div id="student-target-widget" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-blue-100 flex-col md:flex-row justify-between items-center gap-6 overflow-hidden relative">
+          <div class="absolute -right-6 -top-6 text-8xl opacity-5 pointer-events-none font-black grayscale">🎯</div>
+          
+          <div class="flex flex-col md:flex-row items-center md:items-center gap-6 lg:gap-8 z-10 w-full">
+              <div class="flex items-center gap-4 shrink-0">
+                  <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-2xl border border-blue-100 shadow-inner">🎯</div>
+                  <div class="text-center md:text-left">
+                      <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">My IELTS Goal</h3>
+                      <div class="text-3xl font-black text-blue-900 tracking-tight" id="target-score-display">Band --</div>
+                  </div>
               </div>
-              <div class="w-px h-12 bg-slate-700 hidden md:block mt-2"></div>
+              
+              <div class="w-px h-12 bg-slate-200 hidden md:block"></div>
+              
               <div class="text-center md:text-left flex-1">
                    <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Official Test Date</h3>
-                   <div class="text-2xl font-bold text-blue-50" id="target-date-display">Not Set</div>
-                   <div class="text-sm font-medium mt-1.5 inline-block px-3 py-1 rounded-full bg-slate-800 border border-slate-700 shadow-inner" id="target-countdown">--</div>
+                   <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
+                       <div class="text-xl font-bold text-slate-700" id="target-date-display">Not Set</div>
+                       <div class="text-xs font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 shadow-sm w-max mx-auto sm:mx-0" id="target-countdown">--</div>
+                   </div>
               </div>
-              <div class="shrink-0 mt-2 md:mt-0">
-                  <button onclick="window.openStudentProfile()" class="bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-sm flex items-center gap-2">Update Goals ✏️</button>
+              
+              <div class="shrink-0 w-full md:w-auto mt-2 md:mt-0">
+                  <button onclick="window.openStudentProfile()" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">Update Goals</button>
               </div>
           </div>
       </div>
 
-      <!-- NEW IMMERSIVE PAYMENT CHECKOUT WALL -->
-      <div id="student-payment-warning" class="hidden w-full mb-8">
-         <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 flex flex-col lg:flex-row">
-            
+      <!-- PAYMENT CHECKOUT WALL -->
+      <div id="student-payment-warning" class="hidden w-full">
+         <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-blue-100 flex flex-col lg:flex-row">
             <!-- Left: Pricing Plans -->
-            <div class="p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 bg-rose-500/20 border border-rose-500/30 rounded-full text-rose-300 text-xs font-black uppercase tracking-widest mb-6 w-max">
+            <div class="p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center bg-slate-50">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-rose-100 border border-rose-200 rounded-full text-rose-700 text-xs font-black uppercase tracking-widest mb-6 w-max shadow-sm">
                    <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> Access Locked
                 </div>
-                <h2 class="text-3xl font-black text-white mb-3">Unlock Your Course Materials</h2>
-                <p class="text-indigo-200 mb-8 font-medium">Select a study plan to pay your tuition and automatically unlock your timetable, materials, and practice exams.</p>
+                <h2 class="text-3xl font-black text-slate-800 mb-3">Unlock Your Course</h2>
+                <p class="text-slate-500 mb-6 font-medium">Select a study plan to pay your tuition and automatically unlock your timetable, materials, and practice exams.</p>
                 
-                <div class="space-y-4" id="checkout-plans-container">
-                    <!-- Javascript will generate plans here -->
+                <div class="flex gap-4 mb-6">
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Course or Bundle</label>
+                        <select id="checkout-course" class="w-full bg-white border border-slate-200 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 font-bold shadow-sm cursor-pointer transition-colors" onchange="window.updateCheckoutMath()"></select>
+                    </div>
+                    <div class="w-[120px]" id="checkout-lpm-container">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Lessons/Mo</label>
+                        <input type="number" id="checkout-lpm" value="12" min="1" max="100" class="w-full bg-white border border-slate-200 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 font-bold text-center shadow-sm transition-colors" oninput="window.updateCheckoutMath()">
+                    </div>
                 </div>
+
+                <div id="checkout-package-info" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 shadow-sm"></div>
+                <div class="space-y-4" id="checkout-plans-container"></div>
             </div>
 
             <!-- Right: VietQR Gateway -->
-            <div class="bg-white p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-l border-slate-200 relative">
-                <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div>
-                <img src="https://vietqr.net/portal/v3/images/vietqr.svg" class="h-8 mb-6 opacity-80" alt="VietQR">
-                
-                <div class="p-2 bg-white rounded-xl shadow-lg border-2 border-slate-100 mb-6 relative group">
+            <div class="bg-white p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-l border-slate-100 relative">
+                <h3 class="text-lg font-black text-slate-700 mb-6 uppercase tracking-wider flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg> Scan to Pay</h3>
+                <div class="p-2 bg-white rounded-xl shadow-md border border-slate-100 mb-6 relative group">
                     <img id="vietqr-image" src="" class="w-56 h-56 object-contain rounded-lg transition-all group-hover:scale-105" alt="Bank QR Code">
                 </div>
-
                 <div class="text-center w-full mb-6">
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total to Pay</div>
-                    <div id="vietqr-amount" class="text-3xl font-black text-emerald-600 tracking-tight">0 ₫</div>
-                    <div class="bg-slate-50 border border-slate-200 rounded p-2 mt-3 font-mono text-sm text-slate-600 break-all shadow-inner">Msg: <span id="vietqr-desc" class="font-bold text-slate-900"></span></div>
+                    <div id="vietqr-amount" class="text-3xl font-black text-blue-600 tracking-tight">0 ₫</div>
+                    <div class="bg-slate-50 border border-slate-200 rounded p-2 mt-3 font-mono text-sm text-slate-600 break-all shadow-inner">Msg: <span id="vietqr-desc" class="font-bold text-slate-800"></span></div>
                 </div>
-
-                <button id="btn-verify-pay" onclick="simulateAutoPayment()" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black rounded-xl shadow-[0_10px_20px_-10px_rgba(79,70,229,0.5)] transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-lg">
-                    Check Payment Status 🔄
+                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-lg">
+                    I Have Transferred ✓
                 </button>
-                <p class="text-[10px] text-slate-400 text-center mt-3 font-medium">Click this button after scanning to securely verify your transfer.</p>
+                <p class="text-[10px] text-slate-400 text-center mt-3 font-medium">Click this button to notify your teacher and request access.</p>
             </div>
          </div>
       </div>
 
-      <div id="student-toolbar" class="hidden sticky top-0 z-40 bg-white/95 backdrop-blur-md pb-4 pt-4 mb-6 border-b border-slate-200 flex flex-wrap justify-between items-center gap-4 -mx-8 px-8 shadow-sm">
-        <div class="flex flex-wrap gap-2">
-            <button onclick="document.getElementById('student-main-content').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">⚙️ Class & Mode</button>
-            <button onclick="document.getElementById('student-schedule-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 text-slate-700 hover:text-indigo-700 font-bold rounded-lg transition text-sm">📅 Timetable</button>
-            <button onclick="document.getElementById('bottom-student-sections').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-4 py-2 bg-slate-100 hover:bg-blue-50 border border-transparent hover:border-blue-200 text-slate-700 hover:text-blue-700 font-bold rounded-lg transition text-sm">📚 Library</button>
-            <button onclick="document.getElementById('student-progress-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 text-slate-700 hover:text-emerald-700 font-bold rounded-lg transition text-sm">📈 Progress & Feedback</button>
-        </div>
+      <!-- MAIN DASHBOARD GRID -->
+      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-6 hidden">
         
-        <div class="flex gap-2">
-            <button onclick="window.toggleChatPanel()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition shadow-md text-sm flex items-center gap-2 border border-slate-700 hover:-translate-y-0.5">
-                💬 Class Chat
-            </button>
-            <button onclick="window.startFullExam()" class="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-lg transition shadow-md text-sm flex items-center gap-2 border border-blue-500 hover:-translate-y-0.5">
-                🎓 FULL MOCK EXAM
-            </button>
-        </div>
-      </div>
-
-      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-8 scroll-mt-24">
-        
-        <!-- Left Column: Class Setup -->
-        <div class="lg:col-span-5 flex flex-col gap-6">
-          <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
-            <h2 class="font-bold text-lg mb-4 border-b border-slate-200 pb-2 text-slate-800">Select Class</h2>
-            <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full border-2 border-slate-200 rounded-lg p-3 outline-none focus:border-blue-500 font-bold text-slate-700 bg-white">
+        <!-- LEFT COLUMN: Settings & Progress -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+          
+          <!-- Class Setup -->
+          <div class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex flex-col gap-4">
+            <h2 class="font-bold text-sm text-slate-400 uppercase tracking-widest">1. Select Class</h2>
+            <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full bg-slate-50 border border-slate-200 text-blue-900 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold transition-all shadow-sm cursor-pointer appearance-none">
             </select>
           </div>
+
+          <!-- Quick Actions (Replaces Old Toolbar) -->
+          <div id="student-quick-actions" class="hidden bg-blue-600 p-6 rounded-2xl shadow-md border border-blue-500 text-white flex-col gap-3 relative overflow-hidden">
+              <div class="absolute -right-4 -bottom-4 text-6xl opacity-10 pointer-events-none">🚀</div>
+              <h2 class="font-bold text-sm text-blue-200 uppercase tracking-widest mb-1 z-10">Quick Actions</h2>
+              <button onclick="window.toggleChatPanel()" class="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-4 rounded-xl transition shadow-sm flex justify-between items-center z-10">
+                  <span class="flex items-center gap-2">💬 Class Chat</span>
+                  <span>&rarr;</span>
+              </button>
+              <button onclick="window.startFullExam()" class="w-full bg-white text-blue-800 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-md flex justify-between items-center z-10 border border-blue-100">
+                  <span class="flex items-center gap-2">🎓 Full Mock Exam</span>
+                  <span>&rarr;</span>
+              </button>
+          </div>
+
+          <!-- Progress Section -->
+          <div id="student-progress-section" class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex-col hidden max-h-[500px] overflow-y-auto"></div>
+
         </div>
 
-        <!-- Right Column: Weekly Schedule -->
-        <div class="lg:col-span-7 flex flex-col">
-          <div id="student-schedule-section" class="bg-white border border-indigo-200 rounded-lg shadow-sm overflow-hidden hidden flex-col h-full min-h-[350px] scroll-mt-24">
-             <div class="bg-indigo-50 px-6 py-4 border-b border-indigo-200 flex justify-between items-center gap-2">
-               <h2 class="font-bold text-indigo-900 text-lg flex items-center gap-3">📅 Monthly Timetable <button onclick="window.openStudentBooking()" class="text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-full shadow transition font-black uppercase tracking-wide border border-indigo-800">＋ Book Class</button></h2>
-               <div class="flex items-center gap-2">
-                 <button onclick="changeCalendarMonth(-1, 'student')" class="px-2 py-1 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100 font-bold shadow-sm">&larr;</button>
-                 <span id="student-cal-month" class="font-bold text-indigo-900 min-w-[130px] text-center uppercase tracking-wide">Month Year</span>
-                 <button onclick="changeCalendarMonth(1, 'student')" class="px-2 py-1 bg-white border border-indigo-200 text-indigo-700 rounded hover:bg-indigo-100 font-bold shadow-sm">&rarr;</button>
+        <!-- RIGHT COLUMN: Timetable & Library -->
+        <div class="lg:col-span-8 flex flex-col gap-6" id="bottom-student-sections">
+          
+          <!-- Timetable -->
+          <div id="student-schedule-section" class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden hidden flex-col">
+             <div class="bg-slate-50/80 px-6 py-5 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4">
+               <h2 class="font-bold text-slate-800 text-lg flex items-center gap-2">📅 Timetable</h2>
+               <div class="flex items-center gap-3">
+                 <div class="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm p-1">
+                   <button onclick="changeCalendarMonth(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded font-bold transition">&larr;</button>
+                   <span id="student-cal-month" class="font-bold text-blue-900 min-w-[110px] text-center text-sm">Month Year</span>
+                   <button onclick="changeCalendarMonth(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded font-bold transition">&rarr;</button>
+                 </div>
+                 <button onclick="window.openStudentBooking()" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition font-bold whitespace-nowrap">＋ Book Slot</button>
                </div>
              </div>
-             <div class="p-6 bg-slate-50 flex-1">
-                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-xs font-black text-slate-400 mb-2 tracking-widest">
-                    <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+             <div class="p-6 flex-1 bg-white">
+                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                  </div>
                  <div id="student-cal-grid" class="grid grid-cols-7 gap-1 md:gap-2"></div>
              </div>
           </div>
-        </div>
-      </div>
-      
-      </div>
 
-      <!-- Bottom Section: Library & Progress -->
-      <div id="bottom-student-sections" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 hidden scroll-mt-24">
           <!-- Course Material Library -->
-          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col max-h-[400px]">
-            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex flex-col xl:flex-row justify-between xl:items-center gap-4">
-              <h2 class="font-bold text-slate-700 text-lg whitespace-nowrap">Course Material Library</h2>
+          <div class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden flex flex-col flex-1">
+            <div class="bg-slate-50/80 px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <h2 class="font-bold text-slate-800 text-lg">📚 Course Materials</h2>
               <div class="flex flex-wrap items-center gap-2">
-                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search materials..." class="flex-1 min-w-[150px] border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white">
-                <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
-                  <option value="all">All Modules</option><option value="reading">Read</option><option value="listening">Listen</option><option value="writing">Write</option><option value="speaking">Speak</option>
+                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search..." class="flex-1 min-w-[120px] border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition">
+                <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-600 bg-white shadow-sm transition cursor-pointer">
+                  <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
                 </select>
-                <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
+                <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-600 bg-white shadow-sm transition cursor-pointer hidden md:block">
                   <option value="all">All Tags</option>
                 </select>
-                <select id="student-test-sort" onchange="renderStudentDashboard()" class="border border-slate-300 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium text-slate-600 bg-white">
+                <select id="student-test-sort" onchange="renderStudentDashboard()" class="hidden border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none font-medium text-slate-600 bg-white shadow-sm transition cursor-pointer">
                   <option value="default">Default</option><option value="az">A-Z</option><option value="za">Z-A</option>
                 </select>
               </div>
             </div>
-            <div id="student-tests-list" class="overflow-y-auto p-4 space-y-2 bg-slate-50 flex-1"></div>
+            <!-- Test List grid styling -->
+            <div id="student-tests-list" class="p-6 bg-white grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto"></div>
           </div>
 
-          <!-- Progress Section -->
-          <div id="student-progress-section" class="bg-white p-6 rounded-lg border border-slate-200 shadow-sm max-h-[400px] overflow-y-auto flex flex-col scroll-mt-24"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1031,6 +1091,13 @@
                   <img id="bill-custom-qr-preview" src="" class="h-16 rounded shadow-sm hidden object-contain bg-slate-50 border border-slate-200">
                   <button id="bill-custom-qr-clear" onclick="window.clearCustomQR()" class="hidden text-xs text-rose-500 bg-rose-50 px-3 py-2 rounded-md font-bold hover:bg-rose-100 transition shadow-sm">Remove Custom QR</button>
               </div>
+           </div>
+
+           <!-- NEW: JWT Configuration Field -->
+           <div class="col-span-1 md:col-span-4 mt-5 pt-5 border-t border-slate-100">
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block text-indigo-600">🎥 JaaS Video API Token (JWT)</label>
+              <input type="text" id="bill-jwt" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-lg font-mono text-xs text-slate-500 outline-none focus:border-indigo-500 transition shadow-inner" placeholder="Paste your generated 8x8.vc JWT here...">
+              <p class="text-[10px] text-slate-400 mt-1.5 font-medium">If your video calls show <b class="text-rose-400">"Authentication Failed"</b>, it means your token has expired. Generate a new one from your 8x8 console and paste it here.</p>
            </div>
         </div>
 
@@ -3619,17 +3686,20 @@
       });
     }
 
-    function initStudentDashboard(preserveCid = null) {
+    window.initStudentDashboard = function initStudentDashboard(preserveCid = null) {
       document.getElementById('student-name-display').textContent = currentUser.user;
       
       const isPaid = currentUser.isPaid === true;
-      document.getElementById('student-main-content').classList.toggle('hidden', !isPaid);
+      const mainContent = document.getElementById('student-main-content');
+      if (mainContent) mainContent.classList.toggle('hidden', !isPaid);
       
       const warnContainer = document.getElementById('student-payment-warning');
 
       if(isPaid) {
           warnContainer.classList.add('hidden');
-          warnContainer.innerHTML = ''; // Clear it out
+          warnContainer.innerHTML = ''; 
+          
+          // FIX: Safely loads classes without crashing the UI
           const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
           const sel = document.getElementById('student-class-select');
           
@@ -3639,13 +3709,16 @@
               sel.innerHTML = '<option value="">-- No Classes Assigned --</option>';
               sel.disabled = true;
           } else {
-              sel.innerHTML = '<option value="">-- Choose Class --</option>' + myClasses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+              sel.innerHTML = myClasses.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
               sel.disabled = false;
               
               if (currentVal && myClasses.find(c => c.id === currentVal)) {
                   sel.value = currentVal;
+              } else {
+                  // AUTO SELECT first class to prevent blank screen!
+                  sel.value = myClasses[0].id;
               }
-              renderStudentDashboard();
+              window.renderStudentDashboard();
           }
       } else {
           warnContainer.classList.remove('hidden');
@@ -3660,14 +3733,15 @@
                  </div>
               `;
           } else {
-              renderStudentCheckout();
+              window.renderStudentCheckout();
           }
       }
-    }
+      if (window.updateDashboardHeader) window.updateDashboardHeader();
+    };
 
     const formatVND = (amt) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amt);
 
-    function renderStudentCheckout() {
+    window.renderStudentCheckout = function renderStudentCheckout() {
         let classOpts = '';
         
         if (PACKAGES.length > 0) {
@@ -3678,7 +3752,6 @@
         
         if (!classOpts) classOpts = `<option value="">No packages available</option>`;
 
-        
         const lpmDefault = BILLING_SETTINGS.lessonsPerMonth || 12;
 
         document.getElementById('student-payment-warning').innerHTML = `
@@ -3703,7 +3776,6 @@
                     </div>
                 </div>
 
-                <!-- Package Info Block -->
                 <div id="checkout-package-info" class="hidden bg-blue-900/40 border border-blue-500/50 rounded-xl p-4 mb-6 shadow-inner"></div>
 
                 <div class="space-y-4" id="checkout-plans-container"></div>
@@ -3731,9 +3803,9 @@
         `;
 
         window.updateCheckoutMath();
-    }
+    };
 
-    window.updateCheckoutMath = function() {
+    window.updateCheckoutMath = function updateCheckoutMath() {
         const courseSel = document.getElementById('checkout-course');
         const selVal = courseSel ? courseSel.value : null;
 
@@ -3743,8 +3815,7 @@
         let fpl = BILLING_SETTINGS.feePerLesson || 100000;
         
         if (selVal && selVal.startsWith('pkg_')) {
-            // It's a Package!
-            if (lpmContainer) lpmContainer.classList.remove('hidden'); // SHOW IT FOR BUNDLES TOO
+            if (lpmContainer) lpmContainer.classList.remove('hidden');
             
             const pkgId = selVal.replace('pkg_', '');
             const pkg = PACKAGES.find(p => p.id === pkgId);
@@ -3762,7 +3833,6 @@
                 if (pkg.feePerLesson) fpl = pkg.feePerLesson; 
             }
         } else {
-            // It's a Single Class
             if (lpmContainer) lpmContainer.classList.remove('hidden');
             if (infoContainer) infoContainer.classList.add('hidden');
 
@@ -3806,11 +3876,11 @@
             `).join('');
         }
 
-        selectPaymentPackage(0); // Auto-select the first visible option
-        if(window.checkoutPlans.length > 1) selectPaymentPackage(1); // Or the popular one if available
+        selectPaymentPackage(0); 
+        if(window.checkoutPlans.length > 1) selectPaymentPackage(1); 
     };
 
-    window.selectPaymentPackage = function(idx) {
+    window.selectPaymentPackage = function selectPaymentPackage(idx) {
         if (!window.checkoutPlans || !window.checkoutPlans[idx]) return;
         window.selectedCheckoutPlan = idx;
         const pkg = window.checkoutPlans[idx];
@@ -3857,11 +3927,11 @@
             document.getElementById('vietqr-desc').textContent = msg;
         }
         document.getElementById('vietqr-amount').textContent = formatVND(pkg.final);
-    }
+    };
 
-    window.simulateAutoPayment = function() { } // Legacy placeholder
+    window.simulateAutoPayment = function simulateAutoPayment() { }; 
 
-    window.notifyTeacherPayment = async function() {
+    window.notifyTeacherPayment = async function notifyTeacherPayment() {
         const courseSel = document.getElementById('checkout-course');
         if (!courseSel || !courseSel.value) {
             showModalMsg("Notice", "Please select a course to enroll in first.");
@@ -3877,9 +3947,8 @@
         const pkg = window.checkoutPlans[window.selectedCheckoutPlan];
         currentUser.paymentStatus = 'pending';
         currentUser.pendingInfo = `${courseName} (${pkg.title})`;
-        currentUser.pendingLessons = pkg.lessons; // Tracks the lessons they bought!
+        currentUser.pendingLessons = pkg.lessons; 
         
-        // Save which actual class IDs they are requesting
         if (selVal.startsWith('pkg_')) {
             const packageObj = PACKAGES.find(p => p.id === selVal.replace('pkg_', ''));
             currentUser.pendingClasses = packageObj ? packageObj.classes : [];
@@ -3898,54 +3967,59 @@
         
         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
         
-        initStudentDashboard(); 
-    }
+        window.initStudentDashboard(); 
+    };
 
-    function renderStudentDashboard() {
+    window.renderStudentDashboard = function renderStudentDashboard() {
       const cid = document.getElementById('student-class-select').value;
       const list = document.getElementById('student-tests-list');
       const prog = document.getElementById('student-progress-section');
       const schedSec = document.getElementById('student-schedule-section');
       const bottomSec = document.getElementById('bottom-student-sections');
-      const toolbar = document.getElementById('student-toolbar'); 
-      const mockSec = document.getElementById('student-mock-exam-section');
+      const quickActions = document.getElementById('student-quick-actions');
+      const mainContent = document.getElementById('student-main-content');
+      
+      if(mainContent) mainContent.classList.remove('hidden');
       
       if(!cid) { 
-          list.innerHTML = '<div class="p-6 text-slate-500">Select a class first.</div>'; 
-          if(bottomSec) bottomSec.classList.add('hidden'); 
-          if(schedSec) schedSec.classList.add('hidden');
-          if(toolbar) toolbar.classList.add('hidden'); 
-          if(mockSec) { mockSec.classList.add('hidden'); mockSec.classList.remove('flex'); }
+          if(list) list.innerHTML = '<div class="p-6 text-slate-500 col-span-full">Please select a class to view materials.</div>'; 
+          if(bottomSec) { bottomSec.classList.add('hidden'); bottomSec.classList.remove('flex'); }
+          if(schedSec) { schedSec.classList.add('hidden'); schedSec.classList.remove('flex'); }
+          if(quickActions) { quickActions.classList.add('hidden'); quickActions.classList.remove('flex'); }
+          if(prog) { prog.classList.add('hidden'); prog.classList.remove('flex'); }
           return; 
       }
       
+      // FIX: Correctly find class without crashing
       const cls = CLASSES.find(c => c.id === cid);
       if(!cls) return;
-      if(bottomSec) bottomSec.classList.remove('hidden');
-      if(toolbar) toolbar.classList.remove('hidden'); 
-      if(mockSec) { mockSec.classList.remove('hidden'); mockSec.classList.add('flex'); }
+      
+      if(bottomSec) { bottomSec.classList.remove('hidden'); bottomSec.classList.add('flex'); }
+      if(quickActions) { quickActions.classList.remove('hidden'); quickActions.classList.add('flex'); }
+      if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
 
       const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
-        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
         
-        // ECONOMY CHECK: Is it premium? Has the user unlocked it?
+        const modColors = { reading:'blue', listening:'sky', writing:'indigo', speaking:'cyan' };
         const price = Number(t.price) || 0;
         const unlockedTests = currentUser.unlockedTests || [];
         const isLocked = price > 0 && !unlockedTests.includes(t.id);
         
         const actionButton = isLocked 
-            ? `<button onclick="window.unlockPremiumTest('${t.id}', ${price}, '${t.title.replace(/'/g,"\\'")}')" class="shrink-0 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 border border-amber-300 font-black py-1.5 px-4 rounded text-sm shadow transition flex items-center gap-1">🔒 Unlock ${price} 💎</button>`
-            : `<button onclick="openModeSelection('${t.id}')" class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-4 rounded text-sm shadow transition">Start</button>`;
+            ? `<button onclick="window.unlockPremiumTest('${t.id}', ${price}, '${t.title.replace(/'/g,"\\'")}')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-200 font-bold py-2 rounded-lg text-sm transition flex items-center justify-center gap-1.5 shadow-sm">🔒 Unlock for ${price} 💎</button>`
+            : `<button onclick="openModeSelection('${t.id}')" class="w-full bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 font-bold py-2 rounded-lg text-sm transition flex items-center justify-center shadow-sm">Start Practice &rarr;</button>`;
 
         return `
-        <div class="flex justify-between items-center p-3 border ${isLocked ? 'border-amber-200 bg-amber-50/30' : 'border-slate-200 bg-white'} shadow-sm mb-2 rounded hover:border-blue-300 transition">
-          <div class="truncate pr-4 flex items-center">
-             ${isLocked ? `<span class="text-amber-500 mr-2" title="Premium Content">💎</span>` : ''}
-             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase mr-2">${t.module}</span>
-             <span class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800'} text-sm truncate">${t.title}</span>
-          </div>
-          ${actionButton}
+        <div class="flex flex-col justify-between p-5 border ${isLocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'} shadow-sm rounded-xl transition gap-4 relative overflow-hidden group">
+            <div class="flex justify-between items-start">
+                <span class="text-[10px] font-black px-2.5 py-1 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase tracking-widest">${t.module}</span>
+                ${isLocked ? `<span class="text-amber-500 bg-amber-100 p-1 rounded-md leading-none shadow-sm" title="Premium Content">💎</span>` : ''}
+            </div>
+            <span class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-tight transition-colors">${t.title}</span>
+            <div class="mt-auto pt-2">
+                ${actionButton}
+            </div>
         </div>`;
       };
 
@@ -3955,12 +4029,11 @@
           window.renderCalendar('student');
       }
       
-      let allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials assigned to this course yet.</p>';
+      let allTestsHtml = '<div class="col-span-full text-sm text-slate-500 italic py-4">No materials assigned to this course yet.</div>';
 
       if (cls.assignedTests && cls.assignedTests.length) {
           const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
           const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
-          const sort = document.getElementById('student-test-sort')?.value || 'default';
           const tagSelect = document.getElementById('student-test-filter-tag');
           const selectedTag = tagSelect ? tagSelect.value : 'all';
           
@@ -3984,16 +4057,10 @@
               return matchQuery && matchMod && matchTag;
           });
           
-          if (sort === 'az') {
-              testObjects.sort((a, b) => a.title.localeCompare(b.title));
-          } else if (sort === 'za') {
-              testObjects.sort((a, b) => b.title.localeCompare(a.title));
-          }
-          
           if (testObjects.length) {
               allTestsHtml = testObjects.map(t => renderTestItem(t.id)).join('');
           } else if (query || mod !== 'all' || selectedTag !== 'all') {
-              allTestsHtml = '<p class="text-sm text-slate-500 italic p-2">No materials match your search or filter.</p>';
+              allTestsHtml = '<div class="col-span-full text-sm text-slate-500 italic py-4">No materials match your search or filter.</div>';
           }
       } 
       list.innerHTML = allTestsHtml;
@@ -4005,28 +4072,33 @@
       const progressPct = totalTests === 0 ? 0 : Math.round((completedCount / totalTests) * 100);
 
       prog.innerHTML = `
-        <h2 class="font-bold text-lg mb-4 border-b pb-2 text-slate-700">Class Progress & Feedback</h2>
+        <h2 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Class Progress</h2>
         
-        <div class="mb-5 bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div class="flex justify-between items-center mb-2">
-                <span class="font-bold text-slate-700 text-sm">Course Completion</span>
-                <span class="font-black text-blue-700">${completedCount} / ${totalTests} Assigned Tests</span>
+        <div class="mb-6">
+            <div class="flex justify-between items-end mb-2">
+                <span class="font-black text-4xl text-blue-900 tracking-tighter">${progressPct}%</span>
+                <span class="font-bold text-slate-500 text-sm bg-slate-100 px-2.5 py-1 rounded-md">${completedCount}/${totalTests} Tests</span>
             </div>
-            <div class="w-full bg-slate-200 rounded-full h-3 mb-1">
-                <div class="bg-blue-600 h-3 rounded-full transition-all duration-1000" style="width: ${progressPct}%"></div>
+            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner border border-slate-200">
+                <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: ${progressPct}%"></div>
             </div>
-            <div class="text-right text-xs font-bold text-slate-400">${progressPct}% Finished</div>
         </div>
 
-        <h3 class="font-bold text-sm text-slate-500 uppercase tracking-wider mb-3">Feedback History</h3>
+        <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest mb-3 border-t border-slate-100 pt-5">Recent Feedback</h3>
         <div class="space-y-3">
-          ${mySubs.length ? mySubs.map(s => `
-            <div class="bg-slate-50 border border-slate-200 rounded p-3 flex justify-between items-center hover:bg-slate-100 transition">
-              <div class="truncate pr-2"><strong class="text-slate-800 text-sm block truncate">${s.testName}</strong><span class="text-[10px] text-slate-500 font-bold uppercase">${s.date}</span></div>
-              <div class="text-right shrink-0"><span class="font-bold text-blue-700 bg-blue-100 px-2 py-1 rounded text-sm">${s.score}</span><button onclick="reviewPastSubmission(${s.id})" class="ml-2 text-xs bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded shadow-sm">Review</button></div>
-            </div>`).join('') : '<p class="text-sm text-slate-500 italic">No completed tests yet.</p>'}
+          ${mySubs.length ? mySubs.slice(0, 5).map(s => `
+            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-2 hover:bg-blue-50 hover:border-blue-200 transition group cursor-default">
+              <div class="flex justify-between items-start gap-2">
+                <strong class="text-slate-700 group-hover:text-blue-900 text-sm leading-tight transition-colors">${s.testName}</strong>
+                <span class="font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs shrink-0 shadow-sm">${s.score}</span>
+              </div>
+              <div class="flex justify-between items-center mt-1">
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${s.date}</span>
+                <button onclick="reviewPastSubmission(${s.id})" class="text-[10px] bg-white border border-slate-200 hover:bg-blue-600 hover:text-white text-slate-600 font-bold px-3 py-1.5 rounded-lg shadow-sm transition">Review</button>
+              </div>
+            </div>`).join('') : '<p class="text-sm text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No completed tests yet.</p>'}
         </div>`;
-    }
+    };
 
     let pendingTestId = null;
 
@@ -5522,6 +5594,7 @@
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
         document.getElementById('bill-disc-course').value = BILLING_SETTINGS.discCourse || 20;
+        document.getElementById('bill-jwt').value = BILLING_SETTINGS.jaasJwt || '';
 
         if (BILLING_SETTINGS.customQR) {
             tempCustomQRBase64 = BILLING_SETTINGS.customQR;
@@ -5712,7 +5785,8 @@
             lessonsPerMonth: Number(document.getElementById('bill-lpm').value) || 12,
             discCombo: Number(document.getElementById('bill-disc-combo').value) || 0,
             discCourse: Number(document.getElementById('bill-disc-course').value) || 0,
-            customQR: tempCustomQRBase64
+            customQR: tempCustomQRBase64,
+            jaasJwt: document.getElementById('bill-jwt').value.trim()
         };
 
         try {
@@ -6779,13 +6853,13 @@
                 
                 if(diffDays > 0) {
                     cd.textContent = `🔥 ${diffDays} Days Left! Keep Pushing!`;
-                    cd.className = "text-sm font-bold mt-1.5 inline-block px-3 py-1 rounded-full bg-emerald-900/50 text-emerald-400 border border-emerald-700 shadow-inner";
+                    cd.className = "text-xs sm:text-sm font-bold px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm w-max mx-auto sm:mx-0";
                 } else if(diffDays === 0) {
                     cd.textContent = "⚠️ THE TEST IS TODAY! Good luck!";
-                    cd.className = "text-sm font-black mt-1.5 inline-block px-3 py-1 rounded-full bg-amber-500 text-slate-900 border border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)] animate-pulse";
+                    cd.className = "text-xs sm:text-sm font-black px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 shadow-sm animate-pulse w-max mx-auto sm:mx-0";
                 } else {
                     cd.textContent = "Test Date Passed.";
-                    cd.className = "text-sm font-medium mt-1.5 inline-block px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 shadow-inner";
+                    cd.className = "text-xs sm:text-sm font-bold px-3 py-1.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 shadow-sm w-max mx-auto sm:mx-0";
                 }
             }
         } else {
@@ -7112,62 +7186,22 @@
         }
     };
 
-    // --- LIVE VIDEO CLASS LOGIC (JaaS) ---
-    let jitsiAPI = null;
-
+    // --- LIVE VIDEO CLASS LOGIC (POPUP METHOD) ---
     window.joinLiveClass = function(scheduleId, topic) {
-        let overlay = document.getElementById('live-class-overlay');
-        
-        // SELF-HEAL: Auto-inject the Video HTML if it is missing!
-        if (!overlay) {
-            const overlayHtml = `
-            <div id="live-class-overlay" class="hidden fixed inset-0 bg-slate-900 z-[999] flex flex-col">
-                <div class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
-                    <h2 id="live-class-title" class="text-xl font-bold flex items-center gap-2">🔴 Live Class</h2>
-                    <button onclick="window.leaveLiveClass()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                        End Call
-                    </button>
-                </div>
-                <div id="jaas-container" class="flex-1 w-full h-full bg-black"></div>
-            </div>`;
-            document.body.insertAdjacentHTML('beforeend', overlayHtml);
-            overlay = document.getElementById('live-class-overlay');
-        }
-
-        document.getElementById('live-class-title').innerHTML = `🔴 Live Class: ${topic}`;
-        overlay.classList.remove('hidden');
-
-        // Clean out any old iframe so they don't stack up
-        const container = document.getElementById('jaas-container');
-        container.innerHTML = '';
-
         // Clean schedule ID to ensure a valid room name
         const cleanId = scheduleId.replace(/[^a-zA-Z0-9]/g, '');
         
-        const options = {
-            roomName: `vpaas-magic-cookie-47e2654478b445e6bd48936cfdf0072e/IELTSClass_${cleanId}`,
-            width: '100%',
-            height: '100%',
-            parentNode: container,
-            jwt: "eyJraWQiOiJ2cGFhcy1tYWdpYy1jb29raWUtNDdlMjY1NDQ3OGI0NDVlNmJkNDg5MzZjZmRmMDA3MmUvNmE2ZjI5LVNBTVBMRV9BUFAiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiJqaXRzaSIsImlzcyI6ImNoYXQiLCJpYXQiOjE3ODQ1NzM4ODgsImV4cCI6MTc4NDU4MTA4OCwibmJmIjoxNzg0NTczODgzLCJzdWIiOiJ2cGFhcy1tYWdpYy1jb29raWUtNDdlMjY1NDQ3OGI0NDVlNmJkNDg5MzZjZmRmMDA3MmUiLCJjb250ZXh0Ijp7ImZlYXR1cmVzIjp7ImxpdmVzdHJlYW1pbmciOmZhbHNlLCJmaWxlLXVwbG9hZCI6ZmFsc2UsIm91dGJvdW5kLWNhbGwiOmZhbHNlLCJzaXAtb3V0Ym91bmQtY2FsbCI6ZmFsc2UsInRyYW5zY3JpcHRpb24iOmZhbHNlLCJsaXN0LXZpc2l0b3JzIjpmYWxzZSwicmVjb3JkaW5nIjpmYWxzZSwiZmxpcCI6ZmFsc2V9LCJ1c2VyIjp7ImhpZGRlbi1mcm9tLXJlY29yZGVyIjpmYWxzZSwibW9kZXJhdG9yIjp0cnVlLCJuYW1lIjoiVGVzdCBVc2VyIiwiaWQiOiJnb29nbGUtb2F1dGgyfDEwOTgxODQzMTE2ODY3NjkwMTA2MCIsImF2YXRhciI6IiIsImVtYWlsIjoidGVzdC51c2VyQGNvbXBhbnkuY29tIn19LCJyb29tIjoiKiJ9.SVq_5Q5TsoF_SSyb2Ih5fsd_8mUXJyEjzbENVahJdhoWYal8BDs5rry6LsPzOxp2jcCnk1mUvSjp1kODXCu6WZis6mW-BtOjDXyzXVsQVP-Bk78DThBmcoV0KK3L_gLlfN0oAza17BAg5HMIVb7C-F62T0AInluljrGGFkcPErunmCVCprAv6rWN3GZ2xtJ_koEy49VAj6e-b3X41chvUykSInY0ATQtidrneUCtbP_DjyMAkO7qY-gd1vZoG5GwWrEMbw5FEZgTv66tD47FiX99l7GBg_BvKRyNpP9a1RnzlVIj8vloIycsTR8SKA759CYw4rmnTncEniyQ5HD_LQ",
-            userInfo: {
-                displayName: currentUser ? currentUser.user : 'Guest Student'
-            }
-        };
+        // We use the official, highly-stable meet.jit.si server.
+        // By opening it in a dedicated popup window (instead of an iframe), we completely bypass the 5-minute limit!
+        const displayName = encodeURIComponent(currentUser ? currentUser.user : 'Guest Student');
+        const roomUrl = `https://meet.jit.si/IELTS_LMS_LiveClass_${cleanId}#userInfo.displayName="${displayName}"`;
         
-        jitsiAPI = new JitsiMeetExternalAPI("8x8.vc", options);
+        const windowFeatures = "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes";
+        window.open(roomUrl, "IELTSLMS_LiveClass", windowFeatures);
     };
 
     window.leaveLiveClass = function() {
-        if (jitsiAPI) {
-            jitsiAPI.dispose();
-            jitsiAPI = null;
-        }
-        const container = document.getElementById('jaas-container');
-        if(container) container.innerHTML = '';
-        const overlay = document.getElementById('live-class-overlay');
-        if(overlay) overlay.classList.add('hidden');
+        // This is now handled automatically when the user closes the popup window.
     };
 
   // --- AUTONOMOUS AI EXTRACTOR LOGIC ---
