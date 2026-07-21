@@ -1361,9 +1361,10 @@
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] underline rounded transition">U</button>
               </div>
           </div>
-          <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-3 rounded-b-lg rounded-tl-lg mb-5 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white" style="min-height: 60px;" oninput="window.triggerEditorAutosave()"></div>
+          <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-3 rounded-b-lg rounded-tl-lg mb-1 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white" style="min-height: 60px;" oninput="window.triggerEditorAutosave()"></div>
+          <div id="edit-title-hint" class="hidden text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 mb-4">🎓 This is the real task question. It's shown to students in Practice Mode AND Full Mock Test.</div>
           
-          <div id="builder-media-fields">
+          <div id="builder-media-fields" class="mt-3">
             <div id="audio-field-container">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Audio URL (Optional)</label>
               <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="https://...">
@@ -1378,7 +1379,10 @@
           </div>
           
           <div class="flex justify-between items-end mb-0 mt-2">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1" id="edit-text-label">Prompt / Passage Text</label>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1" id="edit-text-label">
+                  <span id="edit-text-label-text">Prompt / Passage Text</span>
+                  <button type="button" onclick="window.clearPassageText()" class="ml-2 normal-case font-bold text-[11px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 px-1.5 py-0.5 rounded transition tracking-normal" title="Erase all text in this field">🗑 Clear</button>
+              </label>
               
               <!-- Upgraded Main Toolbar -->
               <div class="flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 shadow-inner">
@@ -1393,6 +1397,7 @@
                   <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop')" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
               </div>
           </div>
+          <div id="edit-text-hint" class="hidden text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mb-2 -mt-1">📖 Only shown to students in Practice Mode, behind a Show/Hide button. Completely hidden during Full Mock / timed exams.</div>
           <div class="relative flex-1 min-h-[300px] flex flex-col">
              <div id="edit-passage-text" class="rich-editor flex-1 bg-white border border-slate-300 rounded-b-lg rounded-tl-lg p-5 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 leading-relaxed outline-none transition-all" style="font-family: inherit !important; font-size: 1rem !important;" contenteditable="true" oninput="window.triggerEditorAutosave()"></div>
           </div>
@@ -3468,6 +3473,21 @@
           media.classList.add('hidden');
       }
       
+      // Writing tests use the title field as the REAL task question (shown in every mode),
+      // and the passage-text field becomes an optional Sample Answer (Practice Mode only).
+      const titleHint = document.getElementById('edit-title-hint');
+      const textHint = document.getElementById('edit-text-hint');
+      const textLabelSpan = document.getElementById('edit-text-label-text');
+      if (APP_DATA.module === 'writing') {
+          titleHint.classList.remove('hidden');
+          textHint.classList.remove('hidden');
+          textLabelSpan.textContent = 'Sample Answer (Practice Mode Only)';
+      } else {
+          titleHint.classList.add('hidden');
+          textHint.classList.add('hidden');
+          textLabelSpan.textContent = 'Prompt / Passage Text';
+      }
+      
       const qSel = document.getElementById('new-q-type'); qSel.innerHTML = '';
       if(APP_DATA.module==='writing') qSel.innerHTML = '<option value="essay">Writing Essay Box</option>';
       else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option><option value="essay">Notes / Text Box</option>';
@@ -3666,6 +3686,16 @@
             loadEditorPart(currentEditorPartIdx);
         }
         dragPartSourceIdx = null;
+    };
+
+    window.clearPassageText = function() {
+      if (!confirm("Erase all text in the Prompt / Passage Text field for this part? This can't be undone (unless you Ctrl+Z right after).")) return;
+      const el = document.getElementById('edit-passage-text');
+      if (el) el.innerHTML = '';
+      if (APP_DATA && APP_DATA.parts && APP_DATA.parts[currentEditorPartIdx]) {
+        APP_DATA.parts[currentEditorPartIdx].text = '';
+      }
+      window.triggerEditorAutosave();
     };
 
     function loadEditorPart(idx) {
@@ -4977,25 +5007,47 @@
 
         // Synthetic Generator: Mixes & matches parts from ALL available tests to form a unique mock exam
         const generateSyntheticTest = (moduleName, requiredParts, sourceTests) => {
+            // A part only counts as "usable" if it actually has visible content to show the student.
+            const hasContent = (p) => {
+                if (!p) return false;
+                if (moduleName === 'listening') {
+                    // Audio is the essential content; transcript text is optional.
+                    return !!p.audioUrl;
+                }
+                if (moduleName === 'writing') {
+                    // The real task question now lives in the TITLE field ("Part Title / Main
+                    // Prompt") - that's what's shown to students in every mode. The text field is
+                    // just an optional sample answer for Practice Mode, so it's irrelevant here.
+                    const plain = (p.title || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim();
+                    if (!plain) return false;
+                    const wordCount = plain.split(/\s+/).filter(Boolean).length;
+                    return wordCount >= 5; // must be an actual sentence, not just "Part 1" or a stray word
+                }
+                // Reading & other modules: just need actual passage/prompt text present.
+                return !!(p.text && p.text.trim().length > 0);
+            };
+
             let selectedParts = [];
             for (let i = 0; i < requiredParts; i++) {
-                // Find all parts at this specific index (e.g., all "Part 1s") that ACTUALLY have questions
+                // Find all parts at this specific index (e.g., all "Part 1s") that ACTUALLY have questions AND content
                 let validPartsForThisIndex = sourceTests
                     .map(t => t.parts[i])
-                    .filter(p => p && p.questions && p.questions.length > 0);
+                    .filter(p => p && p.questions && p.questions.length > 0 && hasContent(p));
                 
                 if (validPartsForThisIndex.length > 0) {
                     let randomPart = validPartsForThisIndex[Math.floor(Math.random() * validPartsForThisIndex.length)];
                     let clonedPart = JSON.parse(JSON.stringify(randomPart));
-                    clonedPart.title = `Part ${i + 1}`; // Enforce strict naming (1 -> 2 -> 3)
+                    // Writing's title IS the real task question now - never overwrite it.
+                    // Other modules just use the title as a decorative label, safe to normalize.
+                    if (moduleName !== 'writing') clonedPart.title = `Part ${i + 1}`;
                     selectedParts.push(clonedPart);
                 } else {
                     // Fallback: If no "Part X" exists anywhere, grab ANY valid part from this module
-                    let allValidPartsAnywhere = sourceTests.flatMap(t => t.parts).filter(p => p && p.questions && p.questions.length > 0);
+                    let allValidPartsAnywhere = sourceTests.flatMap(t => t.parts).filter(p => p && p.questions && p.questions.length > 0 && hasContent(p));
                     if (allValidPartsAnywhere.length > 0) {
                         let randomPart = allValidPartsAnywhere[Math.floor(Math.random() * allValidPartsAnywhere.length)];
                         let clonedPart = JSON.parse(JSON.stringify(randomPart));
-                        clonedPart.title = `Part ${i + 1}`;
+                        if (moduleName !== 'writing') clonedPart.title = `Part ${i + 1}`;
                         selectedParts.push(clonedPart);
                     }
                 }
@@ -5145,6 +5197,13 @@
         document.getElementById('listening-exam-overlay').classList.add('hidden');
         document.getElementById('listening-exam-overlay').classList.remove('flex');
     }
+    window.toggleSampleAnswer = function() {
+        const content = document.getElementById('sample-answer-content');
+        const label = document.getElementById('sample-answer-toggle-label');
+        if (!content) return;
+        const nowHidden = content.classList.toggle('hidden');
+        if (label) label.textContent = nowHidden ? 'Show Sample Answer' : 'Hide Sample Answer';
+    };
     window.toggleTranscript = function() {
         const passage = document.getElementById('passage-container');
         const resizer = document.getElementById('resizer');
@@ -5215,41 +5274,39 @@
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
           passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${htmlText}</div>`;
-      } else if (APP_DATA.module === 'writing' && !isTimeFree) {
-          // EXAM MODE WRITING: Hide the sample essay (p.text) and move questions to the left!
+      } else if (APP_DATA.module === 'writing') {
+          // WRITING: Title = the real task question (always shown, both modes).
+          // Image = chart, only rendered if actually present (no empty box otherwise).
+          // Sample Answer (p.text) is only ever shown in Practice/Time-Free mode, hidden behind a toggle.
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
-          passageContainer.style.width = '50%'; 
-          
-          let leftHtml = p.questions.map((q) => `
-              <div class="mb-6 bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
-                  ${q.instruction ? `<h3 class="font-black text-slate-800 text-lg mb-3">${q.instruction}</h3>` : ''}
-                  <div class="text-base text-slate-700 leading-relaxed">${q.text || ''}</div>
-              </div>
-          `).join('');
-          
-          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title}</div><div id="passage-text-content" class="passage-text">${leftHtml}</div>`;
-          
+          passageContainer.style.width = '50%';
+
+          let sampleAnswerBlock = '';
+          const sampleText = (p.text || '').trim();
+          if (isTimeFree && sampleText) {
+              sampleAnswerBlock = `
+                <div class="mt-6 pt-4 border-t border-slate-200">
+                  <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded shadow-sm hover:bg-slate-100 transition flex items-center gap-1.5">
+                    👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
+                  </button>
+                  <div id="sample-answer-content" class="hidden mt-3 passage-text text-justify bg-amber-50 border border-amber-200 rounded-lg p-4">${htmlText}</div>
+                </div>`;
+          }
+
+          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title}</div>${media}${sampleAnswerBlock}`;
+
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
       } else {
+          // CLEAN STANDARD LAYOUT (Reading)
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
           passageContainer.style.width = '50%'; 
           
-          // Generate the toggle button ONLY in Practice Mode (Time-Free)
-          let sampleToggleBtn = '';
-          if (isTimeFree && (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking')) {
-              sampleToggleBtn = `
-              <div class="mb-4 border-t border-slate-200 pt-4 mt-2">
-                  <button onclick="document.getElementById('passage-text-content').classList.toggle('hidden')" class="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 px-4 py-2 rounded-lg font-bold text-sm shadow-sm transition flex items-center gap-2">
-                      👁️ Show/Hide Text (Sample Essay)
-                  </button>
-              </div>`;
-          }
-
-          // Inject the button right between the media (picture) and the text passage
-          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title}</div>${media}${sampleToggleBtn}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
+          // Shows Title, Image/Chart (if provided), and the main Passage Text/Prompt. 
+          // We removed the duplicate "leftHtml" question container completely to prevent the empty grey boxes (Pic 2).
+          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
