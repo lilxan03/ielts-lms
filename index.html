@@ -8,7 +8,10 @@
   <meta name="theme-color" content="#1e293b">
   <title>IELTS LMS - Cloud Connected</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://8x8.vc/vpaas-magic-cookie-47e2654478b445e6bd48936cfdf0072e/external_api.js"></script>
+  
+  <!-- NEW: Use the Official, Free Jitsi API (No Tokens, No Popups) -->
+  <script src="https://meet.jit.si/external_api.js"></script>
+
   <style>
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -921,66 +924,70 @@
   </div>
 
   <!-- EDITOR UI -->
-  <div id="editor-ui" class="hidden h-screen flex flex-col bg-slate-100 z-50 relative">
-    <header class="bg-slate-800 text-white px-6 py-3 flex justify-between items-center shrink-0 shadow-md min-h-[64px] transition-all">
+  <div id="editor-ui" class="hidden h-screen flex flex-col bg-[#f4f7fb] z-50 relative font-sans">
+    <header class="bg-blue-900 text-white px-6 py-3 flex justify-between items-center shrink-0 shadow-md min-h-[72px] transition-all relative overflow-hidden z-40">
+      <!-- Decorative Orbs -->
+      <div class="absolute -top-24 -right-10 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 pointer-events-none"></div>
+
       <!-- LEFT SECTION -->
-      <div class="flex items-center gap-4 flex-1">
+      <div class="flex items-center gap-6 flex-1 relative z-10">
         <!-- Default State: Logo & Tabs -->
-        <div id="editor-default-header" class="flex items-center gap-8">
-            <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
-                <span class="text-blue-400">🛠</span> LMS <span class="font-light text-slate-400">| Teacher</span>
+        <div id="editor-default-header" class="flex items-center gap-8 w-full">
+            <h1 class="text-2xl font-black tracking-tight text-white flex items-center gap-2 drop-shadow-sm">
+                <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🛠</div>
+                LMS <span class="font-light text-blue-200 text-lg">| Teacher</span>
             </h1>
-            <div class="flex bg-slate-900/60 rounded-lg p-1 shadow-inner space-x-1 border border-slate-700/50" id="editor-main-tabs">
-              <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition">Dashboard</button>
-              <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Students/Pay</button>
-              <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Timetable</button>
-              <button onclick="toggleEditorTab('landing')" id="tab-btn-landing" class="px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition">Landing Page</button>
+            <div class="flex bg-blue-950/40 rounded-2xl p-1.5 shadow-inner space-x-1 border border-blue-400/20" id="editor-main-tabs">
+              <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-2 bg-white text-blue-900 rounded-xl text-sm font-black shadow-sm transition">Dashboard</button>
+              <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition">Students/Pay</button>
+              <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition">Timetable</button>
+              <button onclick="toggleEditorTab('landing')" id="tab-btn-landing" class="px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition">Landing Page</button>
             </div>
         </div>
 
         <!-- Builder State: Back Button & Controls -->
-        <div id="editor-builder-controls" class="hidden items-center gap-4 animate-fade-in-up flex-1">
-            <button id="editor-back-bank" onclick="exitBuilder()" class="text-slate-400 hover:text-white transition flex items-center gap-1.5 font-bold text-sm bg-slate-700/50 hover:bg-slate-700 px-3 py-2 rounded-lg border border-slate-600 shadow-sm">
+        <div id="editor-builder-controls" class="hidden items-center gap-4 animate-fade-in-up flex-1 w-full relative z-10">
+            <button id="editor-back-bank" onclick="exitBuilder()" class="text-blue-100 hover:text-white transition flex items-center gap-1.5 font-bold text-sm bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl border border-white/20 shadow-sm">
                 &larr; Back
             </button>
-            <div class="h-6 w-px bg-slate-600"></div>
-            <button onclick="editCurrentTestMeta()" class="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-slate-700 transition cursor-pointer" title="Edit Test Info">
+            <div class="h-6 w-px bg-blue-700"></div>
+            <button onclick="editCurrentTestMeta()" class="group flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-white/10 transition cursor-pointer" title="Edit Test Info">
                 <span id="builder-test-name" class="font-bold text-lg text-white truncate max-w-[400px]">Editing Test...</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 group-hover:text-blue-400"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-300 group-hover:text-white"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>
-            <div class="h-6 w-px bg-slate-600"></div>
-            <button onclick="openTeacherVocabModal()" class="text-sm font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-400/10 px-3 py-2 rounded-lg border border-emerald-400/20 transition flex items-center gap-1.5 shadow-sm">🗂️ Vocab Bank</button>
-            <div class="flex items-center gap-2 bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-700 shadow-inner">
-                <label class="text-xs text-slate-400 uppercase tracking-widest font-bold">Parts:</label>
+            <div class="h-6 w-px bg-blue-700"></div>
+            <button onclick="openTeacherVocabModal()" class="text-sm font-bold text-emerald-300 hover:text-emerald-100 bg-emerald-500/20 px-4 py-2 rounded-xl border border-emerald-400/30 transition flex items-center gap-1.5 shadow-sm">🗂️ Vocab Bank</button>
+            <div class="flex items-center gap-2 bg-blue-950/40 px-4 py-2 rounded-xl border border-blue-400/20 shadow-inner">
+                <label class="text-xs text-blue-200 uppercase tracking-widest font-bold">Parts:</label>
                 <select id="editor-part-count" onchange="updatePartCount(this.value)" class="bg-transparent text-white text-sm font-bold outline-none cursor-pointer"></select>
             </div>
         </div>
       </div>
 
       <!-- RIGHT SECTION -->
-      <div class="flex gap-3 items-center shrink-0">
-        <span id="editor-autosave-status" class="text-xs font-bold text-slate-400 opacity-0 transition-opacity w-20 text-right whitespace-nowrap">Autosaved</span>
+      <div class="flex gap-3 items-center shrink-0 relative z-10">
+        <span id="editor-autosave-status" class="text-xs font-bold text-blue-200 opacity-0 transition-opacity w-20 text-right whitespace-nowrap">Autosaved</span>
         
         <!-- Default State: Inbox & Logout -->
-        <button id="editor-inbox-btn" onclick="window.toggleChatPanel()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition font-bold text-sm shadow-sm flex items-center gap-2 border border-indigo-700">💬 Inbox</button>
-        <button id="editor-logout" onclick="logout()" class="px-5 py-2 bg-slate-700 hover:bg-rose-600 text-white rounded-lg transition font-bold text-sm shadow-sm border border-slate-600 hover:border-rose-500">Logout</button>
+        <button id="editor-inbox-btn" onclick="window.toggleChatPanel()" class="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl transition font-bold text-sm shadow-md flex items-center gap-2 border border-indigo-400 hover:-translate-y-0.5">💬 Inbox</button>
+        <button id="editor-logout" onclick="logout()" class="px-5 py-2.5 bg-white/10 hover:bg-rose-500 hover:border-rose-400 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5">Logout</button>
         
         <!-- Builder State: Preview & Save -->
-        <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-5 py-2 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-500 hover:text-white font-bold rounded-lg transition shadow-sm items-center gap-1.5 text-sm">👁️ Preview</button>
-        <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-6 py-2 bg-blue-600 hover:bg-blue-500 font-bold rounded-lg text-white transition shadow-sm items-center gap-1.5 text-sm border border-blue-700">💾 Save Test</button>
+        <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-5 py-2.5 bg-blue-500/20 text-blue-100 border border-blue-400/30 hover:bg-blue-500 hover:text-white font-bold rounded-xl transition shadow-sm items-center gap-1.5 text-sm">👁️ Preview</button>
+        <button id="editor-save-test" onclick="saveActiveTest()" class="hidden px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 font-bold rounded-xl text-white transition shadow-md items-center gap-1.5 text-sm border border-emerald-400 hover:-translate-y-0.5">💾 Save Test</button>
       </div>
     </header>
 
-    <div id="editor-view-bank" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
+    <div id="editor-view-bank" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
       <div class="max-w-7xl mx-auto pb-20">
         
         <div class="flex justify-center mb-8">
-            <div class="bg-slate-200 p-1.5 rounded-xl flex space-x-2 shadow-inner">
-                <button onclick="toggleDashboardView('tests')" id="dash-btn-tests" class="px-8 py-2.5 bg-white text-blue-700 font-bold rounded-lg shadow-sm transition duration-200 flex items-center gap-2">
+            <div class="bg-white p-1.5 rounded-2xl flex space-x-2 shadow-sm border border-blue-50">
+                <button onclick="toggleDashboardView('tests')" id="dash-btn-tests" class="px-8 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl shadow-sm transition duration-200 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
                     Test Bank
                 </button>
-                <button onclick="toggleDashboardView('classes')" id="dash-btn-classes" class="px-8 py-2.5 text-slate-500 font-bold rounded-lg hover:text-slate-700 transition duration-200 flex items-center gap-2">
+                <button onclick="toggleDashboardView('classes')" id="dash-btn-classes" class="px-8 py-2.5 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition duration-200 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                     Classes & Subs
                 </button>
@@ -988,22 +995,22 @@
         </div>
 
         <div id="dash-view-tests" class="flex flex-col gap-6 animate-fade-in-up">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
             <div>
-              <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+              <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
                  <span class="text-3xl">📚</span> Test Bank
               </h2>
               <p class="text-sm text-slate-500 font-medium mt-1">Manage and assign your cloud-synced materials</p>
             </div>
             <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
-              <button onclick="createNewTest('reading')" class="bg-gradient-to-br from-blue-500 to-blue-700 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">📖 Reading</button>
-              <button onclick="createNewTest('listening')" class="bg-gradient-to-br from-cyan-500 to-cyan-700 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🎧 Listening</button>
-              <button onclick="createNewTest('writing')" class="bg-gradient-to-br from-emerald-500 to-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">✍️ Writing</button>
-              <button onclick="createNewTest('speaking')" class="bg-gradient-to-br from-amber-400 to-amber-600 text-white px-4 py-2.5 rounded-xl font-bold shadow hover:shadow-lg hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🗣️ Speaking</button>
+              <button onclick="createNewTest('reading')" class="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">📖 Reading</button>
+              <button onclick="createNewTest('listening')" class="bg-sky-50 hover:bg-sky-500 hover:text-white text-sky-700 border border-sky-100 hover:border-sky-500 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🎧 Listening</button>
+              <button onclick="createNewTest('writing')" class="bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-100 hover:border-indigo-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">✍️ Writing</button>
+              <button onclick="createNewTest('speaking')" class="bg-cyan-50 hover:bg-cyan-600 hover:text-white text-cyan-700 border border-cyan-100 hover:border-cyan-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🗣️ Speaking</button>
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-3 bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 items-center">
+          <div class="flex flex-col sm:flex-row gap-3 bg-white p-4 rounded-2xl shadow-sm border border-blue-50 items-center">
             <div class="relative flex-1 w-full">
                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <span class="text-slate-400">🔍</span>
@@ -1022,27 +1029,27 @@
           </div>
           
           <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"></div>
-        </div> <!-- This closes dash-view-tests -->
+        </div>
 
         <div id="dash-view-classes" class="hidden flex-col gap-6 animate-fade-in-up">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
             <div>
-              <h2 class="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+              <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
                  <span class="text-3xl">👥</span> Classes & Submissions
               </h2>
               <p class="text-sm text-slate-500 font-medium mt-1">Manage your student groups and grade their work</p>
             </div>
             <div class="flex gap-3 mt-4 md:mt-0">
                <button onclick="clearAllSubmissions()" class="px-5 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-bold text-sm shadow-sm hover:bg-rose-100 hover:text-rose-700 transition flex items-center gap-2">🗑️ Clear Submissions</button>
-               <button onclick="promptCreateClass()" class="bg-gradient-to-br from-indigo-500 to-indigo-700 hover:from-indigo-600 hover:to-indigo-800 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition hover:-translate-y-0.5 flex items-center gap-2">＋ New Class</button>
+               <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition hover:-translate-y-0.5 flex items-center gap-2">＋ New Class</button>
             </div>
           </div>
-          <div class="bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-50">
             <div class="relative w-full">
                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <span class="text-slate-400">🔍</span>
                </div>
-               <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-base focus:border-indigo-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
+               <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-base focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
             </div>
           </div>
           <div id="classes-list" class="space-y-6"></div>
@@ -1052,107 +1059,107 @@
     </div>
 
     <!-- Submissions -->
-    <div id="editor-view-subs" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-5xl mx-auto">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <h2 class="text-2xl font-bold text-slate-800">Student Submissions</h2>
-          <button onclick="clearAllSubmissions()" class="px-4 py-2 bg-rose-100 text-rose-700 border border-rose-300 rounded font-bold text-sm shadow-sm hover:bg-rose-200">Clear All Data</button>
+    <div id="editor-view-subs" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
+      <div class="max-w-5xl mx-auto space-y-6">
+        <div class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
+          <h2 class="text-2xl font-black text-blue-900">Student Submissions</h2>
+          <button onclick="clearAllSubmissions()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl font-bold text-sm shadow-sm transition hover:-translate-y-0.5">Clear All Data</button>
         </div>
         <div id="submissions-list" class="space-y-4 pb-20"></div>
       </div>
     </div>
 
     <!-- Students & Payments -->
-    <div id="editor-view-students" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
+    <div id="editor-view-students" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
       <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <h2 class="text-2xl font-bold text-slate-800">Students & Payment Control</h2>
-          <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm">＋ Add Student</button>
+        <div class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
+          <h2 class="text-2xl font-black text-blue-900">Students & Payment Control</h2>
+          <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5">＋ Add Student</button>
         </div>
         
         <!-- NEW BILLING SETTINGS PANEL -->
-        <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm mb-8">
-           <h3 class="font-bold text-lg text-slate-800 mb-5 flex justify-between items-center">
+        <div class="bg-white border border-blue-50 p-8 rounded-2xl shadow-sm mb-6">
+           <h3 class="font-bold text-lg text-blue-950 mb-5 flex justify-between items-center">
               <span class="flex items-center gap-2">💳 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-black">Global Pricing & QR Setup</span></span>
-              <button onclick="saveBillingSettings()" id="btn-save-billing" class="text-sm bg-slate-800 hover:bg-slate-900 text-white px-5 py-2 rounded-lg font-bold shadow transition">Save Settings</button>
+              <button onclick="saveBillingSettings()" id="btn-save-billing" class="text-sm bg-blue-900 hover:bg-blue-950 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition">Save Settings</button>
            </h3>
            
            <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5 border-b border-slate-100 pb-5">
-              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block" title="Used as base fee for new classes">Default Fee/Lesson</label><input type="number" id="bill-fee" class="w-full border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-lg font-bold text-emerald-900 outline-none focus:border-emerald-500 transition"></div>
-              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Lessons / Month</label><input type="number" id="bill-lpm" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-blue-500 transition"></div>
-              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Combo Disc (%)</label><input type="number" id="bill-disc-combo" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-lg font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 10"></div>
-              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Disc (%)</label><input type="number" id="bill-disc-course" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-lg font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 20"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block" title="Used as base fee for new classes">Default Fee/Lesson</label><input type="number" id="bill-fee" class="w-full border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-xl font-bold text-emerald-900 outline-none focus:border-emerald-500 transition"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Lessons / Month</label><input type="number" id="bill-lpm" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-800 outline-none focus:border-blue-500 transition"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Combo Disc (%)</label><input type="number" id="bill-disc-combo" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 10"></div>
+              <div><label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Disc (%)</label><input type="number" id="bill-disc-course" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-bold text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 20"></div>
            </div>
            
            <div class="col-span-1 md:col-span-4 mt-5">
               <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Custom Receiving QR Code (Required for Payments)</label>
               <div class="flex items-center gap-4">
-                  <input type="file" id="bill-custom-qr" accept="image/*" onchange="window.handleCustomQR(event)" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition">
+                  <input type="file" id="bill-custom-qr" accept="image/*" onchange="window.handleCustomQR(event)" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition">
                   <img id="bill-custom-qr-preview" src="" class="h-16 rounded shadow-sm hidden object-contain bg-slate-50 border border-slate-200">
-                  <button id="bill-custom-qr-clear" onclick="window.clearCustomQR()" class="hidden text-xs text-rose-500 bg-rose-50 px-3 py-2 rounded-md font-bold hover:bg-rose-100 transition shadow-sm">Remove Custom QR</button>
+                  <button id="bill-custom-qr-clear" onclick="window.clearCustomQR()" class="hidden text-xs text-rose-500 bg-rose-50 px-3 py-2 rounded-lg font-bold hover:bg-rose-100 transition shadow-sm">Remove Custom QR</button>
               </div>
            </div>
 
            <!-- NEW: JWT Configuration Field -->
            <div class="col-span-1 md:col-span-4 mt-5 pt-5 border-t border-slate-100">
               <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 block text-indigo-600">🎥 JaaS Video API Token (JWT)</label>
-              <input type="text" id="bill-jwt" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-lg font-mono text-xs text-slate-500 outline-none focus:border-indigo-500 transition shadow-inner" placeholder="Paste your generated 8x8.vc JWT here...">
+              <input type="text" id="bill-jwt" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-mono text-xs text-slate-500 outline-none focus:border-indigo-500 transition shadow-inner" placeholder="Paste your generated 8x8.vc JWT here...">
               <p class="text-[10px] text-slate-400 mt-1.5 font-medium">If your video calls show <b class="text-rose-400">"Authentication Failed"</b>, it means your token has expired. Generate a new one from your 8x8 console and paste it here.</p>
            </div>
         </div>
 
         <!-- NEW PACKAGES & BUNDLES PANEL -->
-        <div class="bg-white border border-slate-200 p-6 rounded-xl shadow-sm mb-8">
+        <div class="bg-white border border-blue-50 p-8 rounded-2xl shadow-sm mb-6">
            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
-               <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+               <h3 class="font-bold text-lg text-blue-950 flex items-center gap-2">
                   📦 <span class="bg-gradient-to-r from-purple-600 to-fuchsia-600 bg-clip-text text-transparent font-black">Course Bundles & Packages</span>
                </h3>
-               <button onclick="window.promptCreatePackage()" class="text-sm bg-purple-50 text-purple-700 hover:bg-purple-100 px-4 py-1.5 rounded-lg font-bold transition shadow-sm border border-purple-200">+ Create Bundle</button>
+               <button onclick="window.promptCreatePackage()" class="text-sm bg-purple-50 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-xl font-bold transition shadow-sm border border-purple-200">+ Create Bundle</button>
            </div>
            <p class="text-sm text-slate-500 mb-5">Group multiple classes together and sell them at a fixed discount price.</p>
            <div id="packages-pricing-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
 
-        <div id="students-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"></div>
+        <div id="students-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20"></div>
       </div>
     </div>
 
     <!-- Timetable & Attendance (Calendar View) -->
-    <div id="editor-view-timetable" class="flex-1 overflow-y-auto p-8 bg-slate-50 hidden">
-      <div class="max-w-6xl mx-auto">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-          <h2 class="text-2xl font-bold text-slate-800">Monthly Timetable & Attendance</h2>
-          <div class="flex gap-2">
-            <button onclick="window.toggleChatPanel()" class="bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded font-black shadow-sm flex items-center gap-2 text-sm transition">💬 Teacher Inbox</button>
-            <button onclick="window.openAvailabilitySettings()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded font-bold shadow-sm flex items-center gap-2 text-sm transition">⚙️ Booking Settings</button>
-            <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm text-sm transition">＋ Schedule Class</button>
+    <div id="editor-view-timetable" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden">
+      <div class="max-w-7xl mx-auto space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50 gap-4">
+          <h2 class="text-2xl font-black text-blue-900">Monthly Timetable & Attendance</h2>
+          <div class="flex flex-wrap gap-3">
+            <button onclick="window.toggleChatPanel()" class="bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl font-black shadow-sm flex items-center gap-2 text-sm transition hover:-translate-y-0.5">💬 Teacher Inbox</button>
+            <button onclick="window.openAvailabilitySettings()" class="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-bold shadow-sm flex items-center gap-2 text-sm transition hover:-translate-y-0.5">⚙️ Booking Settings</button>
+            <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm text-sm transition hover:-translate-y-0.5">＋ Schedule Class</button>
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
           
           <!-- Calendar Left Column -->
-          <div class="lg:col-span-2 bg-white border border-slate-200 rounded-lg shadow-sm p-5">
-             <div class="flex justify-between items-center mb-6 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <button onclick="changeCalendarMonth(-1, 'teacher')" class="px-3 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded font-bold text-slate-600 shadow-sm">&larr; Prev</button>
+          <div class="lg:col-span-2 bg-white border border-blue-50 rounded-2xl shadow-sm p-6">
+             <div class="flex justify-between items-center mb-6 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                <button onclick="changeCalendarMonth(-1, 'teacher')" class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg font-bold text-slate-600 shadow-sm transition">&larr; Prev</button>
                 <h3 id="teacher-cal-month" class="font-black text-xl text-blue-900 tracking-wide uppercase">Month Year</h3>
-                <button onclick="changeCalendarMonth(1, 'teacher')" class="px-3 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded font-bold text-slate-600 shadow-sm">Next &rarr;</button>
+                <button onclick="changeCalendarMonth(1, 'teacher')" class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg font-bold text-slate-600 shadow-sm transition">Next &rarr;</button>
              </div>
-             <div class="grid grid-cols-7 gap-2 text-center text-xs font-black text-slate-400 mb-2 tracking-widest">
-                <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+             <div class="grid grid-cols-7 gap-2 text-center text-[10px] font-black text-slate-400 mb-2 tracking-widest uppercase">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
              </div>
              <div id="teacher-cal-grid" class="grid grid-cols-7 gap-2"></div>
           </div>
 
           <!-- Day Schedule Right Column -->
           <div class="flex flex-col gap-6">
-            <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-5 h-[400px] flex flex-col">
-              <h3 id="teacher-selected-date-label" class="font-bold text-lg text-blue-800 mb-3 border-b border-slate-100 pb-2">Select a date</h3>
+            <div class="bg-white border border-blue-50 rounded-2xl shadow-sm p-6 h-[400px] flex flex-col">
+              <h3 id="teacher-selected-date-label" class="font-bold text-lg text-blue-900 mb-3 border-b border-slate-100 pb-2">Select a date</h3>
               <div id="timetable-list" class="space-y-3 overflow-y-auto flex-1 pr-1">
                  <p class="text-sm text-slate-500 italic mt-10 text-center">Click a day on the calendar to view or add class schedules.</p>
               </div>
             </div>
-            <div class="bg-white border border-slate-200 rounded-lg shadow-sm p-5">
-               <h3 class="font-bold text-lg text-slate-700 mb-3 border-b border-slate-100 pb-2">Attendance Export</h3>
+            <div class="bg-white border border-blue-50 rounded-2xl shadow-sm p-6">
+               <h3 class="font-bold text-lg text-blue-900 mb-3 border-b border-slate-100 pb-2">Attendance Export</h3>
                <div id="attendance-export-list" class="space-y-3 max-h-[250px] overflow-y-auto pr-1"></div>
             </div>
           </div>
@@ -2011,13 +2018,13 @@
       if (view === 'tests') {
           if(testsView) { testsView.classList.remove('hidden'); testsView.classList.add('flex'); }
           if(classesView) { classesView.classList.add('hidden'); classesView.classList.remove('flex'); }
-          if(btnTests) btnTests.className = "px-8 py-2.5 bg-white text-blue-700 font-bold rounded-lg shadow-sm transition duration-200 flex items-center gap-2";
-          if(btnClasses) btnClasses.className = "px-8 py-2.5 text-slate-500 font-bold rounded-lg hover:text-slate-700 transition duration-200 flex items-center gap-2";
+          if(btnTests) btnTests.className = "px-8 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl shadow-sm transition duration-200 flex items-center gap-2";
+          if(btnClasses) btnClasses.className = "px-8 py-2.5 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition duration-200 flex items-center gap-2";
       } else {
           if(classesView) { classesView.classList.remove('hidden'); classesView.classList.add('flex'); }
           if(testsView) { testsView.classList.add('hidden'); testsView.classList.remove('flex'); }
-          if(btnClasses) btnClasses.className = "px-8 py-2.5 bg-white text-blue-700 font-bold rounded-lg shadow-sm transition duration-200 flex items-center gap-2";
-          if(btnTests) btnTests.className = "px-8 py-2.5 text-slate-500 font-bold rounded-lg hover:text-slate-700 transition duration-200 flex items-center gap-2";
+          if(btnClasses) btnClasses.className = "px-8 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl shadow-sm transition duration-200 flex items-center gap-2";
+          if(btnTests) btnTests.className = "px-8 py-2.5 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition duration-200 flex items-center gap-2";
       }
     };
 
@@ -2033,7 +2040,7 @@
       });
       ['bank', 'classes', 'students', 'timetable', 'landing'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
-        if(b) b.className = t===tab ? 'px-4 py-1.5 bg-slate-700 text-white rounded text-sm font-bold shadow-sm transition' : 'px-4 py-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded text-sm font-medium transition';
+        if(b) b.className = t===tab ? 'px-4 py-2 bg-white text-blue-900 rounded-xl text-sm font-black shadow-sm transition' : 'px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition';
       });
 
       if (tab === 'builder') {
@@ -2119,26 +2126,29 @@
       else if (sort === 'za') filtered.sort((a, b) => b.title.localeCompare(a.title));
 
       grid.innerHTML = filtered.length ? filtered.map(t => {
-        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
+        const modColors = { reading:'blue', listening:'sky', writing:'indigo', speaking:'cyan' };
         const c = modColors[t.module];
         
         const assignedClasses = CLASSES.filter(cls => cls.assignedTests && cls.assignedTests.includes(t.id)).map(cls => cls.name);
         const assignedBadge = assignedClasses.length > 0 
-            ? `<div class="mt-1 mb-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded truncate" title="Assigned to: ${assignedClasses.join(', ')}">📖 ${assignedClasses.join(', ')}</div>`
-            : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
+            ? `<div class="mt-1 mb-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded truncate shadow-sm" title="Assigned to: ${assignedClasses.join(', ')}">📖 ${assignedClasses.join(', ')}</div>`
+            : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-50 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
 
         return `
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col">
-          <div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span><span class="text-xs text-slate-400 font-bold">${t.parts.length} Part(s)</span></div>
-          <h3 class="font-bold text-slate-900 truncate">${t.title}</h3>
+        <div class="bg-white border border-blue-50 rounded-2xl shadow-sm hover:shadow-md transition p-6 flex flex-col group relative overflow-hidden">
+          <div class="flex justify-between items-start mb-3">
+              <span class="text-[10px] font-black px-2.5 py-1 rounded-md bg-${c}-50 border border-${c}-100 text-${c}-700 uppercase tracking-widest">${t.module}</span>
+              <span class="text-xs text-slate-400 font-bold bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">${t.parts.length} Part(s)</span>
+          </div>
+          <h3 class="font-black text-slate-800 text-lg leading-tight mb-2 group-hover:text-blue-700 transition-colors">${t.title}</h3>
           ${assignedBadge}
           <div class="flex gap-2 mt-auto pt-4 border-t border-slate-100">
-            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Edit Test">✏️</button>
-            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>
-            <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>
+            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-50 hover:bg-blue-50 hover:text-blue-600 text-slate-600 rounded-lg py-2 text-sm font-bold transition shadow-sm border border-slate-100 hover:border-blue-200" title="Edit Test">✏️ Edit</button>
+            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg py-2 text-sm font-bold transition shadow-sm border border-indigo-100 hover:border-indigo-200" title="Assign to Class">👥 Assign</button>
+            <button onclick="deleteTest('${t.id}')" class="w-10 shrink-0 bg-rose-50 hover:bg-rose-500 hover:text-white text-rose-500 rounded-lg py-2 text-sm font-bold transition shadow-sm border border-rose-100 hover:border-rose-500 flex justify-center items-center" title="Delete Test">🗑️</button>
           </div>
         </div>`;
-      }).join('') : '<div class="col-span-full text-center text-slate-500 py-10">No tests in the cloud. Create one!</div>';
+      }).join('') : '<div class="col-span-full text-center text-slate-500 py-10 bg-white rounded-2xl border border-slate-200 shadow-sm">No tests in the cloud. Create one!</div>';
     }
 
     window.promptAssignTest = function(tid) {
@@ -2242,56 +2252,56 @@
         const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
         
         return `
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-            <div class="bg-slate-100 px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
+        <div class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden mb-6">
+            <div class="bg-blue-50/50 px-6 py-5 border-b border-blue-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <h3 class="font-black text-2xl text-blue-950 flex items-center gap-2"><span class="text-blue-600">🏫</span> ${cls.name}</h3>
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md border border-slate-200 shadow-sm">
-                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
-                        <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-700 font-bold outline-none text-right bg-transparent border-none p-0 focus:ring-0">
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-blue-100 shadow-sm">
+                        <label class="text-[10px] font-black text-blue-400 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
+                        <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-600 font-black outline-none text-right bg-transparent border-none p-0 focus:ring-0">
                     </div>
-                    <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-rose-700 font-bold text-sm shrink-0">Delete</button>
+                    <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-500 border border-rose-200 hover:border-rose-500 rounded-xl font-bold text-sm px-4 py-2 transition shadow-sm shrink-0">Delete</button>
                 </div>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-slate-200">
+            <div class="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-slate-100">
                 
-                <div class="p-5 bg-white">
-                    <h4 class="font-bold text-slate-700 mb-3 flex justify-between items-center border-b pb-2">
+                <div class="p-6 bg-white">
+                    <h4 class="font-bold text-slate-700 mb-4 flex justify-between items-center border-b border-slate-100 pb-3">
                         Enrolled Students (${enrolled.length})
-                        <button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded hover:bg-blue-100 transition border border-blue-200">+ Assign User</button>
+                        <button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200">+ Assign User</button>
                     </h4>
                     <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
                         ${enrolled.length ? enrolled.map(student => `
-                            <div class="flex justify-between items-center text-sm p-2 bg-slate-50 rounded border border-slate-100 hover:border-slate-200 transition">
+                            <div class="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition">
                                 <span class="font-medium text-slate-800 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span> ${student}</span>
                                 <button onclick="window.unenrollStudent('${cls.id}', '${student}')" class="text-rose-400 text-xs font-bold hover:text-rose-600 px-2 py-1">Remove</button>
                             </div>
-                        `).join('') : '<p class="text-xs text-slate-400 italic">No students assigned.</p>'}
+                        `).join('') : '<p class="text-xs text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No students assigned.</p>'}
                     </div>
                 </div>
                 
-                <div class="p-5 bg-white">
-                    <h4 class="font-bold text-slate-700 mb-3 border-b pb-2">Assigned Tests (${assigned.length})</h4>
+                <div class="p-6 bg-white">
+                    <h4 class="font-bold text-slate-700 mb-4 border-b border-slate-100 pb-3">Assigned Tests (${assigned.length})</h4>
                     <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
                         ${assigned.length ? assigned.map(tid => {
                             const t = TEST_BANK.find(x => x.id === tid);
                             if(!t) return '';
-                            const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
+                            const modColors = { reading:'blue', listening:'sky', writing:'indigo', speaking:'cyan' };
                             return `
-                            <div class="text-sm p-2.5 bg-slate-50 rounded border border-slate-100 flex justify-between items-start gap-2">
+                            <div class="text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-start gap-3">
                                <span class="font-medium text-slate-700 leading-tight">${t.title}</span>
-                               <span class="text-[9px] uppercase font-bold text-${modColors[t.module]}-700 bg-${modColors[t.module]}-100 px-1.5 py-0.5 border border-${modColors[t.module]}-200 rounded shrink-0">${t.module}</span>
+                               <span class="text-[9px] uppercase font-bold text-${modColors[t.module]}-700 bg-${modColors[t.module]}-100 px-2 py-1 rounded-md shrink-0 border border-${modColors[t.module]}-200">${t.module}</span>
                             </div>`;
-                        }).join('') : '<p class="text-xs text-slate-400 italic">No tests assigned.</p>'}
+                        }).join('') : '<p class="text-xs text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No tests assigned.</p>'}
                     </div>
-                    <div class="mt-4 text-[11px] text-slate-500 italic bg-slate-50 p-2 rounded border border-slate-100 text-center">Assign new tests from the <b class="text-slate-700">Bank</b> tab.</div>
+                    <div class="mt-4 text-[11px] text-slate-500 italic bg-blue-50 p-3 rounded-xl border border-blue-100 text-center shadow-inner">Assign new tests from the <b class="text-blue-700">Test Bank</b> tab.</div>
                 </div>
 
-                <div class="p-5 bg-slate-50">
-                    <h4 class="font-bold text-slate-700 mb-3 border-b pb-2">Recent Submissions (${classSubs.length})</h4>
+                <div class="p-6 bg-slate-50">
+                    <h4 class="font-bold text-slate-700 mb-4 border-b border-slate-200 pb-3">Recent Submissions (${classSubs.length})</h4>
                     <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
                         ${classSubs.length ? classSubs.map(s => `
-                            <div class="text-sm p-3 bg-white rounded shadow-sm border border-slate-200 relative overflow-hidden group">
+                            <div class="text-sm p-3 bg-white rounded-xl shadow-sm border border-slate-200 relative overflow-hidden group">
                                 <div class="absolute left-0 top-0 bottom-0 w-1 ${s.score.includes('Band') || s.score.includes('/') ? 'bg-emerald-400' : 'bg-amber-400'}"></div>
                                 <div class="flex justify-between font-bold mb-1 pl-2">
                                     <span class="text-slate-800">${s.student}</span>
@@ -2300,12 +2310,12 @@
                                 <div class="flex justify-between items-center pl-2 mt-2 pt-2 border-t border-slate-50">
                                     <span class="text-[11px] text-slate-500 truncate max-w-[120px] font-medium" title="${s.testName}">${s.testName}</span>
                                     <div class="flex gap-1 shrink-0">
-                                        <button onclick="openGradingView(${s.id})" class="text-[10px] bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-blue-700 font-bold px-3 py-1 rounded transition shadow-sm">Review</button>
-                                        <button onclick="window.deleteSubmission(${s.id})" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-100 font-bold px-2 py-1 rounded transition shadow-sm" title="Delete Submission">Del</button>
+                                        <button onclick="openGradingView(${s.id})" class="text-[10px] bg-slate-50 border border-slate-200 text-slate-700 hover:bg-blue-600 hover:text-white font-bold px-3 py-1.5 rounded-lg transition shadow-sm">Review</button>
+                                        <button onclick="window.deleteSubmission(${s.id})" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-500 hover:text-white font-bold px-2 py-1.5 rounded-lg transition shadow-sm" title="Delete Submission">Del</button>
                                     </div>
                                 </div>
                             </div>
-                        `).join('') : '<p class="text-xs text-slate-400 italic">No submissions yet.</p>'}
+                        `).join('') : '<p class="text-xs text-slate-400 italic bg-white p-4 rounded-xl border border-slate-200 text-center shadow-sm">No submissions yet.</p>'}
                     </div>
                 </div>
             </div>
@@ -5039,12 +5049,16 @@
 
     function renderSubmissions() {
       document.getElementById('submissions-list').innerHTML = SUBMISSIONS.length ? SUBMISSIONS.map(s => `
-        <div class="bg-white border border-slate-200 rounded p-4 mb-3">
-          <div class="flex justify-between items-center mb-3">
-            <div><h3 class="font-bold text-lg">${s.student} <span class="text-xs text-slate-500 font-normal">(${s.className})</span></h3><p class="text-sm font-bold text-blue-700">${s.testName} <span class="text-xs text-slate-400 font-normal">${s.date}</span></p></div>
-            <div class="text-right"><p class="font-black text-blue-800 text-lg">${s.score}</p><button onclick="openGradingView(${s.id})" class="text-sm bg-slate-100 hover:bg-slate-200 font-bold px-3 py-1 rounded border border-slate-300 mt-1">Grade / Review</button></div>
+        <div class="bg-white border border-blue-50 rounded-2xl p-5 mb-4 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div>
+            <h3 class="font-black text-lg text-slate-800 flex items-center gap-2">👤 ${s.student} <span class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-md border border-blue-100">${s.className}</span></h3>
+            <p class="text-sm font-medium text-slate-600 mt-1 flex items-center gap-2">📝 ${s.testName} <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-slate-100 px-2 py-0.5 rounded">${s.date}</span></p>
           </div>
-        </div>`).join('') : '<div class="text-center text-slate-500">No submissions yet.</div>';
+          <div class="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center">
+            <p class="font-black text-blue-700 text-xl">${s.score}</p>
+            <button onclick="openGradingView(${s.id})" class="text-sm bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 font-bold px-4 py-2 rounded-lg border border-blue-100 hover:border-blue-600 mt-1 shadow-sm transition">Grade / Review &rarr;</button>
+          </div>
+        </div>`).join('') : '<div class="text-center text-slate-500 py-10 bg-white border border-blue-50 rounded-2xl shadow-sm">No submissions yet.</div>';
     }
     
     async function clearAllSubmissions() { 
@@ -5610,23 +5624,23 @@
         const pkgList = document.getElementById('packages-pricing-list');
         if (pkgList) {
             if (PACKAGES.length === 0) {
-                pkgList.innerHTML = `<div class="col-span-full text-slate-400 italic text-sm">No packages created yet.</div>`;
+                pkgList.innerHTML = `<div class="col-span-full text-slate-400 italic text-sm py-4 text-center bg-slate-50 rounded-xl border border-slate-100">No packages created yet.</div>`;
             } else {
                 pkgList.innerHTML = PACKAGES.map(p => {
                     const clsCount = p.classes ? p.classes.length : 0;
                     return `
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-2">
-                            <h4 class="font-bold text-slate-800 text-lg">${p.name}</h4>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 flex flex-col justify-between shadow-sm">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-black text-slate-800 text-lg leading-tight">${p.name}</h4>
                             <div class="flex gap-2">
-                                <button onclick="window.editPackage('${p.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-bold bg-blue-50 px-2 py-1 rounded shadow-sm border border-blue-100">Edit</button>
-                                <button onclick="window.deletePackage('${p.id}')" class="text-rose-500 hover:text-rose-700 text-xs font-bold bg-rose-50 px-2 py-1 rounded shadow-sm border border-rose-100">Delete</button>
+                                <button onclick="window.editPackage('${p.id}')" class="text-blue-600 hover:text-white text-xs font-bold bg-blue-50 hover:bg-blue-600 px-3 py-1.5 rounded-lg shadow-sm border border-blue-200 transition">Edit</button>
+                                <button onclick="window.deletePackage('${p.id}')" class="text-rose-500 hover:text-white text-xs font-bold bg-rose-50 hover:bg-rose-500 px-3 py-1.5 rounded-lg shadow-sm border border-rose-200 transition">Delete</button>
                             </div>
                         </div>
-                        <div class="text-xs font-bold text-purple-600 bg-purple-100 px-2 py-1 rounded inline-block w-max mb-4 border border-purple-200">Includes ${clsCount} Courses</div>
+                        <div class="text-[10px] font-black tracking-widest uppercase text-purple-600 bg-purple-100 px-2 py-1 rounded-md inline-block w-max mb-4 border border-purple-200">Includes ${clsCount} Courses</div>
                         <div class="flex items-center justify-between mt-auto border-t border-slate-200 pt-3">
                             <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fee/Lesson:</span>
-                            <input type="number" onchange="window.updatePackageFee('${p.id}', this.value)" value="${p.feePerLesson || ''}" placeholder="${BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-700 font-black outline-none text-right bg-white border border-slate-200 rounded px-2 py-1 shadow-sm focus:border-emerald-400">
+                            <input type="number" onchange="window.updatePackageFee('${p.id}', this.value)" value="${p.feePerLesson || ''}" placeholder="${BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-700 font-black outline-none text-right bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-inner focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-colors">
                         </div>
                     </div>`;
                 }).join('');
@@ -5642,20 +5656,20 @@
         const renderCard = (s, isPending) => {
             const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
             const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
-            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-indigo-600 font-bold ml-2 border-l border-slate-300 pl-2">Remaining Lessons: ${remaining}/${s.totalLessonsPaid}</span>` : '';
+            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-blue-700 font-bold ml-2 pl-2 border-l border-slate-300">Remaining: <span class="font-black">${remaining}/${s.totalLessonsPaid}</span></span>` : '';
 
             return `
-            <div class="bg-white border border-slate-200 p-5 rounded-xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50' : ''}">
-                <div class="flex justify-between items-start mb-4 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-3">
+            <div class="bg-white border border-blue-50 p-6 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50/50' : ''}">
+                <div class="flex justify-between items-start mb-5 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-4">
                     <div>
-                        <h3 class="font-black text-xl text-slate-800 flex items-center gap-2"><span class="w-8 h-8 rounded-full ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-700'} flex items-center justify-center text-sm font-bold">👤</span> ${s.user}</h3>
-                        <p class="text-xs text-slate-500 mt-1 ml-10">Joined: ${s.createdAt || 'N/A'} ${lessonsBadge}</p>
-                        ${isPending && s.pendingInfo ? `<p class="text-sm font-bold text-rose-700 mt-2 ml-10 bg-rose-100/50 px-2 py-1 rounded inline-block border border-rose-200 shadow-sm">💸 Request: ${s.pendingInfo} (${s.pendingLessons || '?'} Lessons)</p>` : ''}
+                        <h3 class="font-black text-xl text-blue-950 flex items-center gap-3"><span class="w-10 h-10 rounded-full ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-lg font-bold shadow-inner">👤</span> ${s.user}</h3>
+                        <p class="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-widest ml-12">Joined: <span class="text-slate-500">${s.createdAt || 'N/A'}</span> ${lessonsBadge}</p>
+                        ${isPending && s.pendingInfo ? `<p class="text-sm font-bold text-rose-700 mt-3 ml-12 bg-white px-3 py-1.5 rounded-lg inline-block border border-rose-200 shadow-sm shadow-rose-100/50">💸 Request: ${s.pendingInfo} (${s.pendingLessons || '?'} Lessons)</p>` : ''}
                     </div>
-                    <span class="text-xs uppercase tracking-widest font-black px-2.5 py-1 rounded ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending ? 'bg-rose-500 text-white shadow-sm animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
+                    <span class="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-sm ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
                 </div>
-                <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="w-full py-2.5 text-sm font-bold rounded-lg shadow-sm border ${s.isPaid ? 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50' : (isPending ? 'bg-rose-500 border-transparent text-white hover:bg-rose-600' : 'bg-gradient-to-r from-emerald-500 to-teal-600 border-transparent text-white hover:from-emerald-600 hover:to-teal-700')} transition">
-                    ${s.isPaid ? 'Revoke Access (Lock)' : (isPending ? '✓ Approve Payment & Auto-Enroll' : 'Manual Override: Grant Access')}
+                <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="w-full py-3 text-sm font-bold rounded-xl shadow-sm border ${s.isPaid ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800' : (isPending ? 'bg-rose-500 border-transparent text-white hover:bg-rose-600 shadow-rose-200' : 'bg-blue-600 border-transparent text-white hover:bg-blue-700')} transition-all hover:-translate-y-0.5">
+                    ${s.isPaid ? 'Revoke Access (Lock)' : (isPending ? '✓ Approve Payment & Enroll' : 'Manual Override: Grant Access')}
                 </button>
             </div>
             `;
@@ -5663,12 +5677,12 @@
 
         let html = '';
         if (pending.length > 0) {
-            html += `<h4 class="font-black text-rose-600 mb-3 uppercase tracking-widest text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span> Action Required (Student Waiting)</h4>`;
-            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">` + pending.map(s => renderCard(s, true)).join('') + `</div>`;
+            html += `<h4 class="font-black text-rose-600 mb-4 uppercase tracking-widest text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span> Action Required</h4>`;
+            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">` + pending.map(s => renderCard(s, true)).join('') + `</div>`;
         }
         
-        html += `<h4 class="font-black text-slate-400 mb-3 uppercase tracking-widest text-sm">All Students</h4>`;
-        html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">` + others.map(s => renderCard(s, false)).join('') + `</div>`;
+        html += `<h4 class="font-black text-slate-400 mb-4 uppercase tracking-widest text-sm">All Students</h4>`;
+        html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-6">` + others.map(s => renderCard(s, false)).join('') + `</div>`;
         
         list.innerHTML = html;
     }
@@ -7186,22 +7200,62 @@
         }
     };
 
-    // --- LIVE VIDEO CLASS LOGIC (POPUP METHOD) ---
+    // --- LIVE VIDEO CLASS LOGIC (EMBEDDED) ---
+    let jitsiAPI = null;
+
     window.joinLiveClass = function(scheduleId, topic) {
+        let overlay = document.getElementById('live-class-overlay');
+        
+        // Self-Heal: Auto-inject the Video HTML overlay if it is missing!
+        if (!overlay) {
+            const overlayHtml = `
+            <div id="live-class-overlay" class="hidden fixed inset-0 bg-slate-900 z-[999] flex flex-col">
+                <div class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
+                    <h2 id="live-class-title" class="text-xl font-bold flex items-center gap-2">🔴 Live Class</h2>
+                    <button onclick="window.leaveLiveClass()" class="bg-rose-600 hover:bg-rose-700 text-white px-5 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        End Call
+                    </button>
+                </div>
+                <div id="jaas-container" class="flex-1 w-full h-full bg-black"></div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', overlayHtml);
+            overlay = document.getElementById('live-class-overlay');
+        }
+
+        document.getElementById('live-class-title').innerHTML = `🔴 Live Class: ${topic}`;
+        overlay.classList.remove('hidden');
+
+        // Clean out any old iframe so they don't stack up
+        const container = document.getElementById('jaas-container');
+        container.innerHTML = '';
+
         // Clean schedule ID to ensure a valid room name
         const cleanId = scheduleId.replace(/[^a-zA-Z0-9]/g, '');
         
-        // We use the official, highly-stable meet.jit.si server.
-        // By opening it in a dedicated popup window (instead of an iframe), we completely bypass the 5-minute limit!
-        const displayName = encodeURIComponent(currentUser ? currentUser.user : 'Guest Student');
-        const roomUrl = `https://meet.jit.si/IELTS_LMS_LiveClass_${cleanId}#userInfo.displayName="${displayName}"`;
+        // Connect directly to the public Jitsi server
+        const options = {
+            roomName: `IELTS_LMS_LiveClass_${cleanId}`,
+            width: '100%',
+            height: '100%',
+            parentNode: container,
+            userInfo: {
+                displayName: currentUser ? currentUser.user : 'Guest Student'
+            }
+        };
         
-        const windowFeatures = "width=1200,height=800,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes";
-        window.open(roomUrl, "IELTSLMS_LiveClass", windowFeatures);
+        jitsiAPI = new JitsiMeetExternalAPI("meet.jit.si", options);
     };
 
     window.leaveLiveClass = function() {
-        // This is now handled automatically when the user closes the popup window.
+        if (jitsiAPI) {
+            jitsiAPI.dispose();
+            jitsiAPI = null;
+        }
+        const container = document.getElementById('jaas-container');
+        if(container) container.innerHTML = '';
+        const overlay = document.getElementById('live-class-overlay');
+        if(overlay) overlay.classList.add('hidden');
     };
 
   // --- AUTONOMOUS AI EXTRACTOR LOGIC ---
