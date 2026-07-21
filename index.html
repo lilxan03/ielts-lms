@@ -273,7 +273,9 @@
       <label class="block text-sm font-bold text-slate-700 mb-1">Test Title</label>
       <input type="text" id="meta-title-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none font-medium" />
       <label class="block text-sm font-bold text-slate-700 mb-1">Topics / Tags (Comma separated)</label>
-      <input type="text" id="meta-topics-input" placeholder="e.g. Science, Nature, Maps" class="w-full border border-slate-300 rounded px-3 py-2 mb-6 focus:ring-blue-600 outline-none text-sm" />
+      <input type="text" id="meta-topics-input" placeholder="e.g. Science, Nature, Maps" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none text-sm" />
+      <label class="block text-sm font-black text-amber-600 mb-1 flex items-center gap-1">💎 Premium Unlock Price (Gems)</label>
+      <input type="number" id="meta-price-input" placeholder="0 for Free" class="w-full border-2 border-amber-200 bg-amber-50 rounded px-3 py-2 mb-6 focus:border-amber-500 outline-none text-sm font-black text-amber-700 shadow-inner" />
       <div class="flex justify-end gap-3">
         <button id="meta-cancel" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
         <button id="meta-confirm" class="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 font-bold shadow">Save Settings</button>
@@ -630,18 +632,87 @@
       </div>
   </div>
 
+  <!-- GEM STORE MODAL -->
+  <div id="gem-store-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[400] flex items-center justify-center backdrop-blur-md">
+      <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl shadow-2xl flex flex-col w-[800px] max-w-[95vw] border border-slate-700 overflow-hidden">
+          <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-6 flex justify-between items-center relative overflow-hidden shrink-0">
+              <div class="absolute -right-4 -top-8 text-8xl opacity-20 pointer-events-none">💎</div>
+              <h2 class="text-2xl font-black text-white flex items-center gap-2 drop-shadow-md z-10">💎 IELTS Gem Store</h2>
+              <button onclick="document.getElementById('gem-store-modal').classList.add('hidden')" class="text-white/80 hover:text-white font-black text-2xl leading-none z-10">&times;</button>
+          </div>
+          <div class="p-8 flex-1 flex flex-col md:flex-row gap-8">
+              <div class="flex-1">
+                  <p class="text-indigo-200 font-medium mb-6">Earn Gems by completing tests, or top up your balance instantly to unlock Premium Mock Exams and AI Grading!</p>
+                  
+                  <div class="space-y-3">
+                      <div onclick="window.generateGemQR(100, 10000)" class="bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition flex justify-between items-center group">
+                          <div class="flex items-center gap-3">
+                              <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center text-xl group-hover:scale-110 transition">💎</div>
+                              <div><div class="font-black text-white text-lg">Handful of Gems</div><div class="text-amber-400 font-bold text-xs">+100 Gems</div></div>
+                          </div>
+                          <div class="bg-indigo-600 group-hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-lg shadow-md transition">10,000 ₫</div>
+                      </div>
+                      
+                      <div onclick="window.generateGemQR(500, 45000)" class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition flex justify-between items-center group relative overflow-hidden">
+                          <div class="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-bl-lg">POPULAR</div>
+                          <div class="flex items-center gap-3">
+                              <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center text-xl group-hover:scale-110 transition">💰</div>
+                              <div><div class="font-black text-white text-lg">Pouch of Gems</div><div class="text-amber-400 font-bold text-xs">+500 Gems <span class="text-emerald-400 ml-1">(10% Bonus)</span></div></div>
+                          </div>
+                          <div class="bg-indigo-600 group-hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-lg shadow-md transition">45,000 ₫</div>
+                      </div>
+
+                      <div onclick="window.generateGemQR(1200, 100000)" class="bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition flex justify-between items-center group">
+                          <div class="flex items-center gap-3">
+                              <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center text-xl group-hover:scale-110 transition">👑</div>
+                              <div><div class="font-black text-white text-lg">Chest of Gems</div><div class="text-amber-400 font-bold text-xs">+1200 Gems <span class="text-emerald-400 ml-1">(20% Bonus)</span></div></div>
+                          </div>
+                          <div class="bg-indigo-600 group-hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-lg shadow-md transition">100,000 ₫</div>
+                      </div>
+                  </div>
+              </div>
+              
+              <!-- QR Section -->
+              <div class="w-full md:w-[280px] bg-white rounded-2xl p-6 flex flex-col items-center justify-center shadow-inner shrink-0 relative">
+                  <div id="gem-qr-placeholder" class="text-center">
+                      <span class="text-5xl block mb-2 opacity-50">📱</span>
+                      <p class="font-bold text-slate-500 text-sm">Select a pack to generate payment QR code.</p>
+                  </div>
+                  <div id="gem-qr-active" class="hidden flex-col items-center w-full">
+                      <img id="gem-qr-img" src="" class="w-48 h-48 object-contain rounded-lg border border-slate-200 p-1 mb-4 shadow-sm">
+                      <div class="font-black text-indigo-700 text-2xl mb-1" id="gem-qr-price">0 ₫</div>
+                      <div class="text-xs text-slate-500 font-mono bg-slate-100 px-2 py-1 rounded text-center break-all" id="gem-qr-msg">Msg</div>
+                      <button onclick="window.notifyGemPurchase()" id="btn-gem-paid" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg shadow-md transition">I Have Transferred ✓</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+
   <!-- START SCREEN (STUDENT DASHBOARD) -->
   <div id="start-screen" class="hidden h-screen w-full relative bg-slate-50 overflow-y-auto">
     <!-- Blue Header Banner -->
     <div class="bg-gradient-to-r from-blue-800 to-indigo-700 pt-10 pb-24 px-6 shadow-md">
       <header class="w-full px-4 lg:px-8 flex justify-between items-center">
         <h1 class="text-3xl font-extrabold text-white tracking-tight">Student Dashboard</h1>
-        <div class="flex gap-3 items-center">
-          <div class="flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-sm">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="text-white font-bold text-sm" id="student-name-display">Welcome</span>
+        <div class="flex gap-4 items-center">
+          
+          <!-- NEW: GEM BALANCE WIDGET -->
+          <div onclick="window.openGemStore()" id="gem-balance-widget" class="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-orange-500 px-4 py-1.5 rounded-full border-2 border-amber-300 shadow-lg cursor-pointer transition transform hover:scale-105" title="Top Up Gems">
+             <span class="text-lg leading-none drop-shadow-sm">💎</span>
+             <span class="text-amber-950 font-black text-sm drop-shadow-sm" id="student-gem-display">0</span>
+             <span class="text-amber-900 text-[11px] font-black ml-1 bg-amber-300/80 px-1.5 rounded shadow-inner">＋</span>
           </div>
-          <button onclick="logout()" class="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold transition backdrop-blur-sm border border-transparent hover:border-white/30 text-sm">Logout</button>
+
+          <div class="flex items-center gap-3 bg-white/10 p-1.5 pr-4 rounded-full border border-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/20 transition shadow-sm" onclick="window.openStudentProfile()" title="Edit Profile & Goals">
+            <img id="header-student-avatar" src="https://ui-avatars.com/api/?name=Student&background=random" class="w-9 h-9 rounded-full object-cover bg-white shadow-inner border-2 border-white/50">
+            <div class="flex flex-col">
+              <span class="text-white font-bold text-sm leading-none mb-1" id="student-name-display">Welcome</span>
+              <span class="text-indigo-200 text-[9px] font-black uppercase tracking-widest leading-none">⚙️ Edit Profile</span>
+            </div>
+          </div>
+
+          <button onclick="logout()" class="px-4 py-2 bg-white/10 hover:bg-rose-500 hover:border-rose-500 text-white rounded-full font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md text-sm shrink-0">Logout</button>
         </div>
       </header>
     </div>
@@ -649,6 +720,26 @@
     <!-- Main Content Container (Pushed up into the blue banner) -->
     <div class="bg-white p-6 lg:p-8 rounded-2xl shadow-xl text-left shrink-0 -mt-16 relative z-10 animate-fade-in-up border border-slate-100 mx-4 lg:mx-8 mb-12">
       
+      <!-- NEW TARGET GOALS WIDGET -->
+      <div id="student-target-widget" class="hidden bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-[0_10px_30px_rgba(0,0,0,0.1)] mb-8 border border-slate-800 relative overflow-hidden flex-col md:flex-row justify-between items-center gap-6">
+          <div class="absolute -right-10 -top-10 text-9xl opacity-5 pointer-events-none font-black">🎯</div>
+          <div class="flex flex-col md:flex-row items-center md:items-start gap-8 z-10 w-full">
+              <div class="text-center md:text-left shrink-0">
+                  <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">My IELTS Goal</h3>
+                  <div class="text-4xl font-black text-amber-400 drop-shadow-md" id="target-score-display">Band --</div>
+              </div>
+              <div class="w-px h-12 bg-slate-700 hidden md:block mt-2"></div>
+              <div class="text-center md:text-left flex-1">
+                   <h3 class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Official Test Date</h3>
+                   <div class="text-2xl font-bold text-blue-50" id="target-date-display">Not Set</div>
+                   <div class="text-sm font-medium mt-1.5 inline-block px-3 py-1 rounded-full bg-slate-800 border border-slate-700 shadow-inner" id="target-countdown">--</div>
+              </div>
+              <div class="shrink-0 mt-2 md:mt-0">
+                  <button onclick="window.openStudentProfile()" class="bg-white/10 hover:bg-white/20 border border-white/20 px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-sm flex items-center gap-2">Update Goals ✏️</button>
+              </div>
+          </div>
+      </div>
+
       <!-- NEW IMMERSIVE PAYMENT CHECKOUT WALL -->
       <div id="student-payment-warning" class="hidden w-full mb-8">
          <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 flex flex-col lg:flex-row">
@@ -697,9 +788,14 @@
             <button onclick="document.getElementById('student-progress-section').scrollIntoView({behavior: 'smooth', block: 'center'})" class="px-4 py-2 bg-slate-100 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 text-slate-700 hover:text-emerald-700 font-bold rounded-lg transition text-sm">📈 Progress & Feedback</button>
         </div>
         
-        <button onclick="window.startFullExam()" class="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-lg transition shadow-md text-sm flex items-center gap-2 border border-blue-500 hover:-translate-y-0.5">
-            🎓 START FULL MOCK EXAM
-        </button>
+        <div class="flex gap-2">
+            <button onclick="window.toggleChatPanel()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg transition shadow-md text-sm flex items-center gap-2 border border-slate-700 hover:-translate-y-0.5">
+                💬 Class Chat
+            </button>
+            <button onclick="window.startFullExam()" class="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black rounded-lg transition shadow-md text-sm flex items-center gap-2 border border-blue-500 hover:-translate-y-0.5">
+                🎓 FULL MOCK EXAM
+            </button>
+        </div>
       </div>
 
       <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-8 scroll-mt-24">
@@ -805,7 +901,8 @@
       <div class="flex gap-3 items-center shrink-0">
         <span id="editor-autosave-status" class="text-xs font-bold text-slate-400 opacity-0 transition-opacity w-20 text-right whitespace-nowrap">Autosaved</span>
         
-        <!-- Default State: Logout -->
+        <!-- Default State: Inbox & Logout -->
+        <button id="editor-inbox-btn" onclick="window.toggleChatPanel()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition font-bold text-sm shadow-sm flex items-center gap-2 border border-indigo-700">💬 Inbox</button>
         <button id="editor-logout" onclick="logout()" class="px-5 py-2 bg-slate-700 hover:bg-rose-600 text-white rounded-lg transition font-bold text-sm shadow-sm border border-slate-600 hover:border-rose-500">Logout</button>
         
         <!-- Builder State: Preview & Save -->
@@ -959,6 +1056,7 @@
         <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
           <h2 class="text-2xl font-bold text-slate-800">Monthly Timetable & Attendance</h2>
           <div class="flex gap-2">
+            <button onclick="window.toggleChatPanel()" class="bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded font-black shadow-sm flex items-center gap-2 text-sm transition">💬 Teacher Inbox</button>
             <button onclick="window.openAvailabilitySettings()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded font-bold shadow-sm flex items-center gap-2 text-sm transition">⚙️ Booking Settings</button>
             <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-bold shadow-sm text-sm transition">＋ Schedule Class</button>
           </div>
@@ -1292,6 +1390,7 @@
     let SCHEDULES = [];
     let ATTENDANCE = [];
     let PACKAGES = []; 
+    let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
@@ -1663,9 +1762,22 @@
                 new Promise(resolve => {
                     window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => {
                         PACKAGES = snap.docs.map(d => d.data());
+                        renderStudentsList();
+                        resolve();
+                    }, err => {
+                        console.error("packages listener error:", err);
                         resolve();
                     });
-                })
+                }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => {
+                        CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
+                        if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) {
+                            window.renderChatMessages();
+                        }
+                        resolve();
+                    });
+                }),
             ]);
             
             document.getElementById('cloud-loader').classList.add('hidden');
@@ -1865,6 +1977,7 @@
         document.getElementById('editor-default-header').classList.add('hidden');
         document.getElementById('editor-default-header').classList.remove('flex');
         document.getElementById('editor-logout').classList.add('hidden');
+        if (document.getElementById('editor-inbox-btn')) document.getElementById('editor-inbox-btn').classList.add('hidden');
         
         // Show builder elements
         document.getElementById('editor-builder-controls').classList.remove('hidden');
@@ -1878,6 +1991,7 @@
         document.getElementById('editor-default-header').classList.remove('hidden');
         document.getElementById('editor-default-header').classList.add('flex');
         document.getElementById('editor-logout').classList.remove('hidden');
+        if (document.getElementById('editor-inbox-btn')) document.getElementById('editor-inbox-btn').classList.remove('hidden');
         
         // Hide builder elements
         document.getElementById('editor-builder-controls').classList.add('hidden');
@@ -3814,10 +3928,24 @@
       const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
+        
+        // ECONOMY CHECK: Is it premium? Has the user unlocked it?
+        const price = Number(t.price) || 0;
+        const unlockedTests = currentUser.unlockedTests || [];
+        const isLocked = price > 0 && !unlockedTests.includes(t.id);
+        
+        const actionButton = isLocked 
+            ? `<button onclick="window.unlockPremiumTest('${t.id}', ${price}, '${t.title.replace(/'/g,"\\'")}')" class="shrink-0 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 border border-amber-300 font-black py-1.5 px-4 rounded text-sm shadow transition flex items-center gap-1">🔒 Unlock ${price} 💎</button>`
+            : `<button onclick="openModeSelection('${t.id}')" class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-4 rounded text-sm shadow transition">Start</button>`;
+
         return `
-        <div class="flex justify-between items-center p-3 border border-slate-200 bg-white shadow-sm mb-2 rounded hover:border-blue-300 transition">
-          <div class="truncate pr-4"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase mr-2">${t.module}</span><span class="font-bold text-slate-800 text-sm truncate">${t.title}</span></div>
-          <button onclick="openModeSelection('${t.id}')" class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-4 rounded text-sm shadow transition">Start</button>
+        <div class="flex justify-between items-center p-3 border ${isLocked ? 'border-amber-200 bg-amber-50/30' : 'border-slate-200 bg-white'} shadow-sm mb-2 rounded hover:border-blue-300 transition">
+          <div class="truncate pr-4 flex items-center">
+             ${isLocked ? `<span class="text-amber-500 mr-2" title="Premium Content">💎</span>` : ''}
+             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase mr-2">${t.module}</span>
+             <span class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800'} text-sm truncate">${t.title}</span>
+          </div>
+          ${actionButton}
         </div>`;
       };
 
@@ -4753,7 +4881,17 @@
           };
           
           SUBMISSIONS.unshift(sub);
-          try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); }
+          try { 
+              await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); 
+              
+              // 🏆 ECONOMY REWARD: Grant 50 Gems for completing a test!
+              if (!window.isFullExamMode || window.fullExamCurrentIndex === 2) {
+                  currentUser.gems = (currentUser.gems || 0) + 50;
+                  await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                  sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                  window.updateDashboardHeader();
+              }
+          }
           catch(e) { console.error("Cloud Error saving submission:", e); }
         }
 
@@ -4771,14 +4909,14 @@
                 }, 3000);
             } else {
                 window.isFullExamMode = false;
-                document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Full Exam Complete!</div><p class="text-sm text-slate-500 mt-2">All your responses have been recorded.</p>`;
+                document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Full Exam Complete!</div><p class="text-sm text-slate-500 mt-2">All your responses have been recorded.</p><div class="mt-4 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
                 document.getElementById('results-modal').classList.remove('hidden');
             }
         } else {
             if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-               document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div>`;
+               document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div><div class="mt-6 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
             } else {
-               document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p>`;
+               document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p><div class="mt-4 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
             }
             document.getElementById('results-modal').classList.remove('hidden');
         }
@@ -6559,6 +6697,422 @@
         }
         
         btn.textContent = "Confirm Booking"; btn.disabled = false;
+    };
+
+    // --- STUDENT PROFILE & TARGETS LOGIC ---
+    let tempAvatarBase64 = null;
+
+    window.openStudentProfile = function() {
+        tempAvatarBase64 = currentUser.avatar || null;
+        document.getElementById('profile-name-display').textContent = currentUser.user;
+        document.getElementById('profile-avatar-preview').src = tempAvatarBase64 || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`;
+        document.getElementById('profile-target-score').value = currentUser.targetScore || '';
+        document.getElementById('profile-test-date').value = currentUser.testDate || '';
+        document.getElementById('student-profile-modal').classList.remove('hidden');
+    };
+
+    window.handleAvatarUpload = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        // Super compress avatars so they don't break Firestore (Target ~50KB)
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let size = 200; // Force tiny square
+                canvas.width = size; canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                // Crop to center
+                const min = Math.min(img.width, img.height);
+                const sx = (img.width - min) / 2;
+                const sy = (img.height - min) / 2;
+                ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+                
+                tempAvatarBase64 = canvas.toDataURL('image/jpeg', 0.6); // Heavy compression
+                document.getElementById('profile-avatar-preview').src = tempAvatarBase64;
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    window.saveStudentProfile = async function() {
+        const btn = document.getElementById('btn-save-profile-data');
+        btn.textContent = "Saving..."; btn.disabled = true;
+
+        currentUser.targetScore = document.getElementById('profile-target-score').value;
+        currentUser.testDate = document.getElementById('profile-test-date').value;
+        if(tempAvatarBase64) currentUser.avatar = tempAvatarBase64;
+
+        try {
+            const cloudUserIdx = USERS.findIndex(u => u.user === currentUser.user);
+            if(cloudUserIdx > -1) USERS[cloudUserIdx] = currentUser;
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            
+            document.getElementById('student-profile-modal').classList.add('hidden');
+            window.updateDashboardHeader();
+            showModalMsg("Profile Updated", "Your goals and avatar have been saved successfully!");
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not save profile.");
+        }
+        btn.textContent = "Save Profile"; btn.disabled = false;
+    };
+
+    window.updateDashboardHeader = function() {
+        if(!currentUser || currentUser.role !== 'student') return;
+        
+        document.getElementById('student-name-display').textContent = currentUser.user;
+        document.getElementById('header-student-avatar').src = currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`;
+        
+        const w = document.getElementById('student-target-widget');
+        if(currentUser.targetScore || currentUser.testDate) {
+            w.classList.remove('hidden'); w.classList.add('flex');
+            document.getElementById('target-score-display').textContent = currentUser.targetScore ? `Band ${currentUser.targetScore}` : '--';
+            
+            if(currentUser.testDate) {
+                const d = new Date(currentUser.testDate);
+                document.getElementById('target-date-display').textContent = d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+                
+                const diffTime = d.getTime() - new Date().getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const cd = document.getElementById('target-countdown');
+                
+                if(diffDays > 0) {
+                    cd.textContent = `🔥 ${diffDays} Days Left! Keep Pushing!`;
+                    cd.className = "text-sm font-bold mt-1.5 inline-block px-3 py-1 rounded-full bg-emerald-900/50 text-emerald-400 border border-emerald-700 shadow-inner";
+                } else if(diffDays === 0) {
+                    cd.textContent = "⚠️ THE TEST IS TODAY! Good luck!";
+                    cd.className = "text-sm font-black mt-1.5 inline-block px-3 py-1 rounded-full bg-amber-500 text-slate-900 border border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)] animate-pulse";
+                } else {
+                    cd.textContent = "Test Date Passed.";
+                    cd.className = "text-sm font-medium mt-1.5 inline-block px-3 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 shadow-inner";
+                }
+            }
+        } else {
+            w.classList.add('hidden'); w.classList.remove('flex');
+        }
+    };
+
+    // Replace the old init call to include our new Header updater!
+    const originalInitDashboard = initStudentDashboard;
+    initStudentDashboard = function(preserveCid = null) {
+        originalInitDashboard(preserveCid);
+        window.updateDashboardHeader();
+    };
+
+    // --- DISCORD-STYLE CHAT LOGIC (SELF-HEALING) ---
+    let currentChatChannel = null;
+
+    window.toggleChatPanel = function() {
+        let p = document.getElementById('chat-panel');
+        
+        // SELF-HEAL: Auto-inject the HTML if it was accidentally deleted or missing!
+        if (!p) {
+            const chatHtml = `
+            <div id="chat-panel" class="fixed top-0 right-0 h-full w-[450px] max-w-full bg-white border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-[400] flex flex-col">
+                <div class="bg-indigo-950 text-white p-4 flex justify-between items-center shrink-0 shadow-md z-20">
+                    <h2 class="font-bold flex items-center gap-2 text-lg">💬 Class Discussion</h2>
+                    <button onclick="window.toggleChatPanel()" class="text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
+                </div>
+                <div class="flex flex-1 overflow-hidden">
+                    <div id="chat-channels-list" class="w-20 bg-slate-900 flex flex-col items-center py-4 gap-4 overflow-y-auto shrink-0 shadow-inner"></div>
+                    <div class="flex-1 flex flex-col bg-slate-50 relative">
+                        <div id="chat-current-channel-name" class="bg-white border-b border-slate-200 p-3 shadow-sm z-10 font-black text-slate-700 text-sm flex items-center gap-2"></div>
+                        <div id="chat-feed" class="flex-1 overflow-y-auto p-4 space-y-4"></div>
+                        <div id="chat-input-area" class="p-3 bg-white border-t border-slate-200 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] hidden flex-col gap-2">
+                            <select id="chat-topic-select" class="w-full bg-slate-50 border border-slate-200 rounded text-xs p-1.5 text-slate-600 outline-none font-bold"></select>
+                            <div class="flex gap-2 items-end">
+                                <textarea id="chat-input" class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none h-[40px] max-h-[120px]" placeholder="Ask the teacher or class..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" onkeydown="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); window.sendChatMessage(); }"></textarea>
+                                <button onclick="window.sendChatMessage()" class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-700 transition shrink-0 shadow-md font-bold text-lg mb-0.5">➤</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', chatHtml);
+            p = document.getElementById('chat-panel');
+        }
+
+        // SELF-HEAL: Attach Firestore Cloud Listener if missing!
+        if (!window._chatListenerAttached && window.db) {
+            window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => {
+                CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
+                if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) {
+                    window.renderChatMessages();
+                }
+            });
+            window._chatListenerAttached = true;
+        }
+
+        if (p.classList.contains('translate-x-full')) {
+            p.classList.remove('translate-x-full');
+            window.renderChatChannels();
+        } else {
+            p.classList.add('translate-x-full');
+        }
+    };
+
+    window.renderChatChannels = function() {
+        const list = document.getElementById('chat-channels-list');
+        
+        let myClasses = [];
+        if (currentUser.role === 'teacher') {
+            myClasses = CLASSES || [];
+        } else {
+            myClasses = (CLASSES || []).filter(c => (c.enrolledStudents || []).includes(currentUser.user));
+        }
+
+        if (myClasses.length === 0) {
+            list.innerHTML = `<div class="text-xs text-slate-500 font-bold text-center mt-10 px-2">No Classes</div>`;
+            document.getElementById('chat-input-area').classList.add('hidden');
+            document.getElementById('chat-current-channel-name').innerHTML = 'No Access';
+            document.getElementById('chat-feed').innerHTML = '';
+            return;
+        }
+
+        // If the current channel was deleted, default back to the first available class
+        if (!currentChatChannel || !myClasses.find(c => c.id === currentChatChannel)) {
+            currentChatChannel = myClasses[0].id;
+        }
+
+        list.innerHTML = myClasses.map(c => {
+            const isActive = c.id === currentChatChannel;
+            const safeName = c.name ? c.name.trim() : 'Class';
+            const badge = safeName.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'C';
+            
+            return `
+            <div class="relative group cursor-pointer" onclick="window.selectChatChannel('${c.id}')" title="${safeName}">
+                <div class="absolute -left-2 top-1/2 -translate-y-1/2 w-1 bg-white rounded-r-full transition-all duration-300 ${isActive ? 'h-10' : 'h-0 group-hover:h-5'}"></div>
+                <div class="w-12 h-12 flex items-center justify-center rounded-[24px] hover:rounded-2xl transition-all duration-300 font-black text-lg shadow-md ${isActive ? 'bg-indigo-500 text-white rounded-2xl' : 'bg-slate-700 text-slate-300 group-hover:bg-indigo-500 group-hover:text-white'}">
+                    ${badge}
+                </div>
+            </div>`;
+        }).join('');
+
+        window.selectChatChannel(currentChatChannel);
+    };
+
+    window.selectChatChannel = function(classId) {
+        currentChatChannel = classId;
+        const cls = (CLASSES || []).find(c => c.id === classId);
+        if(!cls) return;
+
+        document.getElementById('chat-current-channel-name').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> ${cls.name || 'Class'}`;
+        
+        const topicSel = document.getElementById('chat-topic-select');
+        topicSel.innerHTML = `<option value="">-- General Discussion --</option>` + 
+            (cls.assignedTests || []).map(tid => {
+                const t = (TEST_BANK || []).find(x => x.id === tid);
+                return t ? `<option value="${t.title || 'Test'}">Question regarding: ${t.title || 'Test'}</option>` : '';
+            }).join('');
+
+        document.getElementById('chat-input-area').classList.remove('hidden');
+        document.getElementById('chat-input-area').classList.add('flex');
+        
+        window.renderChatMessages();
+    };
+
+    window.renderChatMessages = function() {
+        const feed = document.getElementById('chat-feed');
+        if (!currentChatChannel) return;
+
+        const msgs = CHAT_MESSAGES.filter(m => m.classId === currentChatChannel);
+
+        if (msgs.length === 0) {
+            feed.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center opacity-50">
+                    <span class="text-4xl mb-3">👋</span>
+                    <h3 class="font-bold text-slate-700">Welcome to the class chat!</h3>
+                    <p class="text-xs text-slate-500 mt-1 max-w-[200px]">Ask your teacher questions or discuss homework with classmates here.</p>
+                </div>`;
+            return;
+        }
+
+        feed.innerHTML = msgs.map((m, i) => {
+            const isMe = m.sender === currentUser.user;
+            const isTeacher = m.role === 'teacher';
+            const timeStr = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const prevMsg = i > 0 ? msgs[i-1] : null;
+            const isContinuation = prevMsg && prevMsg.sender === m.sender && (m.timestamp - prevMsg.timestamp < 300000);
+
+            if (isContinuation) {
+                return `
+                <div class="pl-[52px] group relative hover:bg-slate-100 rounded px-2 py-0.5 -mt-3 transition-colors">
+                    <span class="absolute left-2 text-[9px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity mt-1">${timeStr}</span>
+                    <p class="text-sm text-slate-700 whitespace-pre-wrap">${(m.text || '').replace(/</g, "&lt;")}</p>
+                </div>`;
+            }
+
+            return `
+            <div class="flex gap-3 hover:bg-slate-100 p-2 rounded transition-colors group mt-2">
+                <img src="${m.avatar || `https://ui-avatars.com/api/?name=${m.sender}&background=random`}" class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 mt-1">
+                <div class="flex flex-col flex-1">
+                    <div class="flex items-baseline gap-2 mb-0.5">
+                        <span class="font-black text-sm ${isTeacher ? 'text-rose-600' : (isMe ? 'text-indigo-600' : 'text-slate-800')}">${m.sender}</span>
+                        ${isTeacher ? `<span class="bg-rose-100 text-rose-700 text-[9px] font-black uppercase px-1.5 py-0.5 rounded flex items-center gap-1 shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg> Teacher</span>` : ''}
+                        <span class="text-xs text-slate-400 font-medium">${timeStr}</span>
+                    </div>
+                    ${m.topic ? `<div class="text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded inline-block w-max mb-1 shadow-sm border-l-2 border-l-indigo-500">Replying to: ${m.topic}</div>` : ''}
+                    <p class="text-sm text-slate-700 whitespace-pre-wrap">${(m.text || '').replace(/</g, "&lt;")}</p>
+                </div>
+            </div>`;
+        }).join('');
+
+        setTimeout(() => feed.scrollTop = feed.scrollHeight, 50);
+    };
+
+    window.sendChatMessage = async function() {
+        const input = document.getElementById('chat-input');
+        if (!input) return;
+        
+        const text = input.value.trim();
+        const topicSelect = document.getElementById('chat-topic-select');
+        const topic = topicSelect ? topicSelect.value : '';
+        
+        if (!text || !currentChatChannel) return;
+
+        input.value = '';
+        input.style.height = '40px';
+
+        const newMsg = {
+            id: 'msg_' + Date.now() + Math.floor(Math.random()*1000),
+            classId: currentChatChannel,
+            sender: currentUser.user,
+            avatar: currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`,
+            role: currentUser.role,
+            text: text,
+            topic: topic,
+            timestamp: Date.now()
+        };
+
+        CHAT_MESSAGES.push(newMsg);
+        window.renderChatMessages();
+
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('messages'), newMsg.id), newMsg);
+        } catch(e) {
+            console.error("Chat Error:", e);
+        }
+    };
+
+    // --- VIRTUAL ECONOMY (GEMS) LOGIC ---
+    let pendingGemPurchase = null;
+
+    window.openGemStore = function() {
+        document.getElementById('gem-qr-placeholder').classList.remove('hidden');
+        document.getElementById('gem-qr-active').classList.add('hidden');
+        document.getElementById('gem-store-modal').classList.remove('hidden');
+    };
+
+    window.generateGemQR = function(gems, priceVND) {
+        pendingGemPurchase = { gems, price: priceVND };
+        const msg = `${currentUser.user} BUY ${gems} GEMS`;
+        
+        if (BILLING_SETTINGS.customQR) {
+            // Use the Teacher's Uploaded QR Image
+            document.getElementById('gem-qr-img').src = BILLING_SETTINGS.customQR;
+            document.getElementById('gem-qr-msg').textContent = "Use Custom QR above & ref: " + msg;
+        } else {
+            // Generate API QR just like the course checkout
+            const qrUrl = `https://img.vietqr.io/image/${BILLING_SETTINGS.bankId}-${BILLING_SETTINGS.bankAcc}-compact2.png?amount=${priceVND}&addInfo=${encodeURIComponent(msg)}&accountName=${encodeURIComponent(BILLING_SETTINGS.bankName)}`;
+            document.getElementById('gem-qr-img').src = qrUrl;
+            document.getElementById('gem-qr-msg').textContent = msg;
+        }
+        
+        document.getElementById('gem-qr-price').textContent = formatVND(priceVND);
+        
+        document.getElementById('gem-qr-placeholder').classList.add('hidden');
+        document.getElementById('gem-qr-active').classList.remove('hidden');
+        document.getElementById('gem-qr-active').classList.add('flex');
+    };
+
+    window.notifyGemPurchase = async function() {
+        const btn = document.getElementById('btn-gem-paid');
+        btn.textContent = "Notifying Teacher..."; btn.disabled = true;
+        
+        // Send a simulated request to teacher (saves to user profile pending state)
+        currentUser.pendingInfo = `Top-Up ${pendingGemPurchase.gems} Gems`;
+        currentUser.paymentStatus = 'pending';
+        
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            document.getElementById('gem-store-modal').classList.add('hidden');
+            showModalMsg("Request Sent!", `Your request for ${pendingGemPurchase.gems} 💎 has been sent. Once the teacher verifies the transfer, your balance will update!`);
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not process request.");
+        }
+        btn.textContent = "I Have Transferred ✓"; btn.disabled = false;
+    };
+
+    window.playGemAnimation = function() {
+        const widget = document.getElementById('gem-balance-widget');
+        if(!widget) return;
+        widget.classList.add('scale-125', 'ring-4', 'ring-amber-400');
+        setTimeout(() => {
+            widget.classList.remove('scale-125', 'ring-4', 'ring-amber-400');
+        }, 500);
+    };
+
+    window.unlockPremiumTest = function(tid, price, title) {
+        if (!currentUser.gems) currentUser.gems = 0;
+        if (!currentUser.unlockedTests) currentUser.unlockedTests = [];
+
+        if (currentUser.gems < price) {
+            showConfirm("Not Enough Gems", `You need ${price} 💎 to unlock "${title}". You currently have ${currentUser.gems} 💎. Would you like to visit the Store to get more?`, () => {
+                window.openGemStore();
+            });
+            return;
+        }
+
+        showConfirm("Unlock Premium Content", `Spend ${price} 💎 to permanently unlock "${title}"?`, async () => {
+            currentUser.gems -= price;
+            currentUser.unlockedTests.push(tid);
+            
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                window.updateDashboardHeader();
+                renderStudentDashboard(); // Re-render to remove lock!
+                
+                // Fancy animation!
+                window.playGemAnimation();
+            } catch(e) {
+                showModalMsg("Error", "Could not unlock test due to connection issues.");
+                // rollback
+                currentUser.gems += price;
+                currentUser.unlockedTests.pop();
+            }
+        });
+    };
+
+    // Replace editCurrentTestMeta to include the Price
+    window.editCurrentTestMeta = function() {
+      showTestMetaModal("Edit Test Settings", APP_DATA.title, (APP_DATA.topics || []).join(", "), (title, topics) => {
+        APP_DATA.title = title;
+        APP_DATA.topics = topics;
+        APP_DATA.price = Number(document.getElementById('meta-price-input').value) || 0;
+        document.getElementById('builder-test-name').textContent = title;
+        triggerEditorAutosave();
+      });
+      // Populate the price field when opening
+      document.getElementById('meta-price-input').value = APP_DATA.price || 0;
+    };
+
+    // Replace updateDashboardHeader to include Gem formatting
+    const originalUpdateDashboardHeader = window.updateDashboardHeader;
+    window.updateDashboardHeader = function() {
+        originalUpdateDashboardHeader();
+        if (currentUser && currentUser.role === 'student') {
+            const display = document.getElementById('student-gem-display');
+            if (display) {
+                display.textContent = (currentUser.gems || 0).toLocaleString();
+            }
+        }
     };
 
     // --- LIVE VIDEO CLASS LOGIC (JaaS) ---
