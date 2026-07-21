@@ -7,7 +7,31 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1e293b">
   <title>IELTS LMS - Cloud Connected</title>
+  
+  <!-- PWA App Manifest Injection -->
+  <link rel="manifest" id="pwa-manifest">
+  <script>
+    const manifestJSON = {
+      "name": "IELTS LMS",
+      "short_name": "IELTS App",
+      "start_url": window.location.href.split('?')[0],
+      "display": "standalone",
+      "background_color": "#f4f7fb",
+      "theme_color": "#1e3a8a",
+      "icons": [{
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFlM2E4YSIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkk8L3RleHQ+PC9zdmc+",
+        "sizes": "512x512",
+        "type": "image/svg+xml"
+      }]
+    };
+    const blob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
+    });
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- NEW: Use the Official, Free Jitsi API (No Tokens, No Popups) -->
   <script src="https://meet.jit.si/external_api.js"></script>
@@ -764,6 +788,22 @@
       </div>
   </div>
 
+  <!-- STUDENT HISTORY MODAL -->
+  <div id="student-history-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[600px] max-h-[90vh] overflow-hidden animate-scale-up">
+          <div class="bg-gradient-to-r from-indigo-700 to-blue-800 p-5 flex justify-between items-center shrink-0">
+              <h2 class="text-xl font-black text-white flex items-center gap-2">📜 My History & Activity</h2>
+              <button onclick="document.getElementById('student-history-modal').classList.add('hidden')" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
+          </div>
+          <div class="p-6 bg-slate-50 flex-1 overflow-y-auto space-y-6" id="student-history-content">
+              <!-- Content injected via JS -->
+          </div>
+          <div class="p-4 border-t border-slate-200 bg-white flex justify-end">
+              <button onclick="document.getElementById('student-history-modal').classList.add('hidden')" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold transition">Close</button>
+          </div>
+      </div>
+  </div>
+
   <!-- START SCREEN (STUDENT DASHBOARD) -->
   <div id="start-screen" class="hidden h-screen w-full relative bg-[#f4f7fb] overflow-y-auto font-sans animate-fade-in">
     
@@ -894,24 +934,37 @@
             </select>
           </div>
 
-          <!-- Quick Actions (Replaces Old Toolbar) -->
+          <!-- Quick Actions -->
           <div id="student-quick-actions" class="hidden bg-blue-600 p-6 rounded-2xl shadow-md border border-blue-500 text-white flex-col gap-3 relative overflow-hidden">
               <div class="absolute -right-4 -bottom-4 text-6xl opacity-10 pointer-events-none">🚀</div>
               <h2 class="font-bold text-sm text-blue-200 uppercase tracking-widest mb-1 z-10">Quick Actions</h2>
+              
+              <button onclick="window.installPWA()" id="btn-install-pwa" class="hidden w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black py-3 px-4 rounded-xl transition shadow-lg flex justify-between items-center z-10 border border-emerald-300">
+                  <span class="flex items-center gap-2">📱 Install Mobile App</span>
+                  <span>&darr;</span>
+              </button>
+
               <button onclick="window.toggleChatPanel()" class="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-4 rounded-xl transition shadow-sm flex justify-between items-center z-10">
                   <span class="flex items-center gap-2">💬 Class Chat</span>
                   <span>&rarr;</span>
               </button>
+              
               <button onclick="window.startFullExam()" class="w-full bg-white text-blue-800 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-md flex justify-between items-center z-10 border border-blue-100">
                   <span class="flex items-center gap-2">🎓 Full Mock Exam</span>
                   <span>&rarr;</span>
               </button>
-          </div>
+              
+              <!-- HISTORY BUTTON -->
+              <button onclick="window.openStudentHistory()" class="w-full bg-indigo-800/50 hover:bg-indigo-700/50 border border-indigo-400/30 text-indigo-100 font-bold py-3 px-4 rounded-xl transition shadow-sm flex justify-between items-center z-10">
+                  <span class="flex items-center gap-2">📜 My History & Activity</span>
+                  <span>&rarr;</span>
+              </button>
+          </div> <!-- THIS DIV RESTORES THE BLUE BOX -->
 
           <!-- Progress Section -->
           <div id="student-progress-section" class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex-col hidden max-h-[500px] overflow-y-auto"></div>
 
-        </div>
+        </div> <!-- THIS DIV RESTORES THE LEFT COLUMN -->
 
         <!-- RIGHT COLUMN: Timetable & Library -->
         <div class="lg:col-span-8 flex flex-col gap-6" id="bottom-student-sections">
@@ -4282,6 +4335,84 @@
         window.initStudentDashboard(); 
     };
 
+    window.openStudentHistory = function() {
+        const modal = document.getElementById('student-history-modal');
+        const content = document.getElementById('student-history-content');
+        
+        // 1. Gather Data
+        let mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user).sort((a,b) => b.id - a.id);
+        let myAtt = ATTENDANCE.filter(a => a.student === currentUser.user);
+        
+        // 2. Build Tests History HTML
+        let subsHtml = mySubs.length ? mySubs.map(s => `
+            <div class="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm mb-2 hover:border-blue-300 transition group cursor-pointer" onclick="reviewPastSubmission(${s.id}); document.getElementById('student-history-modal').classList.add('hidden');">
+                <div>
+                    <div class="font-bold text-slate-800 text-sm group-hover:text-blue-700 transition-colors">${s.testName}</div>
+                    <div class="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-0.5">${s.date} • ${s.className}</div>
+                </div>
+                <div class="font-black text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">${s.score}</div>
+            </div>
+        `).join('') : '<p class="text-sm text-slate-500 italic bg-white p-4 rounded-xl border border-slate-200 text-center">No tests submitted yet.</p>';
+        
+        // 3. Build Attendance HTML
+        let attHtml = myAtt.length ? myAtt.map(a => {
+            const statusMap = {
+                'on_time': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-700 uppercase">Present</span>',
+                'late': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-amber-100 text-amber-700 uppercase">Late</span>',
+                'absent_adv': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-rose-100 text-rose-700 uppercase">Absent (Excused)</span>',
+                'absent_late': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-rose-100 text-rose-700 uppercase">Absent (Late Notice)</span>',
+                'absent_none': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-red-100 text-red-800 uppercase">Absent (No Notice)</span>'
+            };
+            return `
+            <div class="flex justify-between items-center p-3 bg-white border-b border-slate-100 last:border-0 text-sm">
+                <div>
+                    <div class="font-bold text-slate-700">${a.className}</div>
+                    <div class="text-[10px] text-slate-400 font-medium uppercase">${a.date}</div>
+                </div>
+                ${statusMap[a.status] || '<span class="text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-700 uppercase">Present</span>'}
+            </div>`;
+        }).join('') : '<p class="text-sm text-slate-500 italic bg-white p-4 rounded-xl border border-slate-200 text-center">No class attendance recorded.</p>';
+
+        // 4. Build Banking / Account HTML
+        let lessonsUsed = myAtt.length;
+        let lessonsRemaining = currentUser.totalLessonsPaid ? Math.max(0, currentUser.totalLessonsPaid - lessonsUsed) : 'N/A';
+        
+        let finHtml = `
+            <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span class="font-bold text-slate-600 text-sm">Economy Balance:</span> 
+                    <span class="font-black text-amber-500 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">${currentUser.gems || 0} 💎</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <span class="font-bold text-slate-600 text-sm">Tuition Status:</span> 
+                    <span class="font-black text-[11px] uppercase tracking-widest px-2.5 py-1 rounded ${currentUser.isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${currentUser.isPaid ? 'Active (Paid)' : 'Locked / Pending'}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-600 text-sm">Lessons Remaining:</span> 
+                    <span class="font-black text-indigo-700 text-lg">${lessonsRemaining}</span>
+                </div>
+            </div>
+        `;
+
+        // 5. Inject Everything
+        content.innerHTML = `
+            <div>
+                <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-2 ml-1">💳 Banking & Account</h3>
+                ${finHtml}
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-2 ml-1 mt-2">📝 Test Submissions</h3>
+                <div class="max-h-[250px] overflow-y-auto pr-1 space-y-2">${subsHtml}</div>
+            </div>
+            <div>
+                <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-2 ml-1 mt-2">📅 Class Attendance</h3>
+                <div class="max-h-[200px] overflow-y-auto pr-1 bg-white rounded-xl border border-slate-200 shadow-sm">${attHtml}</div>
+            </div>
+        `;
+        
+        modal.classList.remove('hidden');
+    }
+
     // --- PUBLIC LANDING PAGE LOGIC ---
     window.tempPPHero = null;
     window.tempPPTrf = null;
@@ -4627,7 +4758,7 @@
       const totalTests = cls.assignedTests?.length || 0;
       const completedTestIds = [...new Set(mySubs.map(s => s.testId))]; 
       const completedCount = completedTestIds.length;
-      const progressPct = totalTests === 0 ? 0 : Math.round((completedCount / totalTests) * 100);
+      const progressPct = totalTests === 0 ? 0 : Math.min(100, Math.round((completedCount / totalTests) * 100));
 
       prog.innerHTML = `
         <h2 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Class Progress</h2>
@@ -4641,6 +4772,12 @@
                 <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: ${progressPct}%"></div>
             </div>
         </div>
+
+        <!-- ADD THIS RADAR CHART CANVAS CONTAINER -->
+        <div class="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100 shadow-inner flex justify-center">
+            <canvas id="skills-radar-chart" style="max-height: 250px; width: 100%;"></canvas>
+        </div>
+        <!-- END RADAR CHART CONTAINER -->
 
         <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest mb-3 border-t border-slate-100 pt-5">Recent Feedback</h3>
         <div class="space-y-3">
@@ -4656,6 +4793,121 @@
               </div>
             </div>`).join('') : '<p class="text-sm text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No completed tests yet.</p>'}
         </div>`;
+     // --- ADD THIS AT THE VERY END OF renderStudentDashboard() ---
+      
+      // 1. Calculate Average Scores for the 4 Skills (Mock & Full Mock ONLY)
+      let rLStats = { reading: { correct: 0, total: 0 }, listening: { correct: 0, total: 0 } };
+      let wSStats = { writing: { sum: 0, count: 0 }, speaking: { sum: 0, count: 0 } };
+
+      mySubs.forEach(s => {
+          // SKIP "Time-Free" practice runs. ONLY count Mock and Full Mock tests.
+          if (s.testName && s.testName.includes('(Practice)')) return;
+
+          let t = TEST_BANK.find(x => x.id === s.testId) || s.syntheticData;
+          let mod = t ? t.module : null;
+          
+          // ROBUST FALLBACK: Detect module from the title if missing
+          if (!mod) {
+              const tn = (s.testName || '').toLowerCase();
+              if (tn.includes('reading')) mod = 'reading';
+              else if (tn.includes('listening')) mod = 'listening';
+              else if (tn.includes('writing')) mod = 'writing';
+              else if (tn.includes('speaking')) mod = 'speaking';
+          }
+          
+          if (mod === 'reading' || mod === 'listening') {
+              if (s.score && s.score.includes('/')) {
+                  let parts = s.score.split('/');
+                  let correct = parseFloat(parts[0]);
+                  let total = parseFloat(parts[1]);
+                  if (!isNaN(correct) && !isNaN(total) && total > 0) {
+                      rLStats[mod].correct += correct;
+                      rLStats[mod].total += total;
+                  }
+              }
+          } 
+          else if (mod === 'writing' || mod === 'speaking') {
+              if (s.score && s.score.includes('Band')) {
+                  let val = parseFloat(s.score.replace('Band', '').trim());
+                  if (!isNaN(val) && val > 0) {
+                      wSStats[mod].sum += val;
+                      wSStats[mod].count++;
+                  }
+              }
+          }
+      });
+
+      // Maps projected scores directly to your uploaded tables
+      const getRLBand = (stat) => {
+          if (stat.total === 0) return 0;
+          
+          // Project to 40 points using standard rounding, fair for partial test attempts
+          let projected = Math.round((stat.correct / stat.total) * 40);
+          
+          // Reading (Academic) and Listening share this exact threshold structure
+          if (projected >= 39) return 9.0;
+          if (projected >= 37) return 8.5;
+          if (projected >= 35) return 8.0;
+          if (projected >= 33) return 7.5;
+          if (projected >= 30) return 7.0;
+          if (projected >= 27) return 6.5;
+          if (projected >= 23) return 6.0;
+          if (projected >= 20) return 5.5;
+          if (projected >= 16) return 5.0;
+          if (projected >= 13) return 4.5;
+          if (projected >= 10) return 4.0;
+          if (projected >= 7) return 3.5;
+          if (projected >= 5) return 3.0;
+          if (projected >= 3) return 2.5;
+          if (projected >= 2) return 2.0; // Fallback extrapolation
+          if (projected >= 1) return 1.0; // Fallback extrapolation
+          
+          return 0; 
+      };
+
+      const radarData = [
+          getRLBand(rLStats.reading),
+          getRLBand(rLStats.listening),
+          wSStats.writing.count ? (wSStats.writing.sum / wSStats.writing.count).toFixed(1) : 0,
+          wSStats.speaking.count ? (wSStats.speaking.sum / wSStats.speaking.count).toFixed(1) : 0
+      ];
+
+      // 2. Render the Chart using a slight timeout to ensure the DOM is ready
+      setTimeout(() => {
+          const ctx = document.getElementById('skills-radar-chart');
+          if (ctx) {
+              // Destroy previous instance if it exists to prevent overlap bugs
+              if (window.studentRadarChart) window.studentRadarChart.destroy();
+              
+              window.studentRadarChart = new Chart(ctx, {
+                  type: 'radar',
+                  data: {
+                      labels: ['Reading', 'Listening', 'Writing', 'Speaking'],
+                      datasets: [{
+                          label: 'Estimated Band',
+                          data: radarData,
+                          backgroundColor: 'rgba(59, 130, 246, 0.2)', // Tailwind blue-500 with opacity
+                          borderColor: 'rgba(59, 130, 246, 1)',
+                          pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                          pointBorderColor: '#fff',
+                          pointHoverBackgroundColor: '#fff',
+                          pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                      }]
+                  },
+                  options: {
+                      scales: {
+                          r: {
+                              angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                              grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                              pointLabels: { font: { size: 11, weight: 'bold', family: 'sans-serif' }, color: '#475569' },
+                              ticks: { display: false, min: 0, max: 9, stepSize: 1.5 }
+                          }
+                      },
+                      plugins: { legend: { display: false } }
+                  }
+              });
+          }
+      }, 50);
     };
 
     let pendingTestId = null;
