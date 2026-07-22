@@ -1549,9 +1549,10 @@
   <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    // ✨ NEW: Added GoogleAuthProvider and signInWithPopup
-    import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    // ✨ NEW: Imported enableIndexedDbPersistence
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    // ✨ NEW: Imported onAuthStateChanged
+    import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     window.initFirebaseSystem = async function() {
@@ -1572,6 +1573,16 @@
             loaderText.innerHTML = "Initializing App...";
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
+            
+            // ✨ NEW: Enable Offline Persistence! 
+            // If Wi-Fi drops during a mock exam, answers cache to the hard drive and auto-sync when Wi-Fi returns.
+            try {
+                await enableIndexedDbPersistence(db);
+                console.log("Firebase Offline Persistence Enabled.");
+            } catch (err) {
+                console.warn("Offline persistence failed to enable:", err.code);
+            }
+
             const auth = getAuth(app);
             const storage = getStorage(app);
             
@@ -1666,12 +1677,14 @@
     let SCHEDULES = [];
     let ATTENDANCE = [];
     let PACKAGES = []; 
-    let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
-    let HOF_STUDENTS = []; // ✨ NEW: Dedicated Collection for Hall of Fame
+    let CHAT_MESSAGES = []; 
+    let HOF_STUDENTS = []; 
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
-    let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
+    
+    // ✨ FIX: Upgraded to localStorage for Multi-Tab Support
+    let currentUser = JSON.parse(localStorage.getItem('ielts_session')) || null;
 
     let APP_DATA = { module: 'reading', parts: [], vocab: [] };
     let editingTestId = null;
@@ -1981,7 +1994,45 @@
             }
             
             document.getElementById('cloud-loader').classList.add('hidden');
-            checkAuth();
+            
+            // ✨ NEW: Secure Authentication State Observer
+            // This actively listens to Firebase's encrypted token. If a token expires or is revoked, it auto-logs them out.
+            onAuthStateChanged(window.auth, async (user) => {
+                if (user) {
+                    // Token is valid! Open the app.
+                    if (currentUser) {
+                        document.getElementById('auth-ui').classList.add('hidden');
+                        document.getElementById('public-landing-ui').classList.add('hidden');
+                        if (currentUser.role === 'teacher') openEditor();
+                        else { initStudentDashboard(); document.getElementById('start-screen').classList.remove('hidden'); }
+                    } else {
+                        // Edge case: Valid Token but LocalStorage was cleared. Try to recover via Google Email.
+                        if (user.email && !user.email.endsWith('@khanhlms.com')) {
+                            const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), user.email));
+                            if(userDoc.exists()) {
+                                currentUser = userDoc.data();
+                                localStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                                await window.attachPrivateListeners();
+                                document.getElementById('auth-ui').classList.add('hidden');
+                                document.getElementById('public-landing-ui').classList.add('hidden');
+                                if (currentUser.role === 'teacher') openEditor();
+                                else { initStudentDashboard(); document.getElementById('start-screen').classList.remove('hidden'); }
+                                return;
+                            }
+                        }
+                        window.showAuthFromLanding();
+                    }
+                } else {
+                    // Token missing or expired. Lock the app.
+                    currentUser = null;
+                    localStorage.removeItem('ielts_session');
+                    document.getElementById('public-landing-ui').classList.remove('hidden');
+                    if (typeof window.renderPublicProfile === 'function') window.renderPublicProfile();
+                    document.getElementById('auth-ui').classList.add('hidden');
+                    document.getElementById('start-screen').classList.add('hidden');
+                    document.getElementById('editor-ui').classList.add('hidden');
+                }
+            });
 
         } catch (err) {
             console.error("Cloud Boot Error:", err);
@@ -2077,22 +2128,7 @@
         console.log("Cloud Seeding Complete");
     }
 
-    function checkAuth() {
-      if (!currentUser) {
-        // NEW: Show Storefront instead of naked login wall
-        document.getElementById('public-landing-ui').classList.remove('hidden');
-        window.renderPublicProfile();
-        
-        document.getElementById('auth-ui').classList.add('hidden');
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('editor-ui').classList.add('hidden');
-      } else {
-        document.getElementById('auth-ui').classList.add('hidden');
-        document.getElementById('public-landing-ui').classList.add('hidden');
-        if (currentUser.role === 'teacher') openEditor();
-        else { initStudentDashboard(); document.getElementById('start-screen').classList.remove('hidden'); }
-      }
-    }
+    // ✨ REMOVED: The old manual checkAuth() function has been completely replaced by onAuthStateChanged!
 
     window.showAuthFromLanding = function() {
         document.getElementById('public-landing-ui').classList.add('hidden');
@@ -2120,7 +2156,6 @@
       const btn = document.getElementById('auth-submit-btn');
       btn.textContent = "Connecting..."; btn.disabled = true;
 
-      // ✨ FIX: 100% safe email generation even for names with spaces and accents (e.g. "Khanh Lý")
       const safeEmailPrefix = encodeURIComponent(u).replace(/%/g, '').toLowerCase();
       const mappedEmail = `${safeEmailPrefix}@khanhlms.com`;
 
@@ -2130,26 +2165,21 @@
           if (authMode === 'register') {
             if (userDoc.exists()) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up as Student"; btn.disabled=false; return; }
             
-            // Try to create in Firebase Auth (Fail-safe if not enabled in console yet)
             try {
                 await window.fsAuthCreate(window.auth, mappedEmail, p);
             } catch (fbErr) {
                 console.warn("Firebase Auth disabled. Using legacy creation.", fbErr);
             }
             
-            // Create user profile in Firestore
             currentUser = { user: u, pass: p, role: 'student', isPaid: false, paymentStatus: 'unpaid', createdAt: new Date().toLocaleDateString() };
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u), currentUser);
           } else {
-            // LOGIN MODE
             let isAuthenticated = false;
 
-            // Attempt 1: True Firebase Authentication (For newer accounts)
             try {
                 await window.fsAuthSignIn(window.auth, mappedEmail, p);
                 isAuthenticated = true;
             } catch(authErr) {
-                // Attempt 2: Legacy DB Auth & Silent Migration (For your Teacher account)
                 if (userDoc.exists() && userDoc.data().pass === p) {
                     try {
                         console.log("Upgrading legacy account to secure Firebase Auth...");
@@ -2157,7 +2187,7 @@
                     } catch (migrateErr) {
                         console.warn("Silent migration failed. Logging in via legacy mode.", migrateErr);
                     }
-                    isAuthenticated = true; // ✨ FIX: Let you in no matter what!
+                    isAuthenticated = true;
                 }
             }
 
@@ -2168,22 +2198,19 @@
             currentUser = userDoc.data();
           }
           
-          sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-          
-          // Trigger the private data download now that we are securely logged in
+          // ✨ FIX: Save to localStorage for multi-tab
+          localStorage.setItem('ielts_session', JSON.stringify(currentUser));
           await window.attachPrivateListeners();
           
-          checkAuth();
+          // No need to manually call checkAuth, onAuthStateChanged handles UI!
       } catch (e) {
           console.error(e); 
-          // ✨ FIX: Show the exact error message so we know what broke!
           err.textContent = e.message || 'Cloud network error. Try again.'; 
           err.classList.remove('hidden');
       }
       btn.textContent = authMode === 'register' ? 'Sign Up as Student' : 'Log In'; btn.disabled = false;
     }
-    
-    // ✨ NEW: Google Sign-In Handler
+
     window.handleGoogleLogin = async function() {
         const err = document.getElementById('auth-error');
         const btn = document.getElementById('auth-google-btn');
@@ -2197,23 +2224,20 @@
             const result = await window.fsSignInWithPopup(window.auth, window.fsGoogleProvider);
             const gUser = result.user;
             
-            // We use their email as a completely safe database ID
             const uniqueUsername = gUser.email; 
             
             const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername));
             
             if (userDoc.exists()) {
                 currentUser = userDoc.data();
-                // Fetch their latest Google profile picture if they don't have one set
                 if (!currentUser.avatar && gUser.photoURL) {
                     currentUser.avatar = gUser.photoURL;
                     await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
                 }
             } else {
-                // Completely new student registration via Google!
                 currentUser = { 
                     user: uniqueUsername, 
-                    displayName: gUser.displayName || gUser.email.split('@')[0], // Store their real name for the UI!
+                    displayName: gUser.displayName || gUser.email.split('@')[0], 
                     avatar: gUser.photoURL,
                     role: 'student', 
                     isPaid: false, 
@@ -2223,9 +2247,9 @@
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
             }
             
-            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            // ✨ FIX: Save to localStorage for multi-tab
+            localStorage.setItem('ielts_session', JSON.stringify(currentUser));
             await window.attachPrivateListeners();
-            checkAuth();
             
         } catch (e) {
             console.error("Google Auth Error:", e);
@@ -2236,10 +2260,12 @@
         btn.innerHTML = originalText;
         btn.disabled = false;
     };
-
+    
     function logout() {
-      sessionStorage.removeItem('ielts_session'); currentUser = null;
-      // Forces a browser refresh to completely purge private memory state arrays
+      // Because we use onAuthStateChanged, signing out of Firebase handles the UI automatically!
+      if (window.auth) window.auth.signOut();
+      localStorage.removeItem('ielts_session'); 
+      currentUser = null;
       window.location.reload();
     }
 
