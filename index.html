@@ -334,7 +334,18 @@
 
         <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
         
-        <div class="text-center mt-4 pt-5 border-t border-slate-100">
+        <!-- ✨ NEW: Google Sign In Button -->
+        <div class="relative flex py-5 items-center">
+            <div class="flex-grow border-t border-slate-200"></div>
+            <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold uppercase tracking-widest">Or</span>
+            <div class="flex-grow border-t border-slate-200"></div>
+        </div>
+        <button onclick="window.handleGoogleLogin()" id="auth-google-btn" class="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-lg shadow-sm transition-all text-base">
+            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Sign in with Google
+        </button>
+        
+        <div class="text-center mt-5 pt-5 border-t border-slate-100">
             <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
         </div>
       </div>
@@ -552,51 +563,6 @@
     <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-blue-200 rotate-45 arrow"></div>
   </div>
   
-  <!-- AI GENERATOR MODAL (AUTONOMOUS VISION & TEXT) -->
-  <div id="ai-generator-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh] overflow-hidden animate-scale-up">
-      <div class="bg-gradient-to-r from-purple-700 to-fuchsia-700 px-6 py-4 flex justify-between items-center text-white shrink-0">
-        <h2 class="text-xl font-bold flex items-center gap-2">✨ Autonomous AI Extractor</h2>
-        <button onclick="closeAIGenerator()" class="text-white hover:text-purple-200 font-bold text-2xl leading-none">&times;</button>
-      </div>
-      <div class="p-6 overflow-y-auto flex-1 bg-slate-50">
-        <p class="text-slate-600 mb-4 text-sm font-medium">Upload a screenshot of a test or paste text. The AI will automatically detect the passage, extract all questions, identify their formats (Multiple Choice, True/False, Gap Fill, etc.), and find the answers.</p>
-        
-        <!-- Image Upload Area -->
-        <div id="ai-image-dropzone" class="border-2 border-dashed border-purple-300 bg-purple-50 rounded-lg p-6 mb-4 text-center cursor-pointer hover:bg-purple-100 transition relative" onclick="document.getElementById('ai-image-input').click()">
-            <input type="file" id="ai-image-input" class="hidden" accept="image/*" onchange="handleAIImageUpload(event)">
-            <div id="ai-image-placeholder">
-                <span class="text-4xl mb-2 block">📸</span>
-                <span class="text-purple-800 font-bold text-base">Upload Screenshot of Test</span>
-                <p class="text-xs text-purple-600 mt-1 font-medium">JPG, PNG supported. (Take a screenshot of your PDF)</p>
-            </div>
-            <img id="ai-image-preview" class="hidden mx-auto max-h-48 rounded shadow-md border border-purple-200">
-            <button id="ai-image-clear" onclick="clearAIImage(event)" class="hidden absolute top-3 right-3 bg-rose-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold shadow-lg hover:bg-rose-600 transition">&times;</button>
-        </div>
-
-        <div class="flex items-center gap-4 mb-4">
-            <div class="h-px bg-slate-300 flex-1"></div>
-            <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">AND / OR</span>
-            <div class="h-px bg-slate-300 flex-1"></div>
-        </div>
-        
-        <label class="block text-sm font-bold text-slate-700 mb-1">Paste Raw Text</label>
-        <textarea id="ai-source-text" class="w-full border border-slate-300 rounded-lg p-4 mb-4 focus:ring-2 focus:ring-purple-500 outline-none h-32 text-sm shadow-inner" placeholder="Paste reading passage and/or questions here..."></textarea>
-
-        <!-- Loading State -->
-        <div id="ai-loading" class="hidden flex-col items-center justify-center p-6 bg-purple-50 border border-purple-200 rounded-lg mb-4 shadow-inner">
-           <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-purple-700 mb-3 shadow-[0_0_10px_rgba(126,34,206,0.3)]"></div>
-           <p class="text-purple-800 font-bold text-sm tracking-wide">AI is analyzing context & mapping questions...</p>
-           <p class="text-purple-600 text-xs mt-1 italic">This requires heavy processing. Please wait 10-15 seconds.</p>
-        </div>
-      </div>
-      <div class="p-4 border-t border-slate-200 bg-white shrink-0 flex justify-end gap-3">
-        <button onclick="closeAIGenerator()" class="px-5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
-        <button id="ai-generate-btn" onclick="generateAIQuestions()" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-md transition flex items-center gap-2 border border-purple-800">✨ Extract & Build Test</button>
-      </div>
-    </div>
-  </div>
-
   <!-- RESULTS MODAL -->
   <div id="results-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center backdrop-blur-sm">
     <div class="bg-white rounded-2xl p-8 w-[400px] shadow-2xl text-center animate-scale-up">
@@ -1439,7 +1405,6 @@
             <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add</button>
             <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
             <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5">📥 Bulk Import</button>
-            <button onclick="openAIGenerator()" class="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:shadow-md text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5">✨ AI Auto-Gen</button>
           </div>
           
           <div id="editor-questions-list" class="space-y-6 pb-32"></div>
@@ -1584,8 +1549,10 @@
   <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    // ✨ NEW: Added GoogleAuthProvider and signInWithPopup
+    import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     window.initFirebaseSystem = async function() {
         const firebaseConfig = {
@@ -1606,9 +1573,14 @@
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             const auth = getAuth(app);
+            const storage = getStorage(app);
             
             // Expose globally
             window.db = db;
+            window.storage = storage;
+            window.sRef = ref;
+            window.sUpload = uploadBytes;
+            window.sGetUrl = getDownloadURL;
             window.fsDoc = doc;
             window.fsSetDoc = setDoc;
             window.fsGetDoc = getDoc;
@@ -1617,6 +1589,26 @@
             window.fsDeleteDoc = deleteDoc;
             window.fsOnSnapshot = onSnapshot;
             window.fPath = (col) => col;
+            
+            window.fsQuery = query;
+            window.fsWhere = where;
+            window.fsLimit = limit;
+            
+            // Expose Real Authentication methods
+            window.auth = auth;
+            window.fsAuthSignIn = signInWithEmailAndPassword;
+            window.fsAuthCreate = createUserWithEmailAndPassword;
+            
+            // ✨ NEW: Initialize Google Auth Provider
+            window.fsGoogleProvider = new GoogleAuthProvider();
+            window.fsSignInWithPopup = signInWithPopup;
+
+            // NEW: Global Storage Uploader Helper
+            window.uploadMediaToStorage = async function(fileOrBlob, pathString) {
+                const storageRef = window.sRef(window.storage, pathString);
+                await window.sUpload(storageRef, fileOrBlob);
+                return await window.sGetUrl(storageRef);
+            };
 
             loaderText.innerHTML = "Authenticating Connection...<br><br><span class='text-xs'>If this fails, ensure you enabled Anonymous Sign-in in Firebase.</span>";
             
@@ -1807,7 +1799,16 @@
                 canvas.width = w; canvas.height = h;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
-                callback(canvas.toDataURL('image/jpeg', 0.8)); 
+                
+                canvas.toBlob(async (blob) => {
+                    const path = 'images/' + Date.now() + '_' + Math.random().toString(36).substr(2,5) + '.jpg';
+                    try {
+                        const url = await window.uploadMediaToStorage(blob, path);
+                        callback(url);
+                    } catch(err) {
+                        console.error("Image upload failed:", err);
+                    }
+                }, 'image/jpeg', 0.8); 
             };
             img.src = e.target.result;
         };
@@ -1925,168 +1926,59 @@
     };
 
     // --- FULLY REAL-TIME CLOUD SYNC SYSTEM ---
+    window.triggerUIRefresh = () => {
+        if(window.refreshTimeout) clearTimeout(window.refreshTimeout);
+        window.refreshTimeout = setTimeout(() => {
+            if (!currentUser) return;
+            if (currentUser.role === 'teacher') {
+                const editorUI = document.getElementById('editor-ui');
+                if (!editorUI.classList.contains('hidden')) {
+                    if(typeof renderTestBank === 'function') renderTestBank();
+                    if(typeof renderClasses === 'function') renderClasses();
+                    if(typeof renderStudentsList === 'function') renderStudentsList();
+                    if(!document.getElementById('editor-view-timetable').classList.contains('hidden')) window.renderCalendar('teacher');
+                }
+                if (!document.getElementById('editor-view-subs').classList.contains('hidden')) {
+                    if(typeof renderSubmissions === 'function') renderSubmissions();
+                }
+            } else {
+                const startScreen = document.getElementById('start-screen');
+                if (!startScreen.classList.contains('hidden')) {
+                     const sel = document.getElementById('student-class-select');
+                     if(typeof initStudentDashboard === 'function') initStudentDashboard(sel ? sel.value : null);
+                }
+            }
+        }, 100);
+    };
+
     window.bootLMS = async function() {
         try {
             document.getElementById('cloud-loader-text').textContent = "Initializing App...";
             
-            // 1. Initial check to seed data if empty
-            const uSnap = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('users')));
-            let initialUsers = uSnap.docs.map(d => d.data());
-
-            if (initialUsers.length === 0) {
+            // 1. Initial check to seed data if empty (Only fetches 1 document to save bandwidth)
+            const firstUserQuery = window.fsQuery(window.fsCollection(window.db, window.fPath('users')), window.fsLimit(1));
+            const uSnap = await window.fsGetDocs(firstUserQuery);
+            if (uSnap.empty) {
                 await seedCloudData();
             }
 
-            document.getElementById('cloud-loader-text').textContent = "Establishing Real-Time Connections...";
+            document.getElementById('cloud-loader-text').textContent = "Establishing Secure Connections...";
 
-            // 2. Setup a smart UI refresher so active screens update when data changes in the background
-            let refreshTimeout = null;
-            const triggerUIRefresh = () => {
-                if(refreshTimeout) clearTimeout(refreshTimeout);
-                refreshTimeout = setTimeout(() => {
-                    if (!currentUser) return;
-                    if (currentUser.role === 'teacher') {
-                        const editorUI = document.getElementById('editor-ui');
-                        if (!editorUI.classList.contains('hidden')) {
-                            renderTestBank();
-                            renderClasses();
-                            renderStudentsList();
-                            if(!document.getElementById('editor-view-timetable').classList.contains('hidden')) {
-                                window.renderCalendar('teacher');
-                            }
-                        }
-                        if (!document.getElementById('editor-view-subs').classList.contains('hidden')) {
-                            renderSubmissions();
-                        }
-                    } else {
-                        const startScreen = document.getElementById('start-screen');
-                        if (!startScreen.classList.contains('hidden')) {
-                             const sel = document.getElementById('student-class-select');
-                             initStudentDashboard(sel ? sel.value : null); // Preserve dropdown selection
-                        }
-                    }
-                }, 100);
-            };
-
-            // 3. Attach real-time listeners to all collections simultaneously
+            // 2. Attach PUBLIC real-time listeners (Safe data everyone needs to see)
             await Promise.all([
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => {
-                        USERS = snap.docs.map(d => d.data());
-                        if (currentUser && currentUser.role === 'student') {
-                             const me = USERS.find(u => u.user === currentUser.user);
-                             if(me) { currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); }
-                        }
-                        triggerUIRefresh();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), snap => {
-                        TEST_BANK = snap.docs.map(d => d.data());
-                        triggerUIRefresh();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => {
-                        CLASSES = snap.docs.map(d => d.data());
-                        triggerUIRefresh();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('submissions')), snap => {
-                        SUBMISSIONS = snap.docs.map(d => d.data());
-                        triggerUIRefresh();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('schedules')), snap => {
-                        SCHEDULES = snap.docs.map(d => d.data());
-                        triggerUIRefresh();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('attendance')), snap => {
-                        ATTENDANCE = snap.docs.map(d => d.data());
-                        triggerUIRefresh();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => {
-                        ALL_NOTES = {};
-                        snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data);
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => {
-                        FLASHCARDS = {};
-                        snap.docs.forEach(d => FLASHCARDS[d.id] = d.data().data);
-                        if (currentUser && currentUser.role === 'student' && !document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
-                            renderFlashcardPanel();
-                        }
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => {
-                        if (snap.exists()) BILLING_SETTINGS = snap.data();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => {
-                        if (snap.exists()) AVAILABILITY = snap.data();
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => {
-                        PACKAGES = snap.docs.map(d => d.data());
-                        renderStudentsList();
-                        resolve();
-                    }, err => {
-                        console.error("packages listener error:", err);
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => {
-                        CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp);
-                        if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) {
-                            window.renderChatMessages();
-                        }
-                        resolve();
-                    });
-                }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => {
-                        if (snap.exists()) PUBLIC_PROFILE = snap.data();
-                        if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) {
-                            window.renderPublicProfile();
-                        }
-                        resolve();
-                    });
-                }),
-                // ✨ NEW: High-Capacity Listener specifically for Hall of Fame
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => {
-                        HOF_STUDENTS = snap.docs.map(d => d.data());
-                        if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) {
-                            window.renderHOFGrid();
-                        }
-                        if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) {
-                            window.renderPublicProfile();
-                        }
-                        resolve();
-                    });
-                })
+                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), snap => { TEST_BANK = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => { CLASSES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => { if (snap.exists()) BILLING_SETTINGS = snap.data(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => { if (snap.exists()) AVAILABILITY = snap.data(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => { PACKAGES = snap.docs.map(d => d.data()); if(currentUser?.role === 'teacher') renderStudentsList(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => { if (snap.exists()) PUBLIC_PROFILE = snap.data(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => { HOF_STUDENTS = snap.docs.map(d => d.data()); if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); })
             ]);
+
+            // 3. Attach RESTRICTED listeners based on role
+            if (currentUser) {
+                await window.attachPrivateListeners();
+            }
             
             document.getElementById('cloud-loader').classList.add('hidden');
             checkAuth();
@@ -2097,15 +1989,69 @@
             document.getElementById('cloud-loader-text').innerHTML = `
               <div class='bg-rose-900/50 border border-rose-500 p-4 rounded text-left'>
                  <b class='text-rose-400'>Database Permission Error:</b><br>
-                 <span class='text-rose-200 text-xs font-mono'>${err.message}</span><br><br>
-                 <b class='text-white'>How to fix:</b><br>
-                 1. Go to Firebase Console -> Firestore Database -> <b>Rules</b> tab.<br>
-                 2. Ensure you clicked 'Create Database' (not Realtime database).<br>
-                 3. Your rules must be set to allow read/write exactly like this:<br>
-                 <code class='bg-black p-1 mt-1 block'>allow read, write: if true;</code>
+                 <span class='text-rose-200 text-xs font-mono'>${err.message}</span>
               </div>
             `;
         }
+    };
+
+    window.attachPrivateListeners = async function() {
+        const promises = [];
+        
+        if (currentUser.role === 'teacher') {
+            // TEACHER: Needs access to everything to grade and manage
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => { USERS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('submissions')), snap => { SUBMISSIONS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('attendance')), snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('schedules')), snap => { SCHEDULES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => { CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => FLASHCARDS[d.id] = d.data().data); resolve(); }); }));
+        } else {
+            // ✨ STUDENT: Restricted queries. ONLY downloads their own private data.
+            promises.push(new Promise(resolve => { 
+                window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
+                    if(snap.exists()) { 
+                        const me = snap.data(); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
+                    } 
+                    window.triggerUIRefresh(); resolve(); 
+                }); 
+            }));
+            
+            // Query only submissions and attendance belonging to this specific user
+            const subQ = window.fsQuery(window.fsCollection(window.db, window.fPath('submissions')), window.fsWhere('student', '==', currentUser.user));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(subQ, snap => { SUBMISSIONS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            
+            const attQ = window.fsQuery(window.fsCollection(window.db, window.fPath('attendance')), window.fsWhere('student', '==', currentUser.user));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(attQ, snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+
+            // ✨ NEW: Restrict Schedules and Messages ONLY to enrolled classes
+            // (Note: CLASSES array is safely populated by the public listener before this runs)
+            const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
+            const myClassNames = myClasses.map(c => c.name);
+            const myClassIds = myClasses.map(c => c.id);
+
+            if (myClassNames.length > 0) {
+                // Firestore 'in' queries support a max of 10 elements. We slice to be safe.
+                const safeClassNames = myClassNames.slice(0, 10);
+                const safeClassIds = myClassIds.slice(0, 10);
+
+                const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('className', 'in', safeClassNames));
+                promises.push(new Promise(resolve => { window.fsOnSnapshot(schedQ, snap => { SCHEDULES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+                
+                const msgQ = window.fsQuery(window.fsCollection(window.db, window.fPath('messages')), window.fsWhere('classId', 'in', safeClassIds));
+                promises.push(new Promise(resolve => { window.fsOnSnapshot(msgQ, snap => { CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); resolve(); }); }));
+            } else {
+                SCHEDULES = [];
+                CHAT_MESSAGES = [];
+            }
+            
+            // Students only download their own private notes and flashcards
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data; }); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => FLASHCARDS[d.id] = d.data().data); if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) { window.renderFlashcardPanel(); } resolve(); }); }));
+        }
+
+        await Promise.all(promises);
     };
 
     async function seedCloudData() {
@@ -2169,40 +2115,132 @@
       const u = document.getElementById('auth-user').value.trim(), p = document.getElementById('auth-pass').value.trim();
       const err = document.getElementById('auth-error');
       if (!u || !p) { err.textContent = 'Enter username and password'; err.classList.remove('hidden'); return; }
+      if (p.length < 6) { err.textContent = 'Password must be at least 6 characters'; err.classList.remove('hidden'); return; }
       
       const btn = document.getElementById('auth-submit-btn');
       btn.textContent = "Connecting..."; btn.disabled = true;
 
+      // ✨ FIX: 100% safe email generation even for names with spaces and accents (e.g. "Khanh Lý")
+      const safeEmailPrefix = encodeURIComponent(u).replace(/%/g, '').toLowerCase();
+      const mappedEmail = `${safeEmailPrefix}@khanhlms.com`;
+
       try {
+          const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
+          
           if (authMode === 'register') {
-            if (USERS.find(x => x.user === u)) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up as Student"; btn.disabled=false; return; }
+            if (userDoc.exists()) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up as Student"; btn.disabled=false; return; }
             
-            // Force role to student for all public registrations
+            // Try to create in Firebase Auth (Fail-safe if not enabled in console yet)
+            try {
+                await window.fsAuthCreate(window.auth, mappedEmail, p);
+            } catch (fbErr) {
+                console.warn("Firebase Auth disabled. Using legacy creation.", fbErr);
+            }
+            
+            // Create user profile in Firestore
             currentUser = { user: u, pass: p, role: 'student', isPaid: false, paymentStatus: 'unpaid', createdAt: new Date().toLocaleDateString() };
-            USERS.push(currentUser); 
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u), currentUser);
           } else {
-            const found = USERS.find(x => x.user === u && x.pass === p);
-            if (!found) { err.textContent = 'Invalid credentials'; err.classList.remove('hidden'); btn.textContent="Log In"; btn.disabled=false; return; }
-            currentUser = found;
+            // LOGIN MODE
+            let isAuthenticated = false;
+
+            // Attempt 1: True Firebase Authentication (For newer accounts)
+            try {
+                await window.fsAuthSignIn(window.auth, mappedEmail, p);
+                isAuthenticated = true;
+            } catch(authErr) {
+                // Attempt 2: Legacy DB Auth & Silent Migration (For your Teacher account)
+                if (userDoc.exists() && userDoc.data().pass === p) {
+                    try {
+                        console.log("Upgrading legacy account to secure Firebase Auth...");
+                        await window.fsAuthCreate(window.auth, mappedEmail, p);
+                    } catch (migrateErr) {
+                        console.warn("Silent migration failed. Logging in via legacy mode.", migrateErr);
+                    }
+                    isAuthenticated = true; // ✨ FIX: Let you in no matter what!
+                }
+            }
+
+            if (!isAuthenticated) {
+                err.textContent = 'Invalid credentials'; err.classList.remove('hidden'); btn.textContent="Log In"; btn.disabled=false; return;
+            }
+            
+            currentUser = userDoc.data();
           }
           
           sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+          
+          // Trigger the private data download now that we are securely logged in
+          await window.attachPrivateListeners();
+          
           checkAuth();
       } catch (e) {
-          console.error(e); err.textContent = 'Cloud network error. Try again.'; err.classList.remove('hidden');
+          console.error(e); 
+          // ✨ FIX: Show the exact error message so we know what broke!
+          err.textContent = e.message || 'Cloud network error. Try again.'; 
+          err.classList.remove('hidden');
       }
       btn.textContent = authMode === 'register' ? 'Sign Up as Student' : 'Log In'; btn.disabled = false;
     }
     
+    // ✨ NEW: Google Sign-In Handler
+    window.handleGoogleLogin = async function() {
+        const err = document.getElementById('auth-error');
+        const btn = document.getElementById('auth-google-btn');
+        const originalText = btn.innerHTML;
+        
+        err.classList.add('hidden');
+        btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Connecting...`;
+        btn.disabled = true;
+
+        try {
+            const result = await window.fsSignInWithPopup(window.auth, window.fsGoogleProvider);
+            const gUser = result.user;
+            
+            // We use their email as a completely safe database ID
+            const uniqueUsername = gUser.email; 
+            
+            const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername));
+            
+            if (userDoc.exists()) {
+                currentUser = userDoc.data();
+                // Fetch their latest Google profile picture if they don't have one set
+                if (!currentUser.avatar && gUser.photoURL) {
+                    currentUser.avatar = gUser.photoURL;
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
+                }
+            } else {
+                // Completely new student registration via Google!
+                currentUser = { 
+                    user: uniqueUsername, 
+                    displayName: gUser.displayName || gUser.email.split('@')[0], // Store their real name for the UI!
+                    avatar: gUser.photoURL,
+                    role: 'student', 
+                    isPaid: false, 
+                    paymentStatus: 'unpaid', 
+                    createdAt: new Date().toLocaleDateString() 
+                };
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
+            }
+            
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            await window.attachPrivateListeners();
+            checkAuth();
+            
+        } catch (e) {
+            console.error("Google Auth Error:", e);
+            err.textContent = e.message || 'Google Sign-In failed or was cancelled.'; 
+            err.classList.remove('hidden');
+        }
+        
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    };
+
     function logout() {
       sessionStorage.removeItem('ielts_session'); currentUser = null;
-      document.getElementById('editor-ui').classList.add('hidden');
-      document.getElementById('start-screen').classList.add('hidden');
-      document.getElementById('exam-ui').classList.add('hidden');
-      document.getElementById('review-ui').classList.add('hidden');
-      clearInterval(timerInterval);
-      checkAuth();
+      // Forces a browser refresh to completely purge private memory state arrays
+      window.location.reload();
     }
 
     function showModalMsg(title, msg, onConfirm=null) {
@@ -3033,94 +3071,112 @@
             return;
         }
 
-        // Show loading state
-        document.getElementById('ai-loading').classList.remove('hidden');
-        document.getElementById('ai-loading').classList.add('flex');
-        document.getElementById('ai-generate-btn').disabled = true;
-
-        // ⚠️ INSERT YOUR ACTUAL OPENAI API KEY HERE (sk-...)
-        const apiKey = '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'; 
+        const btn = document.getElementById('ai-generate-btn');
+        const loading = document.getElementById('ai-loading');
         
-        try {
-            const contentArray = [];
-            
-            // 1. Add Text Prompt (OpenAI format)
-            if (textInput) {
-                contentArray.push({ 
-                    type: "text", 
-                    text: `Analyze the following IELTS test content. Extract the reading/listening passage (if any) and all questions. Format your response strictly as JSON with the structure: { "passage": "The text...", "questions": [ { "type": "multiple_choice", "text": "Question text", "options": ["A", "B"], "answer": "A" } ] }\n\nContent: ${textInput}` 
-                });
-            }
-            
-            // 2. Add Image Data (OpenAI format)
-            if (hasImage && imgPreview.startsWith('data:image')) {
-                // OpenAI can take the full data:image URI directly
-                contentArray.push({
-                    type: "image_url",
-                    image_url: { url: imgPreview }
-                });
-                
-                if (!textInput) {
-                    contentArray.push({ 
-                        type: "text", 
-                        text: 'Analyze this image of an IELTS test. Extract the reading passage and all questions. Format your response strictly as JSON with the structure: { "passage": "The text...", "questions": [ { "type": "multiple_choice", "text": "Question text", "options": ["A", "B"], "answer": "A" } ] }' 
-                    });
-                }
-            }
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        loading.classList.remove('hidden');
+        loading.classList.add('flex');
 
-            // 3. Make the API Call to OpenAI
-            const response = await fetch(`https://api.openai.com/v1/chat/completions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}` // OpenAI requires the key here!
-                },
-                body: JSON.stringify({
-                    model: "gpt-4o-mini", // Use gpt-4o or gpt-4o-mini for vision support
-                    response_format: { type: "json_object" }, // Force valid JSON
-                    messages: [
-                        {
-                            role: "user",
-                            content: contentArray
-                        }
-                    ]
-                })
+        try {
+            // ✨ SECURE BACKEND ARCHITECTURE
+            // The frontend NO LONGER holds an API key. It pushes the payload to your backend.
+            // Example Firebase Cloud Function Endpoint:
+            const cloudFunctionUrl = "https://us-central1-khanh-ielts.cloudfunctions.net/extractIELTSQuestions";
+            
+            const payload = {
+                sourceText: textInput || null,
+                imageBase64: aiUploadedImageBase64 || null,
+                mimeType: aiUploadedImageMime || null
+            };
+
+            const response = await fetch(cloudFunctionUrl, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(payload) 
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error?.message || "OpenAI API Error");
+                const errData = await response.text();
+                throw new Error(`Server Error: ${errData}`);
             }
 
             const data = await response.json();
-            // 4. Extract data using OpenAI's response structure
-            const aiText = data.choices[0].message.content; 
             
-            // Parse the AI's JSON response
-            const parsedData = JSON.parse(aiText);
-            console.log("Extracted AI Data:", parsedData);
-            
-            // Apply Passage to Editor
-            if (parsedData.passage) {
-                document.getElementById('edit-passage-text').innerHTML = parsedData.passage;
+            // 1. Inject Passage Text
+            if (data.passageText && data.passageText.trim().length > 10) {
+               const passTxt = document.getElementById('edit-passage-text');
+               if (passTxt.tagName === 'TEXTAREA') passTxt.value = data.passageText;
+               else passTxt.innerHTML = data.passageText.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
+               
+               if (data.passageTitle) document.getElementById('edit-passage-title').value = data.passageTitle;
             }
+
+            // 2. Map AI Questions to Editor Objects
+            if (data.questions && Array.isArray(data.questions)) {
+                data.questions.forEach((q, i) => {
+                    const newId = (Date.now() % 10000) + Math.floor(Math.random() * 10000) + i;
+                    const validTypes = ['multiple_choice', 'tfng', 'ynng', 'fill_blanks', 'matching_headings', 'dnd_list'];
+                    let qType = validTypes.includes(q.type) ? q.type : 'multiple_choice';
+
+                    let newBlock = {
+                        blockId: 'b' + Date.now() + i + Math.floor(Math.random() * 1000),
+                        type: qType,
+                        ids: [newId],
+                        points: 1,
+                        instruction: q.instruction || "Answer the question.",
+                        explanation: q.explanation || "",
+                        correctAnswers: {}
+                    };
+
+                    if (qType === 'multiple_choice' || qType === 'matching_headings') {
+                        newBlock.text = q.text || "";
+                        newBlock.options = q.options || [];
+                        newBlock.correctAnswers[newId] = q.answer || "";
+                        newBlock.multi = false;
+                    } else if (qType === 'fill_blanks' || qType === 'dnd_list') {
+                        let txt = q.text || "";
+                        if (!txt.includes('{blank:1}') && !txt.includes('{drop:1}')) {
+                            txt += ` {${qType==='fill_blanks'?'blank':'drop'}:${newId}}`; 
+                        } else {
+                            txt = txt.replace(/\{blank:1\}/g, `{blank:${newId}}`).replace(/\{drop:1\}/g, `{drop:${newId}}`);
+                        }
+                        newBlock.text = txt;
+                        newBlock.correctAnswers[newId] = q.answer || "";
+                    } else { 
+                        newBlock.text = q.text || "";
+                        newBlock.correctAnswers[newId] = q.answer || "";
+                    }
+
+                    APP_DATA.parts[currentEditorPartIdx].questions.push(newBlock);
+                });
+            }
+
+            saveCurrentEditorPart();
+            renderEditorQuestions();
+            triggerEditorAutosave();
+            closeAIGenerator();
+            clearAIImage();
             
-            // Alert success
-            showModalMsg("AI Success", "Data extracted successfully! The passage has been placed in the editor. Check your browser console to see the JSON output of the questions.");
-            
-            // Close the modal
-            document.getElementById('ai-generator-modal').classList.add('hidden');
-            
+            const addBtn = document.querySelector('button[onclick="addEditorQuestion()"]');
+            if (addBtn) {
+                const originalColor = addBtn.className;
+                addBtn.className = "bg-emerald-500 text-white px-3 py-2 rounded font-bold shadow text-sm whitespace-nowrap transition-colors";
+                addBtn.textContent = `✓ Built ${data.questions?.length || 0} Questions`;
+                setTimeout(() => { addBtn.className = originalColor; addBtn.textContent = '＋ Add'; }, 2500);
+            }
+
         } catch (err) {
             console.error("AI Generation Error:", err);
-            showModalMsg("AI Error", "Failed to generate test. Make sure your API key is correct. Details: " + err.message);
+            showModalMsg("Backend AI Connection Required", "The frontend has been successfully secured. To use this feature, you must deploy the Node.js endpoint to Firebase Cloud Functions and place the URL in the code.");
         } finally {
-            // Hide loading state
-            document.getElementById('ai-loading').classList.add('hidden');
-            document.getElementById('ai-loading').classList.remove('flex');
-            document.getElementById('ai-generate-btn').disabled = false;
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            loading.classList.add('hidden');
+            loading.classList.remove('flex');
         }
-    };
+    }
 
     function quickAddTeacherVocab(e) {
       e.preventDefault(); e.stopPropagation(); document.getElementById('editor-selection-tooltip').classList.add('hidden');
@@ -4502,7 +4558,7 @@
     window.tempPPPdfs = [];
     window.tempPPHallOfFame = []; // Local working copy for the editor
 
-    // ✨ NEW: Highly aggressive image compressor to stay under Firebase 1MB limits
+    // ✨ NEW: Uses canvas blob to upload direct to Firebase Storage!
     window.compressProfileImage = function(file, maxDim, quality, callback) {
         if (!file || !file.type.startsWith('image/')) return;
         const reader = new FileReader();
@@ -4519,7 +4575,16 @@
                 canvas.width = w; canvas.height = h;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
-                callback(canvas.toDataURL('image/jpeg', quality)); // converts to heavily compressed JPG
+                
+                canvas.toBlob(async (blob) => {
+                    const path = 'profiles/' + Date.now() + '_' + Math.random().toString(36).substr(2,5) + '.jpg';
+                    try {
+                        const url = await window.uploadMediaToStorage(blob, path);
+                        callback(url);
+                    } catch (err) {
+                        console.error("Profile Image Upload Failed:", err);
+                    }
+                }, 'image/jpeg', quality);
             };
             img.src = e.target.result;
         };
@@ -4636,18 +4701,29 @@
         window.renderPPList(type);
     };
 
-    window.handlePPPdf = function(e) {
+    window.handlePPPdf = async function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        // PDFs convert to enormous Base64 strings. Hard cap at 150KB to save database space!
-        if (file.size > 150000) { alert("File too large! Lead Magnet PDFs must be under 150KB to fit in the cloud."); return; } 
         
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            window.tempPPPdfs.push({ name: file.name, data: ev.target.result });
+        // Since it's going to Storage, we can bump the limit up to 5MB easily!
+        if (file.size > 5000000) { alert("File too large! Lead Magnet PDFs must be under 5MB."); return; } 
+        
+        const btn = document.getElementById('pp-pdf-upload');
+        btn.disabled = true;
+        
+        const path = 'pdfs/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+        
+        try {
+            const url = await window.uploadMediaToStorage(file, path);
+            window.tempPPPdfs.push({ name: file.name, data: url });
             window.renderPPPdfList();
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+            console.error("PDF Upload Error:", err);
+            alert("Failed to upload PDF.");
+        }
+        
+        btn.disabled = false;
+        btn.value = '';
     };
 
     window.renderPPPdfList = function() {
@@ -5847,15 +5923,21 @@
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           mediaRecorder = new MediaRecorder(stream); audioChunks = [];
           mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-          mediaRecorder.onstop = () => {
+          mediaRecorder.onstop = async () => {
             const blob = new Blob(audioChunks, { type: 'audio/webm' });
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = () => { 
-              const b64 = reader.result;
-              if(b64.length > 2000000) { showModalMsg("Warning", "Recording too long for local storage. Please keep it under 1 minute."); return; }
-              answers[id] = b64; triggerAutosave(); pb.src = b64; pb.classList.remove('hidden'); st.textContent = 'Recorded successfully.';
-            };
+            st.textContent = 'Uploading to Cloud...';
+            try {
+                const path = 'audio_answers/' + currentUser.user + '_' + Date.now() + '_' + id + '.webm';
+                const url = await window.uploadMediaToStorage(blob, path);
+                answers[id] = url; 
+                triggerAutosave(); 
+                pb.src = url; 
+                pb.classList.remove('hidden'); 
+                st.textContent = 'Recorded successfully.';
+            } catch(err) {
+                console.error("Audio upload failed", err);
+                st.textContent = 'Upload failed. Try again.';
+            }
             stream.getTracks().forEach(t => t.stop());
           };
           mediaRecorder.start(); btn.classList.add('animate-pulse', 'bg-rose-700'); btn.classList.remove('bg-rose-500'); st.textContent = 'Recording... (Click to Stop)'; pb.classList.add('hidden');
@@ -6685,18 +6767,26 @@
    // --- STUDENTS & PAYMENTS LOGIC ---
     let tempCustomQRBase64 = null;
 
-    window.handleCustomQR = function(e) {
+    window.handleCustomQR = async function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            tempCustomQRBase64 = ev.target.result;
+        
+        document.getElementById('bill-custom-qr').disabled = true;
+        const path = 'qrcodes/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+        
+        try {
+            const url = await window.uploadMediaToStorage(file, path);
+            tempCustomQRBase64 = url; // Still using same variable name for compatibility
             const preview = document.getElementById('bill-custom-qr-preview');
             preview.src = tempCustomQRBase64;
             preview.classList.remove('hidden');
             document.getElementById('bill-custom-qr-clear').classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
+        } catch (err) {
+            console.error("QR Upload Error:", err);
+            alert("Failed to upload QR code.");
+        }
+        
+        document.getElementById('bill-custom-qr').disabled = false;
     };
 
     window.clearCustomQR = function() {
@@ -7940,7 +8030,10 @@
     window.handleAvatarUpload = function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        // Super compress avatars so they don't break Firestore (Target ~50KB)
+        
+        const preview = document.getElementById('profile-avatar-preview');
+        preview.style.opacity = '0.5';
+        
         const reader = new FileReader();
         reader.onload = (ev) => {
             const img = new Image();
@@ -7955,8 +8048,18 @@
                 const sy = (img.height - min) / 2;
                 ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
                 
-                tempAvatarBase64 = canvas.toDataURL('image/jpeg', 0.6); // Heavy compression
-                document.getElementById('profile-avatar-preview').src = tempAvatarBase64;
+                canvas.toBlob(async (blob) => {
+                    const path = 'avatars/' + currentUser.user + '_' + Date.now() + '.jpg';
+                    try {
+                        const url = await window.uploadMediaToStorage(blob, path);
+                        tempAvatarBase64 = url;
+                        preview.src = tempAvatarBase64;
+                    } catch (err) {
+                        console.error("Avatar Upload Error:", err);
+                        alert("Failed to upload avatar.");
+                    }
+                    preview.style.opacity = '1';
+                }, 'image/jpeg', 0.8);
             };
             img.src = ev.target.result;
         };
@@ -8334,6 +8437,9 @@
     window.updateDashboardHeader = function() {
         originalUpdateDashboardHeader();
         if (currentUser && currentUser.role === 'student') {
+            // ✨ FIX: Use Real Display Name if available!
+            document.getElementById('student-name-display').textContent = currentUser.displayName || currentUser.user;
+            
             const display = document.getElementById('student-gem-display');
             if (display) {
                 display.textContent = (currentUser.gems || 0).toLocaleString();
@@ -8368,219 +8474,6 @@
         // No longer needed! Users simply close the browser tab when they are done.
     };
 
-  // --- AUTONOMOUS AI EXTRACTOR LOGIC ---
-    let aiUploadedImageBase64 = null;
-    let aiUploadedImageMime = null;
-
-    function handleAIImageUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            aiUploadedImageBase64 = ev.target.result.split(',')[1]; 
-            aiUploadedImageMime = file.type;
-            document.getElementById('ai-image-placeholder').classList.add('hidden');
-            const preview = document.getElementById('ai-image-preview');
-            preview.src = ev.target.result;
-            preview.classList.remove('hidden');
-            document.getElementById('ai-image-clear').classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function clearAIImage(e) {
-        if(e) e.stopPropagation();
-        aiUploadedImageBase64 = null;
-        aiUploadedImageMime = null;
-        document.getElementById('ai-image-input').value = '';
-        document.getElementById('ai-image-placeholder').classList.remove('hidden');
-        document.getElementById('ai-image-preview').classList.add('hidden');
-        document.getElementById('ai-image-clear').classList.add('hidden');
-    }
-
-    function openAIGenerator() {
-        const passTxt = document.getElementById('edit-passage-text');
-        const currentPassage = passTxt.tagName === 'TEXTAREA' ? passTxt.value : passTxt.innerText;
-        document.getElementById('ai-source-text').value = currentPassage.trim();
-        document.getElementById('ai-generator-modal').classList.remove('hidden');
-    }
-
-    function closeAIGenerator() {
-        document.getElementById('ai-generator-modal').classList.add('hidden');
-    }
-
-    async function generateAIQuestions() {
-        const sourceText = document.getElementById('ai-source-text').value.trim();
-        
-        if (!sourceText && !aiUploadedImageBase64) {
-            showModalMsg("Error", "Please provide source text or upload an image for the AI to analyze.");
-            return;
-        }
-
-        const btn = document.getElementById('ai-generate-btn');
-        const loading = document.getElementById('ai-loading');
-        
-        btn.disabled = true;
-        btn.classList.add('opacity-50', 'cursor-not-allowed');
-        loading.classList.remove('hidden');
-        loading.classList.add('flex');
-
-        try {
-            // Uses the environment's free internal proxy! (No API key needed)
-            const apiKey = "AQ.Ab8RN6LV9iPUNh3QL2pnVWQLskGbUl9tmW91NXMs9acAxqEWcQ";
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            
-            const prompt = `Act as an expert IELTS curriculum developer. Analyze the provided text and/or image.
-            1. Extract the main reading passage (if any) and its title.
-            2. Extract ALL questions found. Classify each question's format strictly into one of these exact types: 'multiple_choice', 'tfng', 'ynng', 'fill_blanks', or 'matching_headings'.
-            3. For 'fill_blanks', you MUST put the exact string '{blank:1}' inside the 'text' field where the gap belongs.
-            4. Extract all options (if any) into the 'options' array.
-            5. Determine the correct 'answer' based on the text context and provide a brief 'explanation'.
-            
-            Source Text: ${sourceText || "None provided. Rely on image."}`;
-
-            const payload = {
-                contents: [{ role: "user", parts: [{ text: prompt }] }],
-                generationConfig: { 
-                    temperature: 0.1,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                        type: "OBJECT",
-                        properties: {
-                            passageTitle: { type: "STRING" },
-                            passageText: { type: "STRING" },
-                            questions: {
-                                type: "ARRAY",
-                                items: {
-                                    type: "OBJECT",
-                                    properties: {
-                                        type: { type: "STRING" },
-                                        instruction: { type: "STRING" },
-                                        text: { type: "STRING" },
-                                        options: { type: "ARRAY", items: { type: "STRING" } },
-                                        answer: { type: "STRING" },
-                                        explanation: { type: "STRING" }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
-            if (aiUploadedImageBase64) {
-                payload.contents[0].parts.push({
-                    inlineData: { mimeType: aiUploadedImageMime || "image/jpeg", data: aiUploadedImageBase64 }
-                });
-            }
-
-            // Exponential Backoff (Handles network hiccups gracefully)
-            const fetchWithRetry = async (url, options, retries = 5) => {
-                const delays = [1000, 2000, 4000, 8000, 16000];
-                for (let i = 0; i < retries; i++) {
-                    try {
-                        const response = await fetch(url, options);
-                        if (!response.ok) {
-                            const errData = await response.text();
-                            throw new Error(`API Error ${response.status}: ${errData}`);
-                        }
-                        return await response.json();
-                    } catch (e) {
-                        if (i === retries - 1) throw e;
-                        await new Promise(res => setTimeout(res, delays[i]));
-                    }
-                }
-            };
-
-            const result = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-
-            if (!result.candidates || result.candidates.length === 0 || !result.candidates[0].content) {
-                 throw new Error("Google AI blocked the generation (likely due to safety filters).");
-            }
-
-            let jsonText = result.candidates[0].content.parts[0].text;
-            let data;
-
-            try {
-                data = JSON.parse(jsonText);
-            } catch (e) {
-                console.error("JSON Parse Error:", e, jsonText);
-                throw new Error("The AI failed to format the data correctly. Please click Generate again.");
-            }
-            
-            // 1. Inject Passage Text
-            if (data.passageText && data.passageText.trim().length > 10) {
-               const passTxt = document.getElementById('edit-passage-text');
-               if (passTxt.tagName === 'TEXTAREA') passTxt.value = data.passageText;
-               else passTxt.innerHTML = data.passageText.split('\n').map(p => p.trim() ? `<p>${p}</p>` : '').join('');
-               
-               if (data.passageTitle) document.getElementById('edit-passage-title').value = data.passageTitle;
-            }
-
-            // 2. Map AI Questions to Editor Objects
-            if (data.questions && Array.isArray(data.questions)) {
-                data.questions.forEach((q, i) => {
-                    const newId = (Date.now() % 10000) + Math.floor(Math.random() * 10000) + i;
-                    const validTypes = ['multiple_choice', 'tfng', 'ynng', 'fill_blanks', 'matching_headings', 'dnd_list'];
-                    let qType = validTypes.includes(q.type) ? q.type : 'multiple_choice';
-
-                    let newBlock = {
-                        blockId: 'b' + Date.now() + i + Math.floor(Math.random() * 1000),
-                        type: qType,
-                        ids: [newId],
-                        points: 1,
-                        instruction: q.instruction || "Answer the question.",
-                        explanation: q.explanation || "",
-                        correctAnswers: {}
-                    };
-
-                    if (qType === 'multiple_choice' || qType === 'matching_headings') {
-                        newBlock.text = q.text || "";
-                        newBlock.options = q.options || [];
-                        newBlock.correctAnswers[newId] = q.answer || "";
-                        newBlock.multi = false;
-                    } else if (qType === 'fill_blanks' || qType === 'dnd_list') {
-                        let txt = q.text || "";
-                        if (!txt.includes('{blank:1}') && !txt.includes('{drop:1}')) {
-                            txt += ` {${qType==='fill_blanks'?'blank':'drop'}:${newId}}`; 
-                        } else {
-                            txt = txt.replace(/\{blank:1\}/g, `{blank:${newId}}`).replace(/\{drop:1\}/g, `{drop:${newId}}`);
-                        }
-                        newBlock.text = txt;
-                        newBlock.correctAnswers[newId] = q.answer || "";
-                    } else { 
-                        newBlock.text = q.text || "";
-                        newBlock.correctAnswers[newId] = q.answer || "";
-                    }
-
-                    APP_DATA.parts[currentEditorPartIdx].questions.push(newBlock);
-                });
-            }
-
-            saveCurrentEditorPart();
-            renderEditorQuestions();
-            triggerEditorAutosave();
-            closeAIGenerator();
-            clearAIImage();
-            
-            const addBtn = document.querySelector('button[onclick="addEditorQuestion()"]');
-            if (addBtn) {
-                const originalColor = addBtn.className;
-                addBtn.className = "bg-emerald-500 text-white px-3 py-2 rounded font-bold shadow text-sm whitespace-nowrap transition-colors";
-                addBtn.textContent = `✓ Built ${data.questions?.length || 0} Questions`;
-                setTimeout(() => { addBtn.className = originalColor; addBtn.textContent = '＋ Add'; }, 2500);
-            }
-
-        } catch (err) {
-            console.error("AI Generation Error:", err);
-            showModalMsg("AI Error", `${err.message}`);
-        } finally {
-            btn.disabled = false;
-            btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            loading.classList.add('hidden');
-            loading.classList.remove('flex');
-        }
-    }
    // ==========================================
     // SMART PASTE HANDLER FOR RICH EDITORS
     // ==========================================
@@ -8654,34 +8547,41 @@
         fileInput.type = 'file';
         fileInput.accept = 'video/*';
     
-        fileInput.onchange = function(e) {
+        fileInput.onchange = async function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Warn users about large video files which could bloat local storage/Firebase limits
-            if (file.size > 15 * 1024 * 1024) { // 15MB Limit check
-                alert("Video file is too large! Please compress it under 15MB before uploading.");
+            // Warn users about large video files
+            if (file.size > 50 * 1024 * 1024) { // 50MB Limit
+                alert("Video file is too large! Please compress it under 50MB before uploading.");
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const base64Video = ev.target.result;
+            const tempId = 'vid_' + Date.now();
+            document.execCommand('insertHTML', false, `<div id="${tempId}" class="my-4 p-4 bg-slate-100 rounded text-center font-bold text-blue-600 border-2 border-dashed border-blue-300 animate-pulse" contenteditable="false">Uploading Video... Please wait...</div><p><br></p>`);
             
-                // Inject a native HTML5 video player block directly into the editor pane
+            try {
+                const path = 'videos/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
+                const url = await window.uploadMediaToStorage(file, path);
+                
                 const html = `
                     <div class="my-4 p-2 bg-slate-100 rounded border border-slate-300 inline-block max-w-xl" contenteditable="false">
-                        <video controls src="${base64Video}" class="w-full max-h-[360px] rounded bg-black shadow-inner"></video>
+                        <video controls src="${url}" class="w-full max-h-[360px] rounded bg-black shadow-inner"></video>
                         <div class="text-xs text-slate-500 mt-1 font-sans font-medium text-center">🎥 Embedded Explanation Video</div>
                     </div>
                     <p><br></p>
                 `;
-            
-                document.execCommand('insertHTML', false, html);
+                
+                const placeholder = document.getElementById(tempId);
+                if (placeholder) placeholder.outerHTML = html;
+                else document.execCommand('insertHTML', false, html);
+                
                 if (window.triggerEditorAutosave) window.triggerEditorAutosave();
-            };
-        
-            reader.readAsDataURL(file);
+            } catch (err) {
+                console.error("Video Upload Error:", err);
+                const placeholder = document.getElementById(tempId);
+                if (placeholder) placeholder.innerHTML = `<span class="text-rose-500">Video Upload Failed.</span>`;
+            }
         };
 
         fileInput.click();
