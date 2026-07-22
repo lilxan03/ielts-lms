@@ -289,6 +289,27 @@
       </div>
   </div>
 
+  <!-- ✨ NEW: HOF FULL SCREEN MODAL -->
+  <div id="hof-full-screen" class="hidden fixed inset-0 bg-slate-50 z-[250] overflow-y-auto animate-fade-in">
+      <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 p-4 sm:p-6 flex justify-between items-center shadow-md sticky top-0 z-30 border-b border-amber-300">
+          <h1 class="text-xl sm:text-2xl font-black drop-shadow-sm flex items-center gap-2">🏆 Student Hall of Fame</h1>
+          <button onclick="document.getElementById('hof-full-screen').classList.add('hidden')" class="bg-white/20 hover:bg-white/40 border border-white/40 text-amber-950 px-4 py-2 rounded-xl font-black transition text-sm shadow-sm">&larr; Back to Home</button>
+      </div>
+      <div class="max-w-7xl mx-auto px-4 py-12">
+          <div class="text-center mb-16">
+              <h2 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight mb-4">Our Success Stories</h2>
+              <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Real students. Real results. Verified by official TRF certificates.</p>
+          </div>
+          <div id="hof-full-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+      </div>
+  </div>
+
+  <!-- LIGHTBOX MODAL -->
+  <div id="image-lightbox" class="hidden fixed inset-0 bg-slate-900/95 z-[999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity cursor-zoom-out" onclick="this.classList.add('hidden')">
+      <button class="absolute top-6 right-6 text-white text-4xl font-bold hover:text-rose-500 transition">&times;</button>
+      <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl pointer-events-none select-none" style="-webkit-user-drag: none;">
+  </div>
+
   <!-- AUTHENTICATION UI -->
   <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 absolute z-[200] overflow-hidden">
     <!-- Decorative background elements -->
@@ -1335,9 +1356,15 @@
                 </div>
 
                 <div class="pt-4 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
+                        🏆 Student Hall of Fame <button onclick="window.addPPHallOfFame()" class="text-amber-600 hover:underline font-bold">+ Add Student</button>
+                    </label>
+                    <div id="pp-hall-of-fame-list" class="space-y-3 mb-4"></div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-100">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Lead Magnet (Free Resources to attract signups)</label>
                     <input type="file" id="pp-pdf-upload" accept="application/pdf,image/*" class="mb-3 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer transition" onchange="window.handlePPPdf(event)">
-                    <div id="pp-pdf-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2"></div>
                 </div>
             </div>
         </div>
@@ -1648,6 +1675,7 @@
     let ATTENDANCE = [];
     let PACKAGES = []; 
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
+    let HOF_STUDENTS = []; // ✨ NEW: Dedicated Collection for Hall of Fame
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
@@ -2044,6 +2072,19 @@
                         }
                         resolve();
                     });
+                }),
+                // ✨ NEW: High-Capacity Listener specifically for Hall of Fame
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => {
+                        HOF_STUDENTS = snap.docs.map(d => d.data());
+                        if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) {
+                            window.renderHOFGrid();
+                        }
+                        if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) {
+                            window.renderPublicProfile();
+                        }
+                        resolve();
+                    });
                 })
             ]);
             
@@ -2334,11 +2375,11 @@
             : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
 
         return `
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col">
-          <div class="flex justify-between items-start mb-2"><span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span><span class="text-xs text-slate-400 font-bold">${t.parts.length} Part(s)</span></div>
-          <h3 class="font-bold text-slate-900 truncate">${t.title}</h3>
-          ${assignedBadge}
-          <div class="flex gap-2 mt-auto pt-4 border-t border-slate-100">
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
+          <div class="flex justify-between items-start mb-3 shrink-0"><span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span><span class="text-xs text-slate-400 font-bold">${t.parts.length} Part(s)</span></div>
+          <h3 class="font-bold text-slate-900 leading-snug mb-3 flex-1 break-words">${t.title}</h3>
+          <div class="shrink-0">${assignedBadge}</div>
+          <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100 shrink-0">
             <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Edit Test">✏️</button>
             <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>
             <button onclick="window.promptMergeTest('${t.id}')" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Merge Test">🔀</button>
@@ -4444,11 +4485,46 @@
     }
 
     // --- PUBLIC LANDING PAGE LOGIC ---
+    window.openLightbox = function(src, e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        const lb = document.getElementById('image-lightbox');
+        const img = document.getElementById('lightbox-img');
+        if(lb && img) {
+            img.src = src;
+            lb.classList.remove('hidden');
+        }
+    };
+
     window.tempPPHero = null;
     window.tempPPTrf = null;
     window.tempPPFeatures = [];
     window.tempPPAchievements = [];
     window.tempPPPdfs = [];
+    window.tempPPHallOfFame = []; // Local working copy for the editor
+
+    // ✨ NEW: Highly aggressive image compressor to stay under Firebase 1MB limits
+    window.compressProfileImage = function(file, maxDim, quality, callback) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height;
+                if (w > h) {
+                    if (w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                } else {
+                    if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+                }
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/jpeg', quality)); // converts to heavily compressed JPG
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
 
     window.populateLandingPageEditor = function() {
         document.getElementById('pp-title').value = PUBLIC_PROFILE.missionTitle || '';
@@ -4482,37 +4558,46 @@
         window.tempPPAchievements = [...(PUBLIC_PROFILE.achievements || [])];
         window.tempPPPdfs = [...(PUBLIC_PROFILE.pdfs || [])];
         
+        // ✨ NEW: Safely migrate old data and load new data into the working editor
+        let workingHof = [];
+        if (HOF_STUDENTS.length > 0) {
+            workingHof = JSON.parse(JSON.stringify(HOF_STUDENTS));
+        } else if (PUBLIC_PROFILE.hallOfFame && PUBLIC_PROFILE.hallOfFame.length > 0) {
+            // Migration fallback
+            workingHof = JSON.parse(JSON.stringify(PUBLIC_PROFILE.hallOfFame));
+        }
+        
+        workingHof.forEach(h => {
+            if(!h.id) h.id = 'hof_' + Date.now() + Math.random().toString(36).substr(2,5);
+        });
+        
+        window.tempPPHallOfFame = workingHof;
+        
         window.renderPPList('features');
         window.renderPPList('achievements');
         window.renderPPPdfList();
+        window.renderPPHallOfFame();
     };
 
     window.handlePPHero = function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            window.tempPPHero = ev.target.result;
-            document.getElementById('pp-hero-preview').src = window.tempPPHero;
+        window.compressProfileImage(file, 800, 0.5, (base64) => {
+            window.tempPPHero = base64;
+            document.getElementById('pp-hero-preview').src = base64;
             document.getElementById('pp-hero-preview').classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
+        });
     };
 
     window.handlePPTrf = function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        // Allows high-res uploads but warns if excessively large
-        if (file.size > 8000000) { alert("File too large. Please upload an image under 8MB."); return; }
-        
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            window.tempPPTrf = ev.target.result;
-            document.getElementById('pp-trf-preview').src = window.tempPPTrf;
+        window.compressProfileImage(file, 600, 0.5, (base64) => {
+            window.tempPPTrf = base64;
+            document.getElementById('pp-trf-preview').src = base64;
             document.getElementById('pp-trf-preview').classList.remove('hidden');
             document.getElementById('pp-trf-placeholder').classList.add('hidden');
-        };
-        reader.readAsDataURL(file);
+        });
     };
 
     window.clearPPTrf = function() {
@@ -4534,7 +4619,7 @@
         const arr = type === 'features' ? window.tempPPFeatures : window.tempPPAchievements;
         c.innerHTML = arr.map((item, i) => `
             <div class="flex gap-2">
-                <input type="text" value="${item}" onchange="window.updatePPList('${type}', ${i}, this.value)" class="flex-1 border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500">
+                <input type="text" value="${item.replace(/"/g, '&quot;')}" oninput="window.updatePPList('${type}', ${i}, this.value)" class="flex-1 border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500">
                 <button onclick="window.removePPList('${type}', ${i})" class="text-rose-500 font-bold px-2 hover:bg-rose-50 rounded">✕</button>
             </div>
         `).join('');
@@ -4554,7 +4639,8 @@
     window.handlePPPdf = function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        if (file.size > 5000000) { alert("File too large. Max 5MB."); return; } // Prevent DB crash
+        // PDFs convert to enormous Base64 strings. Hard cap at 150KB to save database space!
+        if (file.size > 150000) { alert("File too large! Lead Magnet PDFs must be under 150KB to fit in the cloud."); return; } 
         
         const reader = new FileReader();
         reader.onload = (ev) => {
@@ -4574,6 +4660,72 @@
         `).join('');
     };
 
+    // --- HALL OF FAME LOGIC ---
+    window.addPPHallOfFame = function() {
+        const newId = 'hof_' + Date.now() + Math.random().toString(36).substr(2,5);
+        window.tempPPHallOfFame.unshift({ id: newId, name: '', score: '', quote: '', avatar: null, trf: null });
+        window.renderPPHallOfFame();
+    };
+
+    window.handleHofImage = function(e, i, field) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // ✨ NEW: Since they have their own database file now, we can increase the resolution heavily!
+        const maxDim = field === 'avatar' ? 200 : 800;
+        const quality = field === 'avatar' ? 0.6 : 0.7;
+        
+        window.compressProfileImage(file, maxDim, quality, (base64) => {
+            window.tempPPHallOfFame[i][field] = base64;
+            window.renderPPHallOfFame();
+        });
+    };
+
+    window.renderPPHallOfFame = function() {
+        const c = document.getElementById('pp-hall-of-fame-list');
+        if(!c) return; 
+
+        if(window.tempPPHallOfFame.length === 0) {
+            c.innerHTML = `<p class="text-sm text-slate-400 italic bg-slate-50 p-4 border border-slate-200 rounded-xl text-center">No students added yet.</p>`;
+            return;
+        }
+
+        c.innerHTML = window.tempPPHallOfFame.map((student, i) => `
+            <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col gap-4 relative">
+                <button onclick="window.removePPHallOfFame(${i})" class="absolute top-2 right-2 text-rose-400 hover:text-rose-600 bg-rose-50 w-6 h-6 rounded flex items-center justify-center font-bold">&times;</button>
+                
+                <div class="flex gap-4 items-start">
+                    <div class="w-16 h-16 rounded-full border border-slate-300 bg-white overflow-hidden shrink-0 relative group cursor-pointer" onclick="document.getElementById('hof-avatar-${i}').click()">
+                        <img src="${student.avatar || 'https://ui-avatars.com/api/?name=Avatar&background=random'}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/50 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-center">Change Face</div>
+                        <input type="file" id="hof-avatar-${i}" accept="image/*" class="hidden" onchange="window.handleHofImage(event, ${i}, 'avatar')">
+                    </div>
+                    <div class="flex-1 space-y-2 pr-4">
+                        <input type="text" placeholder="Student Name" value="${(student.name||'').replace(/"/g, '&quot;')}" oninput="window.tempPPHallOfFame[${i}].name = this.value" class="w-full border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500 font-bold">
+                        <input type="text" placeholder="Band Score (e.g., Band 8.0)" value="${(student.score||'').replace(/"/g, '&quot;')}" oninput="window.tempPPHallOfFame[${i}].score = this.value" class="w-full border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500 text-emerald-700 font-black bg-white">
+                    </div>
+                </div>
+                
+                <textarea placeholder="Student's quote or comment..." oninput="window.tempPPHallOfFame[${i}].quote = this.value" class="w-full border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500 bg-white resize-none h-16">${(student.quote||'')}</textarea>
+                
+                <div class="border-t border-slate-200 pt-3">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">TRF / Score Screenshot (Optional)</label>
+                    <div class="flex items-center gap-3">
+                        ${student.trf ? `<img src="${student.trf}" class="h-10 rounded border border-slate-300"> <button onclick="window.tempPPHallOfFame[${i}].trf = null; window.renderPPHallOfFame()" class="text-[10px] text-rose-500 hover:underline">Remove TRF</button>` : ''}
+                        <button onclick="document.getElementById('hof-trf-${i}').click()" class="text-[10px] bg-white border border-slate-300 px-2 py-1 rounded shadow-sm hover:bg-slate-100">+ Upload Score Pic</button>
+                        <input type="file" id="hof-trf-${i}" accept="image/*" class="hidden" onchange="window.handleHofImage(event, ${i}, 'trf')">
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.removePPHallOfFame = function(i) {
+        window.tempPPHallOfFame.splice(i, 1);
+        window.renderPPHallOfFame();
+    };
+    // END OF HALL OF FAME EDITOR LOGIC
+
     window.savePublicProfile = async function() {
         const btn = document.getElementById('btn-save-pub');
         btn.textContent = 'Saving...'; btn.disabled = true;
@@ -4586,23 +4738,83 @@
             features: window.tempPPFeatures.filter(f => f.trim()),
             achievements: window.tempPPAchievements.filter(a => a.trim()),
             pdfs: window.tempPPPdfs
+            // Note: hallOfFame is no longer stored here!
         };
 
+        // Size check strictly for the Landing Page data
+        const payloadString = JSON.stringify(PUBLIC_PROFILE);
+        if (new Blob([payloadString]).size > 1000000) {
+             showModalMsg("Storage Limit Exceeded ⚠️", `Your Landing Page data is too large. Delete heavy PDF files or reduce your main hero image size.`);
+             btn.textContent = 'Save Changes'; btn.disabled = false;
+             return;
+        }
+
         try {
+            // 1. Save Landing Page Details
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), PUBLIC_PROFILE);
-            showModalMsg("Saved", "Your public storefront has been updated!");
+            
+            // 2. ✨ NEW: Save Hall of Fame safely to their own individual database files!
+            const currentIds = window.tempPPHallOfFame.map(h => h.id);
+            const deletedStudents = HOF_STUDENTS.filter(h => !currentIds.includes(h.id));
+            
+            // Delete students removed from the editor
+            for (let ds of deletedStudents) {
+                await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('hall_of_fame'), ds.id));
+            }
+            
+            // Save active students (only if they have a name)
+            const validStudents = window.tempPPHallOfFame.filter(h => h.name.trim() !== '');
+            for (let s of validStudents) {
+                if(!s.id) s.id = 'hof_' + Date.now() + Math.random().toString(36).substr(2,5);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('hall_of_fame'), s.id), s);
+            }
+
+            showModalMsg("Saved", "Your public storefront and Hall of Fame have been successfully updated!");
         } catch (e) {
             console.error(e);
-            showModalMsg("Error", "Could not save public profile to cloud.");
+            showModalMsg("Error", "Could not save to cloud. Detailed error: " + e.message);
         }
         btn.textContent = 'Save Changes'; btn.disabled = false;
+    };
+
+    window.openHOFScreen = function() {
+        document.getElementById('hof-full-screen').classList.remove('hidden');
+        window.renderHOFGrid();
+    };
+
+    window.renderHOFGrid = function() {
+        const grid = document.getElementById('hof-full-grid');
+        if(!grid) return;
+        
+        grid.innerHTML = HOF_STUDENTS.map(student => `
+             <div class="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center text-center relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
+                <div class="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-amber-50 to-white"></div>
+                
+                <div class="relative w-32 h-32 mb-6 z-10 shrink-0">
+                    <img src="${student.avatar || 'https://ui-avatars.com/api/?name=Student&background=random'}" class="w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-slate-50 pointer-events-none select-none" style="-webkit-user-drag: none;">
+                    <div class="absolute -bottom-3 -right-3 bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black text-base px-4 py-1 rounded-full border-4 border-white shadow-md whitespace-nowrap transform rotate-[-5deg]">Band ${student.score}</div>
+                </div>
+                
+                <h4 class="font-black text-slate-800 text-2xl mb-4 z-10">${student.name}</h4>
+                ${student.quote ? `<p class="text-base text-slate-600 italic mb-8 leading-relaxed z-10 font-medium relative">"${student.quote}"</p>` : ''}
+                
+                ${student.trf ? `
+                    <div class="mt-auto w-full z-10">
+                        <button onclick="window.openLightbox('${student.trf}', event)" class="w-full bg-slate-50 hover:bg-amber-50 text-slate-700 hover:text-amber-800 border border-slate-200 hover:border-amber-300 font-bold py-3.5 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                            View Official TRF Score
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
     };
 
     window.renderPublicProfile = function() {
         const c = document.getElementById('public-profile-content');
         if(!c) return;
         
-        const imgHtml = PUBLIC_PROFILE.heroImage ? `<img src="${PUBLIC_PROFILE.heroImage}" class="w-32 h-32 object-cover mx-auto rounded-full border-4 border-white/20 shadow-xl mb-6">` : '';
+        const imgHtml = PUBLIC_PROFILE.heroImage ? `<img src="${PUBLIC_PROFILE.heroImage}" class="w-32 h-32 object-cover mx-auto rounded-full border-4 border-white/20 shadow-xl mb-6 pointer-events-none select-none">` : '';
         
         let resourcesHtml = '';
         if (PUBLIC_PROFILE.pdfs && PUBLIC_PROFILE.pdfs.length > 0) {
@@ -4621,15 +4833,20 @@
             `;
         }
 
-        // NEW: Render the TRF Certificate
         let trfHtml = '';
         if (PUBLIC_PROFILE.trfImage) {
             trfHtml = `
                 <div class="mt-10 mb-8 flex flex-col items-center justify-center">
                     <span class="text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-900/60 px-3 py-1 rounded-full mb-3 border border-emerald-400/30 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Verified Certificate</span>
-                    <img src="${PUBLIC_PROFILE.trfImage}" class="w-full max-w-sm rounded-xl shadow-2xl border-4 border-white/20 hover:scale-[1.02] transition duration-300 cursor-zoom-in bg-white" onclick="window.open(this.src, '_blank')" title="Click to enlarge">
+                    <img src="${PUBLIC_PROFILE.trfImage}" class="w-full max-w-sm rounded-xl shadow-2xl border-4 border-white/20 hover:scale-[1.02] transition duration-300 cursor-zoom-in bg-white pointer-events-auto" onclick="window.openLightbox(this.src, event)" title="Click to enlarge" style="-webkit-user-drag: none;">
                 </div>
             `;
+        }
+
+        // ✨ NEW: HOF Button now opens the massive separate UI
+        let hofButtonHtml = '';
+        if (HOF_STUDENTS && HOF_STUDENTS.length > 0) {
+            hofButtonHtml = `<button onclick="window.openHOFScreen()" class="mt-10 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 font-black px-8 py-3.5 rounded-full shadow-[0_10px_25px_-5px_rgba(245,158,11,0.5)] transition hover:-translate-y-1 flex items-center justify-center gap-3 mx-auto border-2 border-amber-300"><span class="text-2xl drop-shadow-md">🏆</span> View Student Hall of Fame (${HOF_STUDENTS.length})</button>`;
         }
 
         c.innerHTML = `
@@ -4638,8 +4855,9 @@
             <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">${PUBLIC_PROFILE.missionText || ''}</p>
             
             ${trfHtml}
+            ${hofButtonHtml}
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto mt-12">
                 <div class="bg-black/20 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
                     <h3 class="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">🏆 Achievements</h3>
                     <ul class="space-y-3">
@@ -4726,17 +4944,17 @@
         const isLocked = price > 0 && !unlockedTests.includes(t.id);
         
         const actionButton = isLocked 
-            ? `<button onclick="window.unlockPremiumTest('${t.id}', ${price}, '${t.title.replace(/'/g,"\\'")}')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-200 font-bold py-2 rounded-lg text-sm transition flex items-center justify-center gap-1.5 shadow-sm">🔒 Unlock for ${price} 💎</button>`
-            : `<button onclick="openModeSelection('${t.id}')" class="w-full bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 font-bold py-2 rounded-lg text-sm transition flex items-center justify-center shadow-sm">Start Practice &rarr;</button>`;
+            ? `<button onclick="window.unlockPremiumTest('${t.id}', ${price}, '${t.title.replace(/'/g,"\\'")}')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-200 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-1.5 shadow-sm">🔒 Unlock for ${price} 💎</button>`
+            : `<button onclick="openModeSelection('${t.id}')" class="w-full bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center shadow-sm">Start Practice &rarr;</button>`;
 
         return `
-        <div class="flex flex-col justify-between p-5 border ${isLocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'} shadow-sm rounded-xl transition gap-4 relative overflow-hidden group min-h-[160px] h-full">
-            <div class="flex justify-between items-start shrink-0">
+        <div class="flex flex-col p-5 border ${isLocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'} shadow-sm rounded-xl transition relative overflow-hidden group h-full min-h-[160px]">
+            <div class="flex justify-between items-start shrink-0 mb-3">
                 <span class="text-[10px] font-black px-2.5 py-1 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase tracking-widest">${t.module}</span>
                 ${isLocked ? `<span class="text-amber-500 bg-amber-100 p-1 rounded-md leading-none shadow-sm" title="Premium Content">💎</span>` : ''}
             </div>
-            <span class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-tight transition-colors line-clamp-2">${t.title}</span>
-            <div class="mt-auto pt-2 w-full shrink-0">
+            <div class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-snug transition-colors mb-4 flex-1 break-words">${t.title}</div>
+            <div class="mt-auto w-full shrink-0">
                 ${actionButton}
             </div>
         </div>`;
