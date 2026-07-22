@@ -4730,13 +4730,13 @@
             : `<button onclick="openModeSelection('${t.id}')" class="w-full bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 font-bold py-2 rounded-lg text-sm transition flex items-center justify-center shadow-sm">Start Practice &rarr;</button>`;
 
         return `
-        <div class="flex flex-col justify-between p-5 border ${isLocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'} shadow-sm rounded-xl transition gap-4 relative overflow-hidden group">
-            <div class="flex justify-between items-start">
+        <div class="flex flex-col justify-between p-5 border ${isLocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'} shadow-sm rounded-xl transition gap-4 relative overflow-hidden group min-h-[160px] h-full">
+            <div class="flex justify-between items-start shrink-0">
                 <span class="text-[10px] font-black px-2.5 py-1 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase tracking-widest">${t.module}</span>
                 ${isLocked ? `<span class="text-amber-500 bg-amber-100 p-1 rounded-md leading-none shadow-sm" title="Premium Content">💎</span>` : ''}
             </div>
-            <span class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-tight transition-colors">${t.title}</span>
-            <div class="mt-auto pt-2">
+            <span class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-tight transition-colors line-clamp-2">${t.title}</span>
+            <div class="mt-auto pt-2 w-full shrink-0">
                 ${actionButton}
             </div>
         </div>`;
@@ -5275,26 +5275,37 @@
           passageContainer.style.width = '50%'; 
           passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${htmlText}</div>`;
       } else if (APP_DATA.module === 'writing') {
-          // WRITING: Title = the real task question (always shown, both modes).
-          // Image = chart, only rendered if actually present (no empty box otherwise).
-          // Sample Answer (p.text) is only ever shown in Practice/Time-Free mode, hidden behind a toggle.
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
-          passageContainer.style.width = '50%';
-
-          let sampleAnswerBlock = '';
-          const sampleText = (p.text || '').trim();
-          if (isTimeFree && sampleText) {
-              sampleAnswerBlock = `
-                <div class="mt-6 pt-4 border-t border-slate-200">
-                  <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-3 py-1.5 rounded shadow-sm hover:bg-slate-100 transition flex items-center gap-1.5">
-                    👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
-                  </button>
-                  <div id="sample-answer-content" class="hidden mt-3 passage-text text-justify bg-amber-50 border border-amber-200 rounded-lg p-4">${htmlText}</div>
-                </div>`;
+          passageContainer.style.width = '50%'; 
+          
+          let examPromptHtml = p.questions.map((q) => {
+              let html = '';
+              if (q.instruction && q.instruction !== '<br>' && q.instruction !== '<p><br></p>') {
+                  html += `<div class="text-[1.05rem] font-bold text-slate-800 mb-2">${q.instruction}</div>`;
+              }
+              if (q.text && q.text !== '<br>' && q.text !== '<p><br></p>') {
+                  html += `<div class="text-[1.05rem] text-slate-800 leading-relaxed mb-6 font-bold">${q.text}</div>`;
+              }
+              return html;
+          }).join('');
+          
+          if (!isTimeFree) {
+              passageContainer.innerHTML = `${examPromptHtml}${media}`;
+          } else {
+              const sampleText = (p.text || '').trim();
+              let sampleAnswerBlock = '';
+              if (sampleText && sampleText !== '<br>' && sampleText !== '<p><br></p>') {
+                  sampleAnswerBlock = `
+                  <div class="mt-8 pt-6 border-t border-slate-200 w-full">
+                      <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
+                          👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
+                      </button>
+                      <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
+                  </div>`;
+              }
+              passageContainer.innerHTML = `${examPromptHtml}${media}${sampleAnswerBlock}`;
           }
-
-          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title}</div>${media}${sampleAnswerBlock}`;
 
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
@@ -5559,7 +5570,7 @@
            content = table;
         } else if(q.type === 'essay') {
            let txt = pt(rawText);
-           if (APP_DATA.module === 'writing' && !isTimeFree) {
+           if (APP_DATA.module === 'writing') {
                txt = '';
            }
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\\s+/).filter(Boolean).length}</span></div>`;
@@ -5577,8 +5588,9 @@
         const cleanInst = (q.instruction || '').trim();
         const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
         
-        if (APP_DATA.module === 'writing' && !isTimeFree) {
+        if (APP_DATA.module === 'writing') {
             if (leftoverBadges) instructionHtml = `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>`;
+            qTextHtml = ''; 
         } else if (leftoverBadges || hasInst) {
             instructionHtml = `
             <div class="flex flex-col gap-2">
