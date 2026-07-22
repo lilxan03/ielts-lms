@@ -1549,10 +1549,9 @@
   <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    // ✨ NEW: Imported enableIndexedDbPersistence
     import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    // ✨ NEW: Imported onAuthStateChanged
-    import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    // ✨ FIX: Completely removed signInAnonymously to stop the infinite logout loop
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
     window.initFirebaseSystem = async function() {
@@ -1574,8 +1573,6 @@
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
             
-            // ✨ NEW: Enable Offline Persistence! 
-            // If Wi-Fi drops during a mock exam, answers cache to the hard drive and auto-sync when Wi-Fi returns.
             try {
                 await enableIndexedDbPersistence(db);
                 console.log("Firebase Offline Persistence Enabled.");
@@ -1610,35 +1607,17 @@
             window.fsAuthSignIn = signInWithEmailAndPassword;
             window.fsAuthCreate = createUserWithEmailAndPassword;
             
-            // ✨ NEW: Initialize Google Auth Provider
             window.fsGoogleProvider = new GoogleAuthProvider();
             window.fsSignInWithPopup = signInWithPopup;
 
-            // NEW: Global Storage Uploader Helper
             window.uploadMediaToStorage = async function(fileOrBlob, pathString) {
                 const storageRef = window.sRef(window.storage, pathString);
                 await window.sUpload(storageRef, fileOrBlob);
                 return await window.sGetUrl(storageRef);
             };
 
-            loaderText.innerHTML = "Authenticating Connection...<br><br><span class='text-xs'>If this fails, ensure you enabled Anonymous Sign-in in Firebase.</span>";
-            
-            try {
-               await signInAnonymously(auth);
-            } catch (authErr) {
-               spinner.classList.add('hidden');
-               loaderText.innerHTML = `
-                 <div class='bg-rose-900/50 border border-rose-500 p-4 rounded text-left'>
-                    <b class='text-rose-400'>Authentication Error:</b><br>
-                    <span class='text-rose-200 text-xs font-mono'>${authErr.message}</span><br><br>
-                    <b class='text-white'>How to fix:</b><br>
-                    1. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains<br>
-                    2. Ensure your Github/Vercel URL is added there!<br>
-                    3. Ensure "Anonymous" is enabled in Sign-in methods.
-                 </div>
-               `;
-               return; 
-            }
+            // ✨ FIX: Removed the 'signInAnonymously' try/catch block completely. 
+            // We now rely 100% on the secure onAuthStateChanged observer inside bootLMS.
 
             loaderText.innerHTML = "Fetching Data from Firestore...";
             await window.bootLMS();
@@ -2177,17 +2156,21 @@
             let isAuthenticated = false;
 
             try {
+                // Attempt 1: Standard Secure Login
                 await window.fsAuthSignIn(window.auth, mappedEmail, p);
                 isAuthenticated = true;
             } catch(authErr) {
+                // Attempt 2: Legacy Migration
                 if (userDoc.exists() && userDoc.data().pass === p) {
                     try {
                         console.log("Upgrading legacy account to secure Firebase Auth...");
                         await window.fsAuthCreate(window.auth, mappedEmail, p);
+                        isAuthenticated = true; // ✨ FIX: Only set to true if creation actually succeeds!
                     } catch (migrateErr) {
-                        console.warn("Silent migration failed. Logging in via legacy mode.", migrateErr);
+                        console.warn("Silent migration failed.", migrateErr);
+                        err.textContent = 'Auth configuration missing. Make sure Email/Password is turned on in Firebase Console.';
+                        err.classList.remove('hidden'); btn.textContent="Log In"; btn.disabled=false; return;
                     }
-                    isAuthenticated = true;
                 }
             }
 
@@ -2198,7 +2181,6 @@
             currentUser = userDoc.data();
           }
           
-          // ✨ FIX: Save to localStorage for multi-tab
           localStorage.setItem('ielts_session', JSON.stringify(currentUser));
           await window.attachPrivateListeners();
           
