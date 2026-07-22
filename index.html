@@ -4786,7 +4786,15 @@
         const grid = document.getElementById('hof-full-grid');
         if(!grid) return;
         
-        grid.innerHTML = HOF_STUDENTS.map(student => `
+        // ✨ NEW: Automatically sort students from highest score to lowest score
+        const sortedStudents = [...HOF_STUDENTS].sort((a, b) => {
+            // Extracts just the numbers (e.g., "Band 8.5" becomes 8.5)
+            const scoreA = parseFloat((a.score || '').replace(/[^\d.]/g, '')) || 0;
+            const scoreB = parseFloat((b.score || '').replace(/[^\d.]/g, '')) || 0;
+            return scoreB - scoreA; // Sort descending
+        });
+        
+        grid.innerHTML = sortedStudents.map(student => `
              <div class="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100 flex flex-col items-center text-center relative overflow-hidden group hover:-translate-y-2 transition-transform duration-300">
                 <div class="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-amber-50 to-white"></div>
                 
