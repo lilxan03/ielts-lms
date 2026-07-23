@@ -767,6 +767,14 @@
                       <input type="date" id="profile-test-date" class="w-full border-2 border-slate-200 p-3 rounded-lg font-bold text-slate-700 outline-none focus:border-blue-500 transition">
                   </div>
               </div>
+
+              <!-- Account Security Section -->
+              <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 mt-4">
+                  <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b pb-2">Account Security</h3>
+                  <button onclick="window.promptChangePassword(); document.getElementById('student-profile-modal').classList.add('hidden');" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                      🔑 Change Password
+                  </button>
+              </div>
           </div>
           <div class="p-4 border-t border-slate-200 bg-white flex justify-end gap-3">
               <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
@@ -1056,6 +1064,7 @@
         
         <!-- Default State: Inbox & Logout -->
         <button id="editor-inbox-btn" onclick="window.toggleChatPanel()" class="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl transition font-bold text-sm shadow-md flex items-center gap-2 border border-indigo-400 hover:-translate-y-0.5">💬 Inbox</button>
+        <button onclick="window.promptChangePassword()" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center" title="Change Password">🔑</button>
         <button id="editor-logout" onclick="logout()" class="px-5 py-2.5 bg-white/10 hover:bg-rose-500 hover:border-rose-400 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5">Logout</button>
         
         <!-- Builder State: Preview & Save -->
@@ -1550,11 +1559,11 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    // ✨ NEW: Added GoogleAuthProvider and signInWithPopup
-    import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    // ✨ NEW: Added updatePassword
+    import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-    window.initFirebaseSystem = async function() {
+window.initFirebaseSystem = async function() {
         const firebaseConfig = {
           apiKey: "AIzaSyC9XmnannGOWSltRQ4ZX_ER_2kNH4MPpSw",
           authDomain: "khanh-ielts.firebaseapp.com",
@@ -1593,12 +1602,14 @@
             window.fsQuery = query;
             window.fsWhere = where;
             window.fsLimit = limit;
-            
+        
             // Expose Real Authentication methods
             window.auth = auth;
             window.fsAuthSignIn = signInWithEmailAndPassword;
             window.fsAuthCreate = createUserWithEmailAndPassword;
-            
+            window.onAuthStateChanged = onAuthStateChanged;
+            window.fsUpdatePassword = updatePassword;
+        
             // ✨ NEW: Initialize Google Auth Provider
             window.fsGoogleProvider = new GoogleAuthProvider();
             window.fsSignInWithPopup = signInWithPopup;
@@ -2242,6 +2253,52 @@
       // Forces a browser refresh to completely purge private memory state arrays
       window.location.reload();
     }
+
+    // ✨ NEW: Allow users to change their own password securely
+    window.promptChangePassword = function() {
+        showInputPrompt("Change Password", "Enter your new password (minimum 6 characters):", async (newPass) => {
+            if (newPass.length < 6) {
+                showModalMsg("Error", "Password must be at least 6 characters long.");
+                return;
+            }
+            try {
+                // 1. Update Firebase Auth (if current user is an email/pass user)
+                if (window.auth && window.auth.currentUser) {
+                    const user = window.auth.currentUser;
+                    if (user.providerData.some(p => p.providerId === 'password')) {
+                        await window.fsUpdatePassword(user, newPass);
+                    }
+                }
+                
+                // 2. Update Firestore DB
+                currentUser.pass = newPass;
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                
+                showModalMsg("Success", "Your password has been changed successfully!");
+            } catch (err) {
+                console.error(err);
+                if (err.code === 'auth/requires-recent-login') {
+                    showModalMsg("Security Notice", "Please log out and log back in before changing your password.");
+                } else {
+                    showModalMsg("Error", "Failed to update password: " + err.message);
+                }
+            }
+        });
+    };
+
+    // ✨ NEW: Allow Teachers to reset a student's password
+    window.promptResetStudentPassword = function(studentUsername) {
+        showInputPrompt("Reset Student Password", `Enter new password for ${studentUsername} (min 6 chars):`, async (newPass) => {
+            if(newPass.length < 6) { showModalMsg("Error", "Password must be at least 6 characters."); return; }
+            const userObj = USERS.find(u => u.user === studentUsername);
+            if(userObj) {
+                userObj.pass = newPass;
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), studentUsername), userObj);
+                showModalMsg("Success", `Password for ${studentUsername} has been reset. They can now log in using the new password.`);
+            }
+        });
+    };
 
     function showModalMsg(title, msg, onConfirm=null) {
       document.getElementById('modal-title').textContent = title;
@@ -6882,7 +6939,11 @@
                 <div class="flex justify-between items-start mb-5 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-4">
                     <div>
                         <h3 class="font-black text-xl text-blue-950 flex items-center gap-3"><span class="w-10 h-10 rounded-full ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-lg font-bold shadow-inner">👤</span> ${s.user}</h3>
-                        <p class="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-widest ml-12">Joined: <span class="text-slate-500">${s.createdAt || 'N/A'}</span> ${lessonsBadge}</p>
+                        <p class="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-widest ml-12 flex items-center gap-2">
+                            <span>Joined: <span class="text-slate-500">${s.createdAt || 'N/A'}</span></span>
+                            ${lessonsBadge}
+                            <button onclick="window.promptResetStudentPassword('${s.user}')" class="text-blue-500 hover:text-blue-700 font-bold underline lowercase tracking-normal border-l border-slate-200 pl-2 transition-colors">reset pass</button>
+                        </p>
                         ${isPending && s.pendingInfo ? `<p class="text-sm font-bold text-rose-700 mt-3 ml-12 bg-white px-3 py-1.5 rounded-lg inline-block border border-rose-200 shadow-sm shadow-rose-100/50">💸 Request: ${s.pendingInfo} (${s.pendingLessons || '?'} Lessons)</p>` : ''}
                     </div>
                     <span class="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-sm ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
