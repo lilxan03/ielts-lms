@@ -4043,12 +4043,14 @@ window.initFirebaseSystem = async function() {
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
             <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">• List</button>
+            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">1. List</button>
+            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
             <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition">{_} Blank</button>
             <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition">[↓] Drop</button>
             <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
             <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'table', '${q.type}')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">▦ Table</button>
             <button type="button" onmousedown="event.preventDefault(); window.insertVisualTemplate('${editorId}', 'flow', '${q.type}')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">↓ Flow</button>
-            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
         </div>`;
         
         let html = `
