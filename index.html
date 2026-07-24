@@ -134,40 +134,81 @@
         #palette-container { justify-content: flex-start !important; }
     }
 
-    /* Dark Theme */
+    /* Dark Theme - Expanded Globally */
     body.theme-dark { background-color: #0f172a !important; color: #f1f5f9 !important; --bg-main: #0f172a; --bg-sec: #1e293b; --text-main: #f1f5f9; --text-sec: #cbd5e1; --q-bg: #1e293b; --q-border: #334155; }
-    body.theme-dark #split-container, body.theme-dark #review-ui { background-color: var(--bg-main) !important; }
-    body.theme-dark #passage-container, body.theme-dark #review-left-pane { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important; }
-    body.theme-dark #questions-container, body.theme-dark #review-right-pane { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
     
-    body.theme-dark #split-container .text-slate-800, body.theme-dark #split-container .text-slate-700, body.theme-dark #split-container .text-slate-900,
-    body.theme-dark #review-ui .text-slate-800, body.theme-dark #review-ui .text-slate-700, body.theme-dark #review-ui .text-slate-900 { color: #f1f5f9 !important; }
-    body.theme-dark #split-container .text-slate-600, body.theme-dark #split-container .text-slate-500, body.theme-dark #split-container .text-slate-400,
-    body.theme-dark #review-ui .text-slate-600, body.theme-dark #review-ui .text-slate-500, body.theme-dark #review-ui .text-slate-400 { color: #cbd5e1 !important; }
-    body.theme-dark #split-container .bg-white, body.theme-dark #review-ui .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
-    body.theme-dark #split-container .bg-slate-50, body.theme-dark #split-container .bg-slate-100, body.theme-dark #review-ui .bg-slate-50, body.theme-dark #review-ui .bg-slate-100 { background-color: #0f172a !important; border-color: #334155 !important; }
-    body.theme-dark #split-container input, body.theme-dark #split-container textarea, body.theme-dark #split-container select, body.theme-dark #split-container .drop-zone-options,
-    body.theme-dark #review-ui input, body.theme-dark #review-ui textarea, body.theme-dark #review-ui select { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
-    body.theme-dark #split-container .border-slate-200, body.theme-dark #split-container .border-slate-300, body.theme-dark #split-container .border-slate-400,
-    body.theme-dark #review-ui .border-slate-200, body.theme-dark #review-ui .border-slate-300, body.theme-dark #review-ui .border-slate-400 { border-color: #334155 !important; }
+    body.theme-dark #split-container, body.theme-dark #review-ui, body.theme-dark #editor-ui, body.theme-dark #start-screen, body.theme-dark .bg-\[\#f4f7fb\], body.theme-dark .bg-\[\#f8fafc\] { background-color: var(--bg-main) !important; }
+    body.theme-dark #passage-container, body.theme-dark #review-left-pane, body.theme-dark #builder-left { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important; }
+    body.theme-dark #questions-container, body.theme-dark #review-right-pane, body.theme-dark #builder-right { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
+    
+    body.theme-dark .text-slate-800, body.theme-dark .text-slate-700, body.theme-dark .text-slate-900 { color: #f1f5f9 !important; }
+    
+    /* ✨ FIXED: Tinted text colors for specific modules to ensure perfect contrast */
+    body.theme-dark .text-blue-950, body.theme-dark .text-blue-900, body.theme-dark .text-blue-800, body.theme-dark .text-blue-700 { color: #93c5fd !important; }
+    body.theme-dark .text-indigo-900, body.theme-dark .text-indigo-800, body.theme-dark .text-indigo-700 { color: #a5b4fc !important; }
+    body.theme-dark .text-sky-800, body.theme-dark .text-sky-700 { color: #7dd3fc !important; }
+    body.theme-dark .text-cyan-800, body.theme-dark .text-cyan-700 { color: #67e8f9 !important; }
+    
+    body.theme-dark .text-slate-600, body.theme-dark .text-slate-500, body.theme-dark .text-slate-400 { color: #cbd5e1 !important; }
+    
+    body.theme-dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+    body.theme-dark .bg-slate-50, body.theme-dark .bg-slate-100 { background-color: #0f172a !important; border-color: #334155 !important; }
+    body.theme-dark .bg-slate-50\/80 { background-color: rgba(15, 23, 42, 0.8) !important; border-color: #334155 !important; }
+    body.theme-dark .bg-blue-50\/50 { background-color: rgba(15, 23, 42, 0.5) !important; border-color: #334155 !important; }
+    
+    /* ✨ FIXED: Add robust dark backgrounds for all Module Badges */
+    body.theme-dark .bg-blue-50, body.theme-dark .bg-blue-100,
+    body.theme-dark .bg-indigo-50, body.theme-dark .bg-indigo-100,
+    body.theme-dark .bg-sky-50, body.theme-dark .bg-sky-100,
+    body.theme-dark .bg-cyan-50, body.theme-dark .bg-cyan-100 { 
+        background-color: rgba(255, 255, 255, 0.05) !important; 
+        border-color: rgba(255, 255, 255, 0.1) !important; 
+    }
+    
+    /* Fix colored badges in Dark Mode */
+    body.theme-dark .bg-emerald-50, body.theme-dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.15) !important; border-color: rgba(16, 185, 129, 0.3) !important; }
+    body.theme-dark .text-emerald-700, body.theme-dark .text-emerald-800, body.theme-dark .text-emerald-600 { color: #34d399 !important; }
+    
+    body.theme-dark .bg-amber-50, body.theme-dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.15) !important; border-color: rgba(245, 158, 11, 0.3) !important; }
+    body.theme-dark .text-amber-700, body.theme-dark .text-amber-800, body.theme-dark .text-amber-900 { color: #fbbf24 !important; }
+    
+    body.theme-dark .bg-rose-50, body.theme-dark .bg-rose-100 { background-color: rgba(244, 63, 94, 0.15) !important; border-color: rgba(244, 63, 94, 0.3) !important; }
+    body.theme-dark .text-rose-600, body.theme-dark .text-rose-700, body.theme-dark .text-rose-800 { color: #fb7185 !important; }
+    
+    body.theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), body.theme-dark textarea, body.theme-dark select, body.theme-dark .drop-zone-options, body.theme-dark .rich-editor { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
+    body.theme-dark .border-slate-200, body.theme-dark .border-slate-300, body.theme-dark .border-slate-400, body.theme-dark .border-blue-50, body.theme-dark .border-blue-100, body.theme-dark .border-slate-100 { border-color: #334155 !important; }
+    body.theme-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #334155 !important; }
     body.theme-dark .drop-zone.border-blue-500 { border-color: #3b82f6 !important; background-color: #1d4ed8 !important; color: #ffffff !important; }
-
-    /* Pastel Theme */
-    body.theme-pastel { background-color: #fdf6e3 !important; color: #586e75 !important; --bg-main: #fdf6e3; --bg-sec: #eee8d5; --text-main: #586e75; --text-sec: #657b83; --q-bg: #fdf6e3; --q-border: #d5c4a1; }
-    body.theme-pastel #split-container, body.theme-pastel #review-ui { background-color: var(--bg-main) !important; }
-    body.theme-pastel #passage-container, body.theme-pastel #review-left-pane { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important;}
-    body.theme-pastel #questions-container, body.theme-pastel #review-right-pane { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
+    body.theme-dark header.bg-white { background-color: #1e293b !important; border-bottom-color: #334155 !important; }
     
-    body.theme-pastel #split-container .text-slate-800, body.theme-pastel #split-container .text-slate-700, body.theme-pastel #split-container .text-slate-900,
-    body.theme-pastel #review-ui .text-slate-800, body.theme-pastel #review-ui .text-slate-700, body.theme-pastel #review-ui .text-slate-900 { color: #586e75 !important; }
-    body.theme-pastel #split-container .text-slate-600, body.theme-pastel #split-container .text-slate-500, body.theme-pastel #split-container .text-slate-400,
-    body.theme-pastel #review-ui .text-slate-600, body.theme-pastel #review-ui .text-slate-500, body.theme-pastel #review-ui .text-slate-400 { color: #657b83 !important; }
-    body.theme-pastel #split-container .bg-white, body.theme-pastel #review-ui .bg-white { background-color: #fdf6e3 !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel #split-container .bg-slate-50, body.theme-pastel #split-container .bg-slate-100, body.theme-pastel #review-ui .bg-slate-50, body.theme-pastel #review-ui .bg-slate-100 { background-color: #eee8d5 !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel #split-container input, body.theme-pastel #split-container textarea, body.theme-pastel #split-container select, body.theme-pastel #split-container .drop-zone-options,
-    body.theme-pastel #review-ui input, body.theme-pastel #review-ui textarea, body.theme-pastel #review-ui select { background-color: #eee8d5 !important; color: #586e75 !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel #split-container .border-slate-200, body.theme-pastel #split-container .border-slate-300, body.theme-pastel #split-container .border-slate-400,
-    body.theme-pastel #review-ui .border-slate-200, body.theme-pastel #review-ui .border-slate-300, body.theme-pastel #review-ui .border-slate-400 { border-color: #d5c4a1 !important; }
+    /* Fix Quick Actions Box */
+    body.theme-dark #student-quick-actions .bg-white { background-color: rgba(255,255,255,0.1) !important; color: #ffffff !important; border-color: rgba(255,255,255,0.2) !important; }
+
+    /* Pastel Theme - Expanded Globally */
+    body.theme-pastel { background-color: #fdf6e3 !important; color: #586e75 !important; --bg-main: #fdf6e3; --bg-sec: #eee8d5; --text-main: #586e75; --text-sec: #657b83; --q-bg: #fdf6e3; --q-border: #d5c4a1; }
+    
+    body.theme-pastel #split-container, body.theme-pastel #review-ui, body.theme-pastel #editor-ui, body.theme-pastel #start-screen, body.theme-pastel .bg-\[\#f4f7fb\], body.theme-pastel .bg-\[\#f8fafc\] { background-color: var(--bg-main) !important; }
+    body.theme-pastel #passage-container, body.theme-pastel #review-left-pane, body.theme-pastel #builder-left { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important;}
+    body.theme-pastel #questions-container, body.theme-pastel #review-right-pane, body.theme-pastel #builder-right { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
+    
+    body.theme-pastel .text-slate-800, body.theme-pastel .text-slate-700, body.theme-pastel .text-slate-900, 
+    body.theme-pastel .text-blue-950, body.theme-pastel .text-blue-900, body.theme-pastel .text-blue-800, body.theme-pastel .text-blue-700,
+    body.theme-pastel .text-indigo-900, body.theme-pastel .text-indigo-800 { color: #586e75 !important; }
+    
+    body.theme-pastel .text-slate-600, body.theme-pastel .text-slate-500, body.theme-pastel .text-slate-400 { color: #657b83 !important; }
+    
+    body.theme-pastel .bg-white { background-color: #fdf6e3 !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel .bg-slate-50, body.theme-pastel .bg-slate-100 { background-color: #eee8d5 !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel .bg-slate-50\/80 { background-color: rgba(238, 232, 213, 0.8) !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel .bg-blue-50\/50 { background-color: rgba(238, 232, 213, 0.5) !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel .bg-blue-50, body.theme-pastel .bg-indigo-50 { background-color: rgba(203, 213, 225, 0.3) !important; border-color: #d5c4a1 !important; }
+    
+    body.theme-pastel input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), body.theme-pastel textarea, body.theme-pastel select, body.theme-pastel .drop-zone-options, body.theme-pastel .rich-editor { background-color: #eee8d5 !important; color: #586e75 !important; border-color: #d5c4a1 !important; }
+    body.theme-pastel .border-slate-200, body.theme-pastel .border-slate-300, body.theme-pastel .border-slate-400, body.theme-pastel .border-blue-50, body.theme-pastel .border-blue-100, body.theme-pastel .border-slate-100 { border-color: #d5c4a1 !important; }
+    body.theme-pastel .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #d5c4a1 !important; }
+    body.theme-pastel header.bg-white { background-color: #fdf6e3 !important; border-bottom-color: #d5c4a1 !important; }
+    
+    body.theme-pastel #student-quick-actions .bg-white { background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; border-color: rgba(255,255,255,0.3) !important; }
 
     .passage-text { font-size: calc(var(--font-scale) * 0.88) !important; line-height: 1.7 !important; transition: font-size 0.3s; }
     .passage-text p { margin-bottom: 1.5rem; }
@@ -833,6 +874,10 @@
               <span class="text-blue-300 text-[9px] font-black uppercase tracking-widest leading-none">⚙️ Profile</span>
             </div>
           </div>
+          
+          <button onclick="openSettings()" class="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0" title="Settings">
+              ⚙️
+          </button>
 
           <!-- Logout Button -->
           <button onclick="logout()" class="p-2 sm:p-2.5 bg-white/10 hover:bg-rose-500 hover:border-rose-500 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0" title="Logout">
@@ -1068,6 +1113,7 @@
         <!-- Default State: Inbox & Logout -->
         <button id="editor-inbox-btn" onclick="window.toggleChatPanel()" class="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl transition font-bold text-sm shadow-md flex items-center gap-2 border border-indigo-400 hover:-translate-y-0.5">💬 Inbox</button>
         <button onclick="window.promptChangePassword()" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center" title="Change Password">🔑</button>
+        <button onclick="openSettings()" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center" title="Settings">⚙️</button>
         <button id="editor-logout" onclick="logout()" class="px-5 py-2.5 bg-white/10 hover:bg-rose-500 hover:border-rose-400 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5">Logout</button>
         
         <!-- Builder State: Preview & Save -->
@@ -2370,10 +2416,27 @@ window.initFirebaseSystem = async function() {
       };
     }
     
-    function applyTheme(t) { document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 ${t!=='standard'?'theme-'+t:''} text-slate-800 bg-slate-100`; }
-    function applyFontSize(s) { document.body.classList.remove('size-large', 'size-xl'); if(s!=='standard') document.body.classList.add(`size-${s}`); }
+    function applyTheme(t) { 
+        document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 ${t!=='standard'?'theme-'+t:''} text-slate-800 bg-slate-100`; 
+        localStorage.setItem('ielts_theme', t);
+    }
+    
+    function applyFontSize(s) { 
+        document.body.classList.remove('size-large', 'size-xl'); 
+        if(s!=='standard') document.body.classList.add(`size-${s}`); 
+        localStorage.setItem('ielts_fontsize', s);
+    }
+    
     function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
     function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+    
+    // Automatically restore theme settings on load
+    (function() {
+        const savedTheme = localStorage.getItem('ielts_theme') || 'standard';
+        applyTheme(savedTheme);
+        const savedSize = localStorage.getItem('ielts_fontsize') || 'standard';
+        applyFontSize(savedSize);
+    })();
 
     window.toggleDashboardView = function(view) {
       const testsView = document.getElementById('dash-view-tests');
