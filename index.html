@@ -745,56 +745,32 @@
 
   <!-- GEM STORE MODAL -->
   <div id="gem-store-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[400] flex items-center justify-center backdrop-blur-md">
-      <div class="bg-gradient-to-br from-slate-900 to-indigo-950 rounded-3xl shadow-2xl flex flex-col w-[800px] max-w-[95vw] border border-slate-700 overflow-hidden animate-scale-up">
-          <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-6 flex justify-between items-center relative overflow-hidden shrink-0">
-              <div class="absolute -right-4 -top-8 text-8xl opacity-20 pointer-events-none">💎</div>
-              <h2 class="text-2xl font-black text-white flex items-center gap-2 drop-shadow-md z-10">💎 IELTS Gem Store</h2>
-              <button onclick="document.getElementById('gem-store-modal').classList.add('hidden')" class="text-white/80 hover:text-white font-black text-2xl leading-none z-10">&times;</button>
-          </div>
-          <div class="p-8 flex-1 flex flex-col md:flex-row gap-8">
-              <div class="flex-1">
-                  <p class="text-indigo-200 font-medium mb-6">Earn Gems by completing tests, or top up your balance instantly to unlock Premium Mock Exams and AI Grading!</p>
-                  
-                  <div class="space-y-3">
-                      <div onclick="window.generateGemQR(100, 10000)" class="bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition flex justify-between items-center group">
-                          <div class="flex items-center gap-3">
-                              <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center text-xl group-hover:scale-110 transition">💎</div>
-                              <div><div class="font-black text-white text-lg">Handful of Gems</div><div class="text-amber-400 font-bold text-xs">+100 Gems</div></div>
-                          </div>
-                          <div class="bg-indigo-600 group-hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-lg shadow-md transition">10,000 ₫</div>
-                      </div>
-                      
-                      <div onclick="window.generateGemQR(500, 45000)" class="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 hover:bg-amber-500/20 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition flex justify-between items-center group relative overflow-hidden">
-                          <div class="absolute top-0 right-0 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-bl-lg">POPULAR</div>
-                          <div class="flex items-center gap-3">
-                              <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center text-xl group-hover:scale-110 transition">💰</div>
-                              <div><div class="font-black text-white text-lg">Pouch of Gems</div><div class="text-amber-400 font-bold text-xs">+500 Gems <span class="text-emerald-400 ml-1">(10% Bonus)</span></div></div>
-                          </div>
-                          <div class="bg-indigo-600 group-hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-lg shadow-md transition">45,000 ₫</div>
-                      </div>
-
-                      <div onclick="window.generateGemQR(1200, 100000)" class="bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition flex justify-between items-center group">
-                          <div class="flex items-center gap-3">
-                              <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center text-xl group-hover:scale-110 transition">👑</div>
-                              <div><div class="font-black text-white text-lg">Chest of Gems</div><div class="text-amber-400 font-bold text-xs">+1200 Gems <span class="text-emerald-400 ml-1">(20% Bonus)</span></div></div>
-                          </div>
-                          <div class="bg-indigo-600 group-hover:bg-indigo-500 text-white font-black px-4 py-2 rounded-lg shadow-md transition">100,000 ₫</div>
-                      </div>
+      <div class="bg-slate-50 rounded-3xl shadow-2xl flex flex-col w-[900px] max-w-[95vw] max-h-[90vh] border border-slate-200 overflow-hidden animate-scale-up">
+          
+          <div class="bg-white px-6 py-4 flex justify-between items-center border-b border-slate-200 shrink-0">
+              <h2 class="text-xl font-black text-slate-800 flex items-center gap-2"><span class="text-2xl">🏪</span> Avatar & Theme Shop</h2>
+              <div class="flex items-center gap-4">
+                  <div class="bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-inner">
+                      <span class="text-lg leading-none">💎</span>
+                      <span id="shop-gem-balance" class="font-black text-blue-700">0</span>
                   </div>
+                  <button onclick="document.getElementById('gem-store-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-black text-2xl leading-none transition">&times;</button>
+              </div>
+          </div>
+
+          <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+              <!-- Sidebar Tabs -->
+              <div class="w-full md:w-48 bg-slate-100 border-r border-slate-200 p-4 flex flex-row md:flex-col gap-2 shrink-0 overflow-x-auto">
+                  <button id="shop-tab-mascots" onclick="window.switchShopTab('mascots')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">👤 Mascots</button>
+                  <button id="shop-tab-clothes" onclick="window.switchShopTab('clothes')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">👕 Clothes</button>
+                  <button id="shop-tab-backgrounds" onclick="window.switchShopTab('backgrounds')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">🎨 Themes</button>
+                  <div class="hidden md:block h-px w-full bg-slate-200 my-2"></div>
+                  <button id="shop-tab-topup" onclick="window.switchShopTab('topup')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">💎 Get Gems</button>
               </div>
               
-              <!-- QR Section -->
-              <div class="w-full md:w-[280px] bg-white rounded-2xl p-6 flex flex-col items-center justify-center shadow-inner shrink-0 relative">
-                  <div id="gem-qr-placeholder" class="text-center">
-                      <span class="text-5xl block mb-2 opacity-50">📱</span>
-                      <p class="font-bold text-slate-500 text-sm">Select a pack to generate payment QR code.</p>
-                  </div>
-                  <div id="gem-qr-active" class="hidden flex-col items-center w-full">
-                      <img id="gem-qr-img" src="" class="w-48 h-48 object-contain rounded-lg border border-slate-200 p-1 mb-4 shadow-sm">
-                      <div class="font-black text-indigo-700 text-2xl mb-1" id="gem-qr-price">0 ₫</div>
-                      <div class="text-xs text-slate-500 font-mono bg-slate-100 px-2 py-1 rounded text-center break-all" id="gem-qr-msg">Msg</div>
-                      <button onclick="window.notifyGemPurchase()" id="btn-gem-paid" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg shadow-md transition">I Have Transferred ✓</button>
-                  </div>
+              <!-- Content Area -->
+              <div id="shop-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50">
+                  <!-- Injected by JS -->
               </div>
           </div>
       </div>
@@ -860,18 +836,30 @@
   <div id="start-screen" class="hidden h-screen w-full relative bg-[#f4f7fb] overflow-y-auto font-sans animate-fade-in">
     
     <!-- Blue Header Banner -->
-    <div class="bg-blue-900 pt-8 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden">
+    <div id="student-banner-bg" class="bg-blue-900 pt-8 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden transition-all duration-1000">
       <!-- Decorative Background Orbs -->
-      <div class="absolute top-[-20%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40"></div>
-      <div class="absolute bottom-[-20%] left-[-10%] w-72 h-72 bg-sky-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20"></div>
+      <div class="absolute top-[-20%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 pointer-events-none"></div>
+      <div class="absolute bottom-[-20%] left-[-10%] w-72 h-72 bg-sky-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20 pointer-events-none"></div>
 
       <header class="max-w-7xl mx-auto flex justify-between items-center relative z-10">
-        <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3 drop-shadow-sm">
-           <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🎓</div>
-           Student Portal
-        </h1>
         
+        <!-- LEFT SIDE: Logo, Title & Streak -->
+        <div class="flex items-center gap-6">
+            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3 drop-shadow-sm">
+               <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🎓</div>
+               Student Portal
+            </h1>
+            
+            <!-- Streak is now here on the left -->
+            <div id="streak-widget" class="hidden items-center gap-1.5 bg-rose-950/40 px-3 py-1.5 rounded-xl border border-rose-400/30 shadow-sm transition transform" title="Daily Login Streak">
+                 <span class="text-lg leading-none drop-shadow-sm">🔥</span>
+                 <span class="text-rose-50 font-black text-sm" id="student-streak-display">0</span>
+            </div>
+        </div>
+        
+        <!-- RIGHT SIDE: Gems, Profile, Settings & Logout -->
         <div class="flex gap-3 sm:gap-4 items-center">
+          
           <!-- GEM BALANCE WIDGET -->
           <div onclick="window.openGemStore()" id="gem-balance-widget" class="flex items-center gap-1.5 bg-blue-950/40 hover:bg-blue-800/60 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl border border-blue-400/30 shadow-sm cursor-pointer transition transform hover:scale-105" title="Top Up Gems">
              <span class="text-lg leading-none drop-shadow-sm">💎</span>
@@ -5401,11 +5389,12 @@ window.initFirebaseSystem = async function() {
           return 0; 
       };
 
-      const radarData = [
+      // ✨ FIX: Look for the manual override array first! If it doesn't exist, fallback to calculated scores.
+      const radarData = currentUser.radarChartData || [
           getRLBand(rLStats.reading),
           getRLBand(rLStats.listening),
-          wSStats.writing.count ? (wSStats.writing.sum / wSStats.writing.count).toFixed(1) : 0,
-          wSStats.speaking.count ? (wSStats.speaking.sum / wSStats.speaking.count).toFixed(1) : 0
+          wSStats.writing.count ? parseFloat((wSStats.writing.sum / wSStats.writing.count).toFixed(1)) : 0,
+          wSStats.speaking.count ? parseFloat((wSStats.speaking.sum / wSStats.speaking.count).toFixed(1)) : 0
       ];
 
       // 2. Render the Chart using a slight timeout to ensure the DOM is ready
@@ -5430,16 +5419,21 @@ window.initFirebaseSystem = async function() {
                           pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
                       }]
                   },
+                  // ✨ FIX: Locked the min and max limits to 0 and 9 to prevent auto-scaling distortion!
                   options: {
                       scales: {
                           r: {
+                              min: 0,
+                              max: 9,
+                              beginAtZero: true,
                               angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
                               grid: { color: 'rgba(0, 0, 0, 0.05)' },
                               pointLabels: { font: { size: 11, weight: 'bold', family: 'sans-serif' }, color: '#475569' },
-                              ticks: { display: false, min: 0, max: 9, stepSize: 1.5 }
+                              ticks: { display: false, stepSize: 1.5 }
                           }
                       },
-                      plugins: { legend: { display: false } }
+                      plugins: { legend: { display: false } },
+                      maintainAspectRatio: false
                   }
               });
           }
@@ -7158,31 +7152,50 @@ window.initFirebaseSystem = async function() {
         const list = document.getElementById('students-list');
         const students = USERS.filter(u => u.role === 'student');
         
-        const pending = students.filter(s => !s.isPaid && s.paymentStatus === 'pending');
-        const others = students.filter(s => s.isPaid || s.paymentStatus !== 'pending');
+        const pending = students.filter(s => s.paymentStatus === 'pending');
+        const others = students.filter(s => s.paymentStatus !== 'pending');
 
         const renderCard = (s, isPending) => {
             const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
             const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
-            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-blue-700 font-bold ml-2 pl-2 border-l border-slate-300">Remaining: <span class="font-black">${remaining}/${s.totalLessonsPaid}</span></span>` : '';
+            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded border border-indigo-100 shadow-sm">Remaining: <span class="font-black">${remaining}/${s.totalLessonsPaid}</span></span>` : '';
+            
+            // Detect if this is a Gem request or a Course request
+            const isGemRequest = isPending && s.pendingInfo && s.pendingInfo.includes('Top-Up');
+            let approveBtnText = 'Manual Override: Grant Access';
+            if (isPending) {
+                approveBtnText = isGemRequest ? '✓ Approve Gem Top-Up' : '✓ Approve Payment & Enroll';
+            } else if (s.isPaid) {
+                approveBtnText = 'Revoke Access (Lock)';
+            }
 
             return `
-            <div class="bg-white border border-blue-50 p-6 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50/50' : ''}">
-                <div class="flex justify-between items-start mb-5 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-4">
-                    <div>
-                        <h3 class="font-black text-xl text-blue-950 flex items-center gap-3"><span class="w-10 h-10 rounded-full ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-lg font-bold shadow-inner">👤</span> ${s.user}</h3>
-                        <p class="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-widest ml-12 flex items-center gap-2">
-                            <span>Joined: <span class="text-slate-500">${s.createdAt || 'N/A'}</span></span>
+            <div class="bg-white border border-blue-50 p-6 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50/50' : ''} h-full">
+                <div class="flex flex-col sm:flex-row justify-between items-start mb-5 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-4 gap-4">
+                    <div class="flex-1 w-full min-w-0">
+                        <h3 class="font-black text-xl text-blue-950 flex items-center gap-3"><span class="w-10 h-10 rounded-full shrink-0 ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-lg font-bold shadow-inner">👤</span> <span class="truncate">${s.user}</span></h3>
+                        
+                        <!-- ✨ FIXED: Used Flex-Wrap and distinct styling badges to stop text from squishing -->
+                        <div class="flex flex-wrap items-center gap-2 mt-3 sm:ml-12 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                            <span class="bg-slate-50 border border-slate-200 px-2 py-1 rounded text-slate-500 shadow-sm">Joined: ${s.createdAt || 'N/A'}</span>
                             ${lessonsBadge}
-                            <button onclick="window.promptResetStudentPassword('${s.user}')" class="text-blue-500 hover:text-blue-700 font-bold underline lowercase tracking-normal border-l border-slate-200 pl-2 transition-colors">reset pass</button>
-                        </p>
-                        ${isPending && s.pendingInfo ? `<p class="text-sm font-bold text-rose-700 mt-3 ml-12 bg-white px-3 py-1.5 rounded-lg inline-block border border-rose-200 shadow-sm shadow-rose-100/50">💸 Request: ${s.pendingInfo} (${s.pendingLessons || '?'} Lessons)</p>` : ''}
+                            <button onclick="window.promptResetStudentPassword('${s.user}')" class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded transition-colors tracking-normal lowercase shadow-sm">reset pass</button>
+                        </div>
+
+                        ${isPending && s.pendingInfo ? `<div class="mt-3 sm:ml-12"><span class="text-sm font-bold ${isGemRequest ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-rose-700 bg-rose-50 border-rose-200'} px-3 py-1.5 rounded-lg inline-block border shadow-sm break-words max-w-full">💸 Request: ${s.pendingInfo} ${!isGemRequest && s.pendingLessons ? `(${s.pendingLessons} Lessons)` : ''}</span></div>` : ''}
                     </div>
-                    <span class="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-sm ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
+                    <span class="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-sm shrink-0 ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending && !isGemRequest ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
                 </div>
-                <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="w-full py-3 text-sm font-bold rounded-xl shadow-sm border ${s.isPaid ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800' : (isPending ? 'bg-rose-500 border-transparent text-white hover:bg-rose-600 shadow-rose-200' : 'bg-blue-600 border-transparent text-white hover:bg-blue-700')} transition-all hover:-translate-y-0.5">
-                    ${s.isPaid ? 'Revoke Access (Lock)' : (isPending ? '✓ Approve Payment & Enroll' : 'Manual Override: Grant Access')}
-                </button>
+                
+                <div class="mt-auto space-y-2 w-full">
+                    <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid || isPending})" class="w-full py-3 text-sm font-bold rounded-xl shadow-sm border ${!isPending && s.isPaid ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800' : (isPending ? (isGemRequest ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-200' : 'bg-rose-500 border-transparent text-white hover:bg-rose-600 shadow-rose-200') : 'bg-blue-600 border-transparent text-white hover:bg-blue-700')} transition-all hover:-translate-y-0.5">
+                        ${approveBtnText}
+                    </button>
+                    <!-- ✨ NEW: Edit Radar Chart Button -->
+                    <button onclick="window.openRadarEditor('${s.user}')" class="w-full py-2.5 text-xs font-bold rounded-xl shadow-sm border bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border-purple-200 transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2">
+                        📊 Edit Radar Chart
+                    </button>
+                </div>
             </div>
             `;
         };
@@ -7351,33 +7364,46 @@ window.initFirebaseSystem = async function() {
     async function togglePaymentStatus(username, status) {
         const user = USERS.find(u => u.user === username);
         if(user) {
-            user.isPaid = status;
-            user.paymentStatus = status ? 'paid' : 'unpaid';
-            
-            // AUTOMATIC ENROLLMENT MAGIC:
-            if (status && user.pendingClasses && Array.isArray(user.pendingClasses)) {
-                for (let cid of user.pendingClasses) {
-                    const cls = CLASSES.find(c => c.id === cid);
-                    if (cls) {
-                        if (!cls.enrolledStudents) cls.enrolledStudents = [];
-                        if (!cls.enrolledStudents.includes(username)) {
-                            cls.enrolledStudents.push(username);
-                            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            // ✨ FIX: Handle Gem Top-Ups vs Course Enrollments
+            if (status && user.paymentStatus === 'pending' && user.pendingInfo && user.pendingInfo.includes('Top-Up')) {
+                // Parse the gems from the "Top-Up 500 Gems" string
+                const match = user.pendingInfo.match(/Top-Up (\d+) Gems/);
+                if (match && match[1]) {
+                    const gemsToAdd = parseInt(match[1], 10);
+                    user.gems = (user.gems || 0) + gemsToAdd;
+                }
+                user.paymentStatus = 'paid';
+                user.pendingInfo = null;
+                // Note: We deliberately do not change user.isPaid here so we don't accidentally lock/unlock their courses!
+            } else {
+                // Standard Course Enrollment Logic
+                user.isPaid = status;
+                user.paymentStatus = status ? 'paid' : 'unpaid';
+                
+                // AUTOMATIC ENROLLMENT MAGIC:
+                if (status && user.pendingClasses && Array.isArray(user.pendingClasses)) {
+                    for (let cid of user.pendingClasses) {
+                        const cls = CLASSES.find(c => c.id === cid);
+                        if (cls) {
+                            if (!cls.enrolledStudents) cls.enrolledStudents = [];
+                            if (!cls.enrolledStudents.includes(username)) {
+                                cls.enrolledStudents.push(username);
+                                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+                            }
                         }
                     }
                 }
-            }
 
-            if (status) {
-                // ADD the lessons they just purchased to their account balance
-                if (user.pendingLessons) {
-                    user.totalLessonsPaid = (user.totalLessonsPaid || 0) + user.pendingLessons;
-                } else if (!user.totalLessonsPaid) {
-                    user.totalLessonsPaid = BILLING_SETTINGS.lessonsPerMonth || 12; // Fallback for manual approval
+                if (status) {
+                    if (user.pendingLessons) {
+                        user.totalLessonsPaid = (user.totalLessonsPaid || 0) + user.pendingLessons;
+                    } else if (!user.totalLessonsPaid) {
+                        user.totalLessonsPaid = BILLING_SETTINGS.lessonsPerMonth || 12; // Fallback
+                    }
+                    user.pendingInfo = null; 
+                    user.pendingClasses = null; 
+                    user.pendingLessons = null;
                 }
-                user.pendingInfo = null; 
-                user.pendingClasses = null; 
-                user.pendingLessons = null;
             }
 
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), user);
@@ -7974,6 +8000,52 @@ window.initFirebaseSystem = async function() {
         printWindow.document.close();
     }
 
+    // ✨ NEW: Radar Chart Editor Logic for Teachers
+    window.openRadarEditor = function(username) {
+        const student = USERS.find(u => u.user === username);
+        if (!student) return;
+        
+        const data = student.radarChartData || [0, 0, 0, 0];
+        
+        document.getElementById('modal-title').textContent = `Edit Radar: ${username}`;
+        document.getElementById('modal-message').innerHTML = `
+            <div class="grid grid-cols-2 gap-4 mt-4">
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Reading</label><input type="number" step="0.5" id="rad-0" value="${data[0]}" class="w-full border-2 border-slate-200 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-700 bg-slate-50"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Listening</label><input type="number" step="0.5" id="rad-1" value="${data[1]}" class="w-full border-2 border-slate-200 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-700 bg-slate-50"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Writing</label><input type="number" step="0.5" id="rad-2" value="${data[2]}" class="w-full border-2 border-slate-200 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-700 bg-slate-50"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Speaking</label><input type="number" step="0.5" id="rad-3" value="${data[3]}" class="w-full border-2 border-slate-200 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-700 bg-slate-50"></div>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-4 italic text-center">Set all values to 0 to revert to Auto-Calculated scores based on their test history.</p>
+        `;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = async () => {
+            document.getElementById('modal-confirm').textContent = "Saving...";
+            const newData = [
+                Number(document.getElementById('rad-0').value),
+                Number(document.getElementById('rad-1').value),
+                Number(document.getElementById('rad-2').value),
+                Number(document.getElementById('rad-3').value)
+            ];
+            
+            // If all are zero, delete the manual override to go back to auto-calc
+            student.radarChartData = newData.every(n => n === 0) ? null : newData;
+            
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), student);
+                document.getElementById('custom-modal').classList.add('hidden');
+                showModalMsg("Saved", "Radar chart updated for " + username);
+            } catch (err) {
+                console.error(err);
+                showModalMsg("Error", "Could not save radar data to cloud.");
+            }
+            document.getElementById('modal-confirm').textContent = "OK";
+        };
+    };
+
     // --- BOOKING SYSTEM LOGIC ---
     const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -8387,7 +8459,24 @@ window.initFirebaseSystem = async function() {
         if(!currentUser || currentUser.role !== 'student') return;
         
         document.getElementById('student-name-display').textContent = currentUser.user;
-        document.getElementById('header-student-avatar').src = currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`;
+        
+        const avt = document.getElementById('header-student-avatar');
+        if(avt && avt.tagName === 'IMG') {
+            avt.src = currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`;
+        }
+        
+        const display = document.getElementById('student-gem-display');
+        if (display) {
+            display.textContent = (currentUser.gems || 0).toLocaleString();
+        }
+
+        // ✨ NEW: Display the Streak counter
+        const streakW = document.getElementById('streak-widget');
+        if (streakW) {
+            streakW.classList.remove('hidden');
+            streakW.classList.add('flex');
+            document.getElementById('student-streak-display').textContent = (currentUser.currentStreak || 0);
+        }
         
         const w = document.getElementById('student-target-widget');
         if(currentUser.targetScore || currentUser.testDate) {
@@ -8416,13 +8505,86 @@ window.initFirebaseSystem = async function() {
         } else {
             w.classList.add('hidden'); w.classList.remove('flex');
         }
+
+        // Apply Custom Mascot & Background Theme automatically
+        if(typeof window.applyStudentCustomizations === 'function') {
+            window.applyStudentCustomizations();
+        }
     };
 
-    // Replace the old init call to include our new Header updater!
+    // ✨ NEW: Daily Streak Logic Handler
+    window.checkDailyStreak = async function() {
+        if (!currentUser || currentUser.role !== 'student') return;
+
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+        
+        let needsSave = false;
+        let streakIncreased = false;
+
+        if (!currentUser.lastLoginDate) {
+            // First time ever logging in
+            currentUser.lastLoginDate = todayStr;
+            currentUser.currentStreak = 1;
+            needsSave = true;
+            streakIncreased = true;
+        } else if (currentUser.lastLoginDate !== todayStr) {
+            const lastDate = new Date(currentUser.lastLoginDate);
+            lastDate.setHours(0,0,0,0);
+            const todayMidnight = new Date(todayStr);
+            todayMidnight.setHours(0,0,0,0);
+            
+            const diffTime = Math.abs(todayMidnight - lastDate);
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); 
+
+            if (diffDays === 1) {
+                // Streak continues! (+1 day)
+                currentUser.currentStreak = (currentUser.currentStreak || 0) + 1;
+                streakIncreased = true;
+            } else if (diffDays > 1) {
+                // Streak broken. Reset to 1.
+                currentUser.currentStreak = 1;
+                streakIncreased = true; 
+            }
+            currentUser.lastLoginDate = todayStr;
+            needsSave = true;
+        }
+
+        if (needsSave) {
+            if(streakIncreased) {
+                currentUser.gems = (currentUser.gems || 0) + 10; // Daily +10 Gems Bonus
+            }
+            
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                window.updateDashboardHeader();
+                
+                if (streakIncreased) {
+                    setTimeout(() => {
+                        window.playStreakAnimation();
+                        showModalMsg("🔥 Daily Login Bonus!", `You are on a ${currentUser.currentStreak}-day streak! You earned +10 💎 Gems for visiting today. Come back tomorrow to keep the flame alive!`);
+                    }, 500);
+                }
+            } catch(e) { console.error("Streak save error", e); }
+        }
+    };
+
+    window.playStreakAnimation = function() {
+        const widget = document.getElementById('streak-widget');
+        if(!widget) return;
+        widget.classList.add('scale-125', 'ring-4', 'ring-rose-400');
+        setTimeout(() => {
+            widget.classList.remove('scale-125', 'ring-4', 'ring-rose-400');
+        }, 500);
+    };
+
     const originalInitDashboard = initStudentDashboard;
     initStudentDashboard = function(preserveCid = null) {
         originalInitDashboard(preserveCid);
         window.updateDashboardHeader();
+        // Check Streak every time they load the dashboard!
+        window.checkDailyStreak();
     };
 
     // --- DISCORD-STYLE CHAT LOGIC (SELF-HEALING) ---
@@ -8621,25 +8783,235 @@ window.initFirebaseSystem = async function() {
         }
     };
 
-    // --- VIRTUAL ECONOMY (GEMS) LOGIC ---
-    let pendingGemPurchase = null;
-
-    window.openGemStore = function() {
-        document.getElementById('gem-qr-placeholder').classList.remove('hidden');
-        document.getElementById('gem-qr-active').classList.add('hidden');
-        document.getElementById('gem-store-modal').classList.remove('hidden');
+    // ==========================================
+    // VIRTUAL ECONOMY, MASCOTS & GAMIFICATION
+    // ==========================================
+    
+    // 1. Define the Shop Database (Replace the Emojis with direct Image URLs later!)
+    window.SHOP_DB = {
+        mascots: [
+            { id: 'm_boy1', name: 'Casual Boy', price: 0, img: '👦🏻', desc: 'Default Male Mascot' },
+            { id: 'm_girl1', name: 'Casual Girl', price: 0, img: '👧🏻', desc: 'Default Female Mascot' },
+            { id: 'm_robot', name: 'IELTS Bot', price: 500, img: '🤖', desc: 'A smart study buddy.' },
+            { id: 'm_ninja', name: 'Ninja Scholar', price: 1500, img: '🥷', desc: 'Silent but highly educated.' }
+        ],
+        clothes: [
+            { id: 'c_glasses', name: 'Smart Glasses', price: 200, img: '👓', desc: '+10% Focus' },
+            { id: 'c_crown', name: 'Band 9.0 Crown', price: 5000, img: '👑', desc: 'For the absolute best.' },
+            { id: 'c_backpack', name: 'Study Bag', price: 300, img: '🎒', desc: 'Carries all your vocab.' }
+        ],
+        backgrounds: [
+            { id: 'bg_def', name: 'Default Blue', price: 0, css: 'bg-blue-900', desc: 'Standard LMS theme.' },
+            { id: 'bg_sunset', name: 'Sunset Vibe', price: 800, css: 'bg-gradient-to-r from-orange-500 to-rose-500', desc: 'Warm and relaxing.' },
+            { id: 'bg_galaxy', name: 'Deep Space', price: 2000, css: 'bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900', desc: 'Focus in the void.' }
+        ]
     };
 
+    // 2. Open the Shop
+    window.openGemStore = function() {
+        if (!currentUser.inventory) currentUser.inventory = ['m_boy1', 'm_girl1', 'bg_def']; // Default free items
+        if (!currentUser.equipped) currentUser.equipped = { mascot: 'm_boy1', clothes: null, bg: 'bg_def' };
+        
+        document.getElementById('shop-gem-balance').textContent = (currentUser.gems || 0).toLocaleString();
+        document.getElementById('gem-store-modal').classList.remove('hidden');
+        window.switchShopTab('mascots'); // Open mascots by default
+    };
+
+    // 3. Tab Navigation
+    window.switchShopTab = function(tabName) {
+        // Reset tabs
+        document.querySelectorAll('.shop-tab-btn').forEach(btn => {
+            btn.className = "shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full";
+        });
+        
+        // Highlight active tab
+        const activeBtn = document.getElementById(`shop-tab-${tabName}`);
+        if(activeBtn) {
+            if(tabName === 'topup') activeBtn.className = "shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-black text-sm transition-all text-amber-700 bg-amber-50 shadow-sm border border-amber-300 whitespace-nowrap w-full";
+            else activeBtn.className = "shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all bg-white shadow-sm border border-blue-500 text-blue-700 whitespace-nowrap w-full";
+        }
+
+        const content = document.getElementById('shop-content-area');
+        
+        // Render Top Up Screen (Legacy QR Logic)
+        if (tabName === 'topup') {
+            content.innerHTML = `
+                <div class="max-w-2xl mx-auto">
+                    <h3 class="text-xl font-black text-slate-800 mb-2">Buy Gems</h3>
+                    <p class="text-sm text-slate-500 mb-6">Top up your balance instantly via QR code to buy premium mascots and themes.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div onclick="window.generateGemQR(100, 10000)" class="bg-white border border-slate-200 hover:border-amber-400 p-4 rounded-xl cursor-pointer transition flex flex-col items-center group shadow-sm">
+                            <div class="text-4xl mb-2 group-hover:scale-110 transition">💎</div>
+                            <div class="font-black text-slate-800">100 Gems</div>
+                            <div class="text-blue-600 font-bold mt-2 bg-blue-50 px-3 py-1 rounded w-full text-center">10,000 ₫</div>
+                        </div>
+                        <div onclick="window.generateGemQR(500, 45000)" class="bg-gradient-to-b from-white to-amber-50 border border-amber-300 hover:border-amber-500 p-4 rounded-xl cursor-pointer transition flex flex-col items-center group shadow-md relative">
+                            <div class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-bl-lg">POPULAR</div>
+                            <div class="text-4xl mb-2 group-hover:scale-110 transition">💰</div>
+                            <div class="font-black text-slate-800">500 Gems</div>
+                            <div class="text-blue-600 font-bold mt-2 bg-blue-50 px-3 py-1 rounded w-full text-center">45,000 ₫</div>
+                        </div>
+                    </div>
+                    
+                    <!-- QR Active State Container (Hidden by default) -->
+                    <div id="gem-qr-active" class="hidden flex-col items-center w-full mt-8 bg-white p-6 rounded-2xl shadow-inner border border-slate-200">
+                      <img id="gem-qr-img" src="" class="w-48 h-48 object-contain rounded-lg border border-slate-200 p-1 mb-4 shadow-sm">
+                      <div class="font-black text-indigo-700 text-2xl mb-1" id="gem-qr-price">0 ₫</div>
+                      <div class="text-xs text-slate-500 font-mono bg-slate-100 px-2 py-1 rounded text-center break-all" id="gem-qr-msg">Msg</div>
+                      <button onclick="window.notifyGemPurchase()" id="btn-gem-paid" class="mt-4 w-full md:w-64 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-lg shadow-md transition">I Have Transferred ✓</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // Render Shop Items (Mascots, Clothes, Backgrounds)
+        const items = window.SHOP_DB[tabName];
+        let itemsHtml = `<div class="grid grid-cols-2 lg:grid-cols-3 gap-4 pb-10">`;
+        
+        items.forEach(item => {
+            const isOwned = currentUser.inventory.includes(item.id);
+            const isEquipped = currentUser.equipped.mascot === item.id || currentUser.equipped.bg === item.id || currentUser.equipped.clothes === item.id;
+            
+            let btnHtml = '';
+            if (isEquipped) {
+                btnHtml = `<button class="w-full py-2 bg-slate-200 text-slate-500 font-bold rounded-lg cursor-not-allowed text-xs" disabled>Equipped</button>`;
+            } else if (isOwned) {
+                btnHtml = `<button onclick="window.equipItem('${item.id}', '${tabName}')" class="w-full py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200 font-bold rounded-lg transition shadow-sm text-xs">Equip Now</button>`;
+            } else {
+                btnHtml = `<button onclick="window.buyItem('${item.id}', ${item.price}, '${tabName}')" class="w-full py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-500 hover:text-white border border-emerald-200 font-bold rounded-lg transition shadow-sm text-xs flex justify-center items-center gap-1"><span class="text-[10px]">💎</span> ${item.price}</button>`;
+            }
+
+            // Display CSS block for Backgrounds, or Emojis/Images for Mascots/Clothes
+            let visual = '';
+            if (tabName === 'backgrounds') {
+                visual = `<div class="w-16 h-16 rounded-lg ${item.css} mx-auto mb-3 shadow-inner border border-slate-200"></div>`;
+            } else {
+                // If it's a real image URL, render an img tag. Otherwise render the emoji.
+                if (item.img.startsWith('http') || item.img.startsWith('data:')) {
+                    visual = `<img src="${item.img}" class="w-16 h-16 mx-auto mb-3 object-contain drop-shadow-sm">`;
+                } else {
+                    visual = `<div class="text-5xl mx-auto mb-3 h-16 flex items-center justify-center">${item.img}</div>`;
+                }
+            }
+
+            itemsHtml += `
+            <div class="bg-white p-4 rounded-2xl border ${isEquipped ? 'border-indigo-400 shadow-md ring-2 ring-indigo-50' : 'border-slate-200 shadow-sm'} text-center flex flex-col justify-between transition-all hover:-translate-y-1">
+                <div>
+                    ${visual}
+                    <h4 class="font-black text-slate-800 text-sm mb-1">${item.name}</h4>
+                    <p class="text-[10px] text-slate-400 mb-4 h-8 overflow-hidden">${item.desc}</p>
+                </div>
+                ${btnHtml}
+            </div>`;
+        });
+        
+        itemsHtml += `</div>`;
+        content.innerHTML = itemsHtml;
+    };
+
+    // 4. Buy Logic
+    window.buyItem = function(itemId, price, tabName) {
+        if ((currentUser.gems || 0) < price) {
+            showModalMsg("Not Enough Gems", "You don't have enough gems to buy this! Complete more mock tests to earn gems, or click 'Get Gems' to top up.");
+            return;
+        }
+
+        showConfirm("Confirm Purchase", `Spend ${price} 💎 to unlock this item?`, async () => {
+            currentUser.gems -= price;
+            currentUser.inventory.push(itemId);
+            
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                
+                document.getElementById('shop-gem-balance').textContent = currentUser.gems.toLocaleString();
+                window.updateDashboardHeader(); // Update visual balance on main screen
+                window.switchShopTab(tabName); // Re-render tab to show "Equip" button
+                
+                window.playGemAnimation();
+            } catch(e) {
+                showModalMsg("Error", "Could not complete purchase. Connection failed.");
+                currentUser.gems += price; // Rollback
+                currentUser.inventory.pop();
+            }
+        });
+    };
+
+    // 5. Equip Logic
+    window.equipItem = async function(itemId, tabName) {
+        if (tabName === 'mascots') currentUser.equipped.mascot = itemId;
+        if (tabName === 'clothes') currentUser.equipped.clothes = itemId;
+        if (tabName === 'backgrounds') currentUser.equipped.bg = itemId;
+
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            
+            window.switchShopTab(tabName); // Re-render tab to show "Equipped" state
+            window.applyStudentCustomizations(); // Apply changes visually to dashboard!
+            
+        } catch(e) {
+            showModalMsg("Error", "Could not equip item.");
+        }
+    };
+
+    // 6. Apply Customizations to Dashboard
+    window.applyStudentCustomizations = function() {
+        if (!currentUser || currentUser.role !== 'student') return;
+        if (!currentUser.equipped) return;
+
+        // 1. Change the top Banner Background
+        const dashboardBanner = document.getElementById('student-banner-bg');
+        if (dashboardBanner) {
+            const bgItem = window.SHOP_DB.backgrounds.find(b => b.id === currentUser.equipped.bg);
+            if (bgItem) {
+                // Clear old classes and apply new
+                dashboardBanner.className = `pt-8 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden transition-all duration-1000 ${bgItem.css}`;
+            }
+        }
+
+        // 2. Change the Mascot Avatar in the Header
+        const avatarDisplay = document.getElementById('header-student-avatar');
+        if (avatarDisplay) {
+            const mascotItem = window.SHOP_DB.mascots.find(m => m.id === currentUser.equipped.mascot);
+            const clothesItem = window.SHOP_DB.clothes.find(c => c.id === currentUser.equipped.clothes);
+            
+            if (mascotItem) {
+                let visualHtml = `<div class="text-xl relative w-full h-full flex items-center justify-center">${mascotItem.img}</div>`;
+                
+                // Paper-doll Layering Logic!
+                if (mascotItem.img.startsWith('http') || mascotItem.img.startsWith('data:')) {
+                    let layeredHtml = `<img src="${mascotItem.img}" class="absolute inset-0 w-full h-full object-cover z-0">`;
+                    if (clothesItem && (clothesItem.img.startsWith('http') || clothesItem.img.startsWith('data:'))) {
+                        layeredHtml += `<img src="${clothesItem.img}" class="absolute inset-0 w-full h-full object-cover z-10 drop-shadow-sm">`;
+                    } else if (clothesItem) {
+                        // Emoji clothes fallback over image
+                        layeredHtml += `<div class="absolute inset-0 w-full h-full flex items-center justify-center z-10 text-xs">${clothesItem.img}</div>`;
+                    }
+                    visualHtml = `<div class="relative w-full h-full">${layeredHtml}</div>`;
+                } else if (clothesItem && !clothesItem.img.startsWith('http')) {
+                    // Emoji on Emoji fallback
+                    visualHtml = `<div class="text-2xl relative w-full h-full flex items-center justify-center">
+                        <span class="z-0 absolute">${mascotItem.img}</span>
+                        <span class="z-10 absolute text-sm transform translate-y-2 translate-x-2 drop-shadow">${clothesItem.img}</span>
+                    </div>`;
+                }
+
+                avatarDisplay.outerHTML = `<div id="header-student-avatar" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-white overflow-hidden shadow-sm border border-white/30 cursor-pointer flex-shrink-0" onclick="window.openStudentProfile()">${visualHtml}</div>`;
+            }
+        }
+    };
+
+    let pendingGemPurchase = null;
     window.generateGemQR = function(gems, priceVND) {
         pendingGemPurchase = { gems, price: priceVND };
         const msg = `${currentUser.user} BUY ${gems} GEMS`;
         
         if (BILLING_SETTINGS.customQR) {
-            // Use the Teacher's Uploaded QR Image
             document.getElementById('gem-qr-img').src = BILLING_SETTINGS.customQR;
             document.getElementById('gem-qr-msg').textContent = "Use Custom QR above & ref: " + msg;
         } else {
-            // Generate API QR just like the course checkout
             const qrUrl = `https://img.vietqr.io/image/${BILLING_SETTINGS.bankId}-${BILLING_SETTINGS.bankAcc}-compact2.png?amount=${priceVND}&addInfo=${encodeURIComponent(msg)}&accountName=${encodeURIComponent(BILLING_SETTINGS.bankName)}`;
             document.getElementById('gem-qr-img').src = qrUrl;
             document.getElementById('gem-qr-msg').textContent = msg;
@@ -8647,15 +9019,21 @@ window.initFirebaseSystem = async function() {
         
         document.getElementById('gem-qr-price').textContent = formatVND(priceVND);
         
-        document.getElementById('gem-qr-placeholder').classList.add('hidden');
-        document.getElementById('gem-qr-active').classList.remove('hidden');
-        document.getElementById('gem-qr-active').classList.add('flex');
+        // Hide the packs, show the QR
+        const content = document.getElementById('shop-content-area');
+        content.innerHTML = `
+            <div class="max-w-md mx-auto flex flex-col items-center bg-white p-6 rounded-2xl shadow-inner border border-slate-200">
+              <h3 class="text-xl font-black text-slate-800 mb-4">Complete Payment</h3>
+              <img id="gem-qr-img" src="${document.getElementById('gem-qr-img').src}" class="w-56 h-56 object-contain rounded-lg border border-slate-200 p-1 mb-4 shadow-sm">
+              <div class="font-black text-indigo-700 text-3xl mb-1">${formatVND(priceVND)}</div>
+              <div class="text-xs text-slate-500 font-mono bg-slate-100 px-3 py-1.5 rounded-lg text-center break-all mb-6 w-full shadow-inner border border-slate-200">Transfer Msg: <strong class="text-slate-800">${msg}</strong></div>
+              <button onclick="window.notifyGemPurchase()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md transition text-lg flex items-center justify-center gap-2">I Have Transferred ✓</button>
+              <button onclick="window.switchShopTab('topup')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl shadow-sm transition mt-3 text-sm">Cancel</button>
+            </div>
+        `;
     };
 
     window.notifyGemPurchase = async function() {
-        const btn = document.getElementById('btn-gem-paid');
-        btn.textContent = "Notifying Teacher..."; btn.disabled = true;
-        
         // Send a simulated request to teacher (saves to user profile pending state)
         currentUser.pendingInfo = `Top-Up ${pendingGemPurchase.gems} Gems`;
         currentUser.paymentStatus = 'pending';
@@ -8668,7 +9046,6 @@ window.initFirebaseSystem = async function() {
             console.error(e);
             showModalMsg("Error", "Could not process request.");
         }
-        btn.textContent = "I Have Transferred ✓"; btn.disabled = false;
     };
 
     window.playGemAnimation = function() {
@@ -8723,18 +9100,6 @@ window.initFirebaseSystem = async function() {
       });
       // Populate the price field when opening
       document.getElementById('meta-price-input').value = APP_DATA.price || 0;
-    };
-
-    // Replace updateDashboardHeader to include Gem formatting
-    const originalUpdateDashboardHeader = window.updateDashboardHeader;
-    window.updateDashboardHeader = function() {
-        originalUpdateDashboardHeader();
-        if (currentUser && currentUser.role === 'student') {
-            const display = document.getElementById('student-gem-display');
-            if (display) {
-                display.textContent = (currentUser.gems || 0).toLocaleString();
-            }
-        }
     };
 
     // --- LIVE VIDEO CLASS LOGIC (NEW TAB METHOD) ---
