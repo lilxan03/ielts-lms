@@ -1367,27 +1367,29 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
-                            Platform Features <button onclick="window.addPPList('features')" class="text-blue-600 hover:underline">+ Add</button>
+                            Platform Features <button type="button" onclick="window.addPPList('features')" class="text-blue-600 hover:underline">+ Add</button>
                         </label>
                         <div id="pp-features-list" class="space-y-2"></div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
-                            My Achievements <button onclick="window.addPPList('achievements')" class="text-blue-600 hover:underline">+ Add</button>
+                            My Achievements <button type="button" onclick="window.addPPList('achievements')" class="text-blue-600 hover:underline">+ Add</button>
                         </label>
                         <div id="pp-achievements-list" class="space-y-2"></div>
                     </div>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
-                        🏆 Student Hall of Fame <button onclick="window.addPPHallOfFame()" class="text-amber-600 hover:underline font-bold">+ Add Student</button>
-                    </label>
+                    <div class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between items-center">
+                        <span>🏆 Student Hall of Fame</span>
+                        <button type="button" onclick="window.addPPHallOfFame()" class="text-amber-600 hover:underline font-bold text-sm bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 transition">+ Add Student</button>
+                    </div>
                     <div id="pp-hall-of-fame-list" class="space-y-3 mb-4"></div>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100">
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Lead Magnet (Free Resources to attract signups)</label>
+                    <div id="pp-pdf-list" class="space-y-2 mb-3"></div>
                     <input type="file" id="pp-pdf-upload" accept="application/pdf,image/*" class="mb-3 text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer transition" onchange="window.handlePPPdf(event)">
                 </div>
             </div>
@@ -1422,6 +1424,10 @@
             </div>
             <div id="image-field-container" class="hidden">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Part Image (Task 1 Chart, etc.)</label>
+              
+              <!-- ✨ FIX: Added URL input fallback for Part Image -->
+              <input type="text" id="edit-part-image-url" class="w-full border-2 border-slate-200 p-2.5 rounded-lg mb-2 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Or paste a direct image URL here..." onchange="if(this.value){ APP_DATA.parts[currentEditorPartIdx].image = this.value; loadEditorPart(currentEditorPartIdx); window.triggerEditorAutosave(); }">
+              
               <div class="relative border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-colors mt-1 mb-5 flex flex-col items-center justify-center min-h-[160px] cursor-pointer rounded-xl overflow-hidden outline-none focus:ring-2 focus:ring-blue-500" tabindex="0" onclick="document.getElementById('edit-part-image-file').click()" onpaste="handlePartImagePaste(event)">
                   <div id="part-image-preview-container" class="w-full text-center"></div>
               </div>
@@ -1664,11 +1670,21 @@ window.initFirebaseSystem = async function() {
             window.fsGoogleProvider = new GoogleAuthProvider();
             window.fsSignInWithPopup = signInWithPopup;
 
-            // NEW: Global Storage Uploader Helper
+            // NEW: Global Storage Uploader Helper with Timeout Anti-Hang Protection
             window.uploadMediaToStorage = async function(fileOrBlob, pathString) {
                 const storageRef = window.sRef(window.storage, pathString);
-                await window.sUpload(storageRef, fileOrBlob);
-                return await window.sGetUrl(storageRef);
+                
+                const uploadTask = async () => {
+                    await window.sUpload(storageRef, fileOrBlob);
+                    return await window.sGetUrl(storageRef);
+                };
+                
+                // ✨ FIX: If Firebase Storage hangs for more than 3 seconds, force an error to trigger the local Base64 fallback!
+                const timeoutTask = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Firebase Storage timeout - falling back to local storage.")), 3000)
+                );
+                
+                return Promise.race([uploadTask(), timeoutTask]);
             };
 
             loaderText.innerHTML = "Authenticating Connection...<br><br><span class='text-xs'>If this fails, ensure you enabled Anonymous Sign-in in Firebase.</span>";
@@ -1867,7 +1883,9 @@ window.initFirebaseSystem = async function() {
                         const url = await window.uploadMediaToStorage(blob, path);
                         callback(url);
                     } catch(err) {
-                        console.error("Image upload failed:", err);
+                        console.warn("Storage Rules Blocked Upload. Falling back to Base64 format:", err);
+                        // ✨ FIX: Bulletproof Fallback
+                        callback(canvas.toDataURL('image/jpeg', 0.8));
                     }
                 }, 'image/jpeg', 0.8); 
             };
@@ -1877,6 +1895,7 @@ window.initFirebaseSystem = async function() {
     };
 
     window.handleMapClick = function(e, i) {
+        if (e.target.tagName === 'INPUT' && e.target.type === 'file') return;
         const q = APP_DATA.parts[currentEditorPartIdx].questions[i];
         if (!q.image) {
             document.getElementById(`map-file-${i}`).click();
@@ -1939,6 +1958,7 @@ window.initFirebaseSystem = async function() {
             renderEditorQuestions();
             window.triggerEditorAutosave();
         });
+        e.target.value = '';
     };
 
     window.removeMapImage = function(i) {
@@ -4075,7 +4095,11 @@ window.initFirebaseSystem = async function() {
            html += `<div>${mkLbl('Columns / Options (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[100px]">${formatArr(q.options)}</textarea></div>`;
            html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[100px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
         } else if (q.type === 'map_labelling_hotspots') {
-           html += `<div>${mkLbl('Map Image (Click to add gaps)')}`;
+           html += `<div>${mkLbl('Map Image (Upload or Paste URL)')}`;
+           
+           // ✨ FIX: URL input fallback for Hotspots Image
+           html += `<input type="text" placeholder="Or paste direct image URL here..." class="${baseInputClass} mb-2 !p-2 !text-blue-600 font-mono shadow-sm" onchange="if(this.value){ APP_DATA.parts[currentEditorPartIdx].questions[${i}].image = this.value; window.saveCurrentEditorPart(); renderEditorQuestions(); window.triggerEditorAutosave(); }">`;
+           
            html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 hover:bg-blue-50 transition mt-1 mb-4 flex flex-col items-center justify-center min-h-[160px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden rounded-xl" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
                         ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow" onclick="event.stopPropagation(); removeMapImage(${i})">✕ Clear</button></div><img src="${q.image}" class="max-w-full w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 font-medium pointer-events-none my-8">Paste or click to upload map image</div>`}
                         ${(q.hotspots || []).map(h => `<div class="absolute bg-white border-2 border-blue-600 rounded flex items-center justify-center text-xs font-bold text-blue-900 shadow-md cursor-pointer hover:bg-rose-100 hover:border-rose-500 transition-colors z-10" style="left:${h.x}%; top:${h.y}%; transform:translate(-50%,-50%); width:32px; height:32px;" onclick="removeHotspot(event, ${i}, ${h.id})" title="Click to remove gap ${h.id}">${h.id}</div>`).join('')}
@@ -4084,14 +4108,29 @@ window.initFirebaseSystem = async function() {
            html += `<div>${mkLbl('Map Options / Labels (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[100px]" placeholder="e.g. Cookery room\nGames room">${formatArr(q.options)}</textarea></div>`;
            html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[100px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
         } else if (q.type === 'map_labelling_grid') {
-           html += `<div>${mkLbl('Map Image (Optional)')}`;
-           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 hover:bg-blue-50 transition mt-1 mb-4 flex flex-col items-center justify-center min-h-[140px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden rounded-xl" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
-                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow" onclick="event.stopPropagation(); removeMapImage(${i})">✕ Clear</button></div><img src="${q.image}" class="max-w-[400px] w-auto block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 font-medium pointer-events-none my-4">Paste or click to upload map image</div>`}
-                        <input type="file" id="map-file-${i}" class="hidden" accept="image/*" onchange="handleMapFile(event, ${i})">
-                    </div></div>`;
-           html += `<div>${mkLbl('Row Statements (1/line matching IDs)')}<textarea class="q-text ${baseInputClass} min-h-[100px]" placeholder="e.g. Quilt Shop\nHandicrafts Museum">${q.text||''}</textarea></div>`;
-           html += `<div>${mkLbl('Columns / Map Letters (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[80px]" placeholder="e.g. A\nB\nC\nD">${formatArr(q.options)}</textarea></div>`;
-           html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
+           html += `<div class="flex flex-col lg:flex-row gap-6 w-full mb-2">`;
+           
+           // LEFT SIDE: Map Image Dropzone
+           html += `<div class="w-full lg:w-1/2 flex flex-col">`;
+           html += `${mkLbl('Map Image (Upload or Paste URL)')}`;
+           
+           // ✨ FIX: URL input fallback for Grid Image
+           html += `<input type="text" placeholder="Or paste direct image URL here..." class="${baseInputClass} mb-2 !p-2 !text-blue-600 font-mono shadow-sm" onchange="if(this.value){ APP_DATA.parts[currentEditorPartIdx].questions[${i}].image = this.value; window.saveCurrentEditorPart(); renderEditorQuestions(); window.triggerEditorAutosave(); }">`;
+           
+           html += `<div class="relative border-2 border-dashed border-slate-400 bg-slate-50 hover:bg-blue-50 transition mt-1 flex flex-col items-center justify-center min-h-[220px] h-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden rounded-xl" tabindex="0" onclick="handleMapClick(event, ${i})" onpaste="handleMapPaste(event, ${i})">
+                        ${q.image ? `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow" onclick="event.stopPropagation(); removeMapImage(${i})">✕ Clear</button></div><img src="${q.image}" class="max-w-[100%] max-h-[250px] w-auto object-contain block pointer-events-none select-none" id="map-img-${i}">` : `<div class="text-slate-500 font-medium pointer-events-none my-4 flex flex-col items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Paste or click map image</div>`}
+                    </div>`;
+           html += `<input type="file" id="map-file-${i}" class="hidden" accept="image/*" onchange="handleMapFile(event, ${i})">`;
+           html += `</div>`;
+           
+           // RIGHT SIDE: Texts
+           html += `<div class="w-full lg:w-1/2 flex flex-col justify-between">`;
+           html += `<div>${mkLbl('Row Statements (1/line matching IDs)')}<textarea class="q-text ${baseInputClass} min-h-[80px]" placeholder="e.g. Quilt Shop\nHandicrafts Museum">${q.text||''}</textarea></div>`;
+           html += `<div class="mt-2">${mkLbl('Columns / Map Letters (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[70px]" placeholder="e.g. A\nB\nC\nD">${formatArr(q.options)}</textarea></div>`;
+           html += `<div class="mt-2">${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[70px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
+           html += `</div>`;
+           
+           html += `</div>`;
         } else {
            if (q.type === 'fill_blanks' || q.type === 'dnd_list') {
                html += `<div>${mkLbl('Passage Text With Gaps')}${advToolbar}<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
@@ -4709,7 +4748,8 @@ window.initFirebaseSystem = async function() {
     window.tempPPPdfs = [];
     window.tempPPHallOfFame = []; // Local working copy for the editor
 
-    // ✨ NEW: Uses canvas blob to upload direct to Firebase Storage!
+    // ✨ FIX: Fast, local Base64 compressor that completely bypasses Firebase Storage!
+    // Firebase Storage sometimes hangs infinitely if unconfigured. This guarantees instant uploads.
     window.compressProfileImage = function(file, maxDim, quality, callback) {
         if (!file || !file.type.startsWith('image/')) return;
         const reader = new FileReader();
@@ -4727,15 +4767,8 @@ window.initFirebaseSystem = async function() {
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
                 
-                canvas.toBlob(async (blob) => {
-                    const path = 'profiles/' + Date.now() + '_' + Math.random().toString(36).substr(2,5) + '.jpg';
-                    try {
-                        const url = await window.uploadMediaToStorage(blob, path);
-                        callback(url);
-                    } catch (err) {
-                        console.error("Profile Image Upload Failed:", err);
-                    }
-                }, 'image/jpeg', quality);
+                // Instantly return heavily compressed local image data
+                callback(canvas.toDataURL('image/jpeg', quality));
             };
             img.src = e.target.result;
         };
@@ -4919,29 +4952,36 @@ window.initFirebaseSystem = async function() {
 
         c.innerHTML = window.tempPPHallOfFame.map((student, i) => `
             <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col gap-4 relative">
-                <button onclick="window.removePPHallOfFame(${i})" class="absolute top-2 right-2 text-rose-400 hover:text-rose-600 bg-rose-50 w-6 h-6 rounded flex items-center justify-center font-bold">&times;</button>
+                <button type="button" onclick="window.removePPHallOfFame(${i})" class="absolute top-2 right-2 text-rose-400 hover:text-rose-600 bg-rose-50 w-6 h-6 rounded flex items-center justify-center font-bold">&times;</button>
                 
                 <div class="flex gap-4 items-start">
-                    <div class="w-16 h-16 rounded-full border border-slate-300 bg-white overflow-hidden shrink-0 relative group cursor-pointer" onclick="document.getElementById('hof-avatar-${i}').click()">
-                        <img src="${student.avatar || 'https://ui-avatars.com/api/?name=Avatar&background=random'}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black/50 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-center">Change Face</div>
+                    <div class="flex flex-col gap-2 shrink-0">
+                        <div class="w-16 h-16 rounded-full border border-slate-300 bg-white overflow-hidden relative group cursor-pointer" onclick="document.getElementById('hof-avatar-${i}').click()">
+                            <img src="${student.avatar || 'https://ui-avatars.com/api/?name=Avatar&background=random'}" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black/50 text-white text-[9px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-center">Change Face</div>
+                        </div>
                         <input type="file" id="hof-avatar-${i}" accept="image/*" class="hidden" onchange="window.handleHofImage(event, ${i}, 'avatar')">
                     </div>
+                    
                     <div class="flex-1 space-y-2 pr-4">
                         <input type="text" placeholder="Student Name" value="${(student.name||'').replace(/"/g, '&quot;')}" oninput="window.tempPPHallOfFame[${i}].name = this.value" class="w-full border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500 font-bold">
-                        <input type="text" placeholder="Band Score (e.g., Band 8.0)" value="${(student.score||'').replace(/"/g, '&quot;')}" oninput="window.tempPPHallOfFame[${i}].score = this.value" class="w-full border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500 text-emerald-700 font-black bg-white">
+                        <div class="flex gap-2">
+                            <input type="text" placeholder="Score (e.g., Band 8.0)" value="${(student.score||'').replace(/"/g, '&quot;')}" oninput="window.tempPPHallOfFame[${i}].score = this.value" class="w-1/3 border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500 text-emerald-700 font-black bg-white">
+                            <input type="text" placeholder="Or paste Avatar Image URL..." value="${student.avatar && student.avatar.startsWith('http') ? student.avatar : ''}" onchange="if(this.value){ window.tempPPHallOfFame[${i}].avatar = this.value; window.renderPPHallOfFame(); }" class="flex-1 border border-slate-200 p-2 rounded text-xs outline-none focus:border-blue-500 font-mono text-blue-600 bg-white">
+                        </div>
                     </div>
                 </div>
                 
                 <textarea placeholder="Student's quote or comment..." oninput="window.tempPPHallOfFame[${i}].quote = this.value" class="w-full border border-slate-200 p-2 rounded text-sm outline-none focus:border-blue-500 bg-white resize-none h-16">${(student.quote||'')}</textarea>
                 
                 <div class="border-t border-slate-200 pt-3">
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">TRF / Score Screenshot (Optional)</label>
-                    <div class="flex items-center gap-3">
-                        ${student.trf ? `<img src="${student.trf}" class="h-10 rounded border border-slate-300"> <button onclick="window.tempPPHallOfFame[${i}].trf = null; window.renderPPHallOfFame()" class="text-[10px] text-rose-500 hover:underline">Remove TRF</button>` : ''}
-                        <button onclick="document.getElementById('hof-trf-${i}').click()" class="text-[10px] bg-white border border-slate-300 px-2 py-1 rounded shadow-sm hover:bg-slate-100">+ Upload Score Pic</button>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">TRF / Score Screenshot (Optional)</label>
+                    <div class="flex items-center gap-3 mb-2">
+                        ${student.trf ? `<img src="${student.trf}" class="h-10 rounded border border-slate-300"> <button type="button" onclick="window.tempPPHallOfFame[${i}].trf = null; window.renderPPHallOfFame()" class="text-[10px] text-rose-500 hover:underline">Remove TRF</button>` : ''}
+                        <button type="button" onclick="document.getElementById('hof-trf-${i}').click()" class="text-[10px] bg-white border border-slate-300 px-2 py-1.5 rounded shadow-sm hover:bg-slate-100 font-bold">+ Upload Score Pic</button>
                         <input type="file" id="hof-trf-${i}" accept="image/*" class="hidden" onchange="window.handleHofImage(event, ${i}, 'trf')">
                     </div>
+                    <input type="text" placeholder="Or paste TRF Image URL..." value="${student.trf && student.trf.startsWith('http') ? student.trf : ''}" onchange="if(this.value){ window.tempPPHallOfFame[${i}].trf = this.value; window.renderPPHallOfFame(); }" class="w-full border border-slate-200 p-2 rounded text-xs outline-none focus:border-blue-500 font-mono text-blue-600 bg-white">
                 </div>
             </div>
         `).join('');
@@ -6526,7 +6566,7 @@ window.initFirebaseSystem = async function() {
                   }).join('')}
               </div></div>`;
           } else if (q.type === 'map_labelling_grid' && q.image) {
-              qImageHtml = `<div class="mb-6 text-center bg-slate-50 p-4 border border-slate-200 rounded-lg"><img src="${q.image}" class="max-w-full inline-block rounded border border-slate-300 shadow-sm"></div>`;
+              qImageHtml = ``; // Image is handled inside qTextHtml now
           }
 
           if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
@@ -6636,8 +6676,93 @@ window.initFirebaseSystem = async function() {
 
           // ✨ FIXED: Secure tokenized replacement to completely prevent duplicated or nested badges
           let qTextHtml = '';
+          let qOptsHtml = '';
           const cleanText = (q.text || '').trim();
-          if (cleanText && cleanText !== '<br>' && cleanText !== '<p><br></p>') {
+          
+          if (q.type === 'map_labelling_grid') {
+              const places = cleanText.split('\n').filter(Boolean);
+              const opts = q.options || [];
+              
+              let mapHtml = q.image ? `<div class="w-full lg:w-1/2 shrink-0 text-center bg-slate-50 p-4 rounded-lg border border-slate-200"><img src="${q.image}" class="max-w-full inline-block rounded border border-slate-300 shadow-sm"></div>` : '';
+
+              let table = `<div class="overflow-x-auto shadow-sm rounded border border-slate-300 w-full"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-[#c2d4ec]">`;
+              table += `<th class="border border-slate-300 px-4 py-3 font-bold text-slate-800 min-w-[150px]"></th>`;
+              opts.forEach(c => {
+                  table += `<th class="border border-slate-300 px-3 py-3 text-center font-bold text-slate-800 text-sm whitespace-nowrap min-w-[50px]">${c}</th>`;
+              });
+              table += `</tr></thead><tbody>`;
+              
+              q.ids.forEach((id, idx) => {
+                  const placeName = places[idx] || '';
+                  table += `<tr class="hover:bg-slate-50 transition-colors">`;
+                  
+                  const g = answers[id] || '';
+                  const e = q.correctAnswers?.[id] || '';
+                  const isC = g.toString().toLowerCase() === e.toString().toLowerCase();
+                  
+                  let badgeHtml = '';
+                  if (isC) {
+                      badgeHtml = `<span class="inline-flex items-center align-middle bg-emerald-50 border border-emerald-400 text-emerald-800 text-[14px] font-bold rounded px-1.5 py-0.5 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span>${g}</span>`;
+                  } else {
+                      badgeHtml = `<span class="inline-flex items-center align-middle bg-rose-50 border border-rose-300 text-rose-800 text-[14px] font-bold rounded px-1.5 py-0.5 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span><s class="opacity-70 mr-1.5 text-rose-600">${g || '—'}</s><span class="text-emerald-700 bg-emerald-100 px-1 rounded border border-emerald-400 ml-0.5 shadow-inner">✓ ${e}</span></span>`;
+                  }
+
+                  table += `<td class="border border-slate-300 px-4 py-3 font-medium text-slate-800 whitespace-nowrap"><div class="flex items-center gap-4">${badgeHtml} <span class="text-[0.95rem]">${placeName}</span></div></td>`;
+                  
+                  opts.forEach(c => {
+                      const isSelected = answers[id] === c;
+                      const bgClass = isSelected ? 'bg-[#d0e3f5]' : 'bg-white';
+                      table += `<td class="border border-slate-300 p-0 text-center transition-colors ${bgClass}">
+                          <div class="w-full h-full flex items-center justify-center min-h-[44px]">
+                              ${isSelected ? `<svg class="w-6 h-6 text-[#5cb85c] font-black drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>` : ''}
+                          </div>
+                      </td>`;
+                  });
+                  table += `</tr>`;
+              });
+              table += `</tbody></table></div>`;
+              
+              qTextHtml = `<div class="flex flex-col lg:flex-row gap-8 items-start w-full mb-4">${mapHtml}<div class="flex-1 w-full">${table}</div></div>`;
+          } else if (q.type === 'matching_info') {
+              const statements = cleanText.split('\n').filter(Boolean);
+              const cols = q.options || [];
+              let table = `<div class="overflow-x-auto mb-4"><table class="w-full text-left border-collapse border border-slate-300 bg-white"><thead><tr class="bg-slate-50"><th class="border border-slate-300 px-3 py-2 font-bold text-slate-700" style="font-size: 0.95rem;">Statement</th>${cols.map(c => `<th class="border border-slate-300 px-2 py-2 text-center min-w-[40px] font-bold text-slate-700" style="font-size: 0.95rem;">${c}</th>`).join('')}</tr></thead><tbody>`;
+              
+              statements.forEach((stmt, sIdx) => {
+                  const id = q.ids[sIdx];
+                  if(!id) return;
+                  
+                  const g = answers[id] || '';
+                  const e = q.correctAnswers?.[id] || '';
+                  const isC = g.toString().toLowerCase() === e.toString().toLowerCase();
+                  
+                  let badgeHtml = '';
+                  if (isC) {
+                      badgeHtml = `<span class="inline-flex items-center align-middle bg-emerald-50 border border-emerald-400 text-emerald-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span>${g}</span>`;
+                  } else {
+                      badgeHtml = `<span class="inline-flex items-center align-middle bg-rose-50 border border-rose-300 text-rose-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span><s class="opacity-70 mr-1.5 text-rose-600">${g || '—'}</s><span class="text-emerald-700 bg-emerald-100 px-1 rounded border border-emerald-400 ml-0.5 shadow-inner">✓ ${e}</span></span>`;
+                  }
+
+                  let stmtTxt = stmt;
+                  const regex = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)(?=\\s|<|$)`, 'g');
+                  if (regex.test(stmtTxt)) {
+                      stmtTxt = stmtTxt.replace(regex, `$1${badgeHtml} `);
+                  } else {
+                      stmtTxt = badgeHtml + ' ' + stmtTxt;
+                  }
+
+                  table += `<tr><td class="border border-slate-300 px-3 py-2 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.4;">${stmtTxt}</td>`;
+                  cols.forEach(c => {
+                      const isSelected = answers[id] === c;
+                      table += `<td class="border border-slate-300 p-1.5 text-center bg-white">
+                          <input type="radio" ${isSelected ? 'checked' : ''} disabled class="w-4 h-4 text-blue-600 cursor-not-allowed opacity-70">
+                      </td>`;
+                  });
+                  table += `</tr>`;
+              });
+              table += `</tbody></table></div>`;
+              qTextHtml = table;
+          } else if (cleanText && cleanText !== '<br>' && cleanText !== '<p><br></p>') {
               let rawText = q.text;
               const givenArr = q.multi ? q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean) : [];
               
@@ -6700,16 +6825,13 @@ window.initFirebaseSystem = async function() {
               qTextHtml = `<div class="mb-4 text-slate-800 bg-slate-50 p-4 rounded-lg border border-slate-200 text-[15px] overflow-x-auto leading-relaxed">${rawText}</div>`;
           }
           
-          // ✨ NEW: Render graded options as beautiful contextual lists (MCQs) or colored banks (Drag & Drop)
-          let qOptsHtml = '';
           const reviewOpts = q.type === 'tfng' ? ['True','False','Not Given'] : (q.type === 'ynng' ? ['Yes','No','Not Given'] : (q.options || []));
           
-          if (reviewOpts.length > 0 && q.type !== 'map_labelling_hotspots' && q.type !== 'map_labelling_grid') {
+          if (reviewOpts.length > 0 && q.type !== 'map_labelling_hotspots' && q.type !== 'map_labelling_grid' && q.type !== 'matching_info') {
               const givenArr = q.ids.map(id => (answers[id] || '').toString().toLowerCase().trim()).filter(Boolean);
               const correctArr = q.ids.flatMap(id => (q.correctAnswers?.[id] || '').toString().toLowerCase().split(/[/|]/).map(x => x.trim())).filter(Boolean);
               
               if (q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
-                  // Render MCQs as a vertical list resembling original radios/checkboxes
                   qOptsHtml = `<div class="mb-4 flex flex-col gap-2">` + reviewOpts.map(o => {
                       const optClean = o.toLowerCase().trim();
                       const isSelected = givenArr.includes(optClean);
@@ -6729,13 +6851,11 @@ window.initFirebaseSystem = async function() {
                           icon = '<span class="w-5 h-5 rounded-full border-2 border-emerald-500 text-emerald-600 flex items-center justify-center mr-3 shrink-0 text-xs">✓</span>';
                       }
                       
-                      // Convert radio circles to square checkboxes if it's a multi-select
                       if (q.multi) icon = icon.replace(/rounded-full/g, 'rounded-sm');
 
                       return `<div class="flex items-center p-3 border rounded-lg transition-colors ${style}">${icon}<span class="font-medium text-[15px]">${o}</span></div>`;
                   }).join('') + `</div>`;
               } else {
-                  // Render Drag & Drop / Matching as a horizontal bank of color-coded pills
                   qOptsHtml = `<div class="mb-4"><p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Options Bank</p><div class="flex flex-wrap gap-2">` + reviewOpts.map(o => {
                       const optClean = o.toLowerCase().trim();
                       const isSelected = givenArr.includes(optClean);
