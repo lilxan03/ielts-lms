@@ -5785,6 +5785,9 @@ window.initFirebaseSystem = async function() {
           resizer.classList.remove('hidden');
           passageContainer.style.width = '50%'; 
           
+          // ✨ FIX: Grab the Part Title (which acts as the main essay prompt for Writing)
+          const titleHtml = p.title ? `<div class="passage-text font-bold mb-6 text-lg">${p.title}</div>` : '';
+          
           let examPromptHtml = p.questions.map((q) => {
               let html = '';
               if (q.instruction && q.instruction !== '<br>' && q.instruction !== '<p><br></p>') {
@@ -5797,7 +5800,8 @@ window.initFirebaseSystem = async function() {
           }).join('');
           
           if (!isTimeFree) {
-              passageContainer.innerHTML = `${examPromptHtml}${media}`;
+              // ✨ FIX: Inject the titleHtml at the very top of the passage container!
+              passageContainer.innerHTML = `${titleHtml}${examPromptHtml}${media}`;
           } else {
               const sampleText = (p.text || '').trim();
               let sampleAnswerBlock = '';
@@ -5810,7 +5814,8 @@ window.initFirebaseSystem = async function() {
                       <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
                   </div>`;
               }
-              passageContainer.innerHTML = `${examPromptHtml}${media}${sampleAnswerBlock}`;
+              // ✨ FIX: Inject the titleHtml here as well!
+              passageContainer.innerHTML = `${titleHtml}${examPromptHtml}${media}${sampleAnswerBlock}`;
           }
 
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
