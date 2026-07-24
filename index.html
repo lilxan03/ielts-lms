@@ -109,28 +109,41 @@
 
     /* MOBILE RESPONSIVE FIXES */
     @media (max-width: 768px) {
-        /* Stack the exam UI vertically on phones */
+        /* 1. Stack the Exam UI vertically */
         #split-container { flex-direction: column !important; }
         #passage-container { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
         #questions-container { width: 100% !important; flex: 1 !important; height: 60vh !important; }
-        
-        /* Rotate the resizer bar to be horizontal */
         #resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
         #resizer > div { width: 30px !important; height: 4px !important; }
 
-        /* Squeeze modals to fit phone screens */
-        .w-96, .w-\[400px\], .w-\[500px\], .w-\[550px\], .w-\[600px\], .w-\[700px\], .w-\[800px\], .w-\[950px\] {
-            width: 100% !important;
-            max-width: 95vw !important;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        /* 2. Stack the Grading & Review Screens vertically */
+        #review-ui > div.flex-1 { flex-direction: column !important; }
+        #review-left-pane { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
+        #review-right-pane { width: 100% !important; flex: 1 !important; height: 60vh !important; }
 
-        /* Adjust payment wall on phones */
+        /* 3. Stack the Teacher Test Builder vertically */
+        #builder-split { flex-direction: column !important; }
+        #builder-left { width: 100% !important; height: 45vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
+        #builder-right { width: 100% !important; flex: 1 !important; height: 55vh !important; }
+
+        /* 4. Squeeze Modals & Slide Panels to fit phone screens */
+        .w-96, .w-\[400px\], .w-\[500px\], .w-\[550px\], .w-\[600px\], .w-\[700px\], .w-\[800px\], .w-\[950px\] {
+            width: 100% !important; max-width: 92vw !important; margin-left: auto; margin-right: auto;
+        }
+        #chat-panel, #student-fc-panel { width: 100% !important; }
+
+        /* 5. Make Teacher Navigation Tabs horizontally swipeable */
+        #editor-default-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
+        #editor-main-tabs { width: 100% !important; overflow-x: auto !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; justify-content: flex-start !important; }
+        #editor-main-tabs button { flex-shrink: 0 !important; }
+        #editor-builder-controls { flex-wrap: wrap !important; gap: 8px !important; }
+
+        /* 6. Checkout Page Fixes */
         #student-payment-warning > div { flex-direction: column !important; }
         #student-payment-warning .lg\:w-3\/5, #student-payment-warning .lg\:w-2\/5 { width: 100% !important; border-left: none !important; }
         
-        /* Make palettes scrollable instead of squished */
+        /* 7. Allow wide tables (like Bulk Import) to scroll sideways */
+        #bulk-import-table { display: block; overflow-x: auto; white-space: nowrap; }
         #palette-container { justify-content: flex-start !important; }
     }
 
