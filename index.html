@@ -297,6 +297,15 @@
       box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
     }
     .btn-primary:active { transform: translateY(0); }
+
+    /* ✨ NEW: Shake Animation for wrong answers in Active Recall */
+    .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+    @keyframes shake { 
+      10%, 90% { transform: translate3d(-1px, 0, 0); } 
+      20%, 80% { transform: translate3d(2px, 0, 0); } 
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 
+      40%, 60% { transform: translate3d(4px, 0, 0); } 
+    }
   </style>
 </head>
 <body class="font-sans bg-slate-100 overflow-hidden h-screen text-slate-800 transition-colors duration-300">
@@ -832,6 +841,33 @@
       </div>
   </div>
 
+  <!-- ✨ NEW: ACTIVE RECALL STUDY MODAL -->
+  <div id="study-mode-modal" class="hidden fixed inset-0 bg-slate-900/90 z-[800] flex items-center justify-center backdrop-blur-md animate-fade-in">
+      <div class="bg-white rounded-3xl shadow-2xl flex flex-col w-full max-w-5xl h-[90vh] max-h-[900px] overflow-hidden relative">
+          <!-- Header -->
+          <div class="bg-indigo-950 text-white p-5 flex justify-between items-center shrink-0 z-20">
+              <div>
+                  <h2 class="text-2xl font-black flex items-center gap-2"><span class="bg-white/20 p-1.5 rounded-lg">🧠</span> Active Recall</h2>
+                  <p id="study-mode-deck-name" class="text-indigo-300 font-bold text-sm uppercase tracking-widest mt-1">Deck Name</p>
+              </div>
+              <button onclick="window.closeStudyMode()" class="text-indigo-300 hover:text-white font-black text-3xl leading-none transition">&times;</button>
+          </div>
+          
+          <!-- Mode Tabs -->
+          <div class="flex bg-slate-100 border-b border-slate-200 shrink-0 select-none">
+              <button id="study-tab-flashcards" onclick="window.switchStudyMode('flashcards')" class="study-tab-btn flex-1 py-4 font-black text-sm text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-xl">🗂️</span> Flashcards</button>
+              <button id="study-tab-matching" onclick="window.switchStudyMode('matching')" class="study-tab-btn flex-1 py-4 font-black text-sm text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-xl">🧩</span> Matching</button>
+              <button id="study-tab-quiz" onclick="window.switchStudyMode('quiz')" class="study-tab-btn flex-1 py-4 font-black text-sm text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-xl">🎯</span> Quiz</button>
+              <button id="study-tab-write" onclick="window.switchStudyMode('write')" class="study-tab-btn flex-1 py-4 font-black text-sm text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-xl">✍️</span> Write</button>
+          </div>
+          
+          <!-- Active Content Area -->
+          <div id="study-mode-content" class="flex-1 p-6 lg:p-10 overflow-y-auto bg-slate-50 flex flex-col relative items-center justify-center w-full">
+              <!-- Content injected via JS -->
+          </div>
+      </div>
+  </div>
+
   <!-- START SCREEN (STUDENT DASHBOARD) -->
   <div id="start-screen" class="hidden h-screen w-full relative bg-[#f4f7fb] overflow-y-auto font-sans animate-fade-in">
     
@@ -995,6 +1031,12 @@
               
               <button onclick="window.startFullExam()" class="w-full bg-white text-blue-800 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-md flex justify-between items-center z-10 border border-blue-100">
                   <span class="flex items-center gap-2">🎓 Full Mock Exam</span>
+                  <span>&rarr;</span>
+              </button>
+
+              <!-- ✨ NEW: DIRECT FLASHCARD ACCESS BUTTON -->
+              <button onclick="window.toggleStudentFlashcardPanel()" class="w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-black py-3 px-4 rounded-xl transition shadow-sm flex justify-between items-center z-10">
+                  <span class="flex items-center gap-2">🗂️ Flashcards & Study</span>
                   <span>&rarr;</span>
               </button>
               
@@ -1600,15 +1642,18 @@
       <div class="w-1/2 border-r border-slate-300 overflow-y-auto p-8 bg-white shadow-inner" id="review-left-pane"></div>
       <div class="w-1/2 overflow-y-auto p-6 bg-slate-50 relative" id="review-right-pane"></div>
     </div>
+  </div>
 
-    <!-- Flashcard Slide Panel (Student) -->
-    <div id="student-fc-panel" class="absolute top-[68px] right-0 h-[calc(100vh-68px)] w-96 bg-white border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-[70] flex flex-col">
-      <div class="p-4 bg-slate-50 border-b border-slate-200">
-        <h2 class="font-bold text-lg text-slate-800 mb-2">Flashcard Decks</h2>
-        <select id="panel-fc-list-select" onchange="renderFlashcardPanel()" class="w-full border border-slate-300 p-2 rounded font-medium focus:ring-2 focus:ring-blue-500 outline-none"></select>
-      </div>
-      <div class="flex-1 overflow-y-auto p-4 bg-slate-100" id="panel-fc-container"></div>
+  <!-- ✨ GLOBAL: Flashcard Slide Panel (Student) -->
+  <div id="student-fc-panel" class="fixed top-0 right-0 h-screen w-96 max-w-[90vw] bg-white border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-[600] flex flex-col">
+    <div class="p-4 bg-gradient-to-r from-indigo-700 to-blue-800 flex justify-between items-center shrink-0">
+      <h2 class="font-black text-lg text-white">🗂️ Flashcard Decks</h2>
+      <button onclick="window.toggleStudentFlashcardPanel()" class="text-white/70 hover:text-white font-black text-3xl leading-none">&times;</button>
     </div>
+    <div class="p-4 bg-slate-50 border-b border-slate-200 shrink-0">
+      <select id="panel-fc-list-select" onchange="renderFlashcardPanel()" class="w-full border-2 border-slate-300 p-2.5 rounded-lg font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"></select>
+    </div>
+    <div class="flex-1 overflow-y-auto p-4 bg-slate-100 relative" id="panel-fc-container"></div>
   </div>
 
   <!-- FIREBASE INITIALIZATION -->
@@ -7018,7 +7063,9 @@ window.initFirebaseSystem = async function() {
 
       if (!cards.length) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No cards in this deck.</div>'; return; }
       
-      c.innerHTML = cards.map((card, i) => `
+      let html = `<div class="mb-5"><button onclick="window.openStudyMode('${listName.replace(/'/g, "\\'")}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Active Recall Study</button></div>`;
+
+      html += cards.map((card, i) => `
         <div class="flip-card w-full h-40 mb-4 cursor-pointer perspective-1000 relative group" onclick="this.classList.toggle('flipped')">
           ${listName === 'teacher_vocab' ? `<button onclick="event.stopPropagation(); importCardToMine(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold shadow opacity-0 group-hover:opacity-100 transition z-10">+</button>` : ''}
           <div class="flip-card-inner w-full h-full relative shadow-md rounded-xl">
@@ -7033,6 +7080,8 @@ window.initFirebaseSystem = async function() {
           </div>
         </div>
       `).join('');
+      
+      c.innerHTML = html;
     }
 
     async function importCardToMine(idx) {
@@ -7049,6 +7098,387 @@ window.initFirebaseSystem = async function() {
       listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
       document.getElementById('student-fc-modal').classList.remove('hidden');
     }
+
+    // ==========================================
+    // ✨ ACTIVE RECALL STUDY SYSTEM
+    // ==========================================
+    
+    window.studyDeckName = '';
+    window.studyDeck = [];
+    window.studyMode = 'flashcards';
+    window.studyIdx = 0;
+    
+    // Quiz & Write specific state
+    window.studyScore = 0;
+    window.studyHasAnswered = false;
+
+    // Matching specific state
+    window.matchTiles = [];
+    window.matchSelectedElement = null;
+    window.matchSelectedData = null;
+    window.matchPairsFound = 0;
+
+    window.openStudyMode = function(deckName) {
+        window.studyDeckName = deckName;
+        
+        // Grab the deck data (either from teacher's test vocab or student's private lists)
+        let rawCards = [];
+        if (deckName === 'teacher_vocab') rawCards = APP_DATA.vocab || [];
+        else rawCards = FLASHCARDS[deckName] || [];
+
+        // Normalize data format so modes can easily read terms and definitions
+        window.studyDeck = rawCards.map(c => ({
+            term: c.term,
+            def: c.def || c.eng || c.vi || 'No definition provided.'
+        }));
+
+        if (window.studyDeck.length < 2) {
+            showModalMsg("Not Enough Cards", "You need at least 2 cards in this deck to use Study Mode.");
+            return;
+        }
+
+        document.getElementById('study-mode-deck-name').textContent = deckName === 'teacher_vocab' ? '📌 Test Vocab' : `📁 ${deckName}`;
+        document.getElementById('study-mode-modal').classList.remove('hidden');
+        window.switchStudyMode('flashcards');
+    };
+
+    window.closeStudyMode = function() {
+        document.getElementById('study-mode-modal').classList.add('hidden');
+    };
+
+    window.switchStudyMode = function(mode) {
+        window.studyMode = mode;
+        window.studyIdx = 0;
+        window.studyScore = 0;
+        
+        // Update Tab UI
+        document.querySelectorAll('.study-tab-btn').forEach(btn => {
+            btn.classList.remove('text-indigo-700', 'border-indigo-600', 'bg-indigo-50');
+            btn.classList.add('text-slate-500', 'border-transparent');
+        });
+        const activeTab = document.getElementById(`study-tab-${mode}`);
+        if(activeTab) {
+            activeTab.classList.add('text-indigo-700', 'border-indigo-600', 'bg-indigo-50');
+            activeTab.classList.remove('text-slate-500', 'border-transparent');
+        }
+
+        const content = document.getElementById('study-mode-content');
+        content.innerHTML = ''; // Clear out
+
+        // Shuffle deck for everything except Flashcards
+        if (mode !== 'flashcards') {
+            window.studyDeck.sort(() => Math.random() - 0.5);
+        }
+
+        if (mode === 'flashcards') window.renderStudyFlashcard();
+        else if (mode === 'quiz') window.renderStudyQuiz();
+        else if (mode === 'write') window.renderStudyWrite();
+        else if (mode === 'matching') window.initStudyMatching();
+    };
+
+    // --- MODE 1: FLASHCARDS ---
+    window.renderStudyFlashcard = function() {
+        const content = document.getElementById('study-mode-content');
+        if (window.studyIdx >= window.studyDeck.length) window.studyIdx = 0;
+        if (window.studyIdx < 0) window.studyIdx = window.studyDeck.length - 1;
+        
+        const card = window.studyDeck[window.studyIdx];
+        
+        content.innerHTML = `
+            <div class="w-full max-w-2xl flex flex-col h-full justify-center">
+                <div class="text-center font-bold text-slate-400 uppercase tracking-widest mb-4">Card ${window.studyIdx + 1} of ${window.studyDeck.length}</div>
+                <div class="flip-card w-full h-[400px] cursor-pointer perspective-1000 group" onclick="this.classList.toggle('flipped')">
+                    <div class="flip-card-inner w-full h-full relative shadow-xl rounded-3xl transition-transform duration-500">
+                        <!-- Front -->
+                        <div class="flip-card-front absolute w-full h-full bg-white border-2 border-slate-200 rounded-3xl flex flex-col items-center justify-center p-10">
+                            <span class="text-xs text-slate-400 font-bold uppercase tracking-widest absolute top-6">Term</span>
+                            <h3 class="font-black text-4xl lg:text-5xl text-blue-900 text-center">${card.term}</h3>
+                            <p class="text-sm text-slate-400 mt-6 bg-slate-100 px-3 py-1 rounded-full"><span class="hidden lg:inline">Click or tap to</span> flip card ⤵</p>
+                        </div>
+                        <!-- Back -->
+                        <div class="flip-card-back absolute w-full h-full bg-indigo-50 border-2 border-indigo-200 rounded-3xl flex flex-col items-center justify-center p-10 overflow-y-auto">
+                            <span class="text-xs text-indigo-400 font-bold uppercase tracking-widest absolute top-6">Definition</span>
+                            <p class="font-bold text-2xl lg:text-3xl text-indigo-900 text-center leading-relaxed">${card.def}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center mt-8 gap-4">
+                    <button onclick="window.studyIdx--; window.renderStudyFlashcard()" class="flex-1 bg-white hover:bg-slate-100 text-slate-700 font-bold py-4 rounded-xl border border-slate-200 shadow-sm transition">&larr; Previous</button>
+                    <button onclick="window.studyIdx++; window.renderStudyFlashcard()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md transition">Next &rarr;</button>
+                </div>
+            </div>
+        `;
+    };
+
+    // --- MODE 2: MULTIPLE CHOICE QUIZ ---
+    window.renderStudyQuiz = function() {
+        const content = document.getElementById('study-mode-content');
+        window.studyHasAnswered = false;
+
+        if (window.studyIdx >= window.studyDeck.length) {
+            content.innerHTML = window.getStudyCompletionHtml('Quiz');
+            return;
+        }
+
+        const card = window.studyDeck[window.studyIdx];
+        
+        // Generate Options (1 correct, 3 random wrong)
+        let wrongOpts = window.studyDeck.filter(c => c.term !== card.term).sort(() => Math.random() - 0.5).slice(0, 3);
+        let options = [card, ...wrongOpts].sort(() => Math.random() - 0.5);
+
+        content.innerHTML = `
+            <div class="w-full max-w-3xl flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="font-bold text-slate-400 uppercase tracking-widest">Question ${window.studyIdx + 1} / ${window.studyDeck.length}</div>
+                    <div class="font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-200">Score: ${window.studyScore}</div>
+                </div>
+                
+                <div class="bg-white border-2 border-slate-200 p-8 lg:p-12 rounded-3xl shadow-sm mb-6 text-center min-h-[200px] flex flex-col justify-center items-center">
+                    <span class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">Select the correct term for:</span>
+                    <p class="font-bold text-2xl lg:text-3xl text-slate-800 leading-relaxed max-w-2xl">${card.def}</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="quiz-options-container">
+                    ${options.map((opt, i) => `
+                        <button id="quiz-btn-${i}" onclick="window.checkStudyQuiz(${i}, '${opt.term.replace(/'/g, "\\'")}', '${card.term.replace(/'/g, "\\'")}')" class="bg-white border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 text-slate-700 font-bold text-lg p-5 rounded-2xl shadow-sm transition text-left h-full">
+                            ${opt.term}
+                        </button>
+                    `).join('')}
+                </div>
+                
+                <button id="quiz-next-btn" onclick="window.studyIdx++; window.renderStudyQuiz()" class="hidden w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-md transition text-lg">Next Question &rarr;</button>
+            </div>
+        `;
+    };
+
+    window.checkStudyQuiz = function(btnIdx, selectedTerm, correctTerm) {
+        if (window.studyHasAnswered) return;
+        window.studyHasAnswered = true;
+        
+        const isCorrect = selectedTerm === correctTerm;
+        if (isCorrect) window.studyScore++;
+
+        // Reveal answers
+        const container = document.getElementById('quiz-options-container');
+        Array.from(container.children).forEach((btn) => {
+            const btnTerm = btn.innerText.trim();
+            btn.className = "bg-white border-2 p-5 rounded-2xl shadow-sm transition text-left h-full text-lg font-bold opacity-50 cursor-default"; // lock all
+            
+            if (btnTerm === correctTerm) {
+                // Correct answer turns green
+                btn.classList.remove('border-slate-200', 'opacity-50', 'text-slate-700');
+                btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-800', 'opacity-100');
+            } else if (btnTerm === selectedTerm && !isCorrect) {
+                // Selected wrong answer turns red and shakes
+                btn.classList.remove('border-slate-200', 'text-slate-700');
+                btn.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-800', 'opacity-100', 'shake');
+            }
+        });
+
+        document.getElementById('quiz-next-btn').classList.remove('hidden');
+    };
+
+    // --- MODE 3: WRITE ---
+    window.renderStudyWrite = function() {
+        const content = document.getElementById('study-mode-content');
+        window.studyHasAnswered = false;
+
+        if (window.studyIdx >= window.studyDeck.length) {
+            content.innerHTML = window.getStudyCompletionHtml('Write');
+            return;
+        }
+
+        const card = window.studyDeck[window.studyIdx];
+        
+        content.innerHTML = `
+            <div class="w-full max-w-3xl flex flex-col">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="font-bold text-slate-400 uppercase tracking-widest">Question ${window.studyIdx + 1} / ${window.studyDeck.length}</div>
+                    <div class="font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-200">Score: ${window.studyScore}</div>
+                </div>
+                
+                <div class="bg-white border-2 border-slate-200 p-8 lg:p-12 rounded-3xl shadow-sm mb-6 text-center min-h-[200px] flex flex-col justify-center items-center relative overflow-hidden">
+                    <span class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">Type the exact term for:</span>
+                    <p class="font-bold text-2xl lg:text-3xl text-slate-800 leading-relaxed max-w-2xl z-10">${card.def}</p>
+                    
+                    <!-- Result Overlay (hidden by default) -->
+                    <div id="write-result-overlay" class="hidden absolute inset-0 flex-col items-center justify-center p-8 z-20"></div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <input type="text" id="write-input" autocomplete="off" autocorrect="off" spellcheck="false" class="flex-1 border-2 border-slate-300 p-5 rounded-2xl text-xl font-black text-blue-900 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition shadow-sm text-center" placeholder="Type your answer..." onkeydown="if(event.key==='Enter') window.checkStudyWrite('${card.term.replace(/'/g, "\\'")}')">
+                    <button id="write-check-btn" onclick="window.checkStudyWrite('${card.term.replace(/'/g, "\\'")}')" class="w-32 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-md transition text-lg">Check</button>
+                </div>
+                
+                <button id="write-next-btn" onclick="window.studyIdx++; window.renderStudyWrite()" class="hidden w-full mt-6 bg-slate-800 hover:bg-black text-white font-black py-4 rounded-xl shadow-md transition text-lg">Next Word &rarr;</button>
+            </div>
+        `;
+        
+        // Auto-focus input on render
+        setTimeout(() => {
+            const input = document.getElementById('write-input');
+            if (input) input.focus();
+        }, 100);
+    };
+
+    window.checkStudyWrite = function(correctTerm) {
+        if (window.studyHasAnswered) return;
+        
+        const inputEl = document.getElementById('write-input');
+        const typedTerm = inputEl.value.trim();
+        if (!typedTerm) return;
+
+        window.studyHasAnswered = true;
+        const btnCheck = document.getElementById('write-check-btn');
+        const btnNext = document.getElementById('write-next-btn');
+        const overlay = document.getElementById('write-result-overlay');
+        
+        inputEl.disabled = true;
+        btnCheck.disabled = true;
+        btnCheck.classList.add('opacity-50');
+
+        const isCorrect = typedTerm.toLowerCase() === correctTerm.toLowerCase();
+        
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex', 'animate-scale-up');
+
+        if (isCorrect) {
+            window.studyScore++;
+            inputEl.className = "flex-1 border-4 border-emerald-500 bg-emerald-50 p-5 rounded-2xl text-xl font-black text-emerald-800 text-center";
+            overlay.className = "absolute inset-0 flex-col items-center justify-center p-8 z-20 bg-emerald-500/95 text-white flex animate-scale-up";
+            overlay.innerHTML = `<span class="text-6xl mb-2">✅</span><h3 class="text-3xl font-black">Correct!</h3>`;
+        } else {
+            inputEl.className = "flex-1 border-4 border-rose-500 bg-rose-50 p-5 rounded-2xl text-xl font-black text-rose-800 text-center shake";
+            overlay.className = "absolute inset-0 flex-col items-center justify-center p-8 z-20 bg-rose-600/95 text-white flex animate-scale-up";
+            overlay.innerHTML = `<span class="text-6xl mb-2">❌</span><h3 class="text-2xl font-bold mb-1">Incorrect.</h3><p class="text-lg opacity-90 mb-2">You typed: <s class="font-bold opacity-75">${typedTerm}</s></p><div class="bg-white/20 p-4 rounded-xl w-full border border-white/30"><p class="text-sm uppercase tracking-widest font-bold mb-1 opacity-80">Correct Answer</p><p class="text-3xl font-black tracking-wide">${correctTerm}</p></div>`;
+        }
+
+        btnNext.classList.remove('hidden');
+        btnNext.focus();
+    };
+
+    // --- MODE 4: MATCHING ---
+    window.initStudyMatching = function() {
+        // Grab up to 6 random cards for a 12-tile grid
+        let batch = [...window.studyDeck].sort(() => Math.random() - 0.5).slice(0, 6);
+        window.matchPairsFound = 0;
+        
+        let tiles = [];
+        batch.forEach((c, idx) => {
+             // We inject hidden zero-width spaces or subtle ID tracking to link pairs
+             tiles.push({ trueId: idx, type: 'term', text: c.term });
+             tiles.push({ trueId: idx, type: 'def', text: c.def });
+        });
+        window.matchTiles = tiles.sort(() => Math.random() - 0.5);
+        window.renderStudyMatchingGrid();
+    };
+
+    window.renderStudyMatchingGrid = function() {
+        const content = document.getElementById('study-mode-content');
+        
+        content.innerHTML = `
+            <div class="w-full max-w-5xl flex flex-col h-full">
+                <div class="flex justify-between items-center mb-6 shrink-0">
+                    <p class="text-slate-500 font-bold">Match all terms with their definitions to clear the board!</p>
+                    <div class="font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-200">Pairs Found: <span id="match-score">${window.matchPairsFound}</span> / ${window.matchTiles.length/2}</div>
+                </div>
+                
+                <div class="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="match-grid">
+                    ${window.matchTiles.map((t, i) => `
+                        <button id="match-tile-${i}" onclick="window.handleMatchClick(this, ${t.trueId}, '${t.type}')" class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center font-bold text-slate-700 hover:border-indigo-400 hover:shadow-md transition-all h-[140px] overflow-hidden select-none active:scale-95 text-sm cursor-pointer">
+                            <div class="line-clamp-4 pointer-events-none">${t.text}</div>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    window.handleMatchClick = function(el, trueId, type) {
+        if (el.classList.contains('opacity-0')) return; // already solved
+        if (el === window.matchSelectedElement) return; // clicking same tile twice
+
+        // 1. Highlight clicked tile
+        el.classList.remove('border-slate-200', 'text-slate-700');
+        el.classList.add('border-indigo-500', 'bg-indigo-50', 'text-indigo-900', 'ring-2', 'ring-indigo-200');
+
+        // 2. If nothing selected yet, store it and wait
+        if (!window.matchSelectedElement) {
+            window.matchSelectedElement = el;
+            window.matchSelectedData = { trueId, type };
+            return;
+        }
+
+        // 3. Second tile clicked! Check for match.
+        const firstEl = window.matchSelectedElement;
+        const firstData = window.matchSelectedData;
+        
+        // Reset state instantly to prevent 3rd rapid clicks
+        window.matchSelectedElement = null;
+        window.matchSelectedData = null;
+
+        const isMatch = (firstData.trueId === trueId) && (firstData.type !== type);
+
+        if (isMatch) {
+            // Correct Match!
+            window.matchPairsFound++;
+            document.getElementById('match-score').textContent = window.matchPairsFound;
+            
+            [firstEl, el].forEach(tile => {
+                // FIXED: Removed animate-pop, kept overflow-hidden and text-sm
+                tile.className = "bg-emerald-500 border-2 border-emerald-600 p-4 rounded-2xl shadow-md text-center flex flex-col items-center justify-center font-black text-white transition-all duration-300 h-[140px] overflow-hidden select-none transform scale-105 z-10 text-sm";
+            });
+
+            setTimeout(() => {
+                [firstEl, el].forEach(tile => {
+                    tile.classList.add('opacity-0', 'pointer-events-none', 'scale-90');
+                });
+                
+                // Check Win State
+                if (window.matchPairsFound === window.matchTiles.length / 2) {
+                    setTimeout(() => {
+                        document.getElementById('study-mode-content').innerHTML = window.getStudyCompletionHtml('Matching');
+                    }, 500);
+                }
+            }, 600);
+
+        } else {
+            // Wrong Match!
+            [firstEl, el].forEach(tile => {
+                // FIXED: Kept overflow-hidden and text-sm
+                tile.className = "bg-rose-100 border-2 border-rose-500 p-4 rounded-2xl shadow-md text-center flex flex-col items-center justify-center font-bold text-rose-800 transition-all duration-300 h-[140px] overflow-hidden select-none shake z-10 text-sm";
+            });
+
+            setTimeout(() => {
+                [firstEl, el].forEach(tile => {
+                    // Revert to original neutral state
+                    tile.className = "bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center font-bold text-slate-700 hover:border-indigo-400 hover:shadow-md transition-all h-[140px] overflow-hidden select-none active:scale-95 text-sm cursor-pointer";
+                });
+            }, 600);
+        }
+    };
+
+    window.getStudyCompletionHtml = function(modeName) {
+        let scoreHtml = '';
+        if (modeName === 'Quiz' || modeName === 'Write') {
+            const pct = Math.round((window.studyScore / window.studyDeck.length) * 100);
+            const color = pct >= 80 ? 'text-emerald-500' : (pct >= 50 ? 'text-amber-500' : 'text-rose-500');
+            scoreHtml = `<div class="text-6xl font-black ${color} mb-2">${pct}%</div><div class="text-slate-500 font-bold mb-8">${window.studyScore} correct out of ${window.studyDeck.length}</div>`;
+        }
+
+        return `
+            <div class="flex flex-col items-center justify-center h-full w-full max-w-md mx-auto text-center animate-scale-up">
+                <div class="text-8xl mb-6">🎉</div>
+                <h2 class="text-3xl font-black text-slate-800 mb-6">${modeName} Complete!</h2>
+                ${scoreHtml}
+                <div class="flex gap-4 w-full">
+                    <button onclick="window.switchStudyMode('${modeName.toLowerCase()}')" class="flex-1 py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl border border-indigo-200 shadow-sm transition">↻ Try Again</button>
+                    <button onclick="window.closeStudyMode()" class="flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition">Exit</button>
+                </div>
+            </div>
+        `;
+    };
+
    // --- STUDENTS & PAYMENTS LOGIC ---
     let tempCustomQRBase64 = null;
 
