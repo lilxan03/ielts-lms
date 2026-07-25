@@ -90,6 +90,9 @@
         overflow-wrap: break-word;
         word-break: normal;
         max-width: 100%;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     .rich-editor th, .rich-editor td, #questions-container th, #questions-container td, #review-right-pane th, #review-right-pane td, #review-left-pane th, #review-left-pane td {
         vertical-align: top;
@@ -797,7 +800,7 @@
               <input type="file" id="profile-avatar-upload" accept="image/*" class="hidden" onchange="window.handleAvatarUpload(event)">
               <h2 id="profile-name-display" class="text-xl font-black text-white">Student Name</h2>
           </div>
-          <div class="p-8 bg-slate-50 flex-1 space-y-6">
+          <div class="p-8 bg-slate-50 flex-1 overflow-y-auto space-y-6">
               <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
                   <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b pb-2">My IELTS Goals</h3>
                   <div>
@@ -818,7 +821,7 @@
                   </button>
               </div>
           </div>
-          <div class="p-4 border-t border-slate-200 bg-white flex justify-end gap-3">
+          <div class="p-4 border-t border-slate-200 bg-white flex justify-end gap-3 shrink-0">
               <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
               <button onclick="window.saveStudentProfile()" id="btn-save-profile-data" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition">Save Profile</button>
           </div>
@@ -1509,6 +1512,10 @@
           
           <div class="mb-8 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center sticky top-0 z-20">
             <select id="new-q-type" class="flex-1 border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-blue-500 transition-colors cursor-pointer min-w-[150px]"></select>
+            <div class="flex items-center gap-2 border-2 border-slate-200 p-1.5 rounded-lg bg-slate-50">
+                <label class="text-xs font-bold text-slate-500 pl-2">QTY:</label>
+                <input type="number" id="new-q-qty" value="1" min="1" max="20" class="w-12 text-center text-sm font-bold outline-none bg-transparent" title="Number of questions in this block">
+            </div>
             <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add</button>
             <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
             <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5">📥 Bulk Import</button>
@@ -3100,6 +3107,7 @@ window.initFirebaseSystem = async function() {
       let idToUse = 1;
       
       if (typeof blockIdx !== 'undefined' && blockIdx !== null) {
+          // Triggered from inside a specific question block on the right
           const blockEl = document.getElementById('editor-questions-list').children[blockIdx];
           if (blockEl) {
               const idsInput = blockEl.querySelector('.q-ids');
@@ -3120,6 +3128,57 @@ window.initFirebaseSystem = async function() {
               if (idToUse === undefined && ids.length > 0) {
                   idToUse = ids[0];
               }
+          }
+      } else {
+          // Triggered from the Passage Text toolbar on the LEFT
+          let liveIds = [];
+          const blockEls = document.getElementById('editor-questions-list').children;
+
+          // 1. Gather all expected IDs from gap-based questions (Matching, Fill Blanks, D&D)
+          Array.from(blockEls).forEach((b, index) => {
+              const qType = APP_DATA.parts[currentEditorPartIdx].questions[index]?.type;
+              if (['fill_blanks', 'dnd_list', 'matching_headings'].includes(qType)) {
+                  const idsInput = b.querySelector('.q-ids');
+                  if (idsInput && !idsInput.readOnly) {
+                      liveIds.push(...idsInput.value.split(',').map(n => Number(n.trim())).filter(n => !isNaN(n)));
+                  }
+              }
+          });
+
+          // 2. Gather IDs already used in the passage AND inside question texts
+          const usedIds = [];
+          const regex = /\{(?:drop|blank):(\d+)\}/g;
+          let match;
+
+          // Check passage
+          const passageHtml = document.getElementById('edit-passage-text').innerHTML;
+          while ((match = regex.exec(passageHtml)) !== null) {
+              usedIds.push(Number(match[1]));
+          }
+
+          // Check question blocks
+          Array.from(blockEls).forEach(b => {
+              const qText = b.querySelector('.q-text.rich-editor');
+              if (qText) {
+                  let m;
+                  while ((m = regex.exec(qText.innerHTML)) !== null) {
+                      usedIds.push(Number(m[1]));
+                  }
+              }
+          });
+
+          // 3. Pick the first expected ID that hasn't been placed anywhere yet
+          idToUse = liveIds.find(id => !usedIds.includes(id));
+
+          // 4. Fallback if all are used or no gap blocks exist yet
+          if (idToUse === undefined) {
+              let maxId = 0;
+              APP_DATA.parts.forEach(p => {
+                  p.questions.forEach(q => {
+                      (q.ids || []).forEach(id => { if (id > maxId) maxId = id; });
+                  });
+              });
+              idToUse = maxId > 0 ? maxId + 1 : 1;
           }
       }
 
@@ -3253,7 +3312,7 @@ window.initFirebaseSystem = async function() {
             const isFull = table.classList.contains('w-full');
             if (isFull) {
                 table.classList.remove('w-full');
-                table.style.width = 'auto';
+                table.style.width = 'max-content'; // Forces the browser to respect natural text width!
                 table.style.tableLayout = 'auto';
             } else {
                 table.classList.add('w-full');
@@ -4108,6 +4167,8 @@ window.initFirebaseSystem = async function() {
                 ${i > 0 ? `<button onclick="moveEditorQuestion(${i}, -1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Up">↑</button>` : ''}
                 ${i < APP_DATA.parts[currentEditorPartIdx].questions.length - 1 ? `<button onclick="moveEditorQuestion(${i}, 1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Down">↓</button>` : ''}
                 <div class="w-px h-7 bg-slate-300 mx-1"></div>
+                <button onclick="window.cloneEditorQuestion(${i})" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 font-bold transition shadow-sm" title="Duplicate Block">⧉</button>
+                <div class="w-px h-7 bg-slate-300 mx-1"></div>
                 <button onclick="APP_DATA.parts[currentEditorPartIdx].questions.splice(${i},1); renderEditorQuestions(); triggerEditorAutosave();" class="w-7 h-7 flex items-center justify-center bg-rose-50 border border-rose-200 rounded hover:bg-rose-500 hover:text-white text-rose-500 font-bold transition shadow-sm" title="Delete Block">✕</button>
             </div>
         </div>
@@ -4205,19 +4266,127 @@ window.initFirebaseSystem = async function() {
 
     function addEditorQuestion() {
       const type = document.getElementById('new-q-type').value;
+      const qtyInput = document.getElementById('new-q-qty');
+      const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
       
-      // Auto-calculate sequential ID
+      // Auto-calculate sequential ID across the entire test
       let maxId = 0;
-      APP_DATA.parts[currentEditorPartIdx].questions.forEach(q => {
-          (q.ids || []).forEach(id => { if (id > maxId) maxId = id; });
+      APP_DATA.parts.forEach(p => {
+          p.questions.forEach(q => {
+              (q.ids || []).forEach(id => { if (id > maxId) maxId = id; });
+          });
       });
-      const nextId = maxId + 1;
       
-      const ids = [nextId]; 
-      const newQ = { blockId: 'b'+Date.now(), type, ids, instruction: "New Q", correctAnswers:{} };
-      APP_DATA.parts[currentEditorPartIdx].questions.push(newQ); renderEditorQuestions();
+      // Generate the array of IDs based on quantity
+      const ids = [];
+      let correctAnswers = {};
+      for(let i = 0; i < qty; i++) {
+          const newId = maxId + 1 + i;
+          ids.push(newId);
+          correctAnswers[newId] = "";
+      }
+      
+      // Smart Defaults based on type
+      let instruction = "Answer the questions below.";
+      let options = [];
+      let text = "";
+      let reusable = false;
+      
+      if (type === 'multiple_choice') {
+          instruction = `Choose the correct letter, <b>A, B, C</b> or <b>D</b>.`;
+          options = ["A", "B", "C", "D"];
+      } else if (type === 'tfng') {
+          instruction = `Do the following statements agree with the information given in the Reading Passage?<br><br><b>TRUE</b> if the statement agrees with the information<br><b>FALSE</b> if the statement contradicts the information<br><b>NOT GIVEN</b> if there is no information on this`;
+          options = ["True", "False", "Not Given"];
+      } else if (type === 'ynng') {
+          instruction = `Do the following statements agree with the claims of the writer in the Reading Passage?<br><br><b>YES</b> if the statement agrees with the claims of the writer<br><b>NO</b> if the statement contradicts the claims of the writer<br><b>NOT GIVEN</b> if it is impossible to say what the writer thinks about this`;
+          options = ["Yes", "No", "Not Given"];
+      } else if (type === 'matching_headings') {
+          instruction = `Choose the correct heading for each paragraph from the list of headings below.`;
+          options = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"].slice(0, qty + 2);
+      } else if (type === 'fill_blanks') {
+          instruction = `Complete the summary below.<br>Choose <b>NO MORE THAN TWO WORDS</b> from the passage for each answer.`;
+          text = ids.map(id => `{blank:${id}}`).join(" ... ");
+      } else if (type === 'dnd_list') {
+          instruction = `Complete the sentences below.<br>Choose the correct word from the box.`;
+          options = ["Word1", "Word2", "Word3"];
+      } else if (type === 'essay') {
+          instruction = `You should spend about 40 minutes on this task.<br><br>Write about the following topic:`;
+      }
+      
+      const newQ = { 
+          blockId: 'b' + Date.now() + Math.floor(Math.random()*1000), 
+          type, 
+          ids, 
+          points: 1,
+          instruction, 
+          text,
+          options,
+          correctAnswers,
+          reusable
+      };
+      
+      APP_DATA.parts[currentEditorPartIdx].questions.push(newQ); 
+      
+      if (qtyInput) qtyInput.value = 1; // reset qty
+      
+      renderEditorQuestions();
       triggerEditorAutosave();
+      
+      // Auto-scroll to the new question
+      setTimeout(() => {
+          const qList = document.getElementById('editor-questions-list');
+          if (qList && qList.lastElementChild) {
+              qList.lastElementChild.scrollIntoView({behavior: "smooth", block: "center"});
+          }
+      }, 100);
     }
+
+    window.cloneEditorQuestion = function(idx) {
+        saveCurrentEditorPart(); // Ensure current text changes are grabbed
+        const qToClone = APP_DATA.parts[currentEditorPartIdx].questions[idx];
+        if (!qToClone) return;
+        
+        let maxId = 0;
+        APP_DATA.parts.forEach(p => p.questions.forEach(q => (q.ids || []).forEach(id => { if (id > maxId) maxId = id; })));
+        
+        // Deep copy the block
+        const clonedQ = JSON.parse(JSON.stringify(qToClone));
+        clonedQ.blockId = 'b' + Date.now() + Math.random().toString().slice(2,6);
+        
+        // Map old IDs to new IDs
+        const newIds = [];
+        const newCorrectAnswers = {};
+        let newText = clonedQ.text || "";
+        let newInst = clonedQ.instruction || "";
+        
+        clonedQ.ids.forEach((oldId, i) => {
+            const newId = maxId + 1 + i;
+            newIds.push(newId);
+            newCorrectAnswers[newId] = clonedQ.correctAnswers[oldId] || "";
+            
+            // Update {blank:X} and {drop:X} in cloned text safely
+            newText = newText.split(`{blank:${oldId}}`).join(`{blank:${newId}}`);
+            newText = newText.split(`{drop:${oldId}}`).join(`{drop:${newId}}`);
+        });
+        
+        clonedQ.ids = newIds;
+        clonedQ.correctAnswers = newCorrectAnswers;
+        clonedQ.text = newText;
+        clonedQ.instruction = newInst;
+        
+        // Insert directly below the original
+        APP_DATA.parts[currentEditorPartIdx].questions.splice(idx + 1, 0, clonedQ);
+        
+        renderEditorQuestions();
+        triggerEditorAutosave();
+        
+        // Auto-scroll
+        setTimeout(() => {
+            const block = document.getElementById(`q-block-${idx + 1}`);
+            if (block) block.scrollIntoView({behavior: "smooth", block: "center"});
+        }, 100);
+    };
     
     window.addBulkImportRow = function() {
         const tbody = document.getElementById('bulk-import-tbody');
@@ -5772,7 +5941,21 @@ window.initFirebaseSystem = async function() {
       [...pText.matchAll(/{drop:(\d+)}/g)].forEach(m => {
         const id = Number(m[1]), ans = answers[id]||'';
         const cls = ans ? 'bg-blue-100 border-blue-600 text-blue-900 cursor-grab shadow-sm' : 'bg-slate-50 border-slate-300 text-slate-400 border-dashed';
-        pText = pText.replace(m[0], `<div class="drop-zone inline-flex min-w-[80px] px-2 h-7 border-2 ${cls} align-middle text-center font-bold text-sm rounded mx-1 items-center justify-center transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
+        
+        // Check if this specific drop ID belongs to a Matching Headings question
+        let isHeading = false;
+        p.questions.forEach(q => {
+            if (q.type === 'matching_headings' && q.ids.includes(id)) {
+                isHeading = true;
+            }
+        });
+
+        // Apply full-width block styles for headings, and small inline styles for normal gaps
+        let layoutClasses = isHeading 
+            ? "flex w-full min-h-[44px] px-4 py-2 mb-4 mt-2 text-left items-center justify-start" 
+            : "inline-flex min-w-[80px] px-2 h-7 mx-1 align-middle items-center justify-center text-center";
+
+        pText = pText.replace(m[0], `<div class="drop-zone ${layoutClasses} border-2 ${cls} font-bold text-sm rounded transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
       });
 
       let htmlText = pText.split('\n\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
@@ -5995,13 +6178,13 @@ window.initFirebaseSystem = async function() {
            q.ids.forEach(id => {
                unplacedIds.delete(id);
                const ans = answers[id]||'';
-               const inputHtml = `<span class="inline-flex items-center align-middle border border-slate-400 rounded bg-white h-[36px] p-0.5 mx-1 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all">
+               const inputHtml = `<span class="inline-flex items-center align-middle border border-slate-400 rounded bg-white h-[36px] p-0.5 mx-1 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all max-w-[calc(100%-8px)]">
                    <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[26px] h-[26px] bg-white border border-slate-800 text-slate-800 text-base font-bold rounded-sm cursor-pointer hover:bg-slate-100 transition shrink-0 select-none">${id}</span>
-                   <input type="text" value="${ans.replace(/"/g, '&quot;')}" oninput="handleAns(${id}, this.value)" placeholder="" class="px-2 w-[120px] text-base font-bold text-blue-900 bg-transparent outline-none">
+                   <input type="text" value="${ans.replace(/"/g, '&quot;')}" oninput="handleAns(${id}, this.value)" placeholder="" class="px-2 w-20 sm:w-28 flex-1 text-base font-bold text-blue-900 bg-transparent outline-none">
                </span>`;
                txt = txt.split(`{blank:${id}}`).join(inputHtml);
            });
-           content = `<div class="leading-relaxed">${txt}</div>`;
+           content = `<div class="leading-relaxed overflow-x-auto w-full pb-2">${txt}</div>`;
         } else if(q.type === 'dnd_list') {
            let txt = pt(rawText);
            q.ids.forEach(id => {
@@ -6036,7 +6219,7 @@ window.initFirebaseSystem = async function() {
                const used = q.ids.map(i => answers[i]).filter(Boolean);
                availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
            }
-           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-col gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-4 py-3 w-full text-left font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab leading-snug">${o}</div>`).join('')}</div></div>`;
         } else if (q.type === 'map_labelling_hotspots') {
            let availOpts = q.options || [];
            const used = q.ids.map(i => answers[i]).filter(Boolean);
@@ -8902,16 +9085,35 @@ window.initFirebaseSystem = async function() {
             display.textContent = (currentUser.gems || 0).toLocaleString();
         }
 
-        // ✨ NEW: Display the Streak counter
+        const isPaid = currentUser.isPaid === true;
+
+        // Gem Widget Visibility
+        const gemW = document.getElementById('gem-balance-widget');
+        if (gemW) {
+            if (isPaid) {
+                gemW.classList.remove('hidden');
+                gemW.classList.add('flex');
+            } else {
+                gemW.classList.add('hidden');
+                gemW.classList.remove('flex');
+            }
+        }
+
+        // Streak Widget Visibility
         const streakW = document.getElementById('streak-widget');
         if (streakW) {
-            streakW.classList.remove('hidden');
-            streakW.classList.add('flex');
-            document.getElementById('student-streak-display').textContent = (currentUser.currentStreak || 0);
+            if (isPaid) {
+                streakW.classList.remove('hidden');
+                streakW.classList.add('flex');
+                document.getElementById('student-streak-display').textContent = (currentUser.currentStreak || 0);
+            } else {
+                streakW.classList.add('hidden');
+                streakW.classList.remove('flex');
+            }
         }
         
         const w = document.getElementById('student-target-widget');
-        if(currentUser.targetScore || currentUser.testDate) {
+        if(isPaid && (currentUser.targetScore || currentUser.testDate)) {
             w.classList.remove('hidden'); w.classList.add('flex');
             document.getElementById('target-score-display').textContent = currentUser.targetScore ? `Band ${currentUser.targetScore}` : '--';
             
@@ -8938,15 +9140,28 @@ window.initFirebaseSystem = async function() {
             w.classList.add('hidden'); w.classList.remove('flex');
         }
 
-        // Apply Custom Mascot & Background Theme automatically
+        // Apply Custom Mascot & Background Theme ONLY if paid
         if(typeof window.applyStudentCustomizations === 'function') {
-            window.applyStudentCustomizations();
+            if (isPaid) {
+                window.applyStudentCustomizations();
+            } else {
+                // Revert to defaults to hide customization on checkout page
+                const dashboardBanner = document.getElementById('student-banner-bg');
+                if (dashboardBanner) {
+                    dashboardBanner.className = "bg-blue-900 pt-8 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden transition-all duration-1000";
+                }
+                const avatarDisplay = document.getElementById('header-student-avatar');
+                if (avatarDisplay && avatarDisplay.tagName !== 'IMG') {
+                     avatarDisplay.outerHTML = `<img id="header-student-avatar" src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`}" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-white shadow-sm border border-white/30 cursor-pointer" onclick="window.openStudentProfile()">`;
+                }
+            }
         }
     };
 
     // ✨ NEW: Daily Streak Logic Handler
     window.checkDailyStreak = async function() {
-        if (!currentUser || currentUser.role !== 'student') return;
+        // Halt streak logic if user hasn't unlocked the course yet
+        if (!currentUser || currentUser.role !== 'student' || !currentUser.isPaid) return;
 
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
