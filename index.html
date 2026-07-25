@@ -117,7 +117,9 @@
         #passage-container { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
         #questions-container { width: 100% !important; flex: 1 !important; height: 60vh !important; }
         #resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
-        #resizer > div { width: 30px !important; height: 4px !important; }
+        #resizer > div, #review-resizer > div { width: 30px !important; height: 4px !important; }
+        #review-split-container { flex-direction: column !important; }
+        #review-resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
 
         /* 2. Stack the Grading & Review Screens vertically */
         #review-ui > div.flex-1 { flex-direction: column !important; }
@@ -151,80 +153,65 @@
     }
 
     /* Dark Theme - Expanded Globally */
+    /* 🌙 Dark Theme - Fully Global Dashboard Overhaul */
     body.theme-dark { background-color: #0f172a !important; color: #f1f5f9 !important; --bg-main: #0f172a; --bg-sec: #1e293b; --text-main: #f1f5f9; --text-sec: #cbd5e1; --q-bg: #1e293b; --q-border: #334155; }
     
-    body.theme-dark #split-container, body.theme-dark #review-ui, body.theme-dark #editor-ui, body.theme-dark #start-screen, body.theme-dark .bg-\[\#f4f7fb\], body.theme-dark .bg-\[\#f8fafc\] { background-color: var(--bg-main) !important; }
+    /* 1. Main Application Backgrounds */
+    body.theme-dark #split-container, body.theme-dark #review-ui, body.theme-dark #editor-ui, 
+    body.theme-dark #start-screen, body.theme-dark #public-landing-ui, 
+    body.theme-dark [id^="editor-view-"], body.theme-dark #builder-split { 
+        background-color: var(--bg-main) !important; 
+    }
+
+    /* 2. Specific App Panes */
     body.theme-dark #passage-container, body.theme-dark #review-left-pane, body.theme-dark #builder-left { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important; }
     body.theme-dark #questions-container, body.theme-dark #review-right-pane, body.theme-dark #builder-right { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
     
-    body.theme-dark .text-slate-800, body.theme-dark .text-slate-700, body.theme-dark .text-slate-900 { color: #f1f5f9 !important; }
-    
-    /* ✨ FIXED: Tinted text colors for specific modules to ensure perfect contrast */
-    body.theme-dark .text-blue-950, body.theme-dark .text-blue-900, body.theme-dark .text-blue-800, body.theme-dark .text-blue-700 { color: #93c5fd !important; }
-    body.theme-dark .text-indigo-900, body.theme-dark .text-indigo-800, body.theme-dark .text-indigo-700 { color: #a5b4fc !important; }
-    body.theme-dark .text-sky-800, body.theme-dark .text-sky-700 { color: #7dd3fc !important; }
-    body.theme-dark .text-cyan-800, body.theme-dark .text-cyan-700 { color: #67e8f9 !important; }
-    
+    /* 3. Universal Text Inversions */
+    body.theme-dark .text-slate-900, body.theme-dark .text-slate-800, body.theme-dark .text-slate-700 { color: #f8fafc !important; }
     body.theme-dark .text-slate-600, body.theme-dark .text-slate-500, body.theme-dark .text-slate-400 { color: #cbd5e1 !important; }
     
+    /* 4. Colored Text Tints for Dark Visibility */
+    body.theme-dark .text-blue-950, body.theme-dark .text-blue-900, body.theme-dark .text-blue-800, body.theme-dark .text-blue-700 { color: #93c5fd !important; }
+    body.theme-dark .text-indigo-900, body.theme-dark .text-indigo-800, body.theme-dark .text-indigo-700 { color: #a5b4fc !important; }
+    body.theme-dark .text-sky-900, body.theme-dark .text-sky-800, body.theme-dark .text-sky-700 { color: #7dd3fc !important; }
+    body.theme-dark .text-emerald-900, body.theme-dark .text-emerald-800, body.theme-dark .text-emerald-700, body.theme-dark .text-emerald-600 { color: #34d399 !important; }
+    body.theme-dark .text-amber-900, body.theme-dark .text-amber-800, body.theme-dark .text-amber-700 { color: #fbbf24 !important; }
+    body.theme-dark .text-rose-900, body.theme-dark .text-rose-800, body.theme-dark .text-rose-700, body.theme-dark .text-rose-600 { color: #fb7185 !important; }
+    body.theme-dark .text-purple-900, body.theme-dark .text-purple-800, body.theme-dark .text-purple-700 { color: #c084fc !important; }
+    
+    /* 5. Universal Card & Background Inversions */
     body.theme-dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
-    body.theme-dark .bg-slate-50, body.theme-dark .bg-slate-100 { background-color: #0f172a !important; border-color: #334155 !important; }
+    body.theme-dark .bg-slate-50, body.theme-dark .bg-slate-100, body.theme-dark .bg-slate-200 { background-color: #0f172a !important; border-color: #334155 !important; }
+    body.theme-dark .bg-\[\#f4f7fb\], body.theme-dark .bg-\[\#f8fafc\] { background-color: #0f172a !important; }
+    
+    /* 6. Transparent/Tinted Background Badges */
     body.theme-dark .bg-slate-50\/80 { background-color: rgba(15, 23, 42, 0.8) !important; border-color: #334155 !important; }
     body.theme-dark .bg-blue-50\/50 { background-color: rgba(15, 23, 42, 0.5) !important; border-color: #334155 !important; }
     
-    /* ✨ FIXED: Add robust dark backgrounds for all Module Badges */
-    body.theme-dark .bg-blue-50, body.theme-dark .bg-blue-100,
-    body.theme-dark .bg-indigo-50, body.theme-dark .bg-indigo-100,
-    body.theme-dark .bg-sky-50, body.theme-dark .bg-sky-100,
-    body.theme-dark .bg-cyan-50, body.theme-dark .bg-cyan-100 { 
-        background-color: rgba(255, 255, 255, 0.05) !important; 
-        border-color: rgba(255, 255, 255, 0.1) !important; 
+    body.theme-dark .bg-blue-50, body.theme-dark .bg-blue-100, body.theme-dark .bg-indigo-50, body.theme-dark .bg-indigo-100,
+    body.theme-dark .bg-sky-50, body.theme-dark .bg-sky-100, body.theme-dark .bg-cyan-50, body.theme-dark .bg-cyan-100,
+    body.theme-dark .bg-emerald-50, body.theme-dark .bg-emerald-100, body.theme-dark .bg-amber-50, body.theme-dark .bg-amber-100,
+    body.theme-dark .bg-rose-50, body.theme-dark .bg-rose-100, body.theme-dark .bg-purple-50, body.theme-dark .bg-purple-100 { 
+        background-color: rgba(255, 255, 255, 0.05) !important; border-color: rgba(255, 255, 255, 0.1) !important; 
     }
     
-    /* Fix colored badges in Dark Mode */
-    body.theme-dark .bg-emerald-50, body.theme-dark .bg-emerald-100 { background-color: rgba(16, 185, 129, 0.15) !important; border-color: rgba(16, 185, 129, 0.3) !important; }
-    body.theme-dark .text-emerald-700, body.theme-dark .text-emerald-800, body.theme-dark .text-emerald-600 { color: #34d399 !important; }
-    
-    body.theme-dark .bg-amber-50, body.theme-dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.15) !important; border-color: rgba(245, 158, 11, 0.3) !important; }
-    body.theme-dark .text-amber-700, body.theme-dark .text-amber-800, body.theme-dark .text-amber-900 { color: #fbbf24 !important; }
-    
-    body.theme-dark .bg-rose-50, body.theme-dark .bg-rose-100 { background-color: rgba(244, 63, 94, 0.15) !important; border-color: rgba(244, 63, 94, 0.3) !important; }
-    body.theme-dark .text-rose-600, body.theme-dark .text-rose-700, body.theme-dark .text-rose-800 { color: #fb7185 !important; }
-    
-    body.theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), body.theme-dark textarea, body.theme-dark select, body.theme-dark .drop-zone-options, body.theme-dark .rich-editor { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #334155 !important; }
-    body.theme-dark .border-slate-200, body.theme-dark .border-slate-300, body.theme-dark .border-slate-400, body.theme-dark .border-blue-50, body.theme-dark .border-blue-100, body.theme-dark .border-slate-100 { border-color: #334155 !important; }
+    /* 7. Universal Borders */
+    body.theme-dark .border-slate-200, body.theme-dark .border-slate-300, body.theme-dark .border-slate-400, body.theme-dark .border-slate-100, body.theme-dark .border-blue-50 { border-color: #334155 !important; }
     body.theme-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #334155 !important; }
-    body.theme-dark .drop-zone.border-blue-500 { border-color: #3b82f6 !important; background-color: #1d4ed8 !important; color: #ffffff !important; }
     body.theme-dark header.bg-white { background-color: #1e293b !important; border-bottom-color: #334155 !important; }
     
-    /* Fix Quick Actions Box */
+    /* 8. Inputs, Textareas, Selects */
+    body.theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), body.theme-dark textarea, body.theme-dark select, body.theme-dark .drop-zone-options, body.theme-dark .rich-editor { background-color: #0f172a !important; color: #f8fafc !important; border-color: #334155 !important; }
+    body.theme-dark .drop-zone.border-blue-500 { border-color: #3b82f6 !important; background-color: #1d4ed8 !important; color: #ffffff !important; }
+    
+    /* 9. Quick Actions Box Fix */
     body.theme-dark #student-quick-actions .bg-white { background-color: rgba(255,255,255,0.1) !important; color: #ffffff !important; border-color: rgba(255,255,255,0.2) !important; }
-
-    /* Pastel Theme - Expanded Globally */
-    body.theme-pastel { background-color: #fdf6e3 !important; color: #586e75 !important; --bg-main: #fdf6e3; --bg-sec: #eee8d5; --text-main: #586e75; --text-sec: #657b83; --q-bg: #fdf6e3; --q-border: #d5c4a1; }
     
-    body.theme-pastel #split-container, body.theme-pastel #review-ui, body.theme-pastel #editor-ui, body.theme-pastel #start-screen, body.theme-pastel .bg-\[\#f4f7fb\], body.theme-pastel .bg-\[\#f8fafc\] { background-color: var(--bg-main) !important; }
-    body.theme-pastel #passage-container, body.theme-pastel #review-left-pane, body.theme-pastel #builder-left { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important;}
-    body.theme-pastel #questions-container, body.theme-pastel #review-right-pane, body.theme-pastel #builder-right { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
-    
-    body.theme-pastel .text-slate-800, body.theme-pastel .text-slate-700, body.theme-pastel .text-slate-900, 
-    body.theme-pastel .text-blue-950, body.theme-pastel .text-blue-900, body.theme-pastel .text-blue-800, body.theme-pastel .text-blue-700,
-    body.theme-pastel .text-indigo-900, body.theme-pastel .text-indigo-800 { color: #586e75 !important; }
-    
-    body.theme-pastel .text-slate-600, body.theme-pastel .text-slate-500, body.theme-pastel .text-slate-400 { color: #657b83 !important; }
-    
-    body.theme-pastel .bg-white { background-color: #fdf6e3 !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel .bg-slate-50, body.theme-pastel .bg-slate-100 { background-color: #eee8d5 !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel .bg-slate-50\/80 { background-color: rgba(238, 232, 213, 0.8) !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel .bg-blue-50\/50 { background-color: rgba(238, 232, 213, 0.5) !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel .bg-blue-50, body.theme-pastel .bg-indigo-50 { background-color: rgba(203, 213, 225, 0.3) !important; border-color: #d5c4a1 !important; }
-    
-    body.theme-pastel input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), body.theme-pastel textarea, body.theme-pastel select, body.theme-pastel .drop-zone-options, body.theme-pastel .rich-editor { background-color: #eee8d5 !important; color: #586e75 !important; border-color: #d5c4a1 !important; }
-    body.theme-pastel .border-slate-200, body.theme-pastel .border-slate-300, body.theme-pastel .border-slate-400, body.theme-pastel .border-blue-50, body.theme-pastel .border-blue-100, body.theme-pastel .border-slate-100 { border-color: #d5c4a1 !important; }
-    body.theme-pastel .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #d5c4a1 !important; }
-    body.theme-pastel header.bg-white { background-color: #fdf6e3 !important; border-bottom-color: #d5c4a1 !important; }
-    
-    body.theme-pastel #student-quick-actions .bg-white { background-color: rgba(255,255,255,0.2) !important; color: #ffffff !important; border-color: rgba(255,255,255,0.3) !important; }
+    /* 10. Modals and Overlays */
+    body.theme-dark #custom-modal > div, body.theme-dark #settings-modal > div, body.theme-dark #test-meta-modal > div, body.theme-dark #student-fc-modal > div { 
+        background-color: #1e293b !important; border: 1px solid #334155; 
+    }
 
     .passage-text { font-size: calc(var(--font-scale) * 0.88) !important; line-height: 1.7 !important; transition: font-size 0.3s; }
     .passage-text p { margin-bottom: 1.5rem; }
@@ -259,17 +246,17 @@
     .flip-card-front, .flip-card-back { backface-visibility: hidden; }
     .flip-card-back { transform: rotateY(180deg); }
 
-    @keyframes popIn { 
-      0% { opacity: 0; transform: translate(-50%, calc(-100% + 5px)) scale(0.95); } 
-      100% { opacity: 1; transform: translate(-50%, calc(-100% - 8px)) scale(1); } 
+@keyframes popIn { 
+      0% { opacity: 0; transform: translate(-50%, calc(-100% + 15px)) scale(0.9); filter: blur(4px); } 
+      100% { opacity: 1; transform: translate(-50%, calc(-100% - 8px)) scale(1); filter: blur(0); } 
     }
-    .animate-pop { animation: popIn 0.2s ease-out forwards; }
+    .animate-pop { animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(20px) scale(0.95); filter: blur(2px); }
+      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
-    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+    .animate-fade-in-up { animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     
     @keyframes float {
       0% { transform: translateY(0px); }
@@ -279,17 +266,33 @@
     .animate-float { animation: float 4s ease-in-out infinite; }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from { opacity: 0; filter: blur(4px); }
+      to { opacity: 1; filter: blur(0px); }
     }
-    .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+    .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
     
     @keyframes scaleUp {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+      from { opacity: 0; transform: scale(0.92) translateY(15px); filter: blur(4px); }
+      to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
     }
-    .animate-scale-up { animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    /* Adding an iOS-style spring bounce to modals! */
+    .animate-scale-up { animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards; }
 
+    /* ✨ NEW: Staggered Animations for Dashboards & Lists */
+    .stagger-fade-in > * { opacity: 0; animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .stagger-fade-in > *:nth-child(1) { animation-delay: 40ms; }
+    .stagger-fade-in > *:nth-child(2) { animation-delay: 80ms; }
+    .stagger-fade-in > *:nth-child(3) { animation-delay: 120ms; }
+    .stagger-fade-in > *:nth-child(4) { animation-delay: 160ms; }
+    .stagger-fade-in > *:nth-child(5) { animation-delay: 200ms; }
+    .stagger-fade-in > *:nth-child(6) { animation-delay: 240ms; }
+    .stagger-fade-in > *:nth-child(7) { animation-delay: 280ms; }
+    .stagger-fade-in > *:nth-child(8) { animation-delay: 320ms; }
+    .stagger-fade-in > *:nth-child(9) { animation-delay: 360ms; }
+    .stagger-fade-in > *:nth-child(n+10) { animation-delay: 400ms; }
+
+    /* ✨ NEW: Global Tactile Button Press Effect */
+    button:not(:disabled):active { transform: scale(0.95); transition: transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1); }
     /* Beautiful Primary Button */
     .btn-primary {
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -300,6 +303,22 @@
       box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4);
     }
     .btn-primary:active { transform: translateY(0); }
+
+    /* ✨ NEW: Unified Premium Input Focus State */
+    .input-standard {
+        outline: none !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    .input-standard:focus, .input-standard:focus-within {
+        border-color: #3b82f6 !important; /* Tailwind blue-500 */
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important; /* Tailwind blue-500 with 15% opacity */
+    }
+    
+    /* Ensure Dark Mode respects the unified glow */
+    body.theme-dark .input-standard:focus, body.theme-dark .input-standard:focus-within {
+        border-color: #60a5fa !important; /* Tailwind blue-400 */
+        box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.2) !important;
+    }
 
     /* ✨ NEW: Shake Animation for wrong answers in Active Recall */
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
@@ -675,30 +694,6 @@
     </div>
   </div>
 
-  <!-- SETTINGS MODAL -->
-  <div id="settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
-      <h2 class="text-xl font-bold mb-4 text-slate-900">Display Settings</h2>
-      <div class="mb-4">
-        <h3 class="font-semibold mb-2 text-slate-700">Color Theme</h3>
-        <div class="flex gap-2">
-          <button onclick="applyTheme('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 font-medium text-slate-700">Standard</button>
-          <button onclick="applyTheme('dark')" class="flex-1 py-2 border bg-slate-900 text-white rounded hover:bg-slate-800 font-medium">Dark</button>
-          <button onclick="applyTheme('pastel')" class="flex-1 py-2 border bg-[#fdf6e3] text-[#586e75] rounded hover:bg-[#eee8d5] font-medium">Pastel</button>
-        </div>
-      </div>
-      <div class="mb-6">
-        <h3 class="font-semibold mb-2 text-slate-700">Text Size</h3>
-        <div class="flex gap-2">
-          <button onclick="applyFontSize('standard')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-base font-medium text-slate-700">Standard</button>
-          <button onclick="applyFontSize('large')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-lg font-medium text-slate-700">Large</button>
-          <button onclick="applyFontSize('xl')" class="flex-1 py-2 border rounded hover:bg-slate-50 text-xl font-medium text-slate-700">X-Large</button>
-        </div>
-      </div>
-      <button onclick="closeSettings()" class="w-full bg-blue-600 text-white py-2 rounded font-bold hover:bg-blue-700 shadow">Done</button>
-    </div>
-  </div>
-
   <!-- AVAILABILITY MODAL (TEACHER) -->
   <div id="availability-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
       <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[800px] max-h-[90vh] animate-scale-up">
@@ -915,8 +910,8 @@
             </div>
           </div>
           
-          <button onclick="openSettings()" class="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0" title="Settings">
-              ⚙️
+          <button onclick="window.toggleTheme()" class="theme-toggle-btn p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0 text-lg leading-none flex items-center justify-center" title="Toggle Theme">
+              🌙
           </button>
 
           <!-- Logout Button -->
@@ -1097,7 +1092,7 @@
               </div>
             </div>
             <!-- Test List grid styling -->
-            <div id="student-tests-list" class="p-6 bg-white grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto"></div>
+            <div id="student-tests-list" class="p-6 bg-white grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto stagger-fade-in"></div>
           </div>
 
         </div>
@@ -1107,9 +1102,11 @@
 
   <!-- EDITOR UI -->
   <div id="editor-ui" class="hidden h-screen flex flex-col bg-[#f4f7fb] z-50 relative font-sans animate-fade-in">
-    <header class="bg-blue-900 text-white px-6 py-3 flex justify-between items-center shrink-0 shadow-md min-h-[72px] transition-all relative overflow-hidden z-40">
-      <!-- Decorative Orbs -->
-      <div class="absolute -top-24 -right-10 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 pointer-events-none"></div>
+    <header class="bg-blue-900 text-white px-6 py-3 flex justify-between items-center shrink-0 shadow-md min-h-[72px] transition-all relative z-40">
+      <!-- Decorative Orbs (Safely contained so they don't clip the dropdown) -->
+      <div class="absolute inset-0 overflow-hidden pointer-events-none">
+          <div class="absolute -top-24 -right-10 w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40"></div>
+      </div>
 
       <!-- LEFT SECTION -->
       <div class="flex items-center gap-6 flex-1 relative z-10">
@@ -1156,11 +1153,31 @@
       <div class="flex gap-3 items-center shrink-0 relative z-10">
         <span id="editor-autosave-status" class="text-xs font-bold text-blue-200 opacity-0 transition-opacity w-20 text-right whitespace-nowrap">Autosaved</span>
         
-        <!-- Default State: Inbox & Logout -->
+        <!-- Default State: Inbox & Profile Dropdown -->
         <button id="editor-inbox-btn" onclick="window.toggleChatPanel()" class="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl transition font-bold text-sm shadow-md flex items-center gap-2 border border-indigo-400 hover:-translate-y-0.5">💬 Inbox</button>
-        <button onclick="window.promptChangePassword()" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center" title="Change Password">🔑</button>
-        <button onclick="openSettings()" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center" title="Settings">⚙️</button>
-        <button id="editor-logout" onclick="logout()" class="px-5 py-2.5 bg-white/10 hover:bg-rose-500 hover:border-rose-400 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5">Logout</button>
+        
+        <div id="editor-profile-menu" class="relative">
+            <button onclick="window.toggleTeacherDropdown(event)" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition font-bold text-sm shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-80"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="hidden sm:inline">Profile</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="opacity-60 ml-0.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+            <div id="teacher-dropdown-content" class="hidden absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-scale-up origin-top-right">
+                <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black">T</div>
+                    <div class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Logged in as</span><span class="font-bold text-slate-800 text-sm">Teacher</span></div>
+                </div>
+                <button onclick="window.toggleTheme()" class="w-full text-left px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 border-b border-slate-100 flex items-center gap-3 transition-colors">
+                    <span class="theme-toggle-btn flex items-center justify-center w-5 text-lg">🌙</span> Toggle Theme
+                </button>
+                <button onclick="window.promptChangePassword()" class="w-full text-left px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 border-b border-slate-100 flex items-center gap-3 transition-colors">
+                    <span class="text-lg w-5 text-center">🔑</span> Change Password
+                </button>
+                <button onclick="logout()" class="w-full text-left px-4 py-3.5 text-sm font-black text-rose-600 hover:bg-rose-50 flex items-center gap-3 transition-colors">
+                    <span class="text-lg w-5 text-center">🚪</span> Logout
+                </button>
+            </div>
+        </div>
         
         <!-- Builder State: Preview & Save -->
         <button id="editor-preview-test" onclick="previewActiveTest()" class="hidden px-5 py-2.5 bg-blue-500/20 text-blue-100 border border-blue-400/30 hover:bg-blue-500 hover:text-white font-bold rounded-xl transition shadow-sm items-center gap-1.5 text-sm">👁️ Preview</button>
@@ -1218,7 +1235,7 @@
             </select>
           </div>
           
-          <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6"></div>
+          <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 stagger-fade-in"></div>
         </div>
 
         <div id="dash-view-classes" class="hidden flex-col gap-6 animate-fade-in-up">
@@ -1242,7 +1259,7 @@
                <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-base focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
             </div>
           </div>
-          <div id="classes-list" class="space-y-6"></div>
+          <div id="classes-list" class="space-y-6 stagger-fade-in"></div>
         </div>
 
       </div>
@@ -1255,7 +1272,7 @@
           <h2 class="text-2xl font-black text-blue-900">Student Submissions</h2>
           <button onclick="clearAllSubmissions()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl font-bold text-sm shadow-sm transition hover:-translate-y-0.5">Clear All Data</button>
         </div>
-        <div id="submissions-list" class="space-y-4 pb-20"></div>
+        <div id="submissions-list" class="space-y-4 pb-20 stagger-fade-in"></div>
       </div>
     </div>
 
@@ -1310,10 +1327,10 @@
                <button onclick="window.promptCreatePackage()" class="text-sm bg-purple-50 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-xl font-bold transition shadow-sm border border-purple-200">+ Create Bundle</button>
            </div>
            <p class="text-sm text-slate-500 mb-5">Group multiple classes together and sell them at a fixed discount price.</p>
-           <div id="packages-pricing-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+           <div id="packages-pricing-list" class="grid grid-cols-1 md:grid-cols-2 gap-4 stagger-fade-in"></div>
         </div>
 
-        <div id="students-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20"></div>
+        <div id="students-list" class="space-y-6 pb-20 stagger-fade-in"></div>
       </div>
     </div>
 
@@ -1576,9 +1593,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>
             
-            <button onclick="openSettings()" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Settings">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            </button>
+            <button onclick="window.toggleTheme()" class="theme-toggle-btn w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:shadow-sm transition-all text-lg" title="Toggle Theme">🌙</button>
 
             <button onclick="exitTest()" class="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-black text-xs transition-colors shadow-sm flex items-center border border-rose-200 hover:border-rose-600 tracking-wide uppercase">
               <span id="exam-action-btn-text">Submit Test</span>
@@ -1645,9 +1660,10 @@
     </header>
     
     <!-- Split Review Container (Passage Left, Explain Right) -->
-    <div class="flex flex-1 overflow-hidden">
-      <div class="w-1/2 border-r border-slate-300 overflow-y-auto p-8 bg-white shadow-inner" id="review-left-pane"></div>
-      <div class="w-1/2 overflow-y-auto p-6 bg-slate-50 relative" id="review-right-pane"></div>
+    <div class="flex flex-1 overflow-hidden relative" id="review-split-container">
+      <div class="border-r border-slate-300 overflow-y-auto p-8 bg-white shadow-inner" id="review-left-pane" style="width: 50%;"></div>
+      <div id="review-resizer" class="w-2 bg-slate-200 hover:bg-blue-400 cursor-col-resize shrink-0 flex items-center justify-center z-30"><div class="h-8 w-0.5 bg-slate-500 rounded"></div></div>
+      <div class="flex-1 overflow-y-auto p-6 bg-slate-50 relative min-w-[20%]" id="review-right-pane"></div>
     </div>
   </div>
 
@@ -1660,7 +1676,7 @@
     <div class="p-4 bg-slate-50 border-b border-slate-200 shrink-0">
       <select id="panel-fc-list-select" onchange="renderFlashcardPanel()" class="w-full border-2 border-slate-300 p-2.5 rounded-lg font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"></select>
     </div>
-    <div class="flex-1 overflow-y-auto p-4 bg-slate-100 relative" id="panel-fc-container"></div>
+    <div id="panel-fc-container" class="flex-1 overflow-y-auto p-4 bg-slate-100 relative stagger-fade-in"></div>
   </div>
 
   <!-- FIREBASE INITIALIZATION -->
@@ -1774,13 +1790,22 @@ window.initFirebaseSystem = async function() {
         }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', () => {
         window.initFirebaseSystem();
         const editorBuilder = document.getElementById('editor-view-builder');
         if (editorBuilder) {
             editorBuilder.addEventListener('input', triggerEditorAutosave);
             editorBuilder.addEventListener('change', triggerEditorAutosave);
         }
+
+        // ✨ NEW: Auto-apply the premium focus state to all existing form elements
+        const formElements = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
+        formElements.forEach(el => {
+            // Remove existing inconsistent focus rings from Tailwind classes
+            el.className = el.className.replace(/focus:ring-\d/g, '').replace(/focus:ring-[a-z]+-\d+\/\d+/g, '').replace(/focus:border-[a-z]+-\d+/g, '');
+            // Add the unified standard class
+            el.classList.add('input-standard');
+        });
     });
   </script>
 
@@ -1887,6 +1912,21 @@ window.initFirebaseSystem = async function() {
             '4': '[GRA] Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning.'
         }
     };
+
+    window.toggleTeacherDropdown = function(e) {
+        if(e) e.stopPropagation();
+        const menu = document.getElementById('teacher-dropdown-content');
+        if (menu) menu.classList.toggle('hidden');
+    };
+
+    // Close the dropdown if the user clicks anywhere else on the screen
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('teacher-dropdown-content');
+        const container = document.getElementById('editor-profile-menu');
+        if (menu && !menu.classList.contains('hidden') && container && !container.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
 
     window.updateFeedbackText = function(qId, criteria, bandScore) {
         if (!bandScore || !IELTS_DESCRIPTORS[criteria] || !IELTS_DESCRIPTORS[criteria][bandScore]) return;
@@ -2220,9 +2260,17 @@ window.initFirebaseSystem = async function() {
         document.getElementById('auth-ui').classList.add('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
+        
+        // ✨ FIX: Force Light Mode for logged-out public areas
+        document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 text-slate-800 bg-slate-100`; 
       } else {
         document.getElementById('auth-ui').classList.add('hidden');
         document.getElementById('public-landing-ui').classList.add('hidden');
+        
+        // ✨ FIX: Restore user's preferred theme ONLY after logging in
+        const savedTheme = localStorage.getItem('ielts_theme') || 'standard';
+        if (typeof window.applyTheme === 'function') window.applyTheme(savedTheme);
+
         if (currentUser.role === 'teacher') openEditor();
         else { initStudentDashboard(); document.getElementById('start-screen').classList.remove('hidden'); }
       }
@@ -2450,14 +2498,69 @@ window.initFirebaseSystem = async function() {
         });
     };
 
+        // ✨ NEW: Dynamic Toast Notification Generator
+    window.showToast = function(title, msg, type = 'success') {
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'fixed bottom-5 sm:bottom-10 right-5 sm:right-10 z-[1000] flex flex-col gap-3 pointer-events-none';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        const isSuccess = type === 'success' || title.toLowerCase().includes('success') || title.toLowerCase().includes('saved');
+        const icon = isSuccess ? '✅' : 'ℹ️';
+        const bgClass = isSuccess ? 'bg-emerald-50 border-emerald-200' : 'bg-blue-50 border-blue-200';
+        const textClass = isSuccess ? 'text-emerald-800' : 'text-blue-800';
+
+        toast.className = `flex items-start gap-3 p-4 rounded-2xl shadow-xl border ${bgClass} transform translate-y-10 opacity-0 transition-all duration-400 w-80 max-w-[90vw] pointer-events-auto backdrop-blur-sm`;
+        
+        toast.innerHTML = `
+            <div class="text-xl shrink-0 drop-shadow-sm mt-0.5">${icon}</div>
+            <div class="flex-1 min-w-0">
+                <h4 class="font-black text-sm ${textClass} mb-0.5 tracking-tight">${title}</h4>
+                <p class="text-xs ${textClass} opacity-80 leading-snug font-medium">${msg}</p>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Slide in
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+        });
+
+        // Slide out and destroy after 3.5 seconds
+        setTimeout(() => {
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-10', 'opacity-0');
+            setTimeout(() => toast.remove(), 400);
+        }, 3500);
+    };
+
     function showModalMsg(title, msg, onConfirm=null) {
+      // ✨ SMART ROUTING: Determine if this should be a Toast or a Blocking Modal
+      const isError = title.toLowerCase().includes('error') || title.toLowerCase().includes('cannot') || title.toLowerCase().includes('notice') || title.toLowerCase().includes('required');
+      
+      // If it's NOT an error, and the system isn't waiting for the user to click "OK" (onConfirm), show a Toast!
+      if (!isError && !onConfirm) {
+          window.showToast(title, msg, 'success');
+          return;
+      }
+
+      // Otherwise, fallback to the standard blocking modal for critical alerts
       document.getElementById('modal-title').textContent = title;
-      document.getElementById('modal-message').textContent = msg;
+      document.getElementById('modal-message').innerHTML = msg; // Upgraded to support HTML like your Jitsi link
       document.getElementById('modal-input').classList.add('hidden');
       document.getElementById('modal-cancel').classList.add('hidden');
       document.getElementById('custom-modal').classList.remove('hidden');
       document.getElementById('modal-confirm').onclick = () => { document.getElementById('custom-modal').classList.add('hidden'); if(onConfirm) onConfirm(); };
     }
+
     function showConfirm(title, msg, onConfirm) {
       document.getElementById('modal-title').textContent = title;
       document.getElementById('modal-message').textContent = msg;
@@ -2489,10 +2592,22 @@ window.initFirebaseSystem = async function() {
       };
     }
     
-    function applyTheme(t) { 
+    window.applyTheme = function(t) { 
         document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 ${t!=='standard'?'theme-'+t:''} text-slate-800 bg-slate-100`; 
         localStorage.setItem('ielts_theme', t);
-    }
+        
+        // Update all toggle buttons dynamically!
+        const isDark = t === 'dark';
+        document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+            btn.innerHTML = isDark ? '☀️' : '🌙';
+            btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        });
+    };
+
+    window.toggleTheme = function() {
+        const currentTheme = localStorage.getItem('ielts_theme') || 'standard';
+        window.applyTheme(currentTheme === 'dark' ? 'standard' : 'dark');
+    };
     
     function applyFontSize(s) { 
         document.body.classList.remove('size-large', 'size-xl'); 
@@ -2500,17 +2615,6 @@ window.initFirebaseSystem = async function() {
         localStorage.setItem('ielts_fontsize', s);
     }
     
-    function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
-    function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-    
-    // Automatically restore theme settings on load
-    (function() {
-        const savedTheme = localStorage.getItem('ielts_theme') || 'standard';
-        applyTheme(savedTheme);
-        const savedSize = localStorage.getItem('ielts_fontsize') || 'standard';
-        applyFontSize(savedSize);
-    })();
-
     window.toggleDashboardView = function(view) {
       const testsView = document.getElementById('dash-view-tests');
       const classesView = document.getElementById('dash-view-classes');
@@ -2535,7 +2639,7 @@ window.initFirebaseSystem = async function() {
       toggleEditorTab('bank');
     }
 
-    function toggleEditorTab(tab) {
+        function toggleEditorTab(tab) {
       ['bank', 'classes', 'builder', 'students', 'timetable', 'landing'].forEach(t => {
           const el = document.getElementById(`editor-view-${t}`);
           if (el) el.classList.add('hidden');
@@ -2552,7 +2656,11 @@ window.initFirebaseSystem = async function() {
         // Hide dashboard elements
         document.getElementById('editor-default-header').classList.add('hidden');
         document.getElementById('editor-default-header').classList.remove('flex');
-        document.getElementById('editor-logout').classList.add('hidden');
+        
+        // Hide New Profile Menu
+        const profileMenu = document.getElementById('editor-profile-menu');
+        if(profileMenu) profileMenu.classList.add('hidden');
+        
         if (document.getElementById('editor-inbox-btn')) document.getElementById('editor-inbox-btn').classList.add('hidden');
         
         // Show builder elements
@@ -2566,7 +2674,11 @@ window.initFirebaseSystem = async function() {
         // Show dashboard elements
         document.getElementById('editor-default-header').classList.remove('hidden');
         document.getElementById('editor-default-header').classList.add('flex');
-        document.getElementById('editor-logout').classList.remove('hidden');
+        
+        // Show New Profile Menu
+        const profileMenu = document.getElementById('editor-profile-menu');
+        if(profileMenu) profileMenu.classList.remove('hidden');
+        
         if (document.getElementById('editor-inbox-btn')) document.getElementById('editor-inbox-btn').classList.remove('hidden');
         
         // Hide builder elements
@@ -2648,7 +2760,12 @@ window.initFirebaseSystem = async function() {
             <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>
           </div>
         </div>`;
-      }).join('') : '<div class="col-span-full text-center text-slate-500 py-10">No tests in the cloud. Create one!</div>';
+            }).join('') : `
+        <div class="col-span-full flex flex-col items-center justify-center py-16 px-4 bg-slate-50/50 border-2 border-dashed border-slate-200 rounded-3xl animate-fade-in-up">
+            <svg class="w-16 h-16 text-slate-300 mb-4 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <h3 class="text-lg font-black text-slate-700 mb-1">No Tests Found</h3>
+            <p class="text-sm text-slate-500 font-medium max-w-sm text-center">Your cloud test bank is currently empty. Create a new test or import questions to get started.</p>
+        </div>`;
     }
 
     window.promptMergeTest = function(tid) {
@@ -2909,7 +3026,7 @@ window.initFirebaseSystem = async function() {
                                 <span class="font-medium text-slate-800 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span> ${student}</span>
                                 <button onclick="window.unenrollStudent('${cls.id}', '${student}')" class="text-rose-400 text-xs font-bold hover:text-rose-600 px-2 py-1">Remove</button>
                             </div>
-                        `).join('') : '<p class="text-xs text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No students assigned.</p>'}
+                        `).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center"><svg class="w-8 h-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg><p class="text-xs font-bold text-slate-500">No students enrolled</p></div>'}
                     </div>
                 </div>
                 
@@ -2925,7 +3042,7 @@ window.initFirebaseSystem = async function() {
                                <span class="font-medium text-slate-700 leading-tight">${t.title}</span>
                                <span class="text-[9px] uppercase font-bold text-${modColors[t.module]}-700 bg-${modColors[t.module]}-100 px-2 py-1 rounded-md shrink-0 border border-${modColors[t.module]}-200">${t.module}</span>
                             </div>`;
-                        }).join('') : '<p class="text-xs text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No tests assigned.</p>'}
+                        }).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center"><svg class="w-8 h-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><p class="text-xs font-bold text-slate-500">No materials assigned</p></div>'}
                     </div>
                     <div class="mt-4 text-[11px] text-slate-500 italic bg-blue-50 p-3 rounded-xl border border-blue-100 text-center shadow-inner">Assign new tests from the <b class="text-blue-700">Test Bank</b> tab.</div>
                 </div>
@@ -2948,7 +3065,7 @@ window.initFirebaseSystem = async function() {
                                     </div>
                                 </div>
                             </div>
-                        `).join('') : '<p class="text-xs text-slate-400 italic bg-white p-4 rounded-xl border border-slate-200 text-center shadow-sm">No submissions yet.</p>'}
+                        `).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-white rounded-xl border-2 border-dashed border-slate-200 text-center shadow-sm"><svg class="w-8 h-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path></svg><p class="text-xs font-bold text-slate-500">No recent activity</p></div>'}
                     </div>
                 </div>
             </div>
@@ -5520,7 +5637,7 @@ window.initFirebaseSystem = async function() {
         <!-- END RADAR CHART CONTAINER -->
 
         <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest mb-3 border-t border-slate-100 pt-5">Recent Feedback</h3>
-        <div class="space-y-3">
+        <div class="space-y-3 stagger-fade-in">
           ${mySubs.length ? mySubs.slice(0, 5).map(s => `
             <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-2 hover:bg-blue-50 hover:border-blue-200 transition group cursor-default">
               <div class="flex justify-between items-start gap-2">
@@ -5863,46 +5980,56 @@ window.initFirebaseSystem = async function() {
       initResizer(); renderPart(0);
     }
 
-    function initResizer() {
-      const r = document.getElementById('resizer'), l = document.getElementById('passage-container'), s = document.getElementById('split-container');
-      let drag = false;
+        function initResizer() {
+      // Logic for Student Exam UI
+      const examResizer = document.getElementById('resizer');
+      const examLeft = document.getElementById('passage-container');
+      const examSplit = document.getElementById('split-container');
       
-      const startDrag = (e) => { 
-          drag = true; 
-          document.body.style.cursor = window.innerWidth <= 768 ? 'row-resize' : 'col-resize'; 
-          l.style.userSelect = 'none'; 
-      };
-      
-      const onDrag = (e) => { 
-          if(!drag) return;
-          // Support both mouse and touch events
-          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      // Logic for Teacher Review/Grading UI
+      const revResizer = document.getElementById('review-resizer');
+      const revLeft = document.getElementById('review-left-pane');
+      const revSplit = document.getElementById('review-split-container');
+
+      const attachDragLogic = (r, l, s) => {
+          if (!r || !l || !s) return;
+          let drag = false;
           
-          if (window.innerWidth <= 768) {
-              // Mobile: Vertical resizing
-              let h = ((clientY - s.getBoundingClientRect().top)/s.getBoundingClientRect().height)*100; 
-              l.style.height = `${Math.max(20, Math.min(h,80))}vh`; 
-          } else {
-              // Desktop: Horizontal resizing
-              let w = ((clientX - s.getBoundingClientRect().left)/s.getBoundingClientRect().width)*100; 
-              l.style.width = `${Math.max(20, Math.min(w,80))}%`; 
-          }
-      };
-      
-      const endDrag = () => { 
-          if(drag) { drag = false; document.body.style.cursor=''; l.style.userSelect=''; } 
+          const startDrag = (e) => { 
+              drag = true; 
+              document.body.style.cursor = window.innerWidth <= 768 ? 'row-resize' : 'col-resize'; 
+              l.style.userSelect = 'none'; 
+          };
+          
+          const onDrag = (e) => { 
+              if(!drag) return;
+              const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+              const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+              
+              if (window.innerWidth <= 768) {
+                  let h = ((clientY - s.getBoundingClientRect().top)/s.getBoundingClientRect().height)*100; 
+                  l.style.height = `${Math.max(20, Math.min(h,80))}vh`; 
+              } else {
+                  let w = ((clientX - s.getBoundingClientRect().left)/s.getBoundingClientRect().width)*100; 
+                  l.style.width = `${Math.max(20, Math.min(w,80))}%`; 
+              }
+          };
+          
+          const endDrag = () => { 
+              if(drag) { drag = false; document.body.style.cursor=''; l.style.userSelect=''; } 
+          };
+
+          r.onmousedown = startDrag;
+          document.addEventListener('mousemove', onDrag);
+          document.addEventListener('mouseup', endDrag);
+          
+          r.addEventListener('touchstart', startDrag, {passive: false});
+          document.addEventListener('touchmove', onDrag, {passive: false});
+          document.addEventListener('touchend', endDrag);
       };
 
-      // Mouse events
-      r.onmousedown = startDrag;
-      document.onmousemove = onDrag;
-      document.onmouseup = endDrag;
-      
-      // Touch events for mobile
-      r.addEventListener('touchstart', startDrag, {passive: false});
-      document.addEventListener('touchmove', onDrag, {passive: false});
-      document.addEventListener('touchend', endDrag);
+      attachDragLogic(examResizer, examLeft, examSplit);
+      attachDragLogic(revResizer, revLeft, revSplit);
     }
 
     function startListeningAudio() {
@@ -6702,7 +6829,14 @@ window.initFirebaseSystem = async function() {
             <p class="font-black text-blue-700 text-xl">${s.score}</p>
             <button onclick="openGradingView(${s.id})" class="text-sm bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 font-bold px-4 py-2 rounded-lg border border-blue-100 hover:border-blue-600 mt-1 shadow-sm transition">Grade / Review &rarr;</button>
           </div>
-        </div>`).join('') : '<div class="text-center text-slate-500 py-10 bg-white border border-blue-50 rounded-2xl shadow-sm">No submissions yet.</div>';
+        </div>`).join('') : `
+        <div class="flex flex-col items-center justify-center py-20 bg-white border-2 border-dashed border-blue-100 rounded-3xl shadow-sm col-span-full animate-fade-in-up">
+            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4 border border-blue-100 shadow-inner">
+                <svg class="w-10 h-10 text-blue-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <h3 class="text-xl font-black text-blue-900 mb-2">Inbox Empty</h3>
+            <p class="text-sm text-slate-500 font-medium max-w-md text-center">When your students complete their assigned tests, their results and essays will appear here for grading.</p>
+        </div>`;
     }
     
     async function clearAllSubmissions() { 
@@ -7566,7 +7700,7 @@ window.initFirebaseSystem = async function() {
                     <div class="font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-200">Pairs Found: <span id="match-score">${window.matchPairsFound}</span> / ${window.matchTiles.length/2}</div>
                 </div>
                 
-                <div class="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="match-grid">
+                <div class="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 stagger-fade-in" id="match-grid">
                     ${window.matchTiles.map((t, i) => `
                         <button id="match-tile-${i}" onclick="window.handleMatchClick(this, ${t.trueId}, '${t.type}')" class="bg-white border-2 border-slate-200 p-4 rounded-2xl shadow-sm text-center flex flex-col items-center justify-center font-bold text-slate-700 hover:border-indigo-400 hover:shadow-md transition-all h-[140px] overflow-hidden select-none active:scale-95 text-sm cursor-pointer">
                             <div class="line-clamp-4 pointer-events-none">${t.text}</div>
@@ -7773,7 +7907,7 @@ window.initFirebaseSystem = async function() {
         const renderCard = (s, isPending) => {
             const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
             const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
-            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded border border-indigo-100 shadow-sm">Remaining: <span class="font-black">${remaining}/${s.totalLessonsPaid}</span></span>` : '';
+            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 shadow-sm flex items-center gap-1">Rem: <span class="font-black">${remaining}/${s.totalLessonsPaid}</span></span>` : '';
             
             // Detect if this is a Gem request or a Course request
             const isGemRequest = isPending && s.pendingInfo && s.pendingInfo.includes('Top-Up');
@@ -7785,23 +7919,27 @@ window.initFirebaseSystem = async function() {
             }
 
             return `
-            <div class="bg-white border border-blue-50 p-6 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50/50' : ''} h-full">
-                <div class="flex flex-col sm:flex-row justify-between items-start mb-5 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-4 gap-4">
-                    <div class="flex-1 w-full min-w-0">
-                        <h3 class="font-black text-xl text-blue-950 flex items-center gap-3"><span class="w-10 h-10 rounded-full shrink-0 ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-lg font-bold shadow-inner">👤</span> <span class="truncate">${s.user}</span></h3>
-                        
-                        <!-- ✨ FIXED: Used Flex-Wrap and distinct styling badges to stop text from squishing -->
-                        <div class="flex flex-wrap items-center gap-2 mt-3 sm:ml-12 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-widest">
-                            <span class="bg-slate-50 border border-slate-200 px-2 py-1 rounded text-slate-500 shadow-sm">Joined: ${s.createdAt || 'N/A'}</span>
-                            ${lessonsBadge}
-                            <button onclick="window.promptResetStudentPassword('${s.user}')" class="text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2 py-1 rounded transition-colors tracking-normal lowercase shadow-sm">reset pass</button>
-                        </div>
-
-                        ${isPending && s.pendingInfo ? `<div class="mt-3 sm:ml-12"><span class="text-sm font-bold ${isGemRequest ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-rose-700 bg-rose-50 border-rose-200'} px-3 py-1.5 rounded-lg inline-block border shadow-sm break-words max-w-full">💸 Request: ${s.pendingInfo} ${!isGemRequest && s.pendingLessons ? `(${s.pendingLessons} Lessons)` : ''}</span></div>` : ''}
-                    </div>
+            <div class="bg-white border border-blue-50 p-5 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50/50' : ''} h-full">
+                
+                <!-- Header: Avatar, Name, Status Badge -->
+                <div class="flex justify-between items-center mb-4 gap-3 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-4">
+                    <h3 class="font-black text-xl text-blue-950 flex items-center gap-3 min-w-0">
+                        <span class="w-10 h-10 rounded-full shrink-0 ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-lg font-bold shadow-inner">👤</span>
+                        <span class="truncate">${s.user}</span>
+                    </h3>
                     <span class="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-sm shrink-0 ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending && !isGemRequest ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
                 </div>
                 
+                <!-- Details Box -->
+                <div class="flex flex-wrap items-center gap-2 mb-4 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="flex items-center gap-1">🗓️ Joined: ${s.createdAt || 'N/A'}</span>
+                    ${lessonsBadge}
+                    <button onclick="window.promptResetStudentPassword('${s.user}')" class="text-blue-600 hover:text-blue-800 hover:underline tracking-normal lowercase flex items-center gap-1 ml-auto">🔑 reset pass</button>
+                </div>
+
+                ${isPending && s.pendingInfo ? `<div class="mb-4"><span class="text-sm font-bold ${isGemRequest ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-rose-700 bg-rose-50 border-rose-200'} px-3 py-2 rounded-xl border shadow-sm block text-center truncate">💸 ${s.pendingInfo}${!isGemRequest && s.pendingLessons ? `(${s.pendingLessons} Lessons)` : ''}</span></div>` : ''}
+                
+                <!-- Action Buttons -->
                 <div class="mt-auto space-y-2 w-full">
                     <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid || isPending})" class="w-full py-3 text-sm font-bold rounded-xl shadow-sm border ${!isPending && s.isPaid ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800' : (isPending ? (isGemRequest ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-200' : 'bg-rose-500 border-transparent text-white hover:bg-rose-600 shadow-rose-200') : 'bg-blue-600 border-transparent text-white hover:bg-blue-700')} transition-all hover:-translate-y-0.5">
                         ${approveBtnText}
@@ -9354,10 +9492,13 @@ window.initFirebaseSystem = async function() {
 
         if (msgs.length === 0) {
             feed.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-center opacity-50">
-                    <span class="text-4xl mb-3">👋</span>
-                    <h3 class="font-bold text-slate-700">Welcome to the class chat!</h3>
-                    <p class="text-xs text-slate-500 mt-1 max-w-[200px]">Ask your teacher questions or discuss homework with classmates here.</p>
+                <div class="flex flex-col items-center justify-center h-full text-center p-8 animate-fade-in">
+                    <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-5 border border-indigo-100 shadow-inner relative">
+                        <svg class="w-10 h-10 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"></path></svg>
+                        <span class="absolute top-0 right-0 w-4 h-4 bg-emerald-400 border-2 border-white rounded-full animate-ping"></span>
+                    </div>
+                    <h3 class="font-black text-lg text-slate-700 mb-1">It's quiet in here...</h3>
+                    <p class="text-sm text-slate-500 font-medium max-w-[240px]">Start the conversation! Ask your teacher questions or discuss assignments with the class.</p>
                 </div>`;
             return;
         }
