@@ -602,6 +602,14 @@
     <button onmousedown="openStudentFlashcardCreator(event)" id="tooltip-flashcard-btn" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-blue-700 transition">
       <span class="text-[10px] font-bold">Flashcard</span>
     </button>
+    
+    <!-- ✨ NEW: Add Answer (Preview Mode Only) -->
+    <div id="tooltip-add-answer-divider" class="w-px h-6 bg-slate-200 hidden"></div>
+    <button id="tooltip-add-answer-btn" onmousedown="importAnswerToInput(event, 'answer')" class="hidden flex-col items-center justify-center px-3 py-1 hover:bg-slate-100 rounded text-emerald-600 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      <span class="text-[10px] font-bold">Add Answer</span>
+    </button>
+
     <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-slate-300 rotate-45 arrow"></div>
   </div>
 
@@ -617,7 +625,17 @@
   <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
     <button onmousedown="quickAddTeacherVocab(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-emerald-400 transition">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-      <span class="text-[10px] font-bold">Add to Vocab</span>
+      <span class="text-[10px] font-bold">Vocab</span>
+    </button>
+    <div class="w-px h-6 bg-slate-600 mx-1"></div>
+    <button onmousedown="importAnswerToInput(event, 'option')" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-purple-400 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+      <span class="text-[10px] font-bold">Option</span>
+    </button>
+    <div class="w-px h-6 bg-slate-600 mx-1"></div>
+    <button onmousedown="importAnswerToInput(event, 'answer')" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-sky-400 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+      <span class="text-[10px] font-bold">Answer</span>
     </button>
     <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-slate-800 rotate-45 arrow"></div>
   </div>
@@ -2104,6 +2122,45 @@ window.initFirebaseSystem = async function() {
         if(window.refreshTimeout) clearTimeout(window.refreshTimeout);
         window.refreshTimeout = setTimeout(() => {
             if (!currentUser) return;
+
+            // ✨ NEW: Real-Time Live Sync for Active Exams & Previews!
+            const examUI = document.getElementById('exam-ui');
+            if (examUI && !examUI.classList.contains('hidden') && APP_DATA && APP_DATA.id && !window.isFullExamMode) {
+                const freshTest = TEST_BANK.find(t => t.id === APP_DATA.id);
+                // Only hot-reload if the content actually changed
+                if (freshTest && JSON.stringify(freshTest.parts) !== JSON.stringify(APP_DATA.parts)) {
+                    // Update global state without wiping the student's answers
+                    APP_DATA.parts = JSON.parse(JSON.stringify(freshTest.parts));
+                    APP_DATA.title = freshTest.title;
+                    const titleEl = document.getElementById('exam-module-title');
+                    if (titleEl) titleEl.textContent = APP_DATA.title;
+                    
+                    // Remember where the user was typing so we don't interrupt them
+                    const activeEl = document.activeElement;
+                    const activeId = activeEl ? activeEl.id : null;
+                    let cursorStart = null, cursorEnd = null;
+                    if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+                        try { cursorStart = activeEl.selectionStart; cursorEnd = activeEl.selectionEnd; } catch(e) {}
+                    }
+
+                    // Hot-reload the screen
+                    if (typeof renderPart === 'function') {
+                        renderPart(Math.min(currentPartIdx, Math.max(0, APP_DATA.parts.length - 1)));
+                    }
+
+                    // Restore cursor focus seamlessly
+                    if (activeId) {
+                        const restoredEl = document.getElementById(activeId);
+                        if (restoredEl) {
+                            restoredEl.focus();
+                            if (cursorStart !== null && cursorEnd !== null && (restoredEl.tagName === 'INPUT' || restoredEl.tagName === 'TEXTAREA')) {
+                                try { restoredEl.setSelectionRange(cursorStart, cursorEnd); } catch(e) {}
+                            }
+                        }
+                    }
+                }
+            }
+
             if (currentUser.role === 'teacher') {
                 const editorUI = document.getElementById('editor-ui');
                 if (!editorUI.classList.contains('hidden')) {
@@ -3571,6 +3628,74 @@ window.initFirebaseSystem = async function() {
         }
     }
 
+    // ✨ NEW: Track the last active input for the "Add Answer / Add Option" feature
+    let lastActiveInput = null;
+    document.addEventListener('focusin', e => {
+        if ((e.target.tagName === 'INPUT' && (e.target.type === 'text' || e.target.type === 'number')) || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+            lastActiveInput = e.target;
+        }
+    });
+
+    window.importAnswerToInput = function(e, type = 'answer') {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        const edTT = document.getElementById('editor-selection-tooltip');
+        if (edTT) edTT.classList.add('hidden');
+
+        const text = window.getSelection().toString().trim();
+        if (!text) return;
+
+        // Support both standard inputs and contenteditable divs
+        if (lastActiveInput && document.body.contains(lastActiveInput)) {
+            
+            if (lastActiveInput.isContentEditable) {
+                // For Rich Text Editors (like .q-text, .q-inst)
+                lastActiveInput.focus();
+                
+                document.execCommand('insertText', false, text);
+                if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+                if (typeof window.showToast === 'function') window.showToast("Inserted", `Added "${text}" to text editor.`);
+                
+            } else if (!lastActiveInput.readOnly && !lastActiveInput.disabled) {
+                // For Standard Inputs and Textareas (.q-opts, .q-correct)
+                let textToInsert = text;
+                const start = lastActiveInput.selectionStart || 0;
+                const end = lastActiveInput.selectionEnd || 0;
+                const val = lastActiveInput.value;
+                
+                // Smart newline logic for "Add Option" in Textareas
+                if (lastActiveInput.tagName === 'TEXTAREA' && type === 'option') {
+                    // If appending to the end and it doesn't already end in a newline, add one!
+                    if (val.length > 0 && start === val.length && !val.endsWith('\n')) {
+                        textToInsert = '\n' + text;
+                    }
+                }
+                
+                lastActiveInput.value = val.substring(0, start) + textToInsert + val.substring(end);
+                
+                // Move cursor to end of inserted text so next insert appends correctly
+                const newPos = start + textToInsert.length;
+                lastActiveInput.setSelectionRange(newPos, newPos);
+                
+                lastActiveInput.dispatchEvent(new Event('input', {bubbles: true}));
+                lastActiveInput.dispatchEvent(new Event('change', {bubbles: true}));
+                
+                if (typeof window.showToast === 'function') window.showToast(type === 'option' ? "Option Added" : "Answer Added", `Imported "${text}"`);
+            }
+        } else {
+            // Fallback to copying to clipboard
+            const fallbackMsg = `Copied "${text}". Please click a box and paste.`;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    if (typeof window.showToast === 'function') window.showToast("Copied", fallbackMsg);
+                }).catch(() => document.execCommand('copy'));
+            } else {
+                document.execCommand('copy');
+                if (typeof window.showToast === 'function') window.showToast("Copied", fallbackMsg);
+            }
+        }
+        window.getSelection().removeAllRanges();
+    };
+
     function quickAddTeacherVocab(e) {
       e.preventDefault(); e.stopPropagation(); document.getElementById('editor-selection-tooltip').classList.add('hidden');
       const term = window.getSelection().toString().trim();
@@ -4008,7 +4133,8 @@ window.initFirebaseSystem = async function() {
       s.className = "text-xs font-bold text-slate-400 transition-opacity";
       
       clearTimeout(editorAutosaveTimer);
-      editorAutosaveTimer = setTimeout(performEditorAutosave, 1500);
+      // ⚡ Reduced from 1500ms to 600ms for near-instant Live Sync!
+      editorAutosaveTimer = setTimeout(performEditorAutosave, 600);
     }
     
     async function performEditorAutosave() {
@@ -6442,7 +6568,16 @@ window.initFirebaseSystem = async function() {
         }
         
         let chkBtn = '';
-        if(isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') chkBtn = `<div class="mt-4 flex justify-end"><button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition">Check Answer</button></div><div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-base font-bold"></div>`;
+        let btnContainer = '';
+        if (isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') {
+            btnContainer += `<button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition shadow-sm">Check Answer</button>`;
+        }
+        if (isPreviewMode && q.type !== 'essay' && q.type !== 'audio_record') {
+            btnContainer += `<button onclick="window.savePreviewAnswersToBank(${i})" class="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 hover:text-purple-800 font-bold px-3 py-1.5 rounded transition border border-purple-200 ml-2 flex items-center gap-1 shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Set as Correct Answer</button>`;
+        }
+        if (btnContainer) {
+            chkBtn = `<div class="mt-4 flex justify-end items-center">${btnContainer}</div><div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-base font-bold"></div>`;
+        }
 
         let leftoverBadges = Array.from(unplacedIds).map(id => makeBadge(id)).join('');
 
@@ -6576,34 +6711,40 @@ window.initFirebaseSystem = async function() {
         }
     }
 
-    function quickCheckAnswer(bIdx) {
-      const q = APP_DATA.parts[currentPartIdx].questions[bIdx];
-      const resEl = document.getElementById(`quick-res-${bIdx}`);
-      let correct = 0, total = q.ids.length;
-      
-      if (q.multi) {
-         const given = q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean);
-         q.ids.forEach(id => {
-            const ex = (q.correctAnswers?.[id]||'').toString().toLowerCase();
-            if (ex) {
-                const matchIdx = given.indexOf(ex);
-                if (matchIdx !== -1) { correct++; given.splice(matchIdx, 1); }
+        window.savePreviewAnswersToBank = async function(blockIdx) {
+        if (!isPreviewMode || !editingTestId) return;
+        const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
+        if (!q) return;
+
+        let updatedCount = 0;
+        if (!q.correctAnswers) q.correctAnswers = {};
+
+        q.ids.forEach(id => {
+            const currentVal = answers[id] || '';
+            // Only flag as an update if they filled something in, OR if they are clearing an old answer
+            if (currentVal !== '' || q.correctAnswers[id]) {
+                q.correctAnswers[id] = currentVal.trim();
+                if (currentVal !== '') updatedCount++;
             }
-         });
-      } else {
-         q.ids.forEach(id => {
-            const expectedStr = ((q.correctAnswers&&q.correctAnswers[id])||'').toString().toLowerCase();
-            const given = (answers[id]||'').toString().toLowerCase().trim();
-            // ✨ NEW: Splits the expected answer by / or | to check against an array of valid answers
-            const expectedList = expectedStr.split(/[/|]/).map(x => x.trim()); 
-            if(expectedStr && expectedList.includes(given) && given !== '') correct++;
-         });
-      }
-      
-      resEl.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800');
-      if(correct === total) { resEl.classList.add('bg-emerald-100', 'text-emerald-800'); resEl.innerHTML = `✅ Perfect! (${correct}/${total})`; }
-      else { resEl.classList.add('bg-rose-100', 'text-rose-800'); resEl.innerHTML = `❌ Try again. (${correct}/${total} correct)`; }
-    }
+        });
+
+        // Sync to global memory
+        const idx = TEST_BANK.findIndex(t => t.id === editingTestId);
+        if (idx > -1) {
+            TEST_BANK[idx] = JSON.parse(JSON.stringify(APP_DATA));
+            try {
+                // Sync to cloud immediately
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), editingTestId), TEST_BANK[idx]);
+                
+                if (typeof window.showToast === 'function') {
+                    window.showToast("Saved to Test Bank", `Updated ${updatedCount} correct answer(s) for this question block.`);
+                }
+            } catch (e) {
+                console.error(e);
+                if (typeof window.showToast === 'function') window.showToast("Error", "Failed to save to cloud database.", "error");
+            }
+        }
+    };
 
     function triggerAutosave() {
       const s = document.getElementById('autosave-status'); s.classList.remove('opacity-0');
