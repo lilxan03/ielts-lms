@@ -117,7 +117,7 @@
         #passage-container { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
         #questions-container { width: 100% !important; flex: 1 !important; height: 60vh !important; }
         #resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
-        #resizer > div, #review-resizer > div { width: 30px !important; height: 4px !important; }
+        #resizer > div, #review-resizer > div, #builder-resizer > div { width: 30px !important; height: 4px !important; }
         #review-split-container { flex-direction: column !important; }
         #review-resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
 
@@ -130,6 +130,7 @@
         #builder-split { flex-direction: column !important; }
         #builder-left { width: 100% !important; height: 45vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
         #builder-right { width: 100% !important; flex: 1 !important; height: 55vh !important; }
+        #builder-resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
 
         /* 4. Squeeze Modals & Slide Panels to fit phone screens */
         .w-96, .w-\[400px\], .w-\[500px\], .w-\[550px\], .w-\[600px\], .w-\[700px\], .w-\[800px\], .w-\[950px\] {
@@ -277,6 +278,13 @@
     }
     /* Adding an iOS-style spring bounce to modals! */
     .animate-scale-up { animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards; }
+
+    /* ✨ NEW: Dedicated Badge Animation (Prevents the fly-away bug) */
+    @keyframes badgePop { 
+      0% { opacity: 0; transform: scale(0.5); } 
+      100% { opacity: 1; transform: scale(1); } 
+    }
+    .animate-badge-pop { animation: badgePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
     /* ✨ NEW: Staggered Animations for Dashboards & Lists */
     .stagger-fade-in > * { opacity: 0; animation: fadeInUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
@@ -1172,6 +1180,19 @@
         <span id="editor-autosave-status" class="text-xs font-bold text-blue-200 opacity-0 transition-opacity w-20 text-right whitespace-nowrap">Autosaved</span>
         
         <!-- Default State: Inbox & Profile Dropdown -->
+        <div id="editor-notifications-menu" class="relative">
+            <button onclick="window.toggleTeacherNotifications(event)" class="w-10 h-10 bg-white/10 hover:bg-white/20 text-white rounded-xl transition shadow-sm border border-white/20 flex items-center justify-center relative hover:-translate-y-0.5" title="Notifications">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span id="badge-global-notifications" class="hidden absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] font-black min-w-[20px] h-[20px] px-1 items-center justify-center rounded-full shadow-md animate-badge-pop">0</span>
+            </button>
+            <div id="teacher-notifications-content" class="hidden absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-scale-up origin-top-right flex flex-col">
+                <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                    <span class="text-sm font-black text-slate-800">Notifications</span>
+                </div>
+                <div id="teacher-notifications-list" class="flex flex-col max-h-60 overflow-y-auto"></div>
+            </div>
+        </div>
+        
         <button id="editor-inbox-btn" onclick="window.toggleChatPanel()" class="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl transition font-bold text-sm shadow-md flex items-center gap-2 border border-indigo-400 hover:-translate-y-0.5">💬 Inbox</button>
         
         <div id="editor-profile-menu" class="relative">
@@ -1482,9 +1503,9 @@
       <!-- Upgraded Tabs Bar -->
       <div class="bg-slate-200/50 px-6 pt-3 flex space-x-2 border-b border-slate-300 shadow-inner" id="editor-tabs"></div>
       
-      <div class="flex flex-1 overflow-hidden" id="builder-split">
+      <div class="flex flex-1 overflow-hidden relative" id="builder-split">
         <!-- Left Panel: Content -->
-        <div class="w-1/2 p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 transition-all duration-300" id="builder-left">
+        <div class="p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 transition-all duration-300" id="builder-left" style="width: 50%;">
           <h2 class="text-xl font-black mb-6 border-b border-slate-100 pb-3 text-slate-800 flex items-center gap-2">📝 1. Content Details</h2>
           
           <div class="flex justify-between items-end mb-1">
@@ -1516,14 +1537,14 @@
             </div>
           </div>
           
-          <div class="flex justify-between items-end mb-0 mt-2">
+          <div class="flex justify-between items-end mb-0 mt-2 sticky top-[-32px] pt-8 pb-2 bg-white z-20">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center gap-1" id="edit-text-label">
                   <span id="edit-text-label-text">Prompt / Passage Text</span>
                   <button type="button" onclick="window.clearPassageText()" class="ml-2 normal-case font-bold text-[11px] text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 hover:border-rose-600 px-1.5 py-0.5 rounded transition tracking-normal" title="Erase all text in this field">🗑 Clear</button>
               </label>
               
               <!-- Upgraded Main Toolbar -->
-              <div class="flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 shadow-inner">
+              <div class="flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 shadow-md">
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
@@ -1541,8 +1562,10 @@
           </div>
         </div>
         
+        <div id="builder-resizer" class="w-2 bg-slate-200 hover:bg-blue-400 cursor-col-resize shrink-0 flex items-center justify-center z-30"><div class="h-8 w-0.5 bg-slate-500 rounded"></div></div>
+        
         <!-- Right Panel: Questions -->
-        <div class="w-1/2 p-8 overflow-y-auto bg-slate-50 transition-all duration-300" id="builder-right">
+        <div class="flex-1 min-w-[20%] p-8 overflow-y-auto bg-slate-50 transition-all duration-300" id="builder-right">
           <h2 class="text-xl font-black mb-6 border-b border-slate-200 pb-3 text-slate-800 flex items-center gap-2">⚙️ 2. Manage Questions</h2>
           
           <div class="mb-8 bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center sticky top-0 z-20">
@@ -1935,15 +1958,27 @@ window.initFirebaseSystem = async function() {
         if(e) e.stopPropagation();
         const menu = document.getElementById('teacher-dropdown-content');
         if (menu) menu.classList.toggle('hidden');
+        const notifMenu = document.getElementById('teacher-notifications-content');
+        if(notifMenu && !notifMenu.classList.contains('hidden')) notifMenu.classList.add('hidden');
+    };
+
+    window.toggleTeacherNotifications = function(e) {
+        if(e) e.stopPropagation();
+        const menu = document.getElementById('teacher-notifications-content');
+        if (menu) menu.classList.toggle('hidden');
+        const pMenu = document.getElementById('teacher-dropdown-content');
+        if(pMenu && !pMenu.classList.contains('hidden')) pMenu.classList.add('hidden');
     };
 
     // Close the dropdown if the user clicks anywhere else on the screen
     document.addEventListener('click', function(e) {
-        const menu = document.getElementById('teacher-dropdown-content');
-        const container = document.getElementById('editor-profile-menu');
-        if (menu && !menu.classList.contains('hidden') && container && !container.contains(e.target)) {
-            menu.classList.add('hidden');
-        }
+        const pMenu = document.getElementById('teacher-dropdown-content');
+        const pContainer = document.getElementById('editor-profile-menu');
+        if (pMenu && !pMenu.classList.contains('hidden') && pContainer && !pContainer.contains(e.target)) pMenu.classList.add('hidden');
+
+        const nMenu = document.getElementById('teacher-notifications-content');
+        const nContainer = document.getElementById('editor-notifications-menu');
+        if (nMenu && !nMenu.classList.contains('hidden') && nContainer && !nContainer.contains(e.target)) nMenu.classList.add('hidden');
     });
 
     window.updateFeedbackText = function(qId, criteria, bandScore) {
@@ -2620,7 +2655,7 @@ window.initFirebaseSystem = async function() {
 
     function showConfirm(title, msg, onConfirm) {
       document.getElementById('modal-title').textContent = title;
-      document.getElementById('modal-message').textContent = msg;
+      document.getElementById('modal-message').innerHTML = msg; // ✨ Upgraded to support HTML warnings!
       document.getElementById('modal-input').classList.add('hidden');
       document.getElementById('modal-cancel').classList.remove('hidden');
       document.getElementById('custom-modal').classList.remove('hidden');
@@ -2672,6 +2707,45 @@ window.initFirebaseSystem = async function() {
         localStorage.setItem('ielts_fontsize', s);
     }
     
+    window.updateTeacherBadges = function() {
+        if (!currentUser || currentUser.role !== 'teacher') return;
+
+        const pendingStudents = USERS.filter(u => u.role === 'student' && u.paymentStatus === 'pending').length;
+        const pendingSubs = SUBMISSIONS.filter(s => s.score === 'Pending Grade').length;
+        const totalNots = pendingStudents + pendingSubs;
+
+        const el = document.getElementById('badge-global-notifications');
+        if (el) {
+            if (parseInt(el.textContent) !== totalNots && totalNots > 0) {
+                el.classList.remove('animate-badge-pop'); // <-- Changed
+                void el.offsetWidth;
+                el.classList.add('animate-badge-pop'); // <-- Changed
+            }
+            el.textContent = totalNots;
+            if (totalNots > 0) { el.classList.remove('hidden'); el.classList.add('flex'); }
+            else { el.classList.add('hidden'); el.classList.remove('flex'); }
+        }
+
+        const list = document.getElementById('teacher-notifications-list');
+        if (list) {
+            let html = '';
+            if (pendingSubs > 0) {
+                html += `<button onclick="toggleEditorTab('bank'); toggleDashboardView('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
+                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">📝 Submissions</span>
+                    <span class="text-sm font-medium text-slate-700">You have <b>${pendingSubs}</b> ungraded test(s) waiting for review.</span>
+                </button>`;
+            }
+            if (pendingStudents > 0) {
+                html += `<button onclick="toggleEditorTab('students'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-rose-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
+                    <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest">💸 Payments</span>
+                    <span class="text-sm font-medium text-slate-700">You have <b>${pendingStudents}</b> student action(s) to verify.</span>
+                </button>`;
+            }
+            if (html === '') html = `<div class="p-4 text-center text-sm text-slate-500 italic">You're all caught up!</div>`;
+            list.innerHTML = html;
+        }
+    };
+
     window.toggleDashboardView = function(view) {
       const testsView = document.getElementById('dash-view-tests');
       const classesView = document.getElementById('dash-view-classes');
@@ -2694,9 +2768,10 @@ window.initFirebaseSystem = async function() {
     function openEditor() {
       document.getElementById('editor-ui').classList.remove('hidden');
       toggleEditorTab('bank');
+      if (typeof window.updateTeacherBadges === 'function') window.updateTeacherBadges();
     }
 
-        function toggleEditorTab(tab) {
+    function toggleEditorTab(tab) {
       ['bank', 'classes', 'builder', 'students', 'timetable', 'landing'].forEach(t => {
           const el = document.getElementById(`editor-view-${t}`);
           if (el) el.classList.add('hidden');
@@ -2719,6 +2794,7 @@ window.initFirebaseSystem = async function() {
         if(profileMenu) profileMenu.classList.add('hidden');
         
         if (document.getElementById('editor-inbox-btn')) document.getElementById('editor-inbox-btn').classList.add('hidden');
+        if (document.getElementById('editor-notifications-menu')) document.getElementById('editor-notifications-menu').classList.add('hidden');
         
         // Show builder elements
         document.getElementById('editor-builder-controls').classList.remove('hidden');
@@ -2737,6 +2813,7 @@ window.initFirebaseSystem = async function() {
         if(profileMenu) profileMenu.classList.remove('hidden');
         
         if (document.getElementById('editor-inbox-btn')) document.getElementById('editor-inbox-btn').classList.remove('hidden');
+        if (document.getElementById('editor-notifications-menu')) document.getElementById('editor-notifications-menu').classList.remove('hidden');
         
         // Hide builder elements
         document.getElementById('editor-builder-controls').classList.add('hidden');
@@ -4115,7 +4192,10 @@ window.initFirebaseSystem = async function() {
       toggleEditorTab('builder'); loadEditorPart(0);
     }
     
-    function exitBuilder() { showConfirm("Cancel Edit", "Changes lost?", () => toggleEditorTab('bank')); }
+    function exitBuilder() { 
+        saveCurrentEditorPart(); // Takes one final instant snapshot
+        toggleEditorTab('bank'); // Glides smoothly back to the dashboard
+    }
     
     function editCurrentTestMeta() {
       showTestMetaModal("Edit Test Settings", APP_DATA.title, (APP_DATA.topics || []).join(", "), (title, topics) => {
@@ -4219,43 +4299,41 @@ window.initFirebaseSystem = async function() {
 
     window.toggleBuilderLeftPanel = function() {
         const leftPane = document.getElementById('builder-left');
-        const rightPane = document.getElementById('builder-right');
+        const resizer = document.getElementById('builder-resizer');
         
         if (leftPane.classList.contains('hidden')) {
             // Restore View
             leftPane.classList.remove('hidden');
-            rightPane.classList.remove('w-full');
-            rightPane.classList.add('w-1/2');
+            if (resizer) resizer.classList.remove('hidden');
         } else {
             // Collapse View to make Questions Full Width
             leftPane.classList.add('hidden');
-            rightPane.classList.remove('w-1/2');
-            rightPane.classList.add('w-full');
+            if (resizer) resizer.classList.add('hidden');
         }
     };
 
     window.addEditorPart = function() {
-      saveCurrentEditorPart();
-      APP_DATA.parts.push({title:`Part ${APP_DATA.parts.length+1}`, text:"", questions:[]});
-      loadEditorPart(APP_DATA.parts.length - 1);
-      triggerEditorAutosave();
+        saveCurrentEditorPart();
+        APP_DATA.parts.push({title:`Part ${APP_DATA.parts.length+1}`, text:"", questions:[]});
+        loadEditorPart(APP_DATA.parts.length - 1);
+        triggerEditorAutosave();
     };
 
     window.deleteCurrentEditorPart = function() {
-      if (APP_DATA.parts.length <= 1) {
-          showModalMsg("Cannot Delete", "A test must have at least one part.");
-          return;
-      }
-      showConfirm("Delete Part", `Are you sure you want to delete "${APP_DATA.parts[currentEditorPartIdx].title}" and all its questions?`, () => {
-          APP_DATA.parts.splice(currentEditorPartIdx, 1);
-          // Renumber subsequent parts smoothly
-          APP_DATA.parts.forEach((p, idx) => {
-             if(p.title.startsWith("Part ")) p.title = `Part ${idx+1}`;
-          });
-          if(currentEditorPartIdx >= APP_DATA.parts.length) currentEditorPartIdx = APP_DATA.parts.length - 1;
-          loadEditorPart(currentEditorPartIdx);
-          triggerEditorAutosave();
-      });
+        if (APP_DATA.parts.length <= 1) {
+            showModalMsg("Cannot Delete", "A test must have at least one part.");
+            return;
+        }
+        showConfirm("Delete Part", `Are you sure you want to delete "${APP_DATA.parts[currentEditorPartIdx].title}" and all its questions?`, () => {
+            APP_DATA.parts.splice(currentEditorPartIdx, 1);
+            // Renumber subsequent parts smoothly
+            APP_DATA.parts.forEach((p, idx) => {
+               if(p.title.startsWith("Part ")) p.title = `Part ${idx+1}`;
+            });
+            if(currentEditorPartIdx >= APP_DATA.parts.length) currentEditorPartIdx = APP_DATA.parts.length - 1;
+            loadEditorPart(currentEditorPartIdx);
+            triggerEditorAutosave();
+        });
     };
 
     // --- DRAG & DROP FOR PART TABS ---
@@ -4358,7 +4436,7 @@ window.initFirebaseSystem = async function() {
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
         const mkLbl = (t) => `<label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mt-4 first:mt-0">${t}</label>`;
         
-        const mkStandardToolbar = () => `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
+        const mkStandardToolbar = () => `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
@@ -4370,7 +4448,7 @@ window.initFirebaseSystem = async function() {
             <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
         </div>`;
 
-        const mkExplanationToolbar = () => `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 w-full shadow-inner">
+        const mkExplanationToolbar = () => `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
@@ -4385,7 +4463,7 @@ window.initFirebaseSystem = async function() {
         </div>`;
         
         const editorId = `rich-text-${i}`;
-        const advToolbar = `<div class="flex flex-wrap gap-1.5 bg-slate-50 px-3 py-2 rounded-t-lg border border-b-0 border-slate-300 shadow-inner w-full">
+        const advToolbar = `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
             <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
@@ -6106,7 +6184,7 @@ window.initFirebaseSystem = async function() {
       initResizer(); renderPart(0);
     }
 
-        function initResizer() {
+    function initResizer() {
       // Logic for Student Exam UI
       const examResizer = document.getElementById('resizer');
       const examLeft = document.getElementById('passage-container');
@@ -6116,6 +6194,11 @@ window.initFirebaseSystem = async function() {
       const revResizer = document.getElementById('review-resizer');
       const revLeft = document.getElementById('review-left-pane');
       const revSplit = document.getElementById('review-split-container');
+
+      // Logic for Teacher Builder UI
+      const buildResizer = document.getElementById('builder-resizer');
+      const buildLeft = document.getElementById('builder-left');
+      const buildSplit = document.getElementById('builder-split');
 
       const attachDragLogic = (r, l, s) => {
           if (!r || !l || !s) return;
@@ -6156,6 +6239,7 @@ window.initFirebaseSystem = async function() {
 
       attachDragLogic(examResizer, examLeft, examSplit);
       attachDragLogic(revResizer, revLeft, revSplit);
+      attachDragLogic(buildResizer, buildLeft, buildSplit);
     }
 
     function startListeningAudio() {
@@ -6925,8 +7009,29 @@ window.initFirebaseSystem = async function() {
       if (autoSubmit) {
           proceed();
       } else {
-          const title = isPreviewMode ? "End Preview" : (window.isFullExamMode ? "Submit Section" : "Submit Test");
-          const desc = isPreviewMode ? "End preview and check results?" : (window.isFullExamMode ? "Are you sure you want to finish this section early? You will be moved to the next skill." : "Are you sure you want to finish?");
+          let title = isPreviewMode ? "End Preview" : (window.isFullExamMode ? "Submit Section" : "Submit Test");
+          let desc = isPreviewMode ? "End preview and check results?" : (window.isFullExamMode ? "Are you sure you want to finish this section early? You will be moved to the next skill." : "Are you sure you want to finish?");
+          
+          // ✨ NEW: Smart Missing Answer Scanner
+          if (!isPreviewMode) {
+              let missingCount = 0;
+              APP_DATA.parts.forEach(p => {
+                  p.questions.forEach(q => {
+                      (q.ids || []).forEach(id => {
+                          const val = answers[id];
+                          if (val === undefined || val === null || val.toString().trim() === '') {
+                              missingCount++;
+                          }
+                      });
+                  });
+              });
+              
+              if (missingCount > 0) {
+                  title = "⚠️ Incomplete Test";
+                  desc = `<div class="bg-rose-50 border-l-4 border-rose-500 p-3 mb-3 text-rose-800 font-medium shadow-sm">You have <b>${missingCount} unanswered question${missingCount > 1 ? 's' : ''}</b> left blank!</div>Are you sure you want to submit your test early?`;
+              }
+          }
+
           showConfirm(title, desc, proceed);
       }
     };
@@ -7307,7 +7412,7 @@ window.initFirebaseSystem = async function() {
                   }
                   
                   if (APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-                      if (isC) {
+                      if (s.score && s.score.includes('/')) {
                           badgeMap[id] = `<span class="inline-flex items-center align-middle bg-emerald-50 border border-emerald-400 text-emerald-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span>${g}</span>`;
                       } else {
                           badgeMap[id] = `<span class="inline-flex items-center align-middle bg-rose-50 border border-rose-300 text-rose-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span><s class="opacity-70 mr-1.5 text-rose-600">${g || '—'}</s><span class="text-emerald-700 bg-emerald-100 px-1 rounded border border-emerald-400 ml-0.5 shadow-inner">✓ ${e}</span></span>`;
@@ -9576,6 +9681,8 @@ window.initFirebaseSystem = async function() {
         
         let myClasses = [];
         if (currentUser.role === 'teacher') {
+                if(typeof window.updateTeacherBadges === 'function') window.updateTeacherBadges(); // ✨ Added this line!
+                const editorUI = document.getElementById('editor-ui');
             myClasses = CLASSES || [];
         } else {
             myClasses = (CLASSES || []).filter(c => (c.enrolledStudents || []).includes(currentUser.user));
