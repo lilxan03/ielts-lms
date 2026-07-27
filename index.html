@@ -373,11 +373,14 @@
               </div>
           </div>
           
-          <div class="mt-12 text-center">
+          <div class="mt-12 text-center flex flex-col items-center gap-4">
               <button onclick="window.showAuthFromLanding()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xl px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                   Create Free Account to Start &rarr;
               </button>
-              <p class="text-sm text-slate-500 mt-4 font-bold">🎁 Sign up today and get 50 Free Gems!</p>
+              <button onclick="window.loginAsDemo()" class="text-indigo-600 hover:text-indigo-800 font-black text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-6 py-2.5 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5">
+                  🕹️ Try Demo Student Account
+              </button>
+              <p class="text-sm text-slate-500 font-bold">🎁 Sign up today and get 50 Free Gems!</p>
           </div>
       </div>
   </div>
@@ -441,7 +444,10 @@
             Sign in with Google
         </button>
         
-        <div class="text-center mt-5 pt-5 border-t border-slate-100">
+        <div class="text-center mt-5 pt-5 border-t border-slate-100 flex flex-col gap-4">
+            <button onclick="window.loginAsDemo()" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg border border-slate-200 transition text-sm flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5">
+                🕹️ Try Demo Student Account
+            </button>
             <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
         </div>
       </div>
@@ -2371,6 +2377,63 @@ window.initFirebaseSystem = async function() {
     window.showAuthFromLanding = function() {
         document.getElementById('public-landing-ui').classList.add('hidden');
         document.getElementById('auth-ui').classList.remove('hidden');
+    };
+
+    window.loginAsDemo = async function() {
+        // Give immediate visual feedback that it's loading
+        document.querySelectorAll('button[onclick="window.loginAsDemo()"]').forEach(b => { 
+            b.innerHTML = "⏳ Entering Demo..."; 
+            b.disabled = true; 
+        });
+
+        try {
+            // 1. Fetch or create 'student' account directly
+            let demoUser = USERS.find(u => u.user === 'student');
+            if (!demoUser) {
+                const docSnap = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), 'student'));
+                if (docSnap.exists()) demoUser = docSnap.data();
+                else demoUser = { user: 'student', pass: '123', role: 'student', isPaid: true, paymentStatus: 'paid', createdAt: new Date().toLocaleDateString() };
+            }
+            
+            // Force unlock status so they don't hit the payment wall
+            demoUser.isPaid = true;
+            demoUser.paymentStatus = 'paid';
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), 'student'), demoUser);
+
+            // 2. Automatically enroll in a class so materials show up
+            if (CLASSES.length > 0) {
+                let targetClass = CLASSES.find(c => c.name.toLowerCase().includes('demo')) || CLASSES[0];
+                if (!targetClass.enrolledStudents) targetClass.enrolledStudents = [];
+                if (!targetClass.enrolledStudents.includes('student')) {
+                    targetClass.enrolledStudents.push('student');
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), targetClass.id), targetClass);
+                }
+            }
+
+            // 3. ✨ BYPASS LOGIN: Inject session instantly!
+            currentUser = demoUser;
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            
+            // Load private data and teleport directly to the dashboard
+            await window.attachPrivateListeners();
+            checkAuth();
+            
+            // Restore button text just in case they log out later
+            document.querySelectorAll('button[onclick="window.loginAsDemo()"]').forEach(b => { 
+                b.innerHTML = "🕹️ Try Demo Student Account"; 
+                b.disabled = false; 
+            });
+            
+            if (typeof window.showToast === 'function') window.showToast("Demo Active", "Welcome to the Student Portal!");
+            
+        } catch (e) {
+            console.error("Demo Setup Error:", e);
+            if (typeof window.showModalMsg === 'function') window.showModalMsg("Error", "Could not load demo account. " + e.message);
+            document.querySelectorAll('button[onclick="window.loginAsDemo()"]').forEach(b => { 
+                b.innerHTML = "🕹️ Try Demo Student Account"; 
+                b.disabled = false; 
+            });
+        }
     };
 
     let authMode = 'login';
