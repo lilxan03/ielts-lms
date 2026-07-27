@@ -28,6 +28,14 @@
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
     });
+    window.addEventListener('beforeunload', function (e) {
+        if (document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden')) {
+            if (!isPreviewMode && !isTimeFree) {
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to reload? Your exam progress will be lost.';
+            }
+        }
+    });
   </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -942,6 +950,11 @@
             </div>
           </div>
           
+          <!-- Refresh Button -->
+          <button onclick="window.location.reload()" class="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0 flex items-center justify-center gap-2" title="Refresh Page">
+              <span class="text-lg leading-none">🔄</span> <span class="hidden md:inline font-bold text-sm">Refresh</span>
+          </button>
+
           <button onclick="window.toggleTheme()" class="theme-toggle-btn p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0 text-lg leading-none flex items-center justify-center" title="Toggle Theme">
               🌙
           </button>
@@ -1184,6 +1197,11 @@
       <!-- RIGHT SECTION -->
       <div class="flex gap-3 items-center shrink-0 relative z-10">
         <span id="editor-autosave-status" class="text-xs font-bold text-blue-200 opacity-0 transition-opacity w-20 text-right whitespace-nowrap">Autosaved</span>
+        
+        <!-- Refresh Button -->
+        <button onclick="window.location.reload()" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center gap-2" title="Refresh Page">
+            <span class="text-lg leading-none">🔄</span> <span class="hidden md:inline font-bold text-sm">Refresh</span>
+        </button>
         
         <!-- Default State: Inbox & Profile Dropdown -->
         <div id="editor-notifications-menu" class="relative">
@@ -2351,26 +2369,35 @@ window.initFirebaseSystem = async function() {
 
     function checkAuth() {
       if (!currentUser) {
-        // NEW: Show Storefront instead of naked login wall
         document.getElementById('public-landing-ui').classList.remove('hidden');
         window.renderPublicProfile();
         
         document.getElementById('auth-ui').classList.add('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
-        
-        // ✨ FIX: Force Light Mode for logged-out public areas
         document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 text-slate-800 bg-slate-100`; 
       } else {
         document.getElementById('auth-ui').classList.add('hidden');
         document.getElementById('public-landing-ui').classList.add('hidden');
         
-        // ✨ FIX: Restore user's preferred theme ONLY after logging in
         const savedTheme = localStorage.getItem('ielts_theme') || 'standard';
         if (typeof window.applyTheme === 'function') window.applyTheme(savedTheme);
 
-        if (currentUser.role === 'teacher') openEditor();
-        else { initStudentDashboard(); document.getElementById('start-screen').classList.remove('hidden'); }
+        if (currentUser.role === 'teacher') {
+            openEditor();
+        } else { 
+            // ✨ SMART RESTORE: Did the student refresh while reviewing a test?
+            const savedSub = sessionStorage.getItem('lms_grading_sub');
+            if (savedSub && sessionStorage.getItem('lms_grading_mode') === 'student') {
+                const subId = Number(savedSub);
+                if (SUBMISSIONS.find(s => s.id === subId)) {
+                    reviewPastSubmission(subId);
+                    return; 
+                }
+            }
+            initStudentDashboard(); 
+            document.getElementById('start-screen').classList.remove('hidden'); 
+        }
       }
     }
 
@@ -2810,6 +2837,7 @@ window.initFirebaseSystem = async function() {
     };
 
     window.toggleDashboardView = function(view) {
+      sessionStorage.setItem('lms_dash_view', view);
       const testsView = document.getElementById('dash-view-tests');
       const classesView = document.getElementById('dash-view-classes');
       const btnTests = document.getElementById('dash-btn-tests');
@@ -2830,11 +2858,39 @@ window.initFirebaseSystem = async function() {
 
     function openEditor() {
       document.getElementById('editor-ui').classList.remove('hidden');
-      toggleEditorTab('bank');
+      
+      // ✨ SMART RESTORE: Read memory to see where the teacher was before refreshing
+      const savedSub = sessionStorage.getItem('lms_grading_sub');
+      const savedTest = sessionStorage.getItem('lms_editing_test');
+      const savedTab = sessionStorage.getItem('lms_teacher_tab') || 'bank';
+
+      if (savedSub) {
+          const subId = Number(savedSub);
+          if (SUBMISSIONS.find(s => s.id === subId)) {
+              openGradingView(subId);
+              if (typeof window.updateTeacherBadges === 'function') window.updateTeacherBadges();
+              return;
+          } else {
+              sessionStorage.removeItem('lms_grading_sub');
+          }
+      } 
+      
+      if (savedTest && savedTab === 'builder') {
+          if (TEST_BANK.find(t => t.id === savedTest)) {
+              editTest(savedTest);
+              if (typeof window.updateTeacherBadges === 'function') window.updateTeacherBadges();
+              return;
+          } else {
+              sessionStorage.removeItem('lms_editing_test');
+          }
+      }
+
+      toggleEditorTab(savedTab);
       if (typeof window.updateTeacherBadges === 'function') window.updateTeacherBadges();
     }
 
     function toggleEditorTab(tab) {
+      sessionStorage.setItem('lms_teacher_tab', tab);
       ['bank', 'classes', 'builder', 'students', 'timetable', 'landing'].forEach(t => {
           const el = document.getElementById(`editor-view-${t}`);
           if (el) el.classList.add('hidden');
@@ -2892,7 +2948,10 @@ window.initFirebaseSystem = async function() {
           if(bankView) bankView.classList.remove('hidden'); 
           renderTestBank(); 
           renderClasses();
-          window.toggleDashboardView('tests');
+          
+          // ✨ SMART RESTORE: Remember if we were on Tests or Classes sub-tab
+          const savedDashView = sessionStorage.getItem('lms_dash_view') || 'tests';
+          window.toggleDashboardView(savedDashView);
       }
       if (tab === 'classes') { 
           const classView = document.getElementById('editor-view-classes');
@@ -4208,6 +4267,7 @@ window.initFirebaseSystem = async function() {
     }
 
     function editTest(id) {
+      sessionStorage.setItem('lms_editing_test', id);
       editingTestId = id; APP_DATA = JSON.parse(JSON.stringify(TEST_BANK.find(t=>t.id===id)));
       if(!APP_DATA.vocab) APP_DATA.vocab = [];
       document.getElementById('builder-test-name').textContent = APP_DATA.title;
@@ -4255,7 +4315,8 @@ window.initFirebaseSystem = async function() {
       toggleEditorTab('builder'); loadEditorPart(0);
     }
     
-    function exitBuilder() { 
+    function exitBuilder() {
+        sessionStorage.removeItem('lms_editing_test');
         saveCurrentEditorPart(); // Takes one final instant snapshot
         toggleEditorTab('bank'); // Glides smoothly back to the dashboard
     }
@@ -5773,7 +5834,7 @@ window.initFirebaseSystem = async function() {
                             </ul>
                             <div class="mt-auto border-t border-slate-100 pt-4 flex items-center justify-between mb-4">
                                 <span class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Base Tuition</span>
-                                <span class="text-lg font-black text-emerald-600">${formatVND(p.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000)}<span class="text-xs text-slate-400 font-bold">/class</span></span>
+                                <span class="text-lg font-black text-emerald-600">${formatVND(p.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000)}<span class="text-xs text-slate-400 font-bold">/lesson</span></span>
                             </div>
                             <button onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Unlock Access</button>
                         </div>
@@ -7119,6 +7180,8 @@ window.initFirebaseSystem = async function() {
     }
     
     function closeReviewScreen() {
+      sessionStorage.removeItem('lms_grading_sub');
+      sessionStorage.removeItem('lms_grading_mode');
       document.getElementById('review-ui').classList.add('hidden');
       if (isPreviewMode) {
          isPreviewMode = false;
@@ -7176,6 +7239,8 @@ window.initFirebaseSystem = async function() {
     }
 
     function openGradingView(subId) {
+      sessionStorage.setItem('lms_grading_sub', subId);
+      sessionStorage.setItem('lms_grading_mode', 'teacher');
       const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
       
       let test;
@@ -7196,6 +7261,8 @@ window.initFirebaseSystem = async function() {
     }
 
     function reviewPastSubmission(subId) {
+      sessionStorage.setItem('lms_grading_sub', subId);
+      sessionStorage.setItem('lms_grading_mode', 'student');
       const sub = SUBMISSIONS.find(x => x.id === subId); if(!sub) return;
       
       let test;
