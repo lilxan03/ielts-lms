@@ -8056,21 +8056,19 @@ window.initFirebaseSystem = async function() {
         if (!file) return;
         
         document.getElementById('bill-custom-qr').disabled = true;
-        const path = 'qrcodes/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.]/g, '');
         
-        try {
-            const url = await window.uploadMediaToStorage(file, path);
-            tempCustomQRBase64 = url; // Still using same variable name for compatibility
+        // ✨ FIX: Use the bulletproof local Base64 compressor instead of Firebase Storage
+        // This prevents the "Failed to upload QR code" alert by saving it directly to the database document!
+        window.compressProfileImage(file, 600, 0.8, (base64) => {
+            tempCustomQRBase64 = base64;
             const preview = document.getElementById('bill-custom-qr-preview');
             preview.src = tempCustomQRBase64;
             preview.classList.remove('hidden');
             document.getElementById('bill-custom-qr-clear').classList.remove('hidden');
-        } catch (err) {
-            console.error("QR Upload Error:", err);
-            alert("Failed to upload QR code.");
-        }
-        
-        document.getElementById('bill-custom-qr').disabled = false;
+            document.getElementById('bill-custom-qr').disabled = false;
+            
+            if (typeof window.showToast === 'function') window.showToast("QR Loaded", "Image processed successfully. Click Save Settings to apply.");
+        });
     };
 
     window.clearCustomQR = function() {
