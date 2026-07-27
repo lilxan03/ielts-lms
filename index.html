@@ -336,6 +336,16 @@
         box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.2) !important;
     }
 
+    /* ✨ NEW: Mobile Touch Drag & Drop Fallback Styles */
+    .mobile-selected {
+        transform: scale(1.05) translateY(-2px) !important;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.4) !important;
+        border-color: #6366f1 !important;
+        z-index: 50 !important;
+        background-color: #e0e7ff !important;
+        color: #3730a3 !important;
+    }
+
     /* ✨ NEW: Shake Animation for wrong answers in Active Recall */
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes shake { 
@@ -429,11 +439,16 @@
       <div class="space-y-5">
         <div>
           <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
-          <input type="text" id="auth-user" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="e.g. student123">
+          <input type="text" id="auth-user" onkeydown="if(event.key==='Enter') handleAuthSubmit()" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="e.g. student123">
         </div>
         <div>
           <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
-          <input type="password" id="auth-pass" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="••••••••">
+          <div class="relative">
+              <input type="password" id="auth-pass" onkeydown="if(event.key==='Enter') handleAuthSubmit()" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 pr-10 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="••••••••">
+              <button type="button" onclick="window.togglePasswordVisibility('auth-pass', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 transition-colors" title="Toggle password visibility">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+              </button>
+          </div>
           <div class="text-right mt-1.5">
               <button onclick="window.promptForgotPassword()" class="text-xs font-bold text-blue-600 hover:underline transition">Forgot password?</button>
           </div>
@@ -1636,9 +1651,9 @@
 
       <!-- Center: Floating Timer -->
       <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
-        <div class="bg-slate-800 rounded-full px-6 py-1.5 flex items-center gap-3 shadow-md border border-slate-700">
-           <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-           <span id="timer-display" class="font-mono text-xl font-bold text-white tracking-widest drop-shadow-sm">00:00</span>
+        <div id="timer-wrapper" class="bg-slate-800 rounded-full px-6 py-1.5 flex items-center gap-3 shadow-md border border-slate-700 transition-all duration-300">
+           <div id="timer-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+           <span id="timer-display" class="font-mono text-xl font-bold text-white tracking-widest drop-shadow-sm transition-colors duration-300">00:00</span>
         </div>
       </div>
 
@@ -1664,6 +1679,10 @@
               <span id="exam-action-btn-text">Submit Test</span>
             </button>
          </div>
+      </div>
+    <!-- ✨ NEW: Peripheral Progress Bar -->
+      <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-100">
+          <div id="exam-progress-bar" class="h-full bg-emerald-500 transition-all duration-500 w-0 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
       </div>
     </header>
 
@@ -2460,6 +2479,17 @@ window.initFirebaseSystem = async function() {
                 b.innerHTML = "🕹️ Try Demo Student Account"; 
                 b.disabled = false; 
             });
+        }
+    };
+
+    window.togglePasswordVisibility = function(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>`;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
         }
     };
 
@@ -4416,6 +4446,16 @@ window.initFirebaseSystem = async function() {
         timeLeft++;
         const h = Math.floor(timeLeft/3600), m = Math.floor((timeLeft%3600)/60), s = timeLeft%60;
         document.getElementById('timer-display').textContent = `${h>0?h+':':''}${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        
+        // Reset to safe mode just in case
+        const wrapper = document.getElementById('timer-wrapper');
+        const dot = document.getElementById('timer-dot');
+        const display = document.getElementById('timer-display');
+        if (wrapper && dot && display) {
+            wrapper.className = "bg-slate-800 rounded-full px-6 py-1.5 flex items-center gap-3 shadow-md border border-slate-700";
+            dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+            display.className = "font-mono text-xl font-bold text-white tracking-widest drop-shadow-sm";
+        }
       }, 1000);
 
       initResizer(); renderPart(0);
@@ -6303,6 +6343,25 @@ window.initFirebaseSystem = async function() {
         if(!isTimeFree && timeLeft <= 0) { clearInterval(timerInterval); window.exitTest(true); return; }
         const h = Math.floor(timeLeft/3600), m = Math.floor((timeLeft%3600)/60), s = timeLeft%60;
         document.getElementById('timer-display').textContent = `${h>0?h+':':''}${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        
+        // ✨ NEW: Exam Urgency Simulator (Triggers under 5 minutes)
+        const wrapper = document.getElementById('timer-wrapper');
+        const dot = document.getElementById('timer-dot');
+        const display = document.getElementById('timer-display');
+        
+        if (wrapper && dot && display) {
+            if (!isTimeFree && timeLeft > 0 && timeLeft <= 300) {
+                // Urgent State (Red Pulse)
+                wrapper.className = "bg-rose-100 rounded-full px-6 py-1.5 flex items-center gap-3 shadow-md border-2 border-rose-400 animate-pulse transition-all duration-300";
+                dot.className = "w-2 h-2 rounded-full bg-rose-600 animate-ping";
+                display.className = "font-mono text-xl font-bold text-rose-700 tracking-widest drop-shadow-sm";
+            } else {
+                // Safe State (Dark Slate / Emerald)
+                wrapper.className = "bg-slate-800 rounded-full px-6 py-1.5 flex items-center gap-3 shadow-md border border-slate-700 transition-all duration-300";
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                display.className = "font-mono text-xl font-bold text-white tracking-widest drop-shadow-sm";
+            }
+        }
       }, 1000);
       
       initResizer(); renderPart(0);
@@ -6416,7 +6475,7 @@ window.initFirebaseSystem = async function() {
             ? "flex w-full min-h-[44px] px-4 py-2 mb-4 mt-2 text-left items-center justify-start" 
             : "inline-flex min-w-[80px] px-2 h-7 mx-1 align-middle items-center justify-center text-center";
 
-        pText = pText.replace(m[0], `<div class="drop-zone ${layoutClasses} border-2 ${cls} font-bold text-sm rounded transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
+        pText = pText.replace(m[0], `<div class="drop-zone ${layoutClasses} border-2 ${cls} font-bold text-sm rounded transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="window.handleDropZoneClick(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
       });
 
       let htmlText = pText.split('\n\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
@@ -6429,7 +6488,12 @@ window.initFirebaseSystem = async function() {
 
       let media = '';
       if(p.audioUrl && APP_DATA.module !== 'listening') media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4 rounded"></audio>`;
-      if(p.image) media += `<div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded text-center"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
+      if(p.image) media += `<div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded text-center cursor-zoom-in group relative" onclick="window.openLightbox('${p.image}', event)">
+          <div class="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/5 transition-colors rounded flex items-center justify-center pointer-events-none">
+              <span class="bg-slate-900/70 text-white text-[10px] font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">🔍 Click to Enlarge</span>
+          </div>
+          <img src="${p.image}" class="max-w-full inline-block rounded shadow-sm">
+      </div>`;
       
       const passageContainer = document.getElementById('passage-container');
       const resizer = document.getElementById('resizer');
@@ -6653,7 +6717,7 @@ window.initFirebaseSystem = async function() {
               const ans = answers[id]||'';
               const hasAns = !!ans;
               const dropZoneHtml = `<span class="drop-zone inline-flex items-center align-middle rounded bg-white h-[36px] p-0.5 mx-1 transition-all ${hasAns ? 'border-2 border-blue-500 shadow-sm cursor-grab bg-blue-50' : 'border border-dashed border-slate-400'}"
-                   ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)"
+                   ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="window.handleDropZoneClick(${id}, event)"
                    ${hasAns ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>
                   <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[26px] h-[26px] bg-white border border-slate-800 text-slate-800 text-base font-bold rounded-sm cursor-pointer hover:bg-slate-100 transition shrink-0 select-none">${id}</span>
                   <span class="px-2 min-w-[100px] text-center text-base ${hasAns ? 'font-bold text-blue-900' : 'text-slate-400 italic'} pointer-events-none">${hasAns ? ans : 'Drop answer here'}</span>
@@ -6669,9 +6733,9 @@ window.initFirebaseSystem = async function() {
 
            // ✨ NEW: Removed explicit text-sizes so .draggable-item inherits the global scalable font size. Increased px/py paddings.
            if (APP_DATA.module === 'listening') {
-               content = `<div class="flex flex-col md:flex-row flex-wrap gap-8 items-start justify-start w-full"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium"></p><div class="flex flex-col gap-2 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
+               content = `<div class="flex flex-col md:flex-row flex-wrap gap-8 items-start justify-start w-full"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium"></p><div class="flex flex-col gap-2 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
            } else {
-               content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+               content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
            }
         } else if(q.type === 'matching_headings') {
            let txt = pt(rawText);
@@ -6680,7 +6744,7 @@ window.initFirebaseSystem = async function() {
                const used = q.ids.map(i => answers[i]).filter(Boolean);
                availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
            }
-           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-col gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-4 py-3 w-full text-left font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab leading-snug">${o}</div>`).join('')}</div></div>`;
+           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-col gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-4 py-3 w-full text-left font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab leading-snug">${o}</div>`).join('')}</div></div>`;
         } else if (q.type === 'map_labelling_hotspots') {
            let availOpts = q.options || [];
            const used = q.ids.map(i => answers[i]).filter(Boolean);
@@ -6696,7 +6760,7 @@ window.initFirebaseSystem = async function() {
                        const hasAns = !!ans;
                        return `<span class="absolute drop-zone inline-flex items-center justify-center align-middle bg-white min-h-[38px] p-1 transition-all ${hasAns ? 'border border-slate-500 shadow cursor-grab' : 'border-2 border-dashed border-slate-600 rounded-sm'}"
                            style="left:${h.x}%; top:${h.y}%; transform:translate(-50%, -50%); z-index:10;"
-                           ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="clearDrop(${id}, event)"
+                           ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="window.handleDropZoneClick(${id}, event)"
                            ${hasAns ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>
                           <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[28px] h-[28px] bg-white border border-slate-800 text-slate-800 text-base font-bold cursor-pointer hover:bg-slate-100 transition shrink-0 select-none ${hasAns ? 'mr-3' : ''}">${id}</span>
                           <span class="pr-2 text-center text-base ${hasAns ? 'font-bold text-slate-900' : 'hidden'} whitespace-nowrap pointer-events-none">${hasAns ? ans : ''}</span>
@@ -6711,7 +6775,7 @@ window.initFirebaseSystem = async function() {
                </div>
                <div class="w-full sm:w-auto min-w-[160px] shrink-0 p-4 bg-white border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)">
                    <div class="flex flex-col gap-2 min-h-[40px] items-stretch">
-                       ${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-2 font-medium text-slate-800 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit md:max-w-full text-left md:text-center">${o}</div>`).join('')}
+                       ${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-2 font-medium text-slate-800 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit md:max-w-full text-left md:text-center">${o}</div>`).join('')}
                    </div>
                </div>
            </div>`;
@@ -6919,6 +6983,62 @@ window.initFirebaseSystem = async function() {
         }
     }
 
+        // ✨ NEW: Mobile "Tap-to-Select, Tap-to-Place" Fallback Logic
+    window.mobileSelectedData = null;
+
+    window.mobileTapSelect = function(e, el, text, sourceId = null) {
+        e.stopPropagation(); // Prevents accidentally returning to the bank
+        
+        // If they tapped the same item again, deselect it
+        if (window.mobileSelectedData && window.mobileSelectedData.el === el) {
+            el.classList.remove('mobile-selected');
+            window.mobileSelectedData = null;
+            return;
+        }
+        
+        // Clear any previous selection visually
+        document.querySelectorAll('.mobile-selected').forEach(node => node.classList.remove('mobile-selected'));
+        
+        // Select the new item
+        el.classList.add('mobile-selected');
+        window.mobileSelectedData = { text, sourceId, el };
+    };
+
+    window.handleDropZoneClick = function(id, e) {
+        e.stopPropagation();
+        
+        if (window.mobileSelectedData) {
+            // They were "holding" an item and tapped this zone! Place it!
+            const data = window.mobileSelectedData;
+            data.el.classList.remove('mobile-selected');
+            
+            // If they moved it from another gap, clear the old gap first
+            if (data.sourceId && data.sourceId !== id) {
+                answers[data.sourceId] = ''; 
+            }
+            
+            // Overwrite the gap with the new text
+            handleAns(id, data.text);
+            window.mobileSelectedData = null;
+            renderPart(currentPartIdx);
+        } else {
+            // They were holding nothing, so they want to clear the gap (return to bank)
+            clearDrop(id, e);
+        }
+    };
+
+    window.mobileTapReturn = function(e) {
+        if (window.mobileSelectedData) {
+            if (window.mobileSelectedData.sourceId) {
+                answers[window.mobileSelectedData.sourceId] = '';
+                renderPart(currentPartIdx);
+                triggerAutosave(); updateExamUI();
+            }
+            window.mobileSelectedData.el.classList.remove('mobile-selected');
+            window.mobileSelectedData = null;
+        }
+    };
+
         window.savePreviewAnswersToBank = async function(blockIdx) {
         if (!isPreviewMode || !editingTestId) return;
         const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
@@ -7016,6 +7136,37 @@ window.initFirebaseSystem = async function() {
         }
         pal.appendChild(div);
       });
+    // ✨ NEW: Calculate and update the Peripheral Progress Bar
+      let totalQuestions = 0;
+      let answeredQuestions = 0;
+      
+      APP_DATA.parts.forEach((p) => {
+          p.questions.forEach((qb) => {
+              qb.ids.forEach(id => {
+                  totalQuestions++;
+                  const ans = answers[id];
+                  // Check if answer exists and isn't just empty whitespace
+                  if (ans !== undefined && ans !== null && String(ans).trim() !== '') {
+                      answeredQuestions++;
+                  }
+              });
+          });
+      });
+      
+      const progressBar = document.getElementById('exam-progress-bar');
+      if (progressBar && totalQuestions > 0) {
+          const pct = (answeredQuestions / totalQuestions) * 100;
+          progressBar.style.width = `${pct}%`;
+          
+          // Color psychology: Turn blue when complete, stay emerald while working
+          if (pct === 100) {
+              progressBar.classList.remove('bg-emerald-500', 'shadow-[0_0_10px_rgba(16,185,129,0.5)]');
+              progressBar.classList.add('bg-blue-600', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]');
+          } else {
+              progressBar.classList.add('bg-emerald-500', 'shadow-[0_0_10px_rgba(16,185,129,0.5)]');
+              progressBar.classList.remove('bg-blue-600', 'shadow-[0_0_10px_rgba(37,99,235,0.5)]');
+          }
+      }
     }
 
     window.exitTestWithoutSaving = function() {
@@ -7353,36 +7504,42 @@ window.initFirebaseSystem = async function() {
 
             if (isGrading) {
                 content = `
-                <div class="mb-4">
-                    <div class="flex flex-wrap gap-2 mb-2 bg-slate-100 p-2 rounded-t border border-slate-300 border-b-0 items-center">
-                        <div class="flex gap-1">
-                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm font-bold hover:bg-slate-50">B</button>
-                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm italic hover:bg-slate-50">I</button>
-                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('strikeThrough')" class="px-3 py-1 bg-white border border-slate-300 rounded shadow-sm line-through hover:bg-slate-50">S</button>
+                <div class="flex flex-col xl:flex-row gap-6 items-start w-full relative">
+                    <!-- Essay Area (Left, Flexible) -->
+                    <div class="flex-1 w-full min-w-0">
+                        <div class="flex flex-wrap gap-2 mb-2 bg-slate-100 p-2 rounded-t-xl border border-slate-300 border-b-0 items-center sticky top-0 z-20 shadow-md">
+                            <div class="flex gap-1">
+                                <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold')" class="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-sm font-bold hover:bg-slate-50 transition">B</button>
+                                <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic')" class="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-sm italic hover:bg-slate-50 transition">I</button>
+                                <button type="button" onmousedown="event.preventDefault(); document.execCommand('strikeThrough')" class="px-3 py-1.5 bg-white border border-slate-300 rounded shadow-sm line-through hover:bg-slate-50 transition">S</button>
+                            </div>
+                            <div class="w-px h-6 bg-slate-300 self-center mx-2"></div>
+                            <div class="flex gap-1">
+                                <button type="button" onmousedown="event.preventDefault(); document.execCommand('hiliteColor', false, '#fef08a')" class="px-3 py-1.5 bg-yellow-200 border border-yellow-400 rounded shadow-sm hover:bg-yellow-300 text-sm font-medium transition">Highlight</button>
+                                <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#ef4444')" class="px-3 py-1.5 bg-white border border-slate-300 text-red-500 rounded shadow-sm hover:bg-red-50 text-sm font-bold transition">Red</button>
+                                <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#10b981')" class="px-3 py-1.5 bg-white border border-slate-300 text-emerald-500 rounded shadow-sm hover:bg-emerald-50 text-sm font-bold transition">Green</button>
+                            </div>
+                            <div class="w-px h-6 bg-slate-300 self-center mx-2"></div>
+                            <select id="inline-crit-${q.ids[0]}" onchange="window.insertInlineFeedback('${q.ids[0]}')" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm outline-none bg-white font-bold text-slate-700 shadow-sm cursor-pointer hover:border-blue-400 transition">
+                                <option value="">+ Insert IELTS Descriptor...</option>
+                                ${inlineOpts}
+                            </select>
                         </div>
-                        <div class="w-px h-6 bg-slate-300 self-center mx-1"></div>
-                        <div class="flex gap-1">
-                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('hiliteColor', false, '#fef08a')" class="px-3 py-1 bg-yellow-200 border border-yellow-400 rounded shadow-sm hover:bg-yellow-300 text-sm font-medium">Highlight</button>
-                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#ef4444')" class="px-3 py-1 bg-white border border-slate-300 text-red-500 rounded shadow-sm hover:bg-red-50 text-sm font-bold">Red</button>
-                            <button type="button" onmousedown="event.preventDefault(); document.execCommand('foreColor', false, '#10b981')" class="px-3 py-1 bg-white border border-slate-300 text-emerald-500 rounded shadow-sm hover:bg-emerald-50 text-sm font-bold">Green</button>
+                        <div id="essay-content-${q.ids[0]}" contenteditable="true" class="bg-white border border-slate-300 p-6 rounded-b-xl font-sans text-[1.1rem] leading-loose whitespace-pre-wrap outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 min-h-[500px] shadow-sm transition-all">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>
+                    </div>
+                    
+                    <!-- Sticky Rubric Sidebar (Right, Fixed Width) -->
+                    <div class="w-full xl:w-80 shrink-0 bg-blue-50 border border-blue-200 p-6 rounded-2xl shadow-sm xl:sticky xl:top-0 z-10 flex flex-col gap-4">
+                        <h4 class="font-black text-blue-900 border-b border-blue-200 pb-3 uppercase tracking-widest text-xs flex items-center gap-2"><span>📊</span> Criteria Grading</h4>
+                        <div class="flex flex-col gap-4">
+                            ${mkSelect(`tr-${q.ids[0]}`, 'Task Response', fbData.tr, 'tr', q.ids[0])}
+                            ${mkSelect(`cc-${q.ids[0]}`, 'Coherence & Cohesion', fbData.cc, 'cc', q.ids[0])}
+                            ${mkSelect(`lr-${q.ids[0]}`, 'Lexical Resource', fbData.lr, 'lr', q.ids[0])}
+                            ${mkSelect(`gra-${q.ids[0]}`, 'Grammar & Accuracy', fbData.gra, 'gra', q.ids[0])}
                         </div>
-                        <div class="w-px h-6 bg-slate-300 self-center mx-1"></div>
-                        <select id="inline-crit-${q.ids[0]}" onchange="window.insertInlineFeedback('${q.ids[0]}')" class="border border-slate-300 rounded px-2 py-1 text-sm outline-none bg-white">
-                            <option value="">+ Insert Descriptor...</option>
-                            ${inlineOpts}
-                        </select>
+                        <label class="block text-xs font-bold text-slate-500 mt-2 uppercase tracking-widest">Overall Comments</label>
+                        <textarea id="fb-${q.ids[0]}" class="w-full border-2 border-blue-200 rounded-xl p-4 text-sm outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 min-h-[160px] resize-y shadow-inner font-medium text-slate-700 transition-all bg-white" placeholder="Write overall feedback here...">${fbData.comment}</textarea>
                     </div>
-                    <div id="essay-content-${q.ids[0]}" contenteditable="true" class="bg-white border border-slate-300 p-4 rounded-b font-sans text-lg leading-relaxed whitespace-pre-wrap outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>
-                </div>
-                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mt-4 shadow-sm">
-                    <h4 class="font-bold text-blue-900 mb-3 border-b border-blue-200 pb-2">IELTS Criteria Grading</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        ${mkSelect(`tr-${q.ids[0]}`, 'Task Response', fbData.tr, 'tr', q.ids[0])}
-                        ${mkSelect(`cc-${q.ids[0]}`, 'Coherence & Cohesion', fbData.cc, 'cc', q.ids[0])}
-                        ${mkSelect(`lr-${q.ids[0]}`, 'Lexical Resource', fbData.lr, 'lr', q.ids[0])}
-                        ${mkSelect(`gra-${q.ids[0]}`, 'Grammar & Accuracy', fbData.gra, 'gra', q.ids[0])}
-                    </div>
-                    <textarea id="fb-${q.ids[0]}" class="w-full border border-blue-300 rounded p-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" rows="3" placeholder="Overall comments and feedback...">${fbData.comment}</textarea>
                 </div>`;
             } else {
                 // 1. Clean the HTML for the student: Remove delete buttons, lock text boxes, and fix spacing
@@ -7395,30 +7552,42 @@ window.initFirebaseSystem = async function() {
                 readOnlyAnnotation = readOnlyAnnotation.replace(/(?:<br\s*\/?>|<p><br\s*\/?>\s*<\/p>|\s)+<\/div>/gi, '</div>');
 
                 // Shrink the right-padding (pr-8 to pr-3) so it looks balanced now that the 'X' button is gone
-                readOnlyAnnotation = readOnlyAnnotation.replace(/pr-8/gi, 'pr-3');
+                readOnlyAnnotation = readOnlyAnnotation.replace(/pr-8/gi, 'pr-4');
 
                 // Lock editable fields
                 readOnlyAnnotation = readOnlyAnnotation.replace(/contenteditable="true"/gi, 'contenteditable="false"');
 
                 content = ''; // Initialize empty content
                 
-                // 2. Render Teacher Feedback & Scores at the TOP
-                if(feedbackObj[q.ids[0]]) {
-                    content += `
-                    <div class="mb-4 bg-emerald-50 border border-emerald-200 rounded-lg p-4 shadow-sm">
-                        <h4 class="font-bold text-emerald-900 mb-3 border-b border-emerald-200 pb-2">Teacher Feedback & Scores</h4>
-                        <div class="flex flex-wrap gap-4 mb-3">
-                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>TR:</b> ${fbData.tr || '-'}</span>
-                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>CC:</b> ${fbData.cc || '-'}</span>
-                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>LR:</b> ${fbData.lr || '-'}</span>
-                            <span class="bg-white px-3 py-1 rounded border border-emerald-200 text-sm"><b>GRA:</b> ${fbData.gra || '-'}</span>
+                let feedbackSidebarHtml = '';
+                if (feedbackObj[q.ids[0]]) {
+                    feedbackSidebarHtml = `
+                    <div class="w-full xl:w-80 shrink-0 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 shadow-sm xl:sticky xl:top-0 z-10 flex flex-col gap-4">
+                        <h4 class="font-black text-emerald-900 border-b border-emerald-200 pb-3 uppercase tracking-widest text-xs flex items-center gap-2"><span>🏆</span> Feedback & Scores</h4>
+                        <div class="grid grid-cols-2 gap-3 mb-2">
+                            <div class="bg-white p-3 rounded-xl border border-emerald-200 text-center shadow-sm"><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">TR</div><div class="font-black text-emerald-700 text-2xl leading-none">${fbData.tr || '-'}</div></div>
+                            <div class="bg-white p-3 rounded-xl border border-emerald-200 text-center shadow-sm"><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">CC</div><div class="font-black text-emerald-700 text-2xl leading-none">${fbData.cc || '-'}</div></div>
+                            <div class="bg-white p-3 rounded-xl border border-emerald-200 text-center shadow-sm"><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">LR</div><div class="font-black text-emerald-700 text-2xl leading-none">${fbData.lr || '-'}</div></div>
+                            <div class="bg-white p-3 rounded-xl border border-emerald-200 text-center shadow-sm"><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">GRA</div><div class="font-black text-emerald-700 text-2xl leading-none">${fbData.gra || '-'}</div></div>
                         </div>
-                        <div class="text-emerald-900 text-sm leading-relaxed">${fbData.comment}</div>
+                        <div class="text-emerald-900 text-sm leading-relaxed bg-white p-4 rounded-xl border border-emerald-200 shadow-inner font-medium">${fbData.comment || '<i>No overall comments provided.</i>'}</div>
+                    </div>`;
+                } else {
+                    feedbackSidebarHtml = `
+                    <div class="w-full xl:w-80 shrink-0 bg-slate-50 border border-slate-200 rounded-2xl p-6 shadow-sm xl:sticky xl:top-0 z-10 flex flex-col items-center text-center">
+                        <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-2xl border border-slate-200 shadow-sm mb-3">⏳</div>
+                        <h4 class="font-black text-slate-500 uppercase tracking-widest text-xs mb-2">Feedback Pending</h4>
+                        <p class="text-sm text-slate-400 italic">Your teacher has not graded this essay yet.</p>
                     </div>`;
                 }
 
-                // 3. Render the Annotated Essay text BELOW the scores
-                content += `<div class="bg-white border border-slate-300 p-4 rounded font-sans text-lg leading-relaxed whitespace-pre-wrap">${readOnlyAnnotation}</div>`;
+                // 3. Render the Annotated Essay text and Feedback side-by-side
+                // Note: Using flex-col-reverse on mobile puts the Rubric at the TOP so students see their score immediately!
+                content += `
+                <div class="flex flex-col-reverse xl:flex-row gap-6 items-start w-full relative">
+                    <div class="flex-1 w-full min-w-0 bg-white border border-slate-300 p-6 sm:p-8 rounded-2xl shadow-sm font-sans text-[1.1rem] leading-loose whitespace-pre-wrap">${readOnlyAnnotation}</div>
+                    ${feedbackSidebarHtml}
+                </div>`;
             }
           } else if(q.type === 'audio_record') {
              const a = answers[q.ids[0]];
