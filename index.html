@@ -4371,7 +4371,7 @@ window.initFirebaseSystem = async function() {
       const titleHint = document.getElementById('edit-title-hint');
       const textHint = document.getElementById('edit-text-hint');
       const textLabelSpan = document.getElementById('edit-text-label-text');
-      if (APP_DATA.module === 'writing') {
+      if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           titleHint.classList.remove('hidden');
           textHint.classList.remove('hidden');
           textLabelSpan.textContent = 'Sample Answer (Practice Mode Only)';
@@ -6577,7 +6577,7 @@ window.initFirebaseSystem = async function() {
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
           passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${htmlText}</div>`;
-      } else if (APP_DATA.module === 'writing') {
+      } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
           passageContainer.style.width = '50%'; 
@@ -6878,12 +6878,15 @@ window.initFirebaseSystem = async function() {
            content = table;
         } else if(q.type === 'essay') {
            let txt = pt(rawText);
-           if (APP_DATA.module === 'writing') {
+           if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
                txt = '';
            }
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\\s+/).filter(Boolean).length}</span></div>`;
         } else if(q.type === 'audio_record') {
            let txt = pt(rawText);
+           if (APP_DATA.module === 'speaking') {
+               txt = '';
+           }
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
         }
         
@@ -6905,7 +6908,7 @@ window.initFirebaseSystem = async function() {
         const cleanInst = (q.instruction || '').trim();
         const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
         
-        if (APP_DATA.module === 'writing') {
+        if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
             if (leftoverBadges) instructionHtml = `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>`;
             qTextHtml = ''; 
         } else if (leftoverBadges || hasInst) {
@@ -7498,7 +7501,7 @@ window.initFirebaseSystem = async function() {
         if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
            [...txt.matchAll(/{drop:(\d+)}/g)].forEach(m => txt = txt.replace(m[0], `<span class="bg-blue-100 text-blue-900 font-bold px-2 py-0.5 rounded border border-blue-400 mx-1">${m[1]}</span>`));
            txt = txt.split('\n\n').map(x => `<p class="mb-4">${x}</p>`).join('');
-        } else if(APP_DATA.module === 'writing') {
+        } else if(APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
            txt = txt.replace(/\n/g, '<br>');
         }
         lHtml += `<div class="passage-text font-bold mb-4 mt-8 first:mt-0">${p.title}</div>`;
