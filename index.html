@@ -514,6 +514,10 @@
         <button onclick="closeTeacherVocabModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
       </div>
       <div class="p-5 overflow-y-auto flex-1 bg-slate-100">
+        <div class="mb-4 bg-blue-50 p-3 rounded-lg border border-blue-200 flex items-center gap-3">
+            <label class="text-xs font-bold text-blue-800 uppercase tracking-widest whitespace-nowrap">Assign to Part:</label>
+            <select id="tv-part-select" class="flex-1 border border-blue-300 p-2 rounded text-sm font-bold text-blue-900 outline-none bg-white"></select>
+        </div>
         <div class="bg-white p-4 rounded border border-slate-300 shadow-sm mb-5">
           <div class="flex justify-between items-center border-b pb-2 mb-3">
             <h3 class="font-bold text-sm text-slate-600 uppercase">Add New Word</h3>
@@ -522,21 +526,33 @@
           
           <!-- Bulk Import Area -->
           <div id="tv-bulk-area" class="hidden mb-3 animate-fade-in-up">
-            <label class="block text-xs font-bold text-slate-500 mb-2">Paste columns from Excel/Sheets: <br><span class="font-mono text-blue-600">Term ➔ Pronunciation ➔ English ➔ Vietnamese</span></label>
-            <textarea id="tv-bulk-input" class="w-full border p-3 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none h-28 mb-3 bg-slate-50" placeholder="apple&#9;/ˈæp.əl/&#9;A round fruit with red or green skin&#9;Quả táo..."></textarea>
+            <label class="block text-[11px] font-bold text-slate-500 mb-2 leading-relaxed">Paste columns from Excel/Sheets (Order is important): <br><span class="font-mono text-blue-600">Term ➔ Pron ➔ English ➔ Viet ➔ Synonyms ➔ Antonyms ➔ Prefix ➔ Suffix ➔ Level (A1-C2)</span></label>
+            <textarea id="tv-bulk-input" class="w-full border border-slate-300 p-3 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none h-28 mb-3 bg-slate-50 whitespace-pre" placeholder="ubiquitous&#9;/juːˈbɪk.wɪ.təs/&#9;Found everywhere&#9;Có mặt khắp nơi&#9;omnipresent&#9;rare&#9;&#9;-ous&#9;C2"></textarea>
             <button onclick="processVocabBulk()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded shadow hover:bg-emerald-700 transition">Import Vocabulary Rows</button>
           </div>
 
           <!-- Single Word Area -->
           <div id="tv-single-area">
-            <div class="grid grid-cols-2 gap-3 mb-3">
-              <div><label class="block text-xs font-bold text-slate-500 mb-1">Term / Phrase *</label><input type="text" id="tv-term" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="e.g. ubiquitous"></div>
-              <div><label class="block text-xs font-bold text-slate-500 mb-1">Pronunciation (Optional)</label><input type="text" id="tv-pron" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono" placeholder="e.g. /juːˈbɪk.wɪ.təs/"></div>
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Term / Phrase *</label><input type="text" id="tv-term" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" placeholder="e.g. ubiquitous"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Pronunciation</label><input type="text" id="tv-pron" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-mono" placeholder="/juːˈbɪk.wɪ.təs/"></div>
             </div>
-            <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">English Definition</label><input type="text" id="tv-eng" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Present, appearing, or found everywhere."></div>
-            <div class="mb-3"><label class="block text-xs font-bold text-slate-500 mb-1">Vietnamese Meaning</label><input type="text" id="tv-vi" class="w-full border p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Có mặt ở khắp nơi"></div>
-            <button onclick="addTeacherVocab()" class="w-full bg-blue-600 text-white font-bold py-2 rounded shadow hover:bg-blue-700 transition">Add to Test List</button>
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">English Def</label><input type="text" id="tv-eng" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Found everywhere"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Vietnamese</label><input type="text" id="tv-vi" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Có mặt khắp nơi"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Synonyms</label><input type="text" id="tv-syn" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="omnipresent, universal"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Antonyms</label><input type="text" id="tv-ant" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="rare, scarce"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Prefix</label><input type="text" id="tv-pref" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ubi-"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Suffix</label><input type="text" id="tv-suf" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="-ous"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Level</label><select id="tv-lvl" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"><option value="">--</option><option value="A1">A1</option><option value="A2">A2</option><option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option><option value="C2">C2</option></select></div>
+            </div>
+            <button onclick="addTeacherVocab()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded shadow hover:bg-blue-700 transition">Add to Test List</button>
           </div>
+
         </div>
         <h3 class="font-bold text-sm text-slate-600 uppercase mb-2">Current List</h3>
         <div id="tv-list" class="space-y-2"></div>
@@ -695,14 +711,19 @@
     <button onmousedown="event.preventDefault(); modifyTable('toggle-border')" class="px-2 py-1.5 hover:bg-slate-100 text-blue-700 rounded transition" title="Toggle Borders">▦ Borders</button>
   </div>
 
-  <!-- VOCAB POPOVER (Practice Mode) -->
-  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-2xl rounded-lg p-3 w-64 -translate-y-full mt-[-10px] animate-pop">
-    <div class="flex justify-between items-start mb-2">
-        <h3 class="font-bold text-lg text-blue-800" id="vp-term"></h3>
-        <span id="vp-pron" class="text-xs font-mono text-slate-500 bg-slate-100 px-1 rounded"></span>
+    <!-- VOCAB POPOVER (Practice Mode) -->
+  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-2xl rounded-lg p-4 w-72 -translate-y-full mt-[-10px] animate-pop">
+    <div class="flex justify-between items-start mb-1">
+        <h3 class="font-black text-lg text-blue-800 flex items-center gap-2">
+            <span id="vp-term"></span>
+            <span id="vp-lvl" class="hidden text-[9px] font-black text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded uppercase"></span>
+        </h3>
+        <span id="vp-pron" class="text-xs font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded shadow-inner"></span>
     </div>
-    <div id="vp-eng" class="text-sm text-slate-700 mb-1"></div>
-    <div id="vp-vi" class="text-sm text-slate-600"></div>
+    <div id="vp-affix" class="hidden text-xs font-bold text-emerald-600 mb-2 border-b border-slate-100 pb-2"></div>
+    <div id="vp-eng" class="text-sm text-slate-700 mb-1 font-medium leading-snug"></div>
+    <div id="vp-vi" class="text-sm text-slate-500 mb-3 leading-snug"></div>
+    <div id="vp-extras" class="hidden text-xs text-slate-600 space-y-1.5 pt-2 border-t border-slate-100 bg-slate-50 p-2 rounded-lg"></div>
     <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-blue-200 rotate-45 arrow"></div>
   </div>
   
@@ -1680,7 +1701,10 @@
 
          <div class="flex items-center gap-2">
             <span id="autosave-status" class="text-xs font-bold text-emerald-500 opacity-0 transition-opacity mr-1">✓ Saved</span>
-            
+
+            <button id="exam-flashcard-btn" onclick="window.toggleStudentFlashcardPanel()" class="hidden w-10 h-10 rounded-full border border-slate-200 bg-slate-50 items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Flashcards">
+              🗂️
+            </button>            
             <button onclick="toggleNotesPanel()" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="My Notes">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>
@@ -3478,27 +3502,61 @@ window.initFirebaseSystem = async function() {
         });
     }
 
-    function openTeacherVocabModal() {
+      window.openTeacherVocabModal = function() {
       if(!APP_DATA.vocab) APP_DATA.vocab = [];
+      
+      const partSel = document.getElementById('tv-part-select');
+      if (partSel && APP_DATA.parts) {
+          partSel.innerHTML = APP_DATA.parts.map((p, i) => `<option value="${p.title || 'Part '+(i+1)}">${p.title || 'Part '+(i+1)}</option>`).join('');
+          if (APP_DATA.parts[currentEditorPartIdx]) {
+              partSel.value = APP_DATA.parts[currentEditorPartIdx].title || `Part ${currentEditorPartIdx+1}`;
+          }
+      }
+
       document.getElementById('teacher-vocab-modal').classList.remove('hidden');
       renderTeacherVocab();
     }
+
     function closeTeacherVocabModal() { document.getElementById('teacher-vocab-modal').classList.add('hidden'); }
     
     function renderTeacherVocab() {
       const list = document.getElementById('tv-list');
       list.innerHTML = APP_DATA.vocab.length ? APP_DATA.vocab.map((v, i) => `
-        <div class="bg-white p-3 rounded border border-slate-200 flex justify-between items-center">
-          <div><strong class="text-blue-700">${v.term}</strong> <span class="text-xs text-slate-500 font-mono ml-2">${v.pron||''}</span>
-          <div class="text-xs text-slate-600 mt-1">${v.eng||''}${v.eng&&v.vi?' | ':''}${v.vi||''}</div></div>
-          <button onclick="APP_DATA.vocab.splice(${i},1); renderTeacherVocab(); triggerEditorAutosave();" class="text-rose-500 text-xs font-bold px-2 py-1 hover:bg-rose-50 rounded">Delete</button>
+        <div class="bg-white p-3 rounded border border-slate-200 flex justify-between items-start">
+          <div class="flex-1 pr-2">
+              <div class="flex items-center gap-2 mb-1">
+                  <strong class="text-blue-700">${v.term}</strong> 
+                  ${v.lvl ? `<span class="bg-indigo-100 text-indigo-700 text-[9px] px-1.5 py-0.5 rounded font-bold">${v.lvl}</span>` : ''}
+                  <span class="text-xs text-slate-500 font-mono">${v.pron||''}</span>
+                  <span class="bg-amber-100 text-amber-800 text-[9px] px-1.5 py-0.5 rounded font-bold">${v.part || 'Global'}</span>
+              </div>
+              <div class="text-xs text-slate-600 mb-1 font-medium">${v.eng||''}${v.eng&&v.vi?' | ':''}${v.vi||''}</div>
+              <div class="text-[10px] text-slate-400 font-medium space-x-2">
+                  ${v.syn ? `<span title="Synonyms">🔄 ${v.syn}</span>` : ''}
+                  ${v.ant ? `<span title="Antonyms">↔️ ${v.ant}</span>` : ''}
+                  ${v.pref ? `<span title="Prefix">⏮️ ${v.pref}</span>` : ''}
+                  ${v.suf ? `<span title="Suffix">⏭️ ${v.suf}</span>` : ''}
+              </div>
+          </div>
+          <button onclick="APP_DATA.vocab.splice(${i},1); renderTeacherVocab(); triggerEditorAutosave();" class="text-rose-500 text-xs font-bold px-2 py-1 hover:bg-rose-50 rounded shrink-0">Delete</button>
         </div>`).join('') : '<div class="text-xs text-slate-400 italic">No words added yet.</div>';
     }
     function addTeacherVocab() {
       const term = document.getElementById('tv-term').value.trim();
       if(!term) return;
-      APP_DATA.vocab.push({ term, pron: document.getElementById('tv-pron').value.trim(), eng: document.getElementById('tv-eng').value.trim(), vi: document.getElementById('tv-vi').value.trim() });
-      ['tv-term','tv-pron','tv-eng','tv-vi'].forEach(id => document.getElementById(id).value = '');
+      APP_DATA.vocab.push({ 
+          term, 
+          part: document.getElementById('tv-part-select').value, // <-- ADD THIS
+          pron: document.getElementById('tv-pron').value.trim(), 
+          eng: document.getElementById('tv-eng').value.trim(), 
+          vi: document.getElementById('tv-vi').value.trim(),
+          syn: document.getElementById('tv-syn').value.trim(),
+          ant: document.getElementById('tv-ant').value.trim(),
+          pref: document.getElementById('tv-pref').value.trim(),
+          suf: document.getElementById('tv-suf').value.trim(),
+          lvl: document.getElementById('tv-lvl').value.trim()
+      });
+      ['tv-term','tv-pron','tv-eng','tv-vi','tv-syn','tv-ant','tv-pref','tv-suf','tv-lvl'].forEach(id => document.getElementById(id).value = '');
       renderTeacherVocab();
       triggerEditorAutosave();
     }
@@ -3531,15 +3589,22 @@ window.initFirebaseSystem = async function() {
       
       lines.forEach(line => {
         const parts = line.split('\t'); // Reads the Excel columns based on standard 'tab' spacing
-        if(parts[0] && parts[0].trim()) {
+          if(parts[0] && parts[0].trim()) {
           APP_DATA.vocab.push({
             term: parts[0].trim(),
+            part: document.getElementById('tv-part-select').value, // <-- ADD THIS
             pron: (parts[1] || '').trim(),
             eng: (parts[2] || '').trim(),
-            vi: (parts[3] || '').trim()
+            vi: (parts[3] || '').trim(),
+            syn: (parts[4] || '').trim(),
+            ant: (parts[5] || '').trim(),
+            pref: (parts[6] || '').trim(),
+            suf: (parts[7] || '').trim(),
+            lvl: (parts[8] || '').trim()
           });
           count++;
         }
+
       });
       
       document.getElementById('tv-bulk-input').value = '';
@@ -4058,7 +4123,7 @@ window.initFirebaseSystem = async function() {
             activeTableCell = null;
         }
 
-        if (e.target.closest('#edit-passage-text')) {
+        if (e.target.closest('#edit-passage-text') || e.target.closest('#editor-questions-list')) {
           const sel = window.getSelection();
           if (sel && sel.toString().trim().length > 0) {
             const range = sel.getRangeAt(0);
@@ -4480,7 +4545,18 @@ window.initFirebaseSystem = async function() {
       document.getElementById('exam-action-btn-text').textContent = "EXIT PREVIEW";
 
       const backBtn = document.getElementById('exam-back-btn');
-      if (backBtn) { backBtn.classList.remove('hidden'); backBtn.classList.add('flex'); }
+      const fcBtn = document.getElementById('exam-flashcard-btn');
+      if (backBtn) {
+          if (testMode === 'free' || isPreviewMode) {
+              backBtn.classList.remove('hidden');
+              backBtn.classList.add('flex');
+              if(fcBtn) { fcBtn.classList.remove('hidden'); fcBtn.classList.add('flex'); }
+          } else {
+              backBtn.classList.add('hidden');
+              backBtn.classList.remove('flex');
+              if(fcBtn) { fcBtn.classList.add('hidden'); fcBtn.classList.remove('flex'); }
+          }
+      }
 
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
       document.getElementById('exam-module-bar').className = `${modColors[APP_DATA.module]} text-white px-4 py-2 font-bold flex justify-between items-center z-30 shadow`;
@@ -6366,15 +6442,16 @@ window.initFirebaseSystem = async function() {
       document.getElementById('exam-action-btn-text').textContent = window.isFullExamMode ? (window.fullExamCurrentIndex < 2 ? "NEXT SECTION" : "SUBMIT EXAM") : "SUBMIT TEST";
       
       const backBtn = document.getElementById('exam-back-btn');
+      const fcBtn = document.getElementById('exam-flashcard-btn');
       if (backBtn) {
           if (testMode === 'free' || isPreviewMode) {
-              // Allow backing out during Time-Free Practice
               backBtn.classList.remove('hidden');
               backBtn.classList.add('flex');
+              if(fcBtn) { fcBtn.classList.remove('hidden'); fcBtn.classList.add('flex'); }
           } else {
-              // Hide the back button in Exam Mode / Full Mock Test to force submission!
               backBtn.classList.add('hidden');
               backBtn.classList.remove('flex');
+              if(fcBtn) { fcBtn.classList.add('hidden'); fcBtn.classList.remove('flex'); }
           }
       }
 
@@ -6636,18 +6713,35 @@ window.initFirebaseSystem = async function() {
       restoreHighlights();
     }
     
-    function showVocabPop(e, idx) {
+        function showVocabPop(e, idx) {
       e.stopPropagation(); const v = APP_DATA.vocab[idx]; if(!v) return;
       document.getElementById('vp-term').textContent = v.term;
       document.getElementById('vp-pron').textContent = v.pron || ''; document.getElementById('vp-pron').classList.toggle('hidden', !v.pron);
       document.getElementById('vp-eng').innerHTML = v.eng ? `<b>EN:</b> ${v.eng}` : '';
       document.getElementById('vp-vi').innerHTML = v.vi ? `<b>VI:</b> ${v.vi}` : '';
       
+      const lvlEl = document.getElementById('vp-lvl');
+      lvlEl.textContent = v.lvl || ''; lvlEl.classList.toggle('hidden', !v.lvl);
+      
+      const affixEl = document.getElementById('vp-affix');
+      let affixHtml = [];
+      if (v.pref) affixHtml.push(`Prefix: <span class="text-emerald-800">${v.pref}</span>`);
+      if (v.suf) affixHtml.push(`Suffix: <span class="text-emerald-800">${v.suf}</span>`);
+      affixEl.innerHTML = affixHtml.join(' &nbsp;|&nbsp; ');
+      affixEl.classList.toggle('hidden', affixHtml.length === 0);
+
+      const extrasEl = document.getElementById('vp-extras');
+      let extraHtml = [];
+      if (v.syn) extraHtml.push(`<div><b class="text-slate-400">Synonyms:</b> <span class="text-blue-600 font-medium">${v.syn}</span></div>`);
+      if (v.ant) extraHtml.push(`<div><b class="text-slate-400">Antonyms:</b> <span class="text-rose-500 font-medium">${v.ant}</span></div>`);
+      extrasEl.innerHTML = extraHtml.join('');
+      extrasEl.classList.toggle('hidden', extraHtml.length === 0);
+      
       const pop = document.getElementById('vocab-popover'); 
       pop.classList.remove('hidden');
       
       const rect = e.target.getBoundingClientRect();
-      const popWidth = pop.offsetWidth || 256; 
+      const popWidth = pop.offsetWidth || 288; 
       
       let popLeft = rect.left + (rect.width / 2);
       if (popLeft - (popWidth / 2) < 10) popLeft = (popWidth / 2) + 10;
@@ -6943,19 +7037,32 @@ window.initFirebaseSystem = async function() {
           mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
           mediaRecorder.onstop = async () => {
             const blob = new Blob(audioChunks, { type: 'audio/webm' });
-            st.textContent = 'Uploading to Cloud...';
-            try {
-                const path = 'audio_answers/' + currentUser.user + '_' + Date.now() + '_' + id + '.webm';
-                const url = await window.uploadMediaToStorage(blob, path);
-                answers[id] = url; 
+            st.textContent = 'Saving audio...';
+            
+            // Convert the audio blob into a Base64 text string
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64Audio = reader.result;
+                
+                // Firestore has a 1MB limit. Warn the student if they talk for way too long.
+                if (base64Audio.length > 950000) {
+                    st.textContent = 'Recording too long! Please keep it under 2 minutes.';
+                    return;
+                }
+                
+                answers[id] = base64Audio; 
                 triggerAutosave(); 
-                pb.src = url; 
+                pb.src = base64Audio; 
                 pb.classList.remove('hidden'); 
                 st.textContent = 'Recorded successfully.';
-            } catch(err) {
-                console.error("Audio upload failed", err);
-                st.textContent = 'Upload failed. Try again.';
-            }
+            };
+            
+            reader.onerror = () => {
+                st.textContent = 'Audio processing failed. Try again.';
+            };
+            
+            reader.readAsDataURL(blob);
+
             stream.getTracks().forEach(t => t.stop());
           };
           mediaRecorder.start(); btn.classList.add('animate-pulse', 'bg-rose-700'); btn.classList.remove('bg-rose-500'); st.textContent = 'Recording... (Click to Stop)'; pb.classList.add('hidden');
@@ -6964,6 +7071,53 @@ window.initFirebaseSystem = async function() {
     }
 
     function handleAns(id, v) { answers[id] = v; triggerAutosave(); updateExamUI(); }
+    window.quickCheckAnswer = function(blockIdx) {
+        const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
+        if (!q) return;
+
+        let total = 0;
+        let correct = 0;
+
+        if (q.multi) {
+            // Check Checkbox/Multi-select answers
+            const given = q.ids.map(id => (answers[id] || '').toString().toLowerCase()).filter(Boolean);
+            q.ids.forEach(id => {
+                total++;
+                const ex = (q.correctAnswers?.[id] || '').toString().toLowerCase();
+                if (ex) {
+                    const matchIdx = given.indexOf(ex);
+                    if (matchIdx !== -1) { correct++; given.splice(matchIdx, 1); }
+                }
+            });
+        } else {
+            // Check standard questions (Text, Radio, Dropdowns)
+            q.ids.forEach(id => {
+                total++;
+                const exStr = (q.correctAnswers?.[id] || '').toString().toLowerCase();
+                const gv = (answers[id] || '').toString().toLowerCase().trim();
+                const exList = exStr.split(/[/|]/).map(x => x.trim()); // Supports multiple valid answers separated by / or |
+                if (exStr && exList.includes(gv) && gv !== '') correct++;
+            });
+        }
+
+        const resDiv = document.getElementById(`quick-res-${blockIdx}`);
+        if (!resDiv) return;
+
+        // Clear old colors
+        resDiv.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'bg-rose-100', 'text-rose-800', 'bg-amber-100', 'text-amber-800');
+
+        // Apply new result status
+        if (correct === total && total > 0) {
+            resDiv.classList.add('bg-emerald-100', 'text-emerald-800');
+            resDiv.innerHTML = `✅ All Correct!`;
+        } else if (correct > 0) {
+            resDiv.classList.add('bg-amber-100', 'text-amber-800');
+            resDiv.innerHTML = `⚠️ Partially Correct (${correct}/${total})`;
+        } else {
+            resDiv.classList.add('bg-rose-100', 'text-rose-800');
+            resDiv.innerHTML = `❌ Incorrect. Try again!`;
+        }
+    };
 
     function handleMultiAns(idsStr, cb) {
         const ids = idsStr.split(',').map(Number);
@@ -7973,12 +8127,19 @@ window.initFirebaseSystem = async function() {
         }
     };
 
-    function toggleStudentFlashcardPanel() {
+    window.toggleStudentFlashcardPanel = function() {
       const p = document.getElementById('student-fc-panel');
       if(p.classList.contains('translate-x-full')) {
         p.classList.remove('translate-x-full');
         const sel = document.getElementById('panel-fc-list-select');
-        sel.innerHTML = `<option value="teacher_vocab">📌 Test Vocab (Teacher)</option>` + Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 ${k}</option>`).join('');
+        
+        let testVocabOpts = '';
+        if (APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
+            const partsWithVocab = [...new Set(APP_DATA.vocab.map(v => v.part || 'General'))];
+            testVocabOpts = partsWithVocab.map(part => `<option value="tv_${part}">📌 Vocab: ${part}</option>`).join('');
+        }
+
+        sel.innerHTML = testVocabOpts + Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 ${k}</option>`).join('');
         renderFlashcardPanel();
       } else p.classList.add('translate-x-full');
     }
@@ -8024,8 +8185,12 @@ window.initFirebaseSystem = async function() {
       const listName = document.getElementById('panel-fc-list-select').value;
       const c = document.getElementById('panel-fc-container');
       let cards = [];
-      if (listName === 'teacher_vocab') cards = APP_DATA.vocab || [];
-      else cards = FLASHCARDS[listName] || [];
+      if (listName.startsWith('tv_')) {
+          const partName = listName.replace('tv_', '');
+          cards = (APP_DATA.vocab || []).filter(v => (v.part || 'General') === partName);
+      } else {
+          cards = FLASHCARDS[listName] || [];
+      }
 
       if (!cards.length) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No cards in this deck.</div>'; return; }
       
@@ -8033,7 +8198,7 @@ window.initFirebaseSystem = async function() {
 
       html += cards.map((card, i) => `
         <div class="flip-card w-full h-40 mb-4 cursor-pointer perspective-1000 relative group" onclick="this.classList.toggle('flipped')">
-          ${listName === 'teacher_vocab' ? `<button onclick="event.stopPropagation(); importCardToMine(${i})" class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold shadow opacity-0 group-hover:opacity-100 transition z-10">+</button>` : ''}
+          ${listName.startsWith('tv_') ? `<button onclick="event.stopPropagation(); window.importCardToMine('${card.term.replace(/'/g, "\\'")}')" class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold shadow opacity-0 group-hover:opacity-100 transition z-10">+</button>` : ''}
           <div class="flip-card-inner w-full h-full relative shadow-md rounded-xl">
             <div class="flip-card-front absolute w-full h-full bg-white border border-slate-200 rounded-xl flex items-center justify-center p-4">
               <h3 class="font-bold text-xl text-blue-800 text-center">${card.term}</h3>
@@ -8050,10 +8215,19 @@ window.initFirebaseSystem = async function() {
       c.innerHTML = html;
     }
 
-    async function importCardToMine(idx) {
-      const v = APP_DATA.vocab[idx]; if(!v) return;
+    window.importCardToMine = async function(term) {
+      const v = APP_DATA.vocab.find(x => x.term === term); if(!v) return;
+      
       document.getElementById('fc-term-input').value = v.term;
-      document.getElementById('fc-def-input').value = `${v.pron ? `[${v.pron}]\n` : ''}${v.eng ? `EN: ${v.eng}\n` : ''}${v.vi ? `VI: ${v.vi}` : ''}`.trim();
+      let textLines = [];
+      if(v.lvl) textLines.push(`Level: ${v.lvl}`);
+      if(v.pron) textLines.push(`[${v.pron}]`);
+      if(v.eng) textLines.push(`EN: ${v.eng}`);
+      if(v.vi) textLines.push(`VI: ${v.vi}`);
+      if(v.syn) textLines.push(`Syn: ${v.syn}`);
+      if(v.ant) textLines.push(`Ant: ${v.ant}`);
+      document.getElementById('fc-def-input').value = textLines.join('\n');
+      
       const listSel = document.getElementById('fc-list-select');
       
       if(Object.keys(FLASHCARDS).length === 0) { 
@@ -8064,6 +8238,7 @@ window.initFirebaseSystem = async function() {
       listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
       document.getElementById('student-fc-modal').classList.remove('hidden');
     }
+
 
     // ==========================================
     // ✨ ACTIVE RECALL STUDY SYSTEM
