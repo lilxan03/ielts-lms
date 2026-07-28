@@ -757,15 +757,27 @@
               <button onclick="document.getElementById('availability-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
           </div>
           <div class="p-6 overflow-y-auto flex-1 bg-white">
-              <div class="mb-6 flex items-center gap-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <label class="font-bold text-slate-700 text-sm uppercase tracking-widest">Appointment Duration:</label>
-                  <select id="avail-duration" class="border border-slate-300 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-700 bg-white shadow-sm">
-                      <option value="30">30 mins</option>
-                      <option value="45">45 mins</option>
-                      <option value="60">1 hour</option>
-                      <option value="90">1.5 hours</option>
-                      <option value="120">2 hours</option>
-                  </select>
+              <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="flex flex-col gap-2 bg-blue-50 p-4 rounded-lg border border-blue-100 shadow-inner">
+                      <label class="font-bold text-slate-700 text-xs uppercase tracking-widest">Appointment Duration</label>
+                      <select id="avail-duration" class="border border-slate-300 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-700 bg-white shadow-sm">
+                          <option value="30">30 mins</option>
+                          <option value="45">45 mins</option>
+                          <option value="60">1 hour</option>
+                          <option value="90">1.5 hours</option>
+                          <option value="120">2 hours</option>
+                      </select>
+                  </div>
+                  <div class="flex flex-col gap-2 bg-indigo-50 p-4 rounded-lg border border-indigo-100 shadow-inner">
+                      <label class="font-bold text-slate-700 text-xs uppercase tracking-widest">Remind Before Class</label>
+                      <select id="avail-reminder" class="border border-slate-300 p-2 rounded outline-none focus:border-indigo-500 font-bold text-indigo-700 bg-white shadow-sm">
+                          <option value="5">5 Minutes</option>
+                          <option value="10">10 Minutes</option>
+                          <option value="15">15 Minutes</option>
+                          <option value="30">30 Minutes</option>
+                          <option value="60">1 Hour</option>
+                      </select>
+                  </div>
               </div>
               <h3 class="font-bold text-slate-700 mb-4 border-b pb-2">Weekly Recurring Hours</h3>
               <p class="text-sm text-slate-500 mb-4">Set when you are regularly available. Students can book appointments automatically within these limits.</p>
@@ -1874,7 +1886,7 @@ window.initFirebaseSystem = async function() {
         }
     }
 
-        window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', () => {
         window.initFirebaseSystem();
         const editorBuilder = document.getElementById('editor-view-builder');
         if (editorBuilder) {
@@ -1882,14 +1894,17 @@ window.initFirebaseSystem = async function() {
             editorBuilder.addEventListener('change', triggerEditorAutosave);
         }
 
-        // ✨ NEW: Auto-apply the premium focus state to all existing form elements
+        // Auto-apply the premium focus state to all existing form elements
         const formElements = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
         formElements.forEach(el => {
-            // Remove existing inconsistent focus rings from Tailwind classes
             el.className = el.className.replace(/focus:ring-\d/g, '').replace(/focus:ring-[a-z]+-\d+\/\d+/g, '').replace(/focus:border-[a-z]+-\d+/g, '');
-            // Add the unified standard class
             el.classList.add('input-standard');
         });
+
+        // ✨ NEW: Start the Background Reminder Engine (Checks every 30 seconds)
+        setInterval(() => {
+            if(typeof window.checkUpcomingClasses === 'function') window.checkUpcomingClasses();
+        }, 30000);
     });
   </script>
 
@@ -2240,6 +2255,9 @@ window.initFirebaseSystem = async function() {
             }
 
             if (currentUser.role === 'teacher') {
+                // ✨ FIX: Instantly recalculate badges the millisecond cloud data arrives!
+                if(typeof window.updateTeacherBadges === 'function') window.updateTeacherBadges();
+                
                 const editorUI = document.getElementById('editor-ui');
                 if (!editorUI.classList.contains('hidden')) {
                     if(typeof renderTestBank === 'function') renderTestBank();
@@ -2827,19 +2845,24 @@ window.initFirebaseSystem = async function() {
         localStorage.setItem('ielts_fontsize', s);
     }
     
-    window.updateTeacherBadges = function() {
+        window.updateTeacherBadges = function() {
         if (!currentUser || currentUser.role !== 'teacher') return;
 
         const pendingStudents = USERS.filter(u => u.role === 'student' && u.paymentStatus === 'pending').length;
         const pendingSubs = SUBMISSIONS.filter(s => s.score === 'Pending Grade').length;
-        const totalNots = pendingStudents + pendingSubs;
+        
+        // ✨ NEW: Calculate new Bookings and Student Replies
+        const newBookings = SCHEDULES.filter(s => s.isNewBooking).length;
+        const newReplies = SUBMISSIONS.filter(s => s.studentReply && !s.teacherReadReply).length;
+
+        const totalNots = pendingStudents + pendingSubs + newBookings + newReplies;
 
         const el = document.getElementById('badge-global-notifications');
         if (el) {
             if (parseInt(el.textContent) !== totalNots && totalNots > 0) {
-                el.classList.remove('animate-badge-pop'); // <-- Changed
+                el.classList.remove('animate-badge-pop');
                 void el.offsetWidth;
-                el.classList.add('animate-badge-pop'); // <-- Changed
+                el.classList.add('animate-badge-pop');
             }
             el.textContent = totalNots;
             if (totalNots > 0) { el.classList.remove('hidden'); el.classList.add('flex'); }
@@ -2849,6 +2872,18 @@ window.initFirebaseSystem = async function() {
         const list = document.getElementById('teacher-notifications-list');
         if (list) {
             let html = '';
+            if (newBookings > 0) {
+                html += `<button onclick="window.clearBookingNotifications()" class="text-left px-4 py-3 hover:bg-indigo-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
+                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">📅 New Bookings</span>
+                    <span class="text-sm font-medium text-slate-700">You have <b>${newBookings}</b> new student appointment(s).</span>
+                </button>`;
+            }
+            if (newReplies > 0) {
+                html += `<button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-emerald-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
+                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">💬 Student Replies</span>
+                    <span class="text-sm font-medium text-slate-700">You have <b>${newReplies}</b> new reply/question(s) on graded tests.</span>
+                </button>`;
+            }
             if (pendingSubs > 0) {
                 html += `<button onclick="toggleEditorTab('bank'); toggleDashboardView('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
                     <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">📝 Submissions</span>
@@ -2865,6 +2900,18 @@ window.initFirebaseSystem = async function() {
             list.innerHTML = html;
         }
     };
+    
+    // ✨ NEW: Helper to clear booking notifications when clicked
+    window.clearBookingNotifications = async function() {
+        const unread = SCHEDULES.filter(s => s.isNewBooking);
+        for (let s of unread) {
+            s.isNewBooking = false;
+            try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), s.id), s); } catch(e){}
+        }
+        toggleEditorTab('timetable');
+        window.toggleTeacherNotifications();
+    };
+
 
     window.toggleDashboardView = function(view) {
       sessionStorage.setItem('lms_dash_view', view);
@@ -3345,7 +3392,8 @@ window.initFirebaseSystem = async function() {
                                 </div>
                                 <div class="flex justify-between items-center pl-2 mt-2 pt-2 border-t border-slate-50">
                                     <span class="text-[11px] text-slate-500 truncate max-w-[120px] font-medium" title="${s.testName}">${s.testName}</span>
-                                    <div class="flex gap-1 shrink-0">
+                                    <div class="flex gap-1 shrink-0 items-center">
+                                        ${s.studentReply && !s.teacherReadReply ? `<span class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded animate-pulse mr-1">New Reply</span>` : ''}
                                         <button onclick="openGradingView(${s.id})" class="text-[10px] bg-slate-50 border border-slate-200 text-slate-700 hover:bg-blue-600 hover:text-white font-bold px-3 py-1.5 rounded-lg transition shadow-sm">Review</button>
                                         <button onclick="window.deleteSubmission(${s.id})" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-500 hover:text-white font-bold px-2 py-1.5 rounded-lg transition shadow-sm" title="Delete Submission">Del</button>
                                     </div>
@@ -7355,7 +7403,10 @@ window.initFirebaseSystem = async function() {
             <p class="text-sm font-medium text-slate-600 mt-1 flex items-center gap-2">📝 ${s.testName} <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-slate-100 px-2 py-0.5 rounded">${s.date}</span></p>
           </div>
           <div class="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center">
-            <p class="font-black text-blue-700 text-xl">${s.score}</p>
+            <div class="flex items-center gap-2">
+                ${s.studentReply && !s.teacherReadReply ? `<span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-1 rounded animate-pulse shadow-sm">New Reply</span>` : ''}
+                <p class="font-black text-blue-700 text-xl">${s.score}</p>
+            </div>
             <button onclick="openGradingView(${s.id})" class="text-sm bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 font-bold px-4 py-2 rounded-lg border border-blue-100 hover:border-blue-600 mt-1 shadow-sm transition">Grade / Review &rarr;</button>
           </div>
         </div>`).join('') : `
@@ -7401,7 +7452,13 @@ window.initFirebaseSystem = async function() {
           test = TEST_BANK.find(t => t.id === sub.testId);
           if(!test) { showModalMsg("Error", "Original test deleted."); return; }
       }
-      
+
+      // ✨ NEW: Mark student reply as read when teacher opens it!
+      if (sub.studentReply && !sub.teacherReadReply) {
+          sub.teacherReadReply = true;
+          window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
+      }
+
       APP_DATA = test; answers = sub.answers || {};
       
       document.getElementById('editor-ui').classList.add('hidden');
@@ -7433,6 +7490,7 @@ window.initFirebaseSystem = async function() {
 
     function buildSplitReviewUI(isGrading, subId, feedbackObj) {
       const l = document.getElementById('review-left-pane'), r = document.getElementById('review-right-pane');
+      const sub = SUBMISSIONS.find(x => x.id === subId) || {}; // ✨ Access submission data
       
       let lHtml = '';
       APP_DATA.parts.forEach((p, i) => {
@@ -7539,6 +7597,13 @@ window.initFirebaseSystem = async function() {
                         </div>
                         <label class="block text-xs font-bold text-slate-500 mt-2 uppercase tracking-widest">Overall Comments</label>
                         <textarea id="fb-${q.ids[0]}" class="w-full border-2 border-blue-200 rounded-xl p-4 text-sm outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 min-h-[160px] resize-y shadow-inner font-medium text-slate-700 transition-all bg-white" placeholder="Write overall feedback here...">${fbData.comment}</textarea>
+                        
+                        <!-- ✨ NEW: Show Student Reply to Teacher -->
+                        ${sub.studentReply ? `
+                        <div class="mt-2 pt-4 border-t border-blue-200">
+                            <label class="block text-[10px] font-black text-blue-600 mb-2 uppercase tracking-widest flex items-center gap-1">💬 Student Reply</label>
+                            <div class="bg-white p-3 rounded-xl border border-blue-200 text-sm text-slate-700 shadow-sm italic leading-relaxed">"${sub.studentReply}"</div>
+                        </div>` : ''}
                     </div>
                 </div>`;
             } else {
@@ -7571,6 +7636,16 @@ window.initFirebaseSystem = async function() {
                             <div class="bg-white p-3 rounded-xl border border-emerald-200 text-center shadow-sm"><div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">GRA</div><div class="font-black text-emerald-700 text-2xl leading-none">${fbData.gra || '-'}</div></div>
                         </div>
                         <div class="text-emerald-900 text-sm leading-relaxed bg-white p-4 rounded-xl border border-emerald-200 shadow-inner font-medium">${fbData.comment || '<i>No overall comments provided.</i>'}</div>
+                        
+                        <!-- ✨ NEW: Student Reply Box -->
+                        <div class="mt-2 pt-4 border-t border-emerald-200">
+                            <label class="block text-[10px] font-black text-emerald-700 mb-2 uppercase tracking-widest flex items-center gap-1">💬 Reply to Teacher</label>
+                            ${sub.studentReply 
+                                ? `<div class="bg-white p-3 rounded-xl border border-emerald-200 text-sm text-slate-700 shadow-sm italic leading-relaxed">"${sub.studentReply}"</div>` 
+                                : `<textarea id="student-reply-text" class="w-full border-2 border-emerald-200 rounded-xl p-3 text-sm outline-none focus:border-emerald-500 bg-white shadow-inner mb-2 resize-none h-20" placeholder="Ask a question or say thanks..."></textarea>
+                                   <button onclick="window.submitStudentReply(${subId})" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg shadow-sm transition text-sm">Send Reply</button>`
+                            }
+                        </div>
                     </div>`;
                 } else {
                     feedbackSidebarHtml = `
@@ -7874,6 +7949,26 @@ window.initFirebaseSystem = async function() {
       renderSubmissions(); 
       btn.textContent="Save Grades & Feedback"; btn.disabled=false;
     }
+
+    window.submitStudentReply = async function(subId) {
+        const text = document.getElementById('student-reply-text').value.trim();
+        if (!text) return;
+        
+        const sub = SUBMISSIONS.find(x => x.id === subId);
+        if (!sub) return;
+        
+        sub.studentReply = text;
+        sub.teacherReadReply = false; // Triggers the teacher's red notification badge
+        
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
+            if (typeof window.showToast === 'function') window.showToast("Sent!", "Your reply has been sent to the teacher.");
+            reviewPastSubmission(subId); // Re-render UI to hide text box
+        } catch (e) {
+            console.error(e);
+            showModalMsg("Error", "Could not send reply.");
+        }
+    };
 
     function toggleStudentFlashcardPanel() {
       const p = document.getElementById('student-fc-panel');
@@ -9388,6 +9483,7 @@ window.initFirebaseSystem = async function() {
 
     window.openAvailabilitySettings = function() {
         document.getElementById('avail-duration').value = AVAILABILITY.duration || 60;
+        document.getElementById('avail-reminder').value = AVAILABILITY.reminderMinutes || 15;
         
         let html = '';
         for(let i=0; i<7; i++) {
@@ -9462,6 +9558,7 @@ window.initFirebaseSystem = async function() {
         
         const newAvail = {
             duration: Number(document.getElementById('avail-duration').value) || 60,
+            reminderMinutes: Number(document.getElementById('avail-reminder').value) || 15,
             schedule: {}
         };
         
@@ -9664,7 +9761,8 @@ window.initFirebaseSystem = async function() {
             topic: `Booking: ${currentUser.user}`, 
             assignedTests: [], 
             attendingStudents: [currentUser.user], 
-            dateAdded: new Date().toLocaleDateString() 
+            dateAdded: new Date().toLocaleDateString(),
+            isNewBooking: true // ✨ NEW: Trigger Teacher Notification
         };
         
         SCHEDULES.push(newSched);
@@ -10440,6 +10538,80 @@ window.initFirebaseSystem = async function() {
       // Populate the price field when opening
       document.getElementById('meta-price-input').value = APP_DATA.price || 0;
     };
+
+    // ==========================================
+    // ✨ UPCOMING CLASS REMINDER ENGINE
+    // ==========================================
+    window.notifiedClasses = new Set();
+    
+    window.parseClassDateTime = function(dateStr, timeStr) {
+        if (!dateStr || !timeStr) return null;
+        try {
+            const [y, m, d] = dateStr.split('-');
+            const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!match) return null;
+            let h = parseInt(match[1]);
+            const min = parseInt(match[2]);
+            const ampm = match[3].toUpperCase();
+            if (ampm === 'PM' && h < 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+            return new Date(y, m - 1, d, h, min, 0, 0);
+        } catch(e) { return null; }
+    };
+
+    window.checkUpcomingClasses = function() {
+        if (!currentUser || !SCHEDULES || SCHEDULES.length === 0) return;
+        
+        const reminderMins = AVAILABILITY.reminderMinutes || 15;
+        const now = new Date();
+        
+        SCHEDULES.forEach(s => {
+            // Determine if the current user is involved in this class
+            let isMe = false;
+            if (currentUser.role === 'teacher') {
+                isMe = true;
+            } else if (currentUser.role === 'student') {
+                if (s.attendingStudents && s.attendingStudents.includes(currentUser.user)) {
+                    isMe = true;
+                } else {
+                    // Check if they are enrolled in the overarching class
+                    const cls = CLASSES.find(c => c.name === s.className);
+                    if (cls && cls.enrolledStudents && cls.enrolledStudents.includes(currentUser.user)) {
+                        isMe = true;
+                    }
+                }
+            }
+            
+            if (!isMe) return;
+            
+            const classTime = window.parseClassDateTime(s.date, s.time);
+            if (!classTime) return;
+            
+            const diffMs = classTime - now;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            // If class is within the reminder window and hasn't been notified yet today
+            if (diffMins > 0 && diffMins <= reminderMins) {
+                if (!window.notifiedClasses.has(s.id)) {
+                    window.notifiedClasses.add(s.id);
+                    
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(
+                            `Upcoming Class: ${s.className}`, 
+                            `Starts in ${diffMins} minute(s) at ${s.time}.`, 
+                            'info' // Forces the blue styling
+                        );
+                    }
+                }
+            }
+            
+            // Clean up old notifications from memory so they trigger again if edited/rescheduled
+            if (diffMins < -120 && window.notifiedClasses.has(s.id)) {
+                window.notifiedClasses.delete(s.id);
+            }
+        });
+    };
+
 
     // --- LIVE VIDEO CLASS LOGIC (NEW TAB METHOD) ---
     window.joinLiveClass = function(scheduleId, topic) {
