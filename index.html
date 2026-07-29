@@ -2,9 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1e293b">
+  <title>IELTS LMS - Cloud Connected</title>
+  
+  <!-- PWA App Manifest Injection -->
+  <link rel="manifest" id="pwa-manifest">
+  <script>
+    const manifestJSON = {
+      "name": "IELTS LMS",
+      "short_name": "IELTS App",
+      "start_url": window.location.href.split('?')[0],
+      "display": "standalone",
+      "background_color": "#f4f7fb",
+      "theme_color": "#1e3a8a",
+      "icons": [{
+        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFlM2E4YSIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkk8L3RleHQ+PC9zdmc+",
+        "sizes": "512x512",
+        "type": "image/svg+xml"
+      }]
+    };
+    const blob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
+    });
+    window.addEventListener('beforeunload', function (e) {
+        if (document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden')) {
+            if (!isPreviewMode && !isTimeFree) {
+                e.preventDefault();
+                e.returnValue = 'Are you sure you want to reload? Your exam progress will be lost.';
+            }
+        }
+    });
+  </script>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- NEW: Use the Official, Free Jitsi API (No Tokens, No Popups) -->
   <script src="https://meet.jit.si/external_api.js"></script>
 
   <style>
@@ -22,8 +59,8 @@
       border-radius: 0.375rem;
       padding: 0.75rem;
       background-color: #ffffff;
-      font-family: inherit;
-      font-size: inherit;
+      font-family: inherit; /* Inherits main font */
+      font-size: inherit;   /* Inherits global text size */
       outline: none;
       overflow-y: auto;
     }
@@ -36,10 +73,16 @@
     .rich-editor th { background-color: #f1f5f9; }
     
     .rich-editor ul, .exam-reading-pane ul, #questions-container ul, #review-right-pane ul, #review-left-pane ul { 
-        list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; 
+        list-style-type: disc; 
+        padding-left: 1.5rem; 
+        margin-top: 0.5rem; 
+        margin-bottom: 0.5rem; 
     }
     .rich-editor ol, .exam-reading-pane ol, #questions-container ol, #review-right-pane ol, #review-left-pane ol { 
-        list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; 
+        list-style-type: decimal; 
+        padding-left: 1.5rem; 
+        margin-top: 0.5rem; 
+        margin-bottom: 0.5rem; 
     }
     .rich-editor li, .exam-reading-pane li, #questions-container li, #review-right-pane li, #review-left-pane li {
         margin-bottom: 0.25rem;
@@ -52,7 +95,12 @@
     .col-resizer { display: none !important; }
     .rich-editor .col-resizer { display: block !important; }
     .rich-editor table, #questions-container table, #review-right-pane table, #review-left-pane table {
-        overflow-wrap: break-word; word-break: normal; max-width: 100%; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        overflow-wrap: break-word;
+        word-break: normal;
+        max-width: 100%;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     .rich-editor th, .rich-editor td, #questions-container th, #questions-container td, #review-right-pane th, #review-right-pane td, #review-left-pane th, #review-left-pane td {
         vertical-align: top;
@@ -72,6 +120,7 @@
 
     /* MOBILE RESPONSIVE FIXES */
     @media (max-width: 768px) {
+        /* 1. Stack the Exam UI vertically */
         #split-container { flex-direction: column !important; }
         #passage-container { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
         #questions-container { width: 100% !important; flex: 1 !important; height: 60vh !important; }
@@ -79,41 +128,66 @@
         #resizer > div, #review-resizer > div, #builder-resizer > div { width: 30px !important; height: 4px !important; }
         #review-split-container { flex-direction: column !important; }
         #review-resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
+
+        /* 2. Stack the Grading & Review Screens vertically */
         #review-ui > div.flex-1 { flex-direction: column !important; }
         #review-left-pane { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
         #review-right-pane { width: 100% !important; flex: 1 !important; height: 60vh !important; }
+
+        /* 3. Stack the Teacher Test Builder vertically */
         #builder-split { flex-direction: column !important; }
         #builder-left { width: 100% !important; height: 45vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
         #builder-right { width: 100% !important; flex: 1 !important; height: 55vh !important; }
         #builder-resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
+
+        /* 4. Squeeze Modals & Slide Panels to fit phone screens */
         .w-96, .w-\[400px\], .w-\[500px\], .w-\[550px\], .w-\[600px\], .w-\[700px\], .w-\[800px\], .w-\[950px\] {
             width: 100% !important; max-width: 92vw !important; margin-left: auto; margin-right: auto;
         }
         #chat-panel, #student-fc-panel { width: 100% !important; }
+
+        /* 5. Make Teacher Navigation Tabs horizontally swipeable */
         #editor-default-header { flex-direction: column !important; align-items: flex-start !important; gap: 12px !important; }
         #editor-main-tabs { width: 100% !important; overflow-x: auto !important; flex-wrap: nowrap !important; -webkit-overflow-scrolling: touch; justify-content: flex-start !important; }
         #editor-main-tabs button { flex-shrink: 0 !important; }
         #editor-builder-controls { flex-wrap: wrap !important; gap: 8px !important; }
+
+        /* 6. Checkout Page Fixes */
         #student-payment-warning > div { flex-direction: column !important; }
         #student-payment-warning .lg\:w-3\/5, #student-payment-warning .lg\:w-2\/5 { width: 100% !important; border-left: none !important; }
+        
+        /* 7. Allow wide tables (like Bulk Import) to scroll sideways */
         #bulk-import-table { display: block; overflow-x: auto; white-space: nowrap; }
         #palette-container { justify-content: flex-start !important; }
     }
 
-    /* 🌙 Dark Theme */
+    /* Dark Theme - Expanded Globally */
+    /* 🌙 Dark Theme - Fully Global Dashboard Overhaul */
     body.theme-dark { background-color: #0f172a !important; color: #f1f5f9 !important; --bg-main: #0f172a; --bg-sec: #1e293b; --text-main: #f1f5f9; --text-sec: #cbd5e1; --q-bg: #1e293b; --q-border: #334155; }
-    body.theme-dark #split-container, body.theme-dark #review-ui, body.theme-dark #editor-ui, body.theme-dark #start-screen, body.theme-dark #public-landing-ui, body.theme-dark [id^="editor-view-"], body.theme-dark #builder-split { background-color: var(--bg-main) !important; }
+    
+    /* 1. Main Application Backgrounds */
+    body.theme-dark #split-container, body.theme-dark #review-ui, body.theme-dark #editor-ui, 
+    body.theme-dark #start-screen, body.theme-dark #public-landing-ui, 
+    body.theme-dark [id^="editor-view-"], body.theme-dark #builder-split { 
+        background-color: var(--bg-main) !important; 
+    }
+
+    /* 2. Specific App Panes */
     body.theme-dark #passage-container, body.theme-dark #review-left-pane, body.theme-dark #builder-left { background-color: var(--bg-main) !important; border-color: var(--q-border) !important; color: var(--text-main) !important; }
     body.theme-dark #questions-container, body.theme-dark #review-right-pane, body.theme-dark #builder-right { background-color: var(--bg-sec) !important; color: var(--text-sec) !important;}
+    
+    /* 3. Universal Text Inversions */
     body.theme-dark .text-slate-900, body.theme-dark .text-slate-800, body.theme-dark .text-slate-700 { color: #f8fafc !important; }
     body.theme-dark .text-slate-600, body.theme-dark .text-slate-500, body.theme-dark .text-slate-400 { color: #cbd5e1 !important; }
+    
+    /* 4. Colored Text Tints for Dark Visibility */
     body.theme-dark .text-blue-950, body.theme-dark .text-blue-900, body.theme-dark .text-blue-800, body.theme-dark .text-blue-700 { color: #93c5fd !important; }
     body.theme-dark .text-indigo-900, body.theme-dark .text-indigo-800, body.theme-dark .text-indigo-700 { color: #a5b4fc !important; }
     body.theme-dark .text-sky-900, body.theme-dark .text-sky-800, body.theme-dark .text-sky-700 { color: #7dd3fc !important; }
     body.theme-dark .text-emerald-900, body.theme-dark .text-emerald-800, body.theme-dark .text-emerald-700, body.theme-dark .text-emerald-600 { color: #34d399 !important; }
     body.theme-dark .text-amber-900, body.theme-dark .text-amber-800, body.theme-dark .text-amber-700 { color: #fbbf24 !important; }
     body.theme-dark .text-rose-900, body.theme-dark .text-rose-800, body.theme-dark .text-rose-700, body.theme-dark .text-rose-600 { color: #fb7185 !important; }
-    body.theme-dark .text-purple-900, body.theme-dark .text-purple-800 { color: #c084fc !important; }
+    body.theme-dark .text-purple-900, body.theme-dark .text-purple-800, body.theme-dark .text-purple-700 { color: #c084fc !important; }
     
     /* 5. Universal Card & Background Inversions */
     body.theme-dark .bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
@@ -405,60 +479,6 @@
   </div>
 
   <!-- SHARED MODALS -->
-  <!-- INCOME ANALYTICS MODAL -->
-  <div id="income-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[800px] max-w-[95vw] h-[600px] max-h-[90vh] animate-scale-up overflow-hidden">
-          <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-5 flex justify-between items-center shrink-0">
-              <h2 class="text-xl font-black text-white flex items-center gap-2">📊 Financial Analytics</h2>
-              <button onclick="document.getElementById('income-modal').classList.add('hidden')" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
-          </div>
-          <div class="p-6 flex-1 overflow-y-auto bg-slate-50 flex flex-col gap-6">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
-                  <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm text-center">
-                      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Month</div>
-                      <div class="text-2xl font-black text-emerald-600" id="income-month">0 ₫</div>
-                  </div>
-                  <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm text-center">
-                      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Quarter</div>
-                      <div class="text-2xl font-black text-blue-600" id="income-quarter">0 ₫</div>
-                  </div>
-                  <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm text-center">
-                      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">This Year</div>
-                      <div class="text-2xl font-black text-indigo-600" id="income-year">0 ₫</div>
-                  </div>
-              </div>
-              <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 flex-1 min-h-[300px] relative">
-                  <canvas id="income-chart"></canvas>
-              </div>
-          </div>
-      </div>
-  </div>
-
-  <!-- RATING MODAL -->
-  <div id="rating-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[500] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[400px] max-w-[95vw] animate-scale-up overflow-hidden">
-          <div class="bg-amber-500 p-4 text-center relative shrink-0">
-              <button onclick="document.getElementById('rating-modal').classList.add('hidden')" class="absolute top-4 right-4 text-white/70 hover:text-white font-bold text-xl leading-none">&times;</button>
-              <h2 class="text-xl font-black text-white">⭐ Rate Lesson</h2>
-          </div>
-          <div class="p-6 flex flex-col items-center bg-slate-50">
-              <p class="text-sm text-slate-500 mb-4 text-center font-medium">How did this lesson go?</p>
-              <div class="flex gap-2 mb-6" id="rating-stars-container">
-                  <span id="star-1" onclick="window.updateStarUI(1)" class="text-5xl text-slate-300 cursor-pointer transition-colors hover:text-amber-400 drop-shadow-sm select-none">★</span>
-                  <span id="star-2" onclick="window.updateStarUI(2)" class="text-5xl text-slate-300 cursor-pointer transition-colors hover:text-amber-400 drop-shadow-sm select-none">★</span>
-                  <span id="star-3" onclick="window.updateStarUI(3)" class="text-5xl text-slate-300 cursor-pointer transition-colors hover:text-amber-400 drop-shadow-sm select-none">★</span>
-                  <span id="star-4" onclick="window.updateStarUI(4)" class="text-5xl text-slate-300 cursor-pointer transition-colors hover:text-amber-400 drop-shadow-sm select-none">★</span>
-                  <span id="star-5" onclick="window.updateStarUI(5)" class="text-5xl text-slate-300 cursor-pointer transition-colors hover:text-amber-400 drop-shadow-sm select-none">★</span>
-              </div>
-              <textarea id="rating-comment" class="w-full border-2 border-slate-200 rounded-xl p-3 outline-none focus:border-amber-400 text-sm font-medium text-slate-700 resize-none h-24 bg-white shadow-inner" placeholder="Optional comments or notes..."></textarea>
-          </div>
-          <div class="p-4 bg-white border-t border-slate-200 flex justify-end gap-3 shrink-0">
-              <button onclick="document.getElementById('rating-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
-              <button onclick="window.saveRating()" id="btn-save-rating" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-black shadow-md transition hover:-translate-y-0.5">Submit Rating</button>
-          </div>
-      </div>
-  </div>
-
   <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
       <h2 id="modal-title" class="text-xl font-bold mb-4 text-slate-900"></h2>
@@ -594,24 +614,16 @@
         <div class="border border-slate-200 rounded-lg mb-3 overflow-hidden shadow-sm">
             <table class="w-full text-left border-collapse" id="bulk-import-table">
                 <thead class="bg-slate-100 border-b border-slate-200">
-                    <tr>
-                        <th class="p-3 text-xs font-bold text-slate-500 uppercase">Username (ID)</th>
-                        <th class="p-3 text-xs font-bold text-slate-500 uppercase">Full Name</th>
-                        <th class="p-3 text-xs font-bold text-slate-500 uppercase">Parent's Name</th>
-                        <th class="p-3 text-xs font-bold text-slate-500 uppercase">Contact / Phone</th>
-                        <th class="p-3 text-xs font-bold text-slate-500 uppercase w-24">💎 Gems</th>
-                        <th class="p-3 text-xs font-bold text-slate-500 uppercase w-24">⭐ EXP</th>
+                    <tr class="text-xs text-slate-500 uppercase tracking-wider">
+                        <th class="p-3 font-bold w-[15%]">Type</th>
+                        <th class="p-3 font-bold w-[20%]">Instruction</th>
+                        <th class="p-3 font-bold w-[25%]">Question Text</th>
+                        <th class="p-3 font-bold w-[20%]">Options (comma sep)</th>
+                        <th class="p-3 font-bold w-[20%]">Answer</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td class="p-3 border-b border-slate-100"><input type="text" id="bulk-edit-username" disabled class="w-full bg-slate-100 text-slate-500 p-2 rounded outline-none font-bold" /></td>
-                        <td class="p-3 border-b border-slate-100"><input type="text" id="bulk-edit-name" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-medium" placeholder="Student's Real Name" /></td>
-                        <td class="p-3 border-b border-slate-100"><input type="text" id="bulk-edit-parent" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-medium" placeholder="Parent/Guardian" /></td>
-                        <td class="p-3 border-b border-slate-100"><input type="text" id="bulk-edit-phone" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-medium" placeholder="Phone Number" /></td>
-                        <td class="p-3 border-b border-slate-100"><input type="number" id="bulk-edit-gems" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-black text-amber-500 text-center shadow-inner" /></td>
-                        <td class="p-3 border-b border-slate-100"><input type="number" id="bulk-edit-exp" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-black text-blue-600 text-center shadow-inner" /></td>
-                    </tr>
+                <tbody id="bulk-import-tbody" class="divide-y divide-slate-100" onpaste="handleGridPaste(event)">
+                    <!-- JS will inject rows here -->
                 </tbody>
             </table>
         </div>
@@ -848,8 +860,6 @@
                   <button id="shop-tab-clothes" onclick="window.switchShopTab('clothes')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">👕 Clothes</button>
                   <button id="shop-tab-backgrounds" onclick="window.switchShopTab('backgrounds')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">🎨 Themes</button>
                   <div class="hidden md:block h-px w-full bg-slate-200 my-2"></div>
-                  <!-- ✨ NEW: LUCKY SPIN TAB -->
-                  <button id="shop-tab-spin" onclick="window.switchShopTab('spin')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">🎲 Lucky Spin</button>
                   <button id="shop-tab-topup" onclick="window.switchShopTab('topup')" class="shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all text-slate-600 hover:bg-slate-200 whitespace-nowrap w-full">💎 Get Gems</button>
               </div>
               
@@ -857,47 +867,6 @@
               <div id="shop-content-area" class="flex-1 p-6 overflow-y-auto bg-slate-50">
                   <!-- Injected by JS -->
               </div>
-           </div>
-      </div>
-  </div>
-
-  <!-- STUDENT BULK EDIT MODAL -->
-  <div id="student-bulk-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[450] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[800px] max-w-[95vw] animate-scale-up overflow-hidden">
-          <div class="bg-emerald-600 p-5 flex justify-between items-center shrink-0">
-              <h2 class="text-xl font-black text-white flex items-center gap-2">📝 Edit Student Info</h2>
-              <button onclick="document.getElementById('student-bulk-modal').classList.add('hidden')" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
-          </div>
-          <div class="p-6 flex-1 overflow-y-auto bg-slate-50">
-              <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden overflow-x-auto">
-                  <table class="w-full text-left border-collapse min-w-[600px]">
-                      <thead class="bg-slate-100 border-b border-slate-200">
-                          <tr>
-                              <th class="p-3 text-xs font-bold text-slate-500 uppercase w-[15%]">Username (ID)</th>
-                              <th class="p-3 text-xs font-bold text-slate-500 uppercase w-[25%]">Full Name</th>
-                              <th class="p-3 text-xs font-bold text-slate-500 uppercase w-[25%]">Parent's Name</th>
-                              <th class="p-3 text-xs font-bold text-slate-500 uppercase w-[20%]">Contact / Phone</th>
-                              <th class="p-3 text-xs font-bold text-amber-600 uppercase w-[7.5%]">💎</th>
-                              <th class="p-3 text-xs font-bold text-orange-600 uppercase w-[7.5%]">EXP</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                          <tr>
-                              <td class="p-2 border-b border-slate-100"><input type="text" id="bulk-edit-username" disabled class="w-full bg-slate-100 text-slate-500 p-2 rounded outline-none font-bold text-xs" /></td>
-                              <td class="p-2 border-b border-slate-100"><input type="text" id="bulk-edit-name" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-medium text-sm" placeholder="Student Name" /></td>
-                              <td class="p-2 border-b border-slate-100"><input type="text" id="bulk-edit-parent" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-medium text-sm" placeholder="Parent Name" /></td>
-                              <td class="p-2 border-b border-slate-100"><input type="text" id="bulk-edit-phone" class="w-full border border-slate-200 p-2 rounded outline-none focus:border-emerald-500 font-medium text-sm" placeholder="Phone" /></td>
-                              <td class="p-2 border-b border-slate-100"><input type="number" id="bulk-edit-gems" class="w-full border border-amber-200 bg-amber-50 p-2 rounded outline-none focus:border-amber-500 font-black text-amber-700 text-sm text-center" placeholder="0" /></td>
-                              <td class="p-2 border-b border-slate-100"><input type="number" id="bulk-edit-exp" class="w-full border border-orange-200 bg-orange-50 p-2 rounded outline-none focus:border-orange-500 font-black text-orange-700 text-sm text-center" placeholder="0" /></td>
-                          </tr>
-                      </tbody>
-                  </table>
-              </div>
-              <div class="mt-4 text-xs text-slate-500 italic">This data is strictly for your own management and will appear on their generated PDF report cards.</div>
-          </div>
-          <div class="p-4 bg-white border-t border-slate-200 flex justify-end gap-3 shrink-0">
-              <button onclick="document.getElementById('student-bulk-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
-              <button onclick="window.saveStudentBulkInfo()" id="btn-save-bulk" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black shadow-md transition hover:-translate-y-0.5">Save Changes</button>
           </div>
       </div>
   </div>
@@ -910,15 +879,9 @@
               <div class="relative w-24 h-24 mx-auto mb-3 cursor-pointer group" onclick="document.getElementById('profile-avatar-upload').click()">
                   <img id="profile-avatar-preview" src="" class="w-full h-full rounded-full object-cover border-4 border-white shadow-lg bg-slate-100">
                   <div class="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">Change</div>
-                  <div id="profile-level-badge" class="absolute -bottom-2 -right-2 text-3xl drop-shadow-md">🥉</div>
               </div>
-              <h2 id="profile-name-display" class="text-2xl font-black text-white mb-2">Student Name</h2>
-              <div class="w-64 mx-auto flex flex-col items-center mb-2">
-                  <span id="profile-level-text" class="text-blue-200 text-[10px] font-black uppercase tracking-widest mb-1.5">Bronze Level</span>
-                  <div class="w-full bg-black/30 rounded-full h-2.5 overflow-hidden shadow-inner border border-white/10">
-                      <div id="profile-exp-bar" class="h-full bg-orange-400 transition-all duration-700 shadow-[0_0_10px_rgba(255,255,255,0.3)]" style="width: 0%"></div>
-                  </div>
-              </div>
+              <input type="file" id="profile-avatar-upload" accept="image/*" class="hidden" onchange="window.handleAvatarUpload(event)">
+              <h2 id="profile-name-display" class="text-xl font-black text-white">Student Name</h2>
           </div>
           <div class="p-8 bg-slate-50 flex-1 overflow-y-auto space-y-6">
               <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
@@ -1028,16 +991,10 @@
 
           <!-- Profile Widget -->
           <div class="flex items-center gap-3 bg-white/10 p-1.5 pr-4 rounded-xl border border-white/20 backdrop-blur-sm cursor-pointer hover:bg-white/20 transition shadow-sm" onclick="window.openStudentProfile()" title="Edit Profile & Goals">
-            <div class="relative">
-                <img id="header-student-avatar" src="https://ui-avatars.com/api/?name=Student&background=random" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-white shadow-sm border border-white/30">
-                <div id="header-student-badge" class="absolute -bottom-1.5 -right-1.5 text-sm drop-shadow-md">🥉</div>
-            </div>
-            <div class="flex flex-col hidden sm:flex min-w-[80px]">
+            <img id="header-student-avatar" src="https://ui-avatars.com/api/?name=Student&background=random" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-white shadow-sm border border-white/30">
+            <div class="flex flex-col hidden sm:flex">
               <span class="text-white font-bold text-sm leading-none mb-1" id="student-name-display">Welcome</span>
-              <div class="w-full bg-black/30 rounded-full h-1.5 mb-0.5 mt-0.5 overflow-hidden">
-                  <div id="student-exp-bar" class="h-full bg-orange-400 rounded-full transition-all duration-500" style="width: 0%"></div>
-              </div>
-              <span id="student-level-display" class="text-blue-200 text-[8px] font-black uppercase tracking-widest leading-none">Bronze Level</span>
+              <span class="text-blue-300 text-[9px] font-black uppercase tracking-widest leading-none">⚙️ Profile</span>
             </div>
           </div>
           
@@ -1140,13 +1097,6 @@
         
         <!-- LEFT COLUMN: Settings & Progress -->
         <div class="lg:col-span-4 flex flex-col gap-6">
-
-          <!-- ✨ GAMIFICATION: Daily Quote Widget -->
-          <div class="bg-gradient-to-br from-indigo-50 to-white p-6 rounded-2xl border border-indigo-100 shadow-sm flex flex-col gap-2 relative overflow-hidden">
-              <div class="absolute -right-4 -top-4 text-6xl opacity-10 pointer-events-none">💡</div>
-              <h2 class="font-bold text-[10px] text-indigo-400 uppercase tracking-widest mb-1 z-10 flex items-center gap-1"><span>✨</span> Daily Quote</h2>
-              <p id="daily-quote-text" class="text-indigo-900 font-bold text-sm italic z-10 leading-relaxed"></p>
-          </div>
           
           <!-- Class Setup -->
           <div class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex flex-col gap-4">
@@ -1187,16 +1137,6 @@
                   <span>&rarr;</span>
               </button>
           </div> <!-- THIS DIV RESTORES THE BLUE BOX -->
-
-          <!-- ✨ NEW: DAILY MISSIONS WIDGET -->
-          <div id="student-missions-widget" class="hidden bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex-col gap-3 relative overflow-hidden">
-              <div class="absolute -right-4 -bottom-4 text-6xl opacity-5 pointer-events-none">📜</div>
-              <h2 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-2 z-10 flex justify-between items-center">
-                  <span>🎯 Daily Missions</span>
-                  <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Resets Daily</span>
-              </h2>
-              <div id="missions-list-container" class="space-y-3 z-10"></div>
-          </div>
 
           <!-- Progress Section -->
           <div id="student-progress-section" class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex-col hidden max-h-[500px] overflow-y-auto"></div>
@@ -1463,10 +1403,7 @@
         <div class="bg-white border border-blue-50 p-8 rounded-2xl shadow-sm mb-6">
            <h3 class="font-bold text-lg text-blue-950 mb-5 flex justify-between items-center">
               <span class="flex items-center gap-2">💳 <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-black">Global Pricing & QR Setup</span></span>
-              <div class="flex gap-2">
-                  <button onclick="window.openIncomeAnalytics()" class="text-sm bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-4 py-2.5 rounded-xl font-bold shadow-sm transition flex items-center gap-2">📊 Income Analytics</button>
-                  <button onclick="saveBillingSettings()" id="btn-save-billing" class="text-sm bg-blue-900 hover:bg-blue-950 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition">Save Settings</button>
-              </div>
+              <button onclick="saveBillingSettings()" id="btn-save-billing" class="text-sm bg-blue-900 hover:bg-blue-950 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition">Save Settings</button>
            </h3>
            
            <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5 border-b border-slate-100 pb-5">
@@ -1978,51 +1915,30 @@ window.initFirebaseSystem = async function() {
         }
     }
 
-    // Run directly, no event listener needed
-    window.initFirebaseSystem();
-    
-    const editorBuilder = document.getElementById('editor-view-builder');
-    if (editorBuilder) {
-        editorBuilder.addEventListener('input', triggerEditorAutosave);
-        editorBuilder.addEventListener('change', triggerEditorAutosave);
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+        window.initFirebaseSystem();
+        const editorBuilder = document.getElementById('editor-view-builder');
+        if (editorBuilder) {
+            editorBuilder.addEventListener('input', triggerEditorAutosave);
+            editorBuilder.addEventListener('change', triggerEditorAutosave);
+        }
 
-    // Auto-apply the premium focus state to all existing form elements
-    const formElements = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
-    formElements.forEach(el => {
-        el.className = el.className.replace(/focus:ring-\d/g, '').replace(/focus:ring-[a-z]+-\d+\/\d+/g, '').replace(/focus:border-[a-z]+-\d+/g, '');
-        el.classList.add('input-standard');
+        // Auto-apply the premium focus state to all existing form elements
+        const formElements = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), textarea, select');
+        formElements.forEach(el => {
+            el.className = el.className.replace(/focus:ring-\d/g, '').replace(/focus:ring-[a-z]+-\d+\/\d+/g, '').replace(/focus:border-[a-z]+-\d+/g, '');
+            el.classList.add('input-standard');
+        });
+
+        // ✨ NEW: Start the Background Reminder Engine (Checks every 30 seconds)
+        setInterval(() => {
+            if(typeof window.checkUpcomingClasses === 'function') window.checkUpcomingClasses();
+        }, 30000);
     });
-
-    // ✨ NEW: Start the Background Reminder Engine (Checks every 30 seconds)
-    setInterval(() => {
-        if(typeof window.checkUpcomingClasses === 'function') window.checkUpcomingClasses();
-    }, 30000);
   </script>
 
   <!-- LMS CORE LOGIC -->
   <script>
-    // ==========================================
-    // ✨ GAMIFICATION: LEVELING & QUOTES
-    // ==========================================
-    const DAILY_QUOTES = [
-        "Believe you can and you're halfway there.",
-        "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-        "The secret of getting ahead is getting started.",
-        "Don't watch the clock; do what it does. Keep going.",
-        "Your future is created by what you do today, not tomorrow.",
-        "Hard work beats talent when talent doesn't work hard.",
-        "The only way to do great work is to love what you do."
-    ];
-
-    function getLevelData(exp) {
-        if (!exp) exp = 0;
-        if (exp < 50) return { title: 'Bronze', color: 'bg-orange-400', icon: '🥉', next: 50 };
-        if (exp < 150) return { title: 'Silver', color: 'bg-slate-300', icon: '🥈', next: 150 };
-        if (exp < 300) return { title: 'Gold', color: 'bg-yellow-400', icon: '🥇', next: 300 };
-        return { title: 'Diamond', color: 'bg-cyan-400', icon: '💎', next: exp + 100 }; // Max level
-    }
-
     // CLOUD DATABASE VARIABLES
     let USERS = [];
     let TEST_BANK = [];
@@ -2837,120 +2753,6 @@ window.initFirebaseSystem = async function() {
                 userObj.pass = newPass;
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), studentUsername), userObj);
                 showModalMsg("Success", `Password for ${studentUsername} has been reset. They can now log in using the new password.`);
-            }
-        });
-    };
-
-    // ✨ NEW: Open Student Excel-style Editor
-    window.openStudentBulkEditor = function(username) {
-        const student = USERS.find(u => u.user === username);
-        if (!student) return;
-        
-        document.getElementById('bulk-edit-username').value = student.user;
-        document.getElementById('bulk-edit-name').value = student.displayName || '';
-        document.getElementById('bulk-edit-parent').value = student.parentName || '';
-        document.getElementById('bulk-edit-phone').value = student.phone || '';
-        document.getElementById('bulk-edit-gems').value = student.gems || 0;
-        document.getElementById('bulk-edit-exp').value = student.exp || 0;
-        
-        document.getElementById('student-bulk-modal').classList.remove('hidden');
-    };
-
-    // ✨ NEW: Save Student Info from Excel Editor
-    window.saveStudentBulkInfo = async function() {
-        const username = document.getElementById('bulk-edit-username').value;
-        const student = USERS.find(u => u.user === username);
-        if (!student) return;
-        
-        const btn = document.getElementById('btn-save-bulk');
-        btn.textContent = "Saving..."; btn.disabled = true;
-        
-        student.displayName = document.getElementById('bulk-edit-name').value.trim();
-        student.parentName = document.getElementById('bulk-edit-parent').value.trim();
-        student.phone = document.getElementById('bulk-edit-phone').value.trim();
-        student.gems = parseInt(document.getElementById('bulk-edit-gems').value) || 0;
-        student.exp = parseInt(document.getElementById('bulk-edit-exp').value) || 0;
-        
-        try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), student);
-            document.getElementById('student-bulk-modal').classList.add('hidden');
-            if (typeof renderStudentsList === 'function') renderStudentsList(); // Re-render table to show new names!
-            showModalMsg("Saved", "Student details updated successfully!");
-        } catch (err) {
-            console.error(err);
-            showModalMsg("Error", "Could not save details to cloud.");
-        }
-        btn.textContent = "Save Changes"; btn.disabled = false;
-    };
-
-    // ✨ NEW: Permanently Delete a Student
-    window.deleteStudent = function(username) {
-        const student = USERS.find(u => u.user === username);
-        if (!student) return;
-        
-        document.getElementById('bulk-edit-username').value = student.user;
-        document.getElementById('bulk-edit-name').value = student.displayName || '';
-        document.getElementById('bulk-edit-parent').value = student.parentName || '';
-        document.getElementById('bulk-edit-phone').value = student.phone || '';
-        document.getElementById('bulk-edit-gems').value = student.gems || 0;
-        document.getElementById('bulk-edit-exp').value = student.exp || 0;
-        
-        document.getElementById('student-bulk-modal').classList.remove('hidden');
-    };
-
-    // ✨ NEW: Save Student Info from Excel Editor
-    window.saveStudentBulkInfo = async function() {
-        const username = document.getElementById('bulk-edit-username').value;
-        const student = USERS.find(u => u.user === username);
-        if (!student) return;
-        
-        const btn = document.getElementById('btn-save-bulk');
-        btn.textContent = "Saving..."; btn.disabled = true;
-        
-        student.displayName = document.getElementById('bulk-edit-name').value.trim();
-        student.parentName = document.getElementById('bulk-edit-parent').value.trim();
-        student.phone = document.getElementById('bulk-edit-phone').value.trim();
-        student.gems = Number(document.getElementById('bulk-edit-gems').value) || 0;
-        student.exp = Number(document.getElementById('bulk-edit-exp').value) || 0;
-        
-        try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), student);
-            document.getElementById('student-bulk-modal').classList.add('hidden');
-            if (typeof renderStudentsList === 'function') renderStudentsList(); // Re-render table to show new names!
-            showModalMsg("Saved", "Student details updated successfully!");
-        } catch (err) {
-            console.error(err);
-            showModalMsg("Error", "Could not save details to cloud.");
-        }
-        btn.textContent = "Save Changes"; btn.disabled = false;
-    };
-
-    // ✨ NEW: Permanently Delete a Student
-    window.deleteStudent = function(username) {
-        showConfirm("Delete Student", `Are you sure you want to permanently delete the student account <b>${username}</b>? This will erase their login, but preserve past test records.`, async () => {
-            try {
-                // 1. Delete from global array
-                USERS = USERS.filter(u => u.user !== username);
-                
-                // 2. Delete from Cloud Database
-                await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('users'), username));
-                
-                // 3. Remove them from any classes they were enrolled in
-                for (let c of CLASSES) {
-                    if (c.enrolledStudents && c.enrolledStudents.includes(username)) {
-                        c.enrolledStudents = c.enrolledStudents.filter(u => u !== username);
-                        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
-                    }
-                }
-                
-                // Refresh UI
-                if (typeof renderStudentsList === 'function') renderStudentsList();
-                if (typeof renderClasses === 'function') renderClasses();
-                
-                showModalMsg("Deleted", `Student account <b>${username}</b> has been completely removed from the system.`);
-            } catch (e) {
-                console.error(e);
-                showModalMsg("Error", "Could not delete student due to a connection error.");
             }
         });
     };
@@ -5415,11 +5217,6 @@ window.initFirebaseSystem = async function() {
       
       const warnContainer = document.getElementById('student-payment-warning');
 
-      const quoteEl = document.getElementById('daily-quote-text');
-      if (quoteEl) {
-          const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-          quoteEl.textContent = `"${DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length]}"`;
-      }
       if(isPaid) {
           warnContainer.classList.add('hidden');
           warnContainer.innerHTML = ''; 
@@ -7678,29 +7475,15 @@ window.initFirebaseSystem = async function() {
           };
           
           SUBMISSIONS.unshift(sub);
-          let rewardHtml = ''; // ✨ Store the dynamic signal html
-          
           try { 
               await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); 
               
-              // ✨ TRIGGER MISSION (Works for both timed and untimed Practice)
-              if (typeof window.updateMission === 'function') window.updateMission('test');
-
-              // 🏆 ECONOMY REWARD: ONLY grant if test is TIME-RESTRICTED!
-              if (!isTimeFree && (!window.isFullExamMode || window.fullExamCurrentIndex === 2)) {
+              // 🏆 ECONOMY REWARD: Grant 50 Gems for completing a test!
+              if (!window.isFullExamMode || window.fullExamCurrentIndex === 2) {
                   currentUser.gems = (currentUser.gems || 0) + 50;
-                  currentUser.exp = (currentUser.exp || 0) + 10;
                   await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
                   sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
                   window.updateDashboardHeader();
-                  
-                  rewardHtml = `
-                    <div class="mt-6 flex justify-center gap-3">
-                        <div class="bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎</div>
-                        <div class="bg-blue-100 border border-blue-300 text-blue-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce" style="animation-delay: 0.1s">⭐ +10 EXP</div>
-                    </div>`;
-              } else if (isTimeFree) {
-                  rewardHtml = `<div class="mt-6 text-[10px] text-slate-400 font-bold uppercase tracking-widest italic border-t border-slate-200 pt-4">Practice Mode (No rewards issued)</div>`;
               }
           }
           catch(e) { console.error("Cloud Error saving submission:", e); }
@@ -7713,18 +7496,21 @@ window.initFirebaseSystem = async function() {
                 setTimeout(() => {
                     document.getElementById('custom-modal').classList.add('hidden');
                     const nextStep = window.fullExamSequence[window.fullExamCurrentIndex];
+                    
+                    // FIXED: We pass the entire synthetic test object directly to startTest!
                     startTest(null, null, nextStep);
+                    
                 }, 3000);
             } else {
                 window.isFullExamMode = false;
-                document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Full Exam Complete!</div><p class="text-sm text-slate-500 mt-2">All your responses have been recorded.</p>${rewardHtml}`;
+                document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Full Exam Complete!</div><p class="text-sm text-slate-500 mt-2">All your responses have been recorded.</p><div class="mt-4 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
                 document.getElementById('results-modal').classList.remove('hidden');
             }
         } else {
             if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-               document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div>${rewardHtml}`;
+               document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div><div class="mt-6 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
             } else {
-               document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p>${rewardHtml}`;
+               document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p><div class="mt-4 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
             }
             document.getElementById('results-modal').classList.remove('hidden');
         }
@@ -8427,8 +8213,6 @@ window.initFirebaseSystem = async function() {
       if(!document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
          document.getElementById('panel-fc-list-select').value = list; renderFlashcardPanel();
       }
-      // ✨ TRIGGER MISSION
-      if (typeof window.updateMission === 'function') window.updateMission('flashcard');
     }
 
     function renderFlashcardPanel() {
@@ -8537,7 +8321,6 @@ window.initFirebaseSystem = async function() {
         document.getElementById('study-mode-modal').classList.add('hidden');
     };
 
-    window.studyRewardClaimed = false;
     window.switchStudyMode = function(mode) {
         window.studyMode = mode;
         window.studyIdx = 0;
@@ -8850,15 +8633,6 @@ window.initFirebaseSystem = async function() {
         }
     };
 
-    // 🏆 ECONOMY REWARD: Grant 5 EXP for finishing a study session
-        if (currentUser && currentUser.role === 'student' && !window.studyRewardClaimed) {
-            window.studyRewardClaimed = true; // Prevent spamming
-            currentUser.exp = (currentUser.exp || 0) + 5;
-            window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser).then(() => {
-                sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-                if (typeof window.updateDashboardHeader === 'function') window.updateDashboardHeader();
-            });
-        }
     window.getStudyCompletionHtml = function(modeName) {
         let scoreHtml = '';
         if (modeName === 'Quiz' || modeName === 'Write') {
@@ -8867,24 +8641,11 @@ window.initFirebaseSystem = async function() {
             scoreHtml = `<div class="text-6xl font-black ${color} mb-2">${pct}%</div><div class="text-slate-500 font-bold mb-8">${window.studyScore} correct out of ${window.studyDeck.length}</div>`;
         }
 
-        // 🏆 ECONOMY REWARD: Grant 5 EXP for finishing a study session
-        let expRewardHtml = '';
-        if (currentUser && currentUser.role === 'student' && !window.studyRewardClaimed) {
-            window.studyRewardClaimed = true; // Prevent spamming
-            currentUser.exp = (currentUser.exp || 0) + 5;
-            window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser).then(() => {
-                sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-                if (typeof window.updateDashboardHeader === 'function') window.updateDashboardHeader();
-            });
-            expRewardHtml = `<div class="bg-blue-100 border border-blue-300 text-blue-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce mb-8 mx-auto w-max">⭐ +5 EXP</div>`;
-        }
-
         return `
             <div class="flex flex-col items-center justify-center h-full w-full max-w-md mx-auto text-center animate-scale-up">
                 <div class="text-8xl mb-6">🎉</div>
                 <h2 class="text-3xl font-black text-slate-800 mb-6">${modeName} Complete!</h2>
                 ${scoreHtml}
-                ${expRewardHtml}
                 <div class="flex gap-4 w-full">
                     <button onclick="window.switchStudyMode('${modeName.toLowerCase()}')" class="flex-1 py-4 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl border border-indigo-200 shadow-sm transition">↻ Try Again</button>
                     <button onclick="window.closeStudyMode()" class="flex-1 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition">Exit</button>
@@ -8999,81 +8760,65 @@ window.initFirebaseSystem = async function() {
         const pending = students.filter(s => s.paymentStatus === 'pending');
         const others = students.filter(s => s.paymentStatus !== 'pending');
 
-        const sortedStudents = [...pending, ...others];
+        const renderCard = (s, isPending) => {
+            const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
+            const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
+            const lessonsBadge = s.totalLessonsPaid ? `<span class="text-indigo-600 font-bold bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100 shadow-sm flex items-center gap-1">Rem: <span class="font-black">${remaining}/${s.totalLessonsPaid}</span></span>` : '';
+            
+            // Detect if this is a Gem request or a Course request
+            const isGemRequest = isPending && s.pendingInfo && s.pendingInfo.includes('Top-Up');
+            let approveBtnText = 'Manual Override: Grant Access';
+            if (isPending) {
+                approveBtnText = isGemRequest ? '✓ Approve Gem Top-Up' : '✓ Approve Payment & Enroll';
+            } else if (s.isPaid) {
+                approveBtnText = 'Revoke Access (Lock)';
+            }
 
-        let tableHtml = `
-        <div class="overflow-x-auto bg-white rounded-2xl border border-blue-50 shadow-sm mb-10">
-            <table class="w-full text-left border-collapse min-w-[900px]">
-                <thead>
-                    <tr class="bg-slate-50/80 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-500">
-                        <th class="p-4 font-bold w-32">Status</th>
-                        <th class="p-4 font-bold">Student ID / Name</th>
-                        <th class="p-4 font-bold">Class / Parent Info</th>
-                        <th class="p-4 font-bold">Joined</th>
-                        <th class="p-4 font-bold">Tuition / Rem.</th>
-                        <th class="p-4 font-bold text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-        `;
-
-        if (sortedStudents.length === 0) {
-            tableHtml += `<tr><td colspan="6" class="p-10 text-center text-slate-500 italic font-medium">No students registered yet.</td></tr>`;
-        } else {
-            tableHtml += sortedStudents.map(s => {
-                const isPending = s.paymentStatus === 'pending';
-                const isGemRequest = isPending && s.pendingInfo && s.pendingInfo.includes('Top-Up');
-                const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
-                const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
+            return `
+            <div class="bg-white border border-blue-50 p-5 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md transition ${isPending ? 'ring-2 ring-rose-400 bg-rose-50/50' : ''} h-full">
                 
-                // Extract Class Info
-                const studentClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(s.user)).map(c => c.name).join(', ') || '<span class="text-slate-400 italic">Unassigned</span>';
+                <!-- Header: Avatar, Name, Status Badge -->
+                <div class="flex justify-between items-center mb-4 gap-3 border-b ${isPending ? 'border-rose-200' : 'border-slate-100'} pb-4">
+                    <h3 class="font-black text-xl text-blue-950 flex items-center gap-3 min-w-0">
+                        <span class="w-10 h-10 rounded-full shrink-0 ${isPending ? 'bg-rose-200 text-rose-800' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-lg font-bold shadow-inner">👤</span>
+                        <span class="truncate">${s.user}</span>
+                    </h3>
+                    <span class="text-[10px] uppercase tracking-widest font-black px-3 py-1.5 rounded-lg shadow-sm shrink-0 ${s.isPaid ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : (isPending && !isGemRequest ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 border border-slate-200')}">${s.isPaid ? 'Active' : (isPending ? 'Needs Approval' : 'Locked')}</span>
+                </div>
+                
+                <!-- Details Box -->
+                <div class="flex flex-wrap items-center gap-2 mb-4 text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <span class="flex items-center gap-1">🗓️ Joined: ${s.createdAt || 'N/A'}</span>
+                    ${lessonsBadge}
+                    <button onclick="window.promptResetStudentPassword('${s.user}')" class="text-blue-600 hover:text-blue-800 hover:underline tracking-normal lowercase flex items-center gap-1 ml-auto">🔑 reset pass</button>
+                </div>
 
-                let approveBtnText = 'Grant Access';
-                if (isPending) {
-                    approveBtnText = isGemRequest ? '✓ Approve Gems' : '✓ Approve & Enroll';
-                } else if (s.isPaid) {
-                    approveBtnText = 'Revoke Access';
-                }
+                ${isPending && s.pendingInfo ? `<div class="mb-4"><span class="text-sm font-bold ${isGemRequest ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-rose-700 bg-rose-50 border-rose-200'} px-3 py-2 rounded-xl border shadow-sm block text-center truncate">💸 ${s.pendingInfo}${!isGemRequest && s.pendingLessons ? `(${s.pendingLessons} Lessons)` : ''}</span></div>` : ''}
+                
+                <!-- Action Buttons -->
+                <div class="mt-auto space-y-2 w-full">
+                    <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid || isPending})" class="w-full py-3 text-sm font-bold rounded-xl shadow-sm border ${!isPending && s.isPaid ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800' : (isPending ? (isGemRequest ? 'bg-amber-500 hover:bg-amber-600 text-white shadow-amber-200' : 'bg-rose-500 border-transparent text-white hover:bg-rose-600 shadow-rose-200') : 'bg-blue-600 border-transparent text-white hover:bg-blue-700')} transition-all hover:-translate-y-0.5">
+                        ${approveBtnText}
+                    </button>
+                    <!-- ✨ NEW: Edit Radar Chart Button -->
+                    <button onclick="window.openRadarEditor('${s.user}')" class="w-full py-2.5 text-xs font-bold rounded-xl shadow-sm border bg-purple-50 text-purple-700 hover:bg-purple-600 hover:text-white border-purple-200 transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2">
+                        📊 Edit Radar Chart
+                    </button>
+                </div>
+            </div>
+            `;
+        };
 
-                const statusBadge = s.isPaid 
-                    ? '<span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border border-emerald-200 shadow-sm">Active</span>' 
-                    : (isPending 
-                        ? '<span class="bg-rose-500 text-white px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest animate-pulse shadow-sm border border-rose-600">Needs Approval</span>' 
-                        : '<span class="bg-slate-100 text-slate-500 px-2.5 py-1 rounded text-[9px] font-black uppercase tracking-widest border border-slate-200 shadow-sm">Locked</span>');
-
-                // Visual row styling
-                const rowBg = isPending ? 'bg-rose-50/40' : 'bg-white hover:bg-blue-50/30 transition-colors';
-
-                return `
-                <tr class="${rowBg} group">
-                    <td class="p-4 align-middle whitespace-nowrap">${statusBadge}</td>
-                    <td class="p-4 align-middle">
-                        <div class="font-bold text-slate-800 text-sm leading-tight flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] shrink-0">👤</span> ${s.displayName || s.user}</div>
-                        <div class="text-[10px] font-mono text-slate-400 mt-1 ml-8">ID: STU-${s.user.substring(0,6).toUpperCase()}</div>
-                    </td>
-                    <td class="p-4 align-middle">
-                        <div class="text-xs font-bold text-blue-700 mb-1 flex items-center gap-1.5"><span class="text-[10px]">🏫</span> ${studentClasses}</div>
-                        <div class="text-[10px] text-slate-500 flex items-center gap-1.5"><span class="text-[10px]">👪</span> Parent: <span class="italic text-slate-600 font-medium">${s.parentName || '<span class="text-slate-400">Not provided</span>'}</span></div>
-                    </td>
-                    <td class="p-4 align-middle text-xs font-medium text-slate-600 whitespace-nowrap">${s.createdAt || 'N/A'}</td>
-                    <td class="p-4 align-middle">
-                        <div class="text-sm font-black text-indigo-700">${remaining} <span class="text-[10px] font-bold text-slate-400">/ ${s.totalLessonsPaid || 0} left</span></div>
-                        ${isPending && s.pendingInfo ? `<div class="text-[10px] text-rose-600 font-bold truncate max-w-[150px] mt-1 px-1.5 py-0.5 bg-rose-100 rounded inline-block shadow-sm border border-rose-200" title="${s.pendingInfo}">💸 ${s.pendingInfo}</div>` : ''}
-                    </td>
-                    <td class="p-4 align-middle text-right whitespace-nowrap space-x-1">
-                        <button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid || isPending})" class="px-2.5 py-2 text-[10px] font-bold rounded-lg shadow-sm border transition-all hover:-translate-y-0.5 ${!isPending && s.isPaid ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-800' : (isPending ? (isGemRequest ? 'bg-amber-500 text-white hover:bg-amber-600 border-amber-600' : 'bg-rose-500 text-white hover:bg-rose-600 border-rose-600') : 'bg-blue-600 text-white hover:bg-blue-700 border-blue-700')}" title="Toggle Access">${approveBtnText.includes('Revoke') ? 'Lock' : 'Approve'}</button>
-                        <button onclick="window.openStudentBulkEditor('${s.user}')" class="px-2.5 py-2 text-[10px] font-bold rounded-lg shadow-sm bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all hover:-translate-y-0.5" title="Edit Student Info">📝</button>
-                        <button onclick="window.openRadarEditor('${s.user}')" class="px-2.5 py-2 text-[10px] font-bold rounded-lg shadow-sm bg-purple-50 border border-purple-200 text-purple-700 hover:bg-purple-600 hover:text-white transition-all hover:-translate-y-0.5" title="Edit Radar Chart">📊</button>
-                        <button onclick="window.promptResetStudentPassword('${s.user}')" class="px-2.5 py-2 text-[10px] font-bold rounded-lg shadow-sm bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-blue-600 transition-all hover:-translate-y-0.5" title="Reset Password">🔑</button>
-                        <button onclick="window.deleteStudent('${s.user}')" class="px-2.5 py-2 text-[10px] font-bold rounded-lg shadow-sm bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white transition-all hover:-translate-y-0.5" title="Delete Student">🗑️</button>
-                    </td>
-                </tr>`;
-            }).join('');
+        let html = '';
+        if (pending.length > 0) {
+            html += `<h4 class="font-black text-rose-600 mb-4 uppercase tracking-widest text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span> Action Required</h4>`;
+            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">` + pending.map(s => renderCard(s, true)).join('') + `</div>`;
         }
         
-        tableHtml += `</tbody></table></div>`;
-        list.innerHTML = tableHtml;
+        html += `<h4 class="font-black text-slate-400 mb-4 uppercase tracking-widest text-sm">All Students</h4>`;
+        html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-6">` + others.map(s => renderCard(s, false)).join('') + `</div>`;
+        
+        list.innerHTML = html;
     }
 
     // Modal to create packages
@@ -9373,7 +9118,6 @@ window.initFirebaseSystem = async function() {
                                 <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded inline-block mt-1 shadow-sm">${s.time}</span>
                             </div>
                             <div class="flex gap-1 shrink-0">
-                                <button onclick="window.openRatingModal('${s.id}')" class="text-[10px] px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold rounded shadow-sm transition border border-amber-200">⭐ Rate</button>
                                 <button onclick="editSchedule('${s.id}')" class="text-[10px] px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded shadow-sm transition">Edit</button>
                                 <button onclick="deleteSchedule('${s.id}', '${dateStr}')" class="text-[10px] px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded shadow-sm transition">Del</button>
                             </div>
@@ -9417,9 +9161,8 @@ window.initFirebaseSystem = async function() {
                         <h3 class="font-black text-2xl text-slate-800 mb-1">${s.time}</h3>
                         <p class="text-sm font-bold text-slate-500 flex items-center gap-2 mb-4"><span class="w-2 h-2 rounded-full bg-indigo-400"></span> ${s.topic || 'General Practice'}</p>
                         
-                        <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md mb-3 flex items-center justify-center gap-2 animate-pulse hover:animate-none">🎥 Join Live Video Class</button>
-                        ${new Date(s.date) <= new Date() ? `<button onclick="document.getElementById('student-day-modal').classList.add('hidden'); window.openRatingModal('${s.id}')" class="w-full bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold py-2.5 rounded-lg text-sm transition shadow-sm mb-4 flex items-center justify-center gap-2">⭐ Rate & Review Lesson</button>` : ''}
-                            ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm mt-2">No specific tests assigned to this lesson.</p>'}
+                        <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md mb-4 flex items-center justify-center gap-2 animate-pulse hover:animate-none">🎥 Join Live Video Class</button>
+                            ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No specific tests assigned to this lesson.</p>'}
                         </div>
                     </div>`;
                 }).join('');
@@ -9921,27 +9664,6 @@ window.initFirebaseSystem = async function() {
         const totalPaid = studentObj?.totalLessonsPaid || 0;
         const remaining = totalPaid > 0 ? Math.max(0, totalPaid - studentAttendance.length) : 'N/A';
 
-        // Calculate Ratings
-        let myRatingsGiven = 0, myRatingsGivenCount = 0;
-        let teacherRatingsForMe = 0, teacherRatingsCount = 0;
-        
-        studentAttendance.forEach(a => {
-             const sched = SCHEDULES.find(s => s.id === a.scheduleId);
-             if (sched && sched.ratings) {
-                 if (sched.ratings[studentName]) {
-                     myRatingsGiven += sched.ratings[studentName].rating;
-                     myRatingsGivenCount++;
-                 }
-                 if (sched.ratings['teacher']) {
-                     teacherRatingsForMe += sched.ratings['teacher'].rating;
-                     teacherRatingsCount++;
-                 }
-             }
-        });
-        
-        const avgGiven = myRatingsGivenCount > 0 ? (myRatingsGiven / myRatingsGivenCount).toFixed(1) : 'N/A';
-        const avgTeacher = teacherRatingsCount > 0 ? (teacherRatingsForMe / teacherRatingsCount).toFixed(1) : 'N/A';
-
         // Status Dictionary for beautiful print formatting
         const statusMap = {
             'on_time': '<span style="color: #10b981; font-weight: bold;">✅ On Time</span>',
@@ -9979,19 +9701,13 @@ window.initFirebaseSystem = async function() {
                 &bull; Enrolled / Paid Lessons: <strong>${totalPaid || 'Not Specified'}</strong><br>
                 &bull; Lessons Remaining: <strong style="color: #2563eb;">${remaining}</strong><br>
                 &bull; Present (Including Late): <strong style="color: #10b981;">${presentCount}</strong> | Absent: <strong style="color: #ef4444;">${absentCount}</strong><br>
-                &bull; Average Rating (by Teacher): <strong>${avgTeacher} ⭐</strong> | Average Rating (by Student): <strong>${avgGiven} ⭐</strong><br>
                 &bull; Total Tests Submitted: <strong>${studentTests.length}</strong>
             </div>
 
             <h2>📚 Class Attendance Schedule</h2>
             <table>
-                <tr><th>Date</th><th>Class</th><th>Topic / Focus</th><th>Attendance Status</th><th>Ratings (T / S)</th></tr>
-                ${studentAttendance.length ? studentAttendance.map(a => {
-                    const sched = SCHEDULES.find(s => s.id === a.scheduleId);
-                    const tRate = sched && sched.ratings && sched.ratings['teacher'] ? sched.ratings['teacher'].rating : '-';
-                    const sRate = sched && sched.ratings && sched.ratings[studentName] ? sched.ratings[studentName].rating : '-';
-                    return `<tr><td>${a.date}</td><td>${a.className}</td><td>${a.topic}</td><td>${statusMap[a.status] || '<span style="color: #10b981; font-weight: bold;">✅ Present</span>'}</td><td>${tRate} / ${sRate}</td></tr>`;
-                }).join('') : '<tr><td colspan="5">No records found.</td></tr>'}
+                <tr><th>Date</th><th>Class</th><th>Topic / Focus</th><th>Attendance Status</th></tr>
+                ${studentAttendance.length ? studentAttendance.map(a => `<tr><td>${a.date}</td><td>${a.className}</td><td>${a.topic}</td><td>${statusMap[a.status] || '<span style="color: #10b981; font-weight: bold;">✅ Present</span>'}</td></tr>`).join('') : '<tr><td colspan="4">No records found.</td></tr>'}
             </table>
 
             <h2>📝 Test & Material Completion</h2>
@@ -10396,37 +10112,12 @@ window.initFirebaseSystem = async function() {
     // --- STUDENT PROFILE & TARGETS LOGIC ---
     let tempAvatarBase64 = null;
 
-    // Helper just in case you haven't added it globally yet
-    window.getLevelData = window.getLevelData || function(exp) {
-        if (!exp) exp = 0;
-        if (exp < 50) return { title: 'Bronze', color: 'bg-orange-400', icon: '🥉', next: 50 };
-        if (exp < 150) return { title: 'Silver', color: 'bg-slate-300', icon: '🥈', next: 150 };
-        if (exp < 300) return { title: 'Gold', color: 'bg-yellow-400', icon: '🥇', next: 300 };
-        return { title: 'Diamond', color: 'bg-cyan-400', icon: '💎', next: exp + 100 };
-    };
-
     window.openStudentProfile = function() {
         tempAvatarBase64 = currentUser.avatar || null;
         document.getElementById('profile-name-display').textContent = currentUser.user;
         document.getElementById('profile-avatar-preview').src = tempAvatarBase64 || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`;
         document.getElementById('profile-target-score').value = currentUser.targetScore || '';
         document.getElementById('profile-test-date').value = currentUser.testDate || '';
-        
-        // ✨ GAMIFICATION: Inject Stats into Profile Header
-        if (typeof window.getLevelData === 'function') {
-            const lvlData = window.getLevelData(currentUser.exp || 0);
-            const badgeEl = document.getElementById('profile-level-badge');
-            const textEl = document.getElementById('profile-level-text');
-            const barEl = document.getElementById('profile-exp-bar');
-            
-            if (badgeEl) badgeEl.textContent = lvlData.icon;
-            if (textEl) textEl.textContent = `${lvlData.title} Level (${currentUser.exp || 0} EXP)`;
-            if (barEl) {
-                barEl.className = `h-full transition-all duration-700 shadow-[0_0_10px_rgba(255,255,255,0.3)] ${lvlData.color}`;
-                barEl.style.width = `${((currentUser.exp || 0) / lvlData.next) * 100}%`;
-            }
-        }
-
         document.getElementById('student-profile-modal').classList.remove('hidden');
     };
 
@@ -10497,16 +10188,6 @@ window.initFirebaseSystem = async function() {
         if(!currentUser || currentUser.role !== 'student') return;
         
         document.getElementById('student-name-display').textContent = currentUser.user;
-        // ✨ GAMIFICATION: Update Level UI
-        const lvlData = getLevelData(currentUser.exp || 0);
-        const expBar = document.getElementById('student-exp-bar');
-        const lvlDisplay = document.getElementById('student-level-display');
-        const badge = document.getElementById('header-student-badge');
-        
-        if (expBar) expBar.style.width = `${((currentUser.exp || 0) / lvlData.next) * 100}%`;
-        if (expBar) expBar.className = `h-full rounded-full transition-all duration-500 ${lvlData.color}`;
-        if (lvlDisplay) lvlDisplay.textContent = `${lvlData.title} Level`;
-        if (badge) badge.textContent = lvlData.icon;
         
         const avt = document.getElementById('header-student-avatar');
         if(avt && avt.tagName === 'IMG') {
@@ -10665,8 +10346,6 @@ window.initFirebaseSystem = async function() {
         window.updateDashboardHeader();
         // Check Streak every time they load the dashboard!
         window.checkDailyStreak();
-        // ✨ NEW: Load Missions
-        if (typeof window.checkDailyMissions === 'function') window.checkDailyMissions();
     };
 
     // --- DISCORD-STYLE CHAT LOGIC (SELF-HEALING) ---
@@ -10810,22 +10489,17 @@ window.initFirebaseSystem = async function() {
             const prevMsg = i > 0 ? msgs[i-1] : null;
             const isContinuation = prevMsg && prevMsg.sender === m.sender && (m.timestamp - prevMsg.timestamp < 300000);
 
-            // Calculate Badge for Chat
-            let chatBadge = '';
-            if (!isTeacher) {
-                const senderUser = USERS.find(u => u.user === m.sender);
-                if (senderUser) {
-                    const sLvl = getLevelData(senderUser.exp || 0);
-                    chatBadge = `<div class="absolute -bottom-1.5 -right-1.5 text-[12px] drop-shadow-md" title="${sLvl.title} Rank">${sLvl.icon}</div>`;
-                }
+            if (isContinuation) {
+                return `
+                <div class="pl-[52px] group relative hover:bg-slate-100 rounded px-2 py-0.5 -mt-3 transition-colors">
+                    <span class="absolute left-2 text-[9px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity mt-1">${timeStr}</span>
+                    <p class="text-sm text-slate-700 whitespace-pre-wrap">${(m.text || '').replace(/</g, "&lt;")}</p>
+                </div>`;
             }
 
             return `
             <div class="flex gap-3 hover:bg-slate-100 p-2 rounded transition-colors group mt-2">
-                <div class="relative shrink-0 mt-1 w-10 h-10">
-                    <img src="${m.avatar || `https://ui-avatars.com/api/?name=${m.sender}&background=random`}" class="w-full h-full rounded-full object-cover border border-slate-200">
-                    ${chatBadge}
-                </div>
+                <img src="${m.avatar || `https://ui-avatars.com/api/?name=${m.sender}&background=random`}" class="w-10 h-10 rounded-full object-cover shrink-0 border border-slate-200 mt-1">
                 <div class="flex flex-col flex-1">
                     <div class="flex items-baseline gap-2 mb-0.5">
                         <span class="font-black text-sm ${isTeacher ? 'text-rose-600' : (isMe ? 'text-indigo-600' : 'text-slate-800')}">${m.sender}</span>
@@ -10920,36 +10594,11 @@ window.initFirebaseSystem = async function() {
         const activeBtn = document.getElementById(`shop-tab-${tabName}`);
         if(activeBtn) {
             if(tabName === 'topup') activeBtn.className = "shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-black text-sm transition-all text-amber-700 bg-amber-50 shadow-sm border border-amber-300 whitespace-nowrap w-full";
-            else if(tabName === 'spin') activeBtn.className = "shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-black text-sm transition-all text-purple-700 bg-purple-50 shadow-sm border border-purple-300 whitespace-nowrap w-full";
             else activeBtn.className = "shop-tab-btn text-center md:text-left px-4 py-3 rounded-xl font-bold text-sm transition-all bg-white shadow-sm border border-blue-500 text-blue-700 whitespace-nowrap w-full";
         }
 
         const content = document.getElementById('shop-content-area');
         
-        // ✨ NEW: Lucky Spin UI
-        if (tabName === 'spin') {
-            content.innerHTML = `
-                <div class="max-w-md mx-auto flex flex-col items-center bg-white p-8 rounded-3xl shadow-sm border border-slate-200 text-center">
-                    <h3 class="text-3xl font-black text-purple-900 mb-2">Lucky Wheel</h3>
-                    <p class="text-sm text-slate-500 mb-8">Spend 50 Gems for a chance to win big rewards!</p>
-                    
-                    <div class="relative w-48 h-48 mb-8 flex items-center justify-center bg-slate-50 rounded-full border-8 border-slate-100 shadow-inner overflow-hidden">
-                        <div id="spin-result-icon" class="text-7xl absolute transition-transform duration-[3000ms] ease-out">❓</div>
-                        <div id="spin-overlay" class="absolute inset-0 bg-purple-600/90 text-white flex flex-col items-center justify-center opacity-0 transition-opacity duration-300 z-10 rounded-full">
-                            <span id="spin-overlay-icon" class="text-4xl mb-1">🎉</span>
-                            <span id="spin-overlay-text" class="font-black text-xl">Win!</span>
-                        </div>
-                    </div>
-
-                    <button onclick="window.playLuckySpin()" id="btn-play-spin" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white font-black py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1 text-lg flex justify-center items-center gap-2">
-                        Spin Now (50 💎)
-                    </button>
-                    <p class="text-xs text-slate-400 mt-4">Prizes: 100 Gems, 500 Gems, 50 EXP, or Better luck next time!</p>
-                </div>
-            `;
-            return;
-        }
-
         // Render Top Up Screen (Legacy QR Logic)
         if (tabName === 'topup') {
             content.innerHTML = `
@@ -11025,167 +10674,6 @@ window.initFirebaseSystem = async function() {
         
         itemsHtml += `</div>`;
         content.innerHTML = itemsHtml;
-    };
-
-    // ✨ NEW: Lucky Spin Logic
-    window.playLuckySpin = async function() {
-        if ((currentUser.gems || 0) < 50) {
-            showModalMsg("Not Enough Gems", "You need 50 gems to spin the wheel.");
-            return;
-        }
-
-        const btn = document.getElementById('btn-play-spin');
-        const icon = document.getElementById('spin-result-icon');
-        const overlay = document.getElementById('spin-overlay');
-        
-        btn.disabled = true;
-        btn.innerHTML = "Spinning... 🌀";
-        overlay.classList.remove('opacity-100');
-        overlay.classList.add('opacity-0');
-        
-        // Deduct gems instantly
-        currentUser.gems -= 50;
-        document.getElementById('shop-gem-balance').textContent = currentUser.gems.toLocaleString();
-        
-        // Spin animation
-        let rotations = 0;
-        const spinInterval = setInterval(() => {
-            const emojis = ['💎', '⭐', '🎁', '❌', '🎰'];
-            icon.textContent = emojis[rotations % emojis.length];
-            icon.style.transform = `rotate(${rotations * 45}deg) scale(1.2)`;
-            rotations++;
-        }, 100);
-
-        // Determine outcome
-        setTimeout(async () => {
-            clearInterval(spinInterval);
-            icon.style.transform = `rotate(0deg) scale(1)`;
-            
-            const rand = Math.random();
-            let prizeText = "";
-            let prizeIcon = "";
-            
-            if (rand < 0.40) {
-                // 40% chance: Loss (Return 10 gems as pity)
-                currentUser.gems += 10;
-                prizeIcon = "❌";
-                prizeText = "+10 Gems (Pity)";
-            } else if (rand < 0.70) {
-                // 30% chance: Small EXP
-                currentUser.exp = (currentUser.exp || 0) + 50;
-                prizeIcon = "⭐";
-                prizeText = "+50 EXP";
-            } else if (rand < 0.95) {
-                // 25% chance: Double Money
-                currentUser.gems += 100;
-                prizeIcon = "💎";
-                prizeText = "+100 Gems";
-            } else {
-                // 5% chance: Jackpot
-                currentUser.gems += 500;
-                prizeIcon = "🎰";
-                prizeText = "JACKPOT! +500 💎";
-            }
-
-            document.getElementById('spin-overlay-icon').textContent = prizeIcon;
-            document.getElementById('spin-overlay-text').textContent = prizeText;
-            overlay.classList.remove('opacity-0');
-            overlay.classList.add('opacity-100');
-
-            document.getElementById('shop-gem-balance').textContent = currentUser.gems.toLocaleString();
-            btn.innerHTML = "Spin Again (50 💎)";
-            btn.disabled = false;
-
-            // Save to cloud
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
-            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-            window.updateDashboardHeader();
-        }, 2000);
-    };
-
-    // ✨ NEW: Daily Missions Logic
-    window.checkDailyMissions = function() {
-        if (!currentUser || currentUser.role !== 'student' || !currentUser.isPaid) return;
-
-        const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-        
-        // Initialize or Reset missions if it's a new day
-        if (!currentUser.missions || currentUser.missions.date !== todayStr) {
-            currentUser.missions = {
-                date: todayStr,
-                login: { done: true, claimed: false }, // Automatically done by logging in
-                test: { done: false, claimed: false },
-                flashcard: { done: false, claimed: false }
-            };
-            window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
-        }
-
-        const widget = document.getElementById('student-missions-widget');
-        const list = document.getElementById('missions-list-container');
-        if (!widget || !list) return;
-
-        widget.classList.remove('hidden');
-        widget.classList.add('flex');
-
-        const m = currentUser.missions;
-        
-        const renderTask = (id, title, rewardText, state) => {
-            let statusHtml = '';
-            if (state.claimed) {
-                statusHtml = `<span class="text-xs font-black text-slate-300 bg-slate-100 px-3 py-1 rounded border border-slate-200">Claimed ✓</span>`;
-            } else if (state.done) {
-                statusHtml = `<button onclick="window.claimMission('${id}')" class="text-xs font-black text-white bg-emerald-500 hover:bg-emerald-600 px-3 py-1 rounded shadow transition animate-pulse">Claim ${rewardText}</button>`;
-            } else {
-                statusHtml = `<span class="text-xs font-bold text-slate-400 bg-slate-50 px-3 py-1 rounded border border-slate-100">Incomplete</span>`;
-            }
-
-            return `
-            <div class="flex justify-between items-center p-3 rounded-lg border ${state.done && !state.claimed ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100'}">
-                <div class="font-bold text-sm ${state.claimed ? 'text-slate-400 line-through' : 'text-slate-700'}">${title}</div>
-                <div>${statusHtml}</div>
-            </div>`;
-        };
-
-        list.innerHTML = `
-            ${renderTask('login', 'Log into the system today', '10 💎', m.login)}
-            ${renderTask('test', 'Complete 1 Mock or Practice Test', '20 💎 + 5 ⭐', m.test)}
-            ${renderTask('flashcard', 'Add 1 new word to Flashcards', '10 💎', m.flashcard)}
-        `;
-    };
-
-    window.updateMission = function(taskId) {
-        if (!currentUser || !currentUser.missions || currentUser.missions.date !== new Date().toISOString().split('T')[0]) return;
-        if (currentUser.missions[taskId] && !currentUser.missions[taskId].done) {
-            currentUser.missions[taskId].done = true;
-            window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser).then(() => {
-                sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-                window.checkDailyMissions(); // Refresh UI
-            });
-        }
-    };
-
-    window.claimMission = async function(taskId) {
-        if (!currentUser || !currentUser.missions || !currentUser.missions[taskId]) return;
-        
-        const task = currentUser.missions[taskId];
-        if (!task.done || task.claimed) return;
-
-        task.claimed = true;
-        
-        let rewardMsg = "";
-        if (taskId === 'login') { currentUser.gems = (currentUser.gems||0) + 10; rewardMsg = "10 Gems"; }
-        if (taskId === 'test') { currentUser.gems = (currentUser.gems||0) + 20; currentUser.exp = (currentUser.exp||0) + 5; rewardMsg = "20 Gems and 5 EXP"; }
-        if (taskId === 'flashcard') { currentUser.gems = (currentUser.gems||0) + 10; rewardMsg = "10 Gems"; }
-
-        try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
-            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-            window.updateDashboardHeader();
-            window.checkDailyMissions();
-            if(typeof window.showToast === 'function') window.showToast("Mission Complete!", `You claimed ${rewardMsg}.`);
-            window.playGemAnimation();
-        } catch(e) { console.error(e); }
     };
 
     // 4. Buy Logic
@@ -11592,148 +11080,6 @@ window.initFirebaseSystem = async function() {
         };
 
         fileInput.click();
-    };
-
-    // --- FINANCIAL ANALYTICS LOGIC ---
-    window.openIncomeAnalytics = function() {
-        let monthlyTotals = {};
-        let totalMonth = 0, totalQuarter = 0, totalYear = 0;
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-        const currentQuarter = Math.floor(currentMonth / 3);
-
-        ATTENDANCE.forEach(a => {
-            if (a.status !== 'on_time' && a.status !== 'late') return;
-            const cls = CLASSES.find(c => c.name === a.className);
-            const fee = cls?.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000;
-            
-            const aDate = new Date(a.date);
-            if (isNaN(aDate.getTime())) return;
-
-            const y = aDate.getFullYear();
-            const m = aDate.getMonth();
-            const q = Math.floor(m / 3);
-            
-            const key = `${y}-${String(m+1).padStart(2,'0')}`;
-            monthlyTotals[key] = (monthlyTotals[key] || 0) + fee;
-
-            if (y === currentYear) {
-                totalYear += fee;
-                if (q === currentQuarter) totalQuarter += fee;
-                if (m === currentMonth) totalMonth += fee;
-            }
-        });
-
-        document.getElementById('income-month').textContent = formatVND(totalMonth);
-        document.getElementById('income-quarter').textContent = formatVND(totalQuarter);
-        document.getElementById('income-year').textContent = formatVND(totalYear);
-
-        const ctx = document.getElementById('income-chart');
-        if (window.incomeChartInstance) window.incomeChartInstance.destroy();
-
-        const labels = [];
-        const data = [];
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-            const k = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-            const mName = d.toLocaleString('default', { month: 'short' });
-            labels.push(`${mName} ${d.getFullYear()}`);
-            data.push(monthlyTotals[k] || 0);
-        }
-
-        window.incomeChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Monthly Income (VND)',
-                    data: data,
-                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
-                    borderColor: 'rgb(16, 185, 129)',
-                    borderWidth: 1,
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
-            }
-        });
-
-        document.getElementById('income-modal').classList.remove('hidden');
-    };
-
-    // --- LESSON RATING LOGIC ---
-    let currentRatingVal = 0;
-    let currentRatingSchedId = null;
-
-    window.openRatingModal = function(schedId) {
-        currentRatingSchedId = schedId;
-        const sched = SCHEDULES.find(s => s.id === schedId);
-        if (!sched) return;
-
-        const isTeacher = currentUser.role === 'teacher';
-        const rKey = isTeacher ? 'teacher' : currentUser.user;
-        
-        const existing = sched.ratings && sched.ratings[rKey] ? sched.ratings[rKey] : null;
-        currentRatingVal = existing ? existing.rating : 0;
-        const comment = existing ? existing.comment : '';
-
-        window.updateStarUI(currentRatingVal);
-        document.getElementById('rating-comment').value = comment;
-        
-        document.getElementById('rating-modal').classList.remove('hidden');
-    };
-
-    window.updateStarUI = function(val) {
-        currentRatingVal = val;
-        for(let i=1; i<=5; i++) {
-            const star = document.getElementById(`star-${i}`);
-            if(star) star.className = i <= val ? 'text-5xl text-amber-400 cursor-pointer transition-colors drop-shadow-sm select-none' : 'text-5xl text-slate-300 cursor-pointer transition-colors hover:text-amber-300 drop-shadow-sm select-none';
-        }
-    };
-
-    window.saveRating = async function() {
-        if (currentRatingVal === 0) {
-            showModalMsg("Rating Required", "Please select 1 to 5 stars.");
-            return;
-        }
-
-        const sched = SCHEDULES.find(s => s.id === currentRatingSchedId);
-        if (!sched) return;
-        
-        const btn = document.getElementById('btn-save-rating');
-        btn.textContent = "Saving..."; btn.disabled = true;
-
-        if(!sched.ratings) sched.ratings = {};
-        const isTeacher = currentUser.role === 'teacher';
-        const rKey = isTeacher ? 'teacher' : currentUser.user;
-        
-        sched.ratings[rKey] = {
-            rating: currentRatingVal,
-            comment: document.getElementById('rating-comment').value.trim(),
-            timestamp: Date.now()
-        };
-
-        try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), sched.id), sched);
-            document.getElementById('rating-modal').classList.add('hidden');
-            showModalMsg("Saved", "Thank you for your feedback!");
-            
-            // Re-render schedule view based on role
-            if (currentUser.role === 'teacher') {
-                window.selectDate(sched.date, 'teacher');
-            } else {
-                window.selectDate(sched.date, 'student');
-            }
-        } catch (e) {
-            console.error(e);
-            showModalMsg("Error", "Could not save rating to cloud.");
-        }
-        
-        btn.textContent = "Submit Rating"; btn.disabled = false;
     };
   </script>
 <!-- SECURITY: Anti-Inspect and View Source Protection -->
