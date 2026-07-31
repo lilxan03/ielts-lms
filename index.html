@@ -498,6 +498,21 @@
       <input type="text" id="meta-title-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none font-medium" />
       <label class="block text-sm font-bold text-slate-700 mb-1">Topics / Tags (Comma separated)</label>
       <input type="text" id="meta-topics-input" placeholder="e.g. Science, Nature, Maps" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none text-sm" />
+      <label class="block text-sm font-bold text-slate-700 mb-1">Target Band / Difficulty (i+1)</label>
+      <select id="meta-difficulty-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none text-sm font-medium bg-white">
+          <option value="">-- General / Mixed --</option>
+          <option value="4.0">Band 4.0</option>
+          <option value="4.5">Band 4.5</option>
+          <option value="5.0">Band 5.0</option>
+          <option value="5.5">Band 5.5</option>
+          <option value="6.0">Band 6.0</option>
+          <option value="6.5">Band 6.5</option>
+          <option value="7.0">Band 7.0</option>
+          <option value="7.5">Band 7.5</option>
+          <option value="8.0">Band 8.0</option>
+          <option value="8.5">Band 8.5</option>
+          <option value="9.0">Band 9.0</option>
+      </select>
       <label class="block text-sm font-black text-amber-600 mb-1 flex items-center gap-1">💎 Premium Unlock Price (Gems)</label>
       <input type="number" id="meta-price-input" placeholder="0 for Free" class="w-full border-2 border-amber-200 bg-amber-50 rounded px-3 py-2 mb-6 focus:border-amber-500 outline-none text-sm font-black text-amber-700 shadow-inner" />
       <div class="flex justify-end gap-3">
@@ -2041,6 +2056,70 @@ window.initFirebaseSystem = async function() {
         }
     };
 
+    // --- SPACED REPETITION SYSTEM (SM-2) ---
+
+    window.calculateSM2 = function(card, quality) {
+        if (quality >= 3) {
+            if (card.repetition === 0) {
+                card.interval = 1;
+            } else if (card.repetition === 1) {
+                card.interval = 6;
+            } else {
+                card.interval = Math.round(card.interval * card.efactor);
+            }
+            card.repetition += 1;
+        } else {
+            card.repetition = 0;
+            card.interval = 1;
+        }
+
+        card.efactor = card.efactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+        if (card.efactor < 1.3) card.efactor = 1.3;
+
+        const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+        card.nextReviewDate = Date.now() + (card.interval * ONE_DAY_MS);
+        
+        return card;
+    };
+
+    window.submitFlashcardReview = async function(listId, cardId, quality) {
+        const deck = FLASHCARDS[listId];
+        if (!deck) return;
+        
+        const cardIndex = deck.findIndex(c => c.id === cardId);
+        if (cardIndex === -1) return;
+        
+        deck[cardIndex] = window.calculateSM2(deck[cardIndex], quality);
+        
+        try {
+            const docId = `${currentUser.user}_${listId}`;
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: deck });
+            window.showToast("Progress Saved", `Next review in ${deck[cardIndex].interval} day(s).`);
+            
+            // This triggers your UI to move to the next card
+            // ✨ FIX: Trigger the correct UI refresh depending on which screen is open
+            if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
+                // Refresh the Side Panel
+                window.renderFlashcardPanel();
+            } 
+            else if (document.getElementById('study-mode-modal') && !document.getElementById('study-mode-modal').classList.contains('hidden')) {
+                // Refresh the Full Screen Active Recall mode
+                window.renderStudyFlashcard();
+            } 
+        } catch (err) {
+            console.error("SRS Sync Error:", err);
+            window.showModalMsg("Error", "Could not sync progress to cloud.");
+        }
+    };
+
+    window.getCardsDueForReview = function(listId) {
+        const deck = FLASHCARDS[listId] || [];
+        const now = Date.now();
+        let dueCards = deck.filter(card => !card.nextReviewDate || card.nextReviewDate <= now);
+        dueCards.sort((a, b) => (a.nextReviewDate || 0) - (b.nextReviewDate || 0));
+        return dueCards;
+    };
+    
     window.toggleTeacherDropdown = function(e) {
         if(e) e.stopPropagation();
         const menu = document.getElementById('teacher-dropdown-content');
@@ -2362,7 +2441,7 @@ window.initFirebaseSystem = async function() {
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('schedules')), snap => { SCHEDULES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => { CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); resolve(); }); }));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => FLASHCARDS[d.id] = d.data().data); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); resolve(); }); }));
         } else {
             // ✨ STUDENT: Restricted queries. ONLY downloads their own private data.
             promises.push(new Promise(resolve => { 
@@ -2404,7 +2483,7 @@ window.initFirebaseSystem = async function() {
             
             // Students only download their own private notes and flashcards
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data; }); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => FLASHCARDS[d.id] = d.data().data); if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) { window.renderFlashcardPanel(); } resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if (d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) { window.renderFlashcardPanel(); } resolve(); }); }));
         }
 
         await Promise.all(promises);
@@ -2839,15 +2918,20 @@ window.initFirebaseSystem = async function() {
       document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
       document.getElementById('modal-confirm').onclick = () => { if(inp.value.trim()) { document.getElementById('custom-modal').classList.add('hidden'); onConfirm(inp.value.trim()); } };
     }
-    function showTestMetaModal(titleText, defaultTitle, defaultTopics, onConfirm) {
+    function showTestMetaModal(titleText, defaultTitle, defaultTopics, defaultDiff, onConfirm) {
       document.getElementById('meta-modal-heading').textContent = titleText;
       document.getElementById('meta-title-input').value = defaultTitle;
       document.getElementById('meta-topics-input').value = defaultTopics;
+      document.getElementById('meta-difficulty-input').value = defaultDiff || '';
       document.getElementById('test-meta-modal').classList.remove('hidden');
       document.getElementById('meta-cancel').onclick = () => document.getElementById('test-meta-modal').classList.add('hidden');
       document.getElementById('meta-confirm').onclick = () => {
         document.getElementById('test-meta-modal').classList.add('hidden');
-        onConfirm(document.getElementById('meta-title-input').value.trim() || 'Untitled', document.getElementById('meta-topics-input').value.split(',').map(s=>s.trim()).filter(Boolean));
+        onConfirm(
+            document.getElementById('meta-title-input').value.trim() || 'Untitled', 
+            document.getElementById('meta-topics-input').value.split(',').map(s=>s.trim()).filter(Boolean),
+            document.getElementById('meta-difficulty-input').value
+        );
       };
     }
     
@@ -3114,9 +3198,17 @@ window.initFirebaseSystem = async function() {
             ? `<div class="mt-1 mb-2 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-1 rounded truncate" title="Assigned to: ${assignedClasses.join(', ')}">📖 ${assignedClasses.join(', ')}</div>`
             : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
 
+        const testDiff = t.difficulty ? `<span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200">Band ${parseFloat(t.difficulty).toFixed(1)}</span>` : '';
+
         return `
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
-          <div class="flex justify-between items-start mb-3 shrink-0"><span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span><span class="text-xs text-slate-400 font-bold">${t.parts.length} Part(s)</span></div>
+          <div class="flex justify-between items-start mb-3 shrink-0">
+             <div class="flex gap-2 flex-wrap">
+                 <span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span>
+                 ${testDiff}
+             </div>
+             <span class="text-xs text-slate-400 font-bold shrink-0">${t.parts.length} Part(s)</span>
+          </div>
           <h3 class="font-bold text-slate-900 leading-snug mb-3 flex-1 break-words">${t.title}</h3>
           <div class="shrink-0">${assignedBadge}</div>
           <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100 shrink-0">
@@ -3332,8 +3424,8 @@ window.initFirebaseSystem = async function() {
     };
     
     async function createNewTest(mod) {
-      showTestMetaModal(`New ${mod.charAt(0).toUpperCase()+mod.slice(1)} Test`, "", "", async (title, topics) => {
-        const newTest = { id: 't_'+Date.now(), title, module: mod, topics, parts: [{title:"Part 1", text:"", questions:[]}], vocab: [] };
+      showTestMetaModal(`New ${mod.charAt(0).toUpperCase()+mod.slice(1)} Test`, "", "", "", async (title, topics, diff) => {
+        const newTest = { id: 't_'+Date.now(), title, module: mod, topics, difficulty: diff, parts: [{title:"Part 1", text:"", questions:[]}], vocab: [] };
         TEST_BANK.unshift(newTest); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), newTest.id), newTest);
         editTest(newTest.id);
@@ -4879,6 +4971,7 @@ window.initFirebaseSystem = async function() {
            }
         }
         
+        html += `<div>${mkLbl('Hint / Scaffolding (Optional - Shows in Practice Mode)')}${mkExplanationToolbar()}<div class="q-hint rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[60px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.hint||''}</div></div>`;
         html += `<div>${mkLbl('Explanation (Optional)')}${mkExplanationToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
         
         html += `</div>`; 
@@ -5179,6 +5272,7 @@ window.initFirebaseSystem = async function() {
             blockId: old.blockId, type: old.type, ids: idsArr, 
             points: Number(b.querySelector('.q-points').value)||1, 
             instruction: getVal(b.querySelector('.q-inst')), 
+            hint: getVal(b.querySelector('.q-hint')),
             explanation: getVal(b.querySelector('.q-expl')) 
         };
         
@@ -6042,13 +6136,89 @@ window.initFirebaseSystem = async function() {
           return; 
       }
       
-      // FIX: Correctly find class without crashing
       const cls = CLASSES.find(c => c.id === cid);
       if(!cls) return;
       
       if(bottomSec) { bottomSec.classList.remove('hidden'); bottomSec.classList.add('flex'); }
       if(quickActions) { quickActions.classList.remove('hidden'); quickActions.classList.add('flex'); }
       if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
+
+      // 🧠 KRASHEN'S i+1: Hoist Stats Calculation Here to fuel the Recommendation Engine!
+      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+      const totalTests = cls.assignedTests?.length || 0;
+      const completedTestIds = [...new Set(mySubs.map(s => s.testId))]; 
+      const completedCount = completedTestIds.length;
+      const progressPct = totalTests === 0 ? 0 : Math.min(100, Math.round((completedCount / totalTests) * 100));
+
+      let rLStats = { reading: { correct: 0, total: 0 }, listening: { correct: 0, total: 0 } };
+      let wSStats = { writing: { sum: 0, count: 0 }, speaking: { sum: 0, count: 0 } };
+
+      mySubs.forEach(s => {
+          if (s.testName && s.testName.includes('(Practice)')) return;
+
+          let t = TEST_BANK.find(x => x.id === s.testId) || s.syntheticData;
+          let mod = t ? t.module : null;
+          
+          if (!mod) {
+              const tn = (s.testName || '').toLowerCase();
+              if (tn.includes('reading')) mod = 'reading';
+              else if (tn.includes('listening')) mod = 'listening';
+              else if (tn.includes('writing')) mod = 'writing';
+              else if (tn.includes('speaking')) mod = 'speaking';
+          }
+          
+          if (mod === 'reading' || mod === 'listening') {
+              if (s.score && s.score.includes('/')) {
+                  let parts = s.score.split('/');
+                  let correct = parseFloat(parts[0]);
+                  let total = parseFloat(parts[1]);
+                  if (!isNaN(correct) && !isNaN(total) && total > 0) {
+                      rLStats[mod].correct += correct;
+                      rLStats[mod].total += total;
+                  }
+              }
+          } 
+          else if (mod === 'writing' || mod === 'speaking') {
+              if (s.score && s.score.includes('Band')) {
+                  let val = parseFloat(s.score.replace('Band', '').trim());
+                  if (!isNaN(val) && val > 0) {
+                      wSStats[mod].sum += val;
+                      wSStats[mod].count++;
+                  }
+              }
+          }
+      });
+
+      const getRLBand = (stat) => {
+          if (stat.total === 0) return 0;
+          let projected = Math.round((stat.correct / stat.total) * 40);
+          if (projected >= 39) return 9.0;
+          if (projected >= 37) return 8.5;
+          if (projected >= 35) return 8.0;
+          if (projected >= 33) return 7.5;
+          if (projected >= 30) return 7.0;
+          if (projected >= 27) return 6.5;
+          if (projected >= 23) return 6.0;
+          if (projected >= 20) return 5.5;
+          if (projected >= 16) return 5.0;
+          if (projected >= 13) return 4.5;
+          if (projected >= 10) return 4.0;
+          if (projected >= 7) return 3.5;
+          if (projected >= 5) return 3.0;
+          if (projected >= 3) return 2.5;
+          if (projected >= 2) return 2.0; 
+          if (projected >= 1) return 1.0; 
+          return 0; 
+      };
+
+      const radarData = currentUser.radarChartData || [
+          getRLBand(rLStats.reading),
+          getRLBand(rLStats.listening),
+          wSStats.writing.count ? parseFloat((wSStats.writing.sum / wSStats.writing.count).toFixed(1)) : 0,
+          wSStats.speaking.count ? parseFloat((wSStats.speaking.sum / wSStats.speaking.count).toFixed(1)) : 0
+      ];
+
+      const skillBands = { reading: radarData[0], listening: radarData[1], writing: radarData[2], speaking: radarData[3] };
 
       const renderTestItem = (tid) => {
         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
@@ -6057,18 +6227,37 @@ window.initFirebaseSystem = async function() {
         const price = Number(t.price) || 0;
         const unlockedTests = currentUser.unlockedTests || [];
         const isLocked = price > 0 && !unlockedTests.includes(t.id);
+        const isCompleted = completedTestIds.includes(t.id);
         
+        // 🎯 Krashen's i+1 Target Identification Logic
+        const myBand = skillBands[t.module] || 0;
+        const targetIPlusOne = myBand > 0 ? myBand + 0.5 : null;
+        const testDiff = parseFloat(t.difficulty);
+        
+        // Is it perfectly optimal? (i+1 or i+0.5)
+        const isIPlusOne = testDiff && targetIPlusOne && (testDiff === targetIPlusOne || testDiff === targetIPlusOne + 0.5);
+        const isStarterRec = myBand === 0 && testDiff && testDiff <= 5.0; // Seed early testing
+        const isRecommended = !isCompleted && !isLocked && (isIPlusOne || isStarterRec);
+
+        const borderClass = isLocked ? 'border-amber-200 bg-amber-50/50' : (isRecommended ? 'border-emerald-400 bg-emerald-50/30 ring-2 ring-emerald-100 shadow-emerald-100 hover:shadow-md' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md');
+        
+        const recBadge = isRecommended ? `<div class="mb-3"><span class="text-[10px] font-black px-2 py-1 rounded bg-emerald-500 text-white shadow-sm flex items-center gap-1 animate-pulse w-max" title="Optimal difficulty for your current level!">🚀 i+1 Recommended</span></div>` : '';
+
         const actionButton = isLocked 
             ? `<button onclick="window.unlockPremiumTest('${t.id}', ${price}, '${t.title.replace(/'/g,"\\'")}')" class="w-full bg-amber-100 hover:bg-amber-200 text-amber-800 border border-amber-200 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-1.5 shadow-sm">🔒 Unlock for ${price} 💎</button>`
-            : `<button onclick="openModeSelection('${t.id}')" class="w-full bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center shadow-sm">Start Practice &rarr;</button>`;
+            : `<button onclick="openModeSelection('${t.id}')" class="w-full ${isRecommended ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md' : 'bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 shadow-sm'} font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center">Start Practice &rarr;</button>`;
 
         return `
-        <div class="flex flex-col p-5 border ${isLocked ? 'border-amber-200 bg-amber-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'} shadow-sm rounded-xl transition relative overflow-hidden group h-full min-h-[160px]">
-            <div class="flex justify-between items-start shrink-0 mb-3">
-                <span class="text-[10px] font-black px-2.5 py-1 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase tracking-widest">${t.module}</span>
-                ${isLocked ? `<span class="text-amber-500 bg-amber-100 p-1 rounded-md leading-none shadow-sm" title="Premium Content">💎</span>` : ''}
+        <div class="flex flex-col p-5 border ${borderClass} rounded-xl transition relative overflow-hidden group h-full min-h-[160px]">
+            <div class="flex justify-between items-start shrink-0 mb-3 gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[10px] font-black px-2.5 py-1 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase tracking-widest">${t.module}</span>
+                    ${testDiff ? `<span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200">Band ${testDiff.toFixed(1)}</span>` : ''}
+                </div>
+                ${isLocked ? `<span class="text-amber-500 bg-amber-100 p-1 rounded-md leading-none shadow-sm" title="Premium Content">💎</span>` : (isCompleted ? '<span class="text-emerald-500 font-black text-sm" title="Completed">✓ Done</span>' : '')}
             </div>
-            <div class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-snug transition-colors mb-4 flex-1 break-words">${t.title}</div>
+            <div class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-snug transition-colors mb-2 flex-1 break-words">${t.title}</div>
+            ${recBadge}
             <div class="mt-auto w-full shrink-0">
                 ${actionButton}
             </div>
@@ -6109,6 +6298,23 @@ window.initFirebaseSystem = async function() {
               return matchQuery && matchMod && matchTag;
           });
           
+          // ✨ Sort Recommended i+1 tests to the top of the pile!
+          testObjects.sort((a, b) => {
+              const myBandA = skillBands[a.module] || 0;
+              const testDiffA = parseFloat(a.difficulty);
+              const targetA = myBandA > 0 ? myBandA + 0.5 : null;
+              const isRecA = !completedTestIds.includes(a.id) && (testDiffA === targetA || testDiffA === targetA + 0.5 || (myBandA === 0 && testDiffA <= 5.0));
+
+              const myBandB = skillBands[b.module] || 0;
+              const testDiffB = parseFloat(b.difficulty);
+              const targetB = myBandB > 0 ? myBandB + 0.5 : null;
+              const isRecB = !completedTestIds.includes(b.id) && (testDiffB === targetB || testDiffB === targetB + 0.5 || (myBandB === 0 && testDiffB <= 5.0));
+              
+              if (isRecA && !isRecB) return -1;
+              if (!isRecA && isRecB) return 1;
+              return 0; // retain original order
+          });
+
           if (testObjects.length) {
               allTestsHtml = testObjects.map(t => renderTestItem(t.id)).join('');
           } else if (query || mod !== 'all' || selectedTag !== 'all') {
@@ -6116,12 +6322,6 @@ window.initFirebaseSystem = async function() {
           }
       } 
       list.innerHTML = allTestsHtml;
-      
-      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
-      const totalTests = cls.assignedTests?.length || 0;
-      const completedTestIds = [...new Set(mySubs.map(s => s.testId))]; 
-      const completedCount = completedTestIds.length;
-      const progressPct = totalTests === 0 ? 0 : Math.min(100, Math.round((completedCount / totalTests) * 100));
 
       prog.innerHTML = `
         <h2 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Class Progress</h2>
@@ -6136,11 +6336,9 @@ window.initFirebaseSystem = async function() {
             </div>
         </div>
 
-        <!-- ADD THIS RADAR CHART CANVAS CONTAINER -->
         <div class="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100 shadow-inner flex justify-center">
             <canvas id="skills-radar-chart" style="max-height: 250px; width: 100%;"></canvas>
         </div>
-        <!-- END RADAR CHART CONTAINER -->
 
         <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest mb-3 border-t border-slate-100 pt-5">Recent Feedback</h3>
         <div class="space-y-3 stagger-fade-in">
@@ -6156,91 +6354,11 @@ window.initFirebaseSystem = async function() {
               </div>
             </div>`).join('') : '<p class="text-sm text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No completed tests yet.</p>'}
         </div>`;
-     // --- ADD THIS AT THE VERY END OF renderStudentDashboard() ---
       
-      // 1. Calculate Average Scores for the 4 Skills (Mock & Full Mock ONLY)
-      let rLStats = { reading: { correct: 0, total: 0 }, listening: { correct: 0, total: 0 } };
-      let wSStats = { writing: { sum: 0, count: 0 }, speaking: { sum: 0, count: 0 } };
-
-      mySubs.forEach(s => {
-          // SKIP "Time-Free" practice runs. ONLY count Mock and Full Mock tests.
-          if (s.testName && s.testName.includes('(Practice)')) return;
-
-          let t = TEST_BANK.find(x => x.id === s.testId) || s.syntheticData;
-          let mod = t ? t.module : null;
-          
-          // ROBUST FALLBACK: Detect module from the title if missing
-          if (!mod) {
-              const tn = (s.testName || '').toLowerCase();
-              if (tn.includes('reading')) mod = 'reading';
-              else if (tn.includes('listening')) mod = 'listening';
-              else if (tn.includes('writing')) mod = 'writing';
-              else if (tn.includes('speaking')) mod = 'speaking';
-          }
-          
-          if (mod === 'reading' || mod === 'listening') {
-              if (s.score && s.score.includes('/')) {
-                  let parts = s.score.split('/');
-                  let correct = parseFloat(parts[0]);
-                  let total = parseFloat(parts[1]);
-                  if (!isNaN(correct) && !isNaN(total) && total > 0) {
-                      rLStats[mod].correct += correct;
-                      rLStats[mod].total += total;
-                  }
-              }
-          } 
-          else if (mod === 'writing' || mod === 'speaking') {
-              if (s.score && s.score.includes('Band')) {
-                  let val = parseFloat(s.score.replace('Band', '').trim());
-                  if (!isNaN(val) && val > 0) {
-                      wSStats[mod].sum += val;
-                      wSStats[mod].count++;
-                  }
-              }
-          }
-      });
-
-      // Maps projected scores directly to your uploaded tables
-      const getRLBand = (stat) => {
-          if (stat.total === 0) return 0;
-          
-          // Project to 40 points using standard rounding, fair for partial test attempts
-          let projected = Math.round((stat.correct / stat.total) * 40);
-          
-          // Reading (Academic) and Listening share this exact threshold structure
-          if (projected >= 39) return 9.0;
-          if (projected >= 37) return 8.5;
-          if (projected >= 35) return 8.0;
-          if (projected >= 33) return 7.5;
-          if (projected >= 30) return 7.0;
-          if (projected >= 27) return 6.5;
-          if (projected >= 23) return 6.0;
-          if (projected >= 20) return 5.5;
-          if (projected >= 16) return 5.0;
-          if (projected >= 13) return 4.5;
-          if (projected >= 10) return 4.0;
-          if (projected >= 7) return 3.5;
-          if (projected >= 5) return 3.0;
-          if (projected >= 3) return 2.5;
-          if (projected >= 2) return 2.0; // Fallback extrapolation
-          if (projected >= 1) return 1.0; // Fallback extrapolation
-          
-          return 0; 
-      };
-
-      // ✨ FIX: Look for the manual override array first! If it doesn't exist, fallback to calculated scores.
-      const radarData = currentUser.radarChartData || [
-          getRLBand(rLStats.reading),
-          getRLBand(rLStats.listening),
-          wSStats.writing.count ? parseFloat((wSStats.writing.sum / wSStats.writing.count).toFixed(1)) : 0,
-          wSStats.speaking.count ? parseFloat((wSStats.speaking.sum / wSStats.speaking.count).toFixed(1)) : 0
-      ];
-
       // 2. Render the Chart using a slight timeout to ensure the DOM is ready
       setTimeout(() => {
           const ctx = document.getElementById('skills-radar-chart');
           if (ctx) {
-              // Destroy previous instance if it exists to prevent overlap bugs
               if (window.studentRadarChart) window.studentRadarChart.destroy();
               
               window.studentRadarChart = new Chart(ctx, {
@@ -6258,7 +6376,6 @@ window.initFirebaseSystem = async function() {
                           pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
                       }]
                   },
-                  // ✨ FIX: Locked the min and max limits to 0 and 9 to prevent auto-scaling distortion!
                   options: {
                       scales: {
                           r: {
@@ -7015,6 +7132,14 @@ window.initFirebaseSystem = async function() {
         let chkBtn = '';
         let btnContainer = '';
         if (isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') {
+            // ✨ VYGOTSKY SCAFFOLDING BUTTONS
+            if (q.type === 'multiple_choice' && !q.multi) {
+                btnContainer += `<button id="btn-5050-${i}" onclick="window.applyFiftyFifty(${i})" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-amber-200">🪄 50/50</button>`;
+            }
+            if (q.hint && q.hint.trim() !== '' && q.hint !== '<br>' && q.hint !== '<p><br></p>') {
+                btnContainer += `<button onclick="window.showScaffoldHint(${i})" class="text-xs bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-sky-200">💡 Hint</button>`;
+            }
+            
             btnContainer += `<button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition shadow-sm">Check Answer</button>`;
         }
         if (isPreviewMode && q.type !== 'essay' && q.type !== 'audio_record') {
@@ -8166,21 +8291,30 @@ window.initFirebaseSystem = async function() {
         const sel = document.getElementById('panel-fc-list-select');
         
         let testVocabOpts = '';
-        if (APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
-            const partsWithVocab = [...new Set(APP_DATA.vocab.map(v => v.part || 'General'))];
-            testVocabOpts = partsWithVocab.map(part => `<option value="tv_${part}">📌 Vocab: ${part}</option>`).join('');
+        // Only inject APP_DATA test vocab if the exam UI is currently visible
+        const isExamActive = document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden');
+        
+        if (isExamActive && APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
+            const partsWithVocab = [...new Set(APP_DATA.vocab.map(v => v.part || 'Global'))];
+            testVocabOpts = partsWithVocab.map(part => `<option value="tv_${part}">📌 Test Vocab: ${part}</option>`).join('');
         }
 
-        sel.innerHTML = testVocabOpts + Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 ${k}</option>`).join('');
-        renderFlashcardPanel();
+        sel.innerHTML = testVocabOpts + Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 My Deck: ${k}</option>`).join('');
+        
+        if (sel.options.length === 0) {
+            sel.innerHTML = '<option value="">No Decks Available</option>';
+        }
+        
+        window.renderFlashcardPanel();
       } else p.classList.add('translate-x-full');
     }
     
     function promptCreateFcList() {
       showInputPrompt("New List", "Name your flashcard deck:", async (name) => {
         if(!FLASHCARDS[name]) FLASHCARDS[name] = [];
-        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), name), {data: FLASHCARDS[name]});
-        document.getElementById('fc-list-select').innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
+        const docId = `${currentUser.user}_${name}`;
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), {data: FLASHCARDS[name]});
+        document.getElementById('fc-list-select').innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 My Deck: ${k}</option>`).join('');
         document.getElementById('fc-list-select').value = name;
       });
     }
@@ -8196,58 +8330,137 @@ window.initFirebaseSystem = async function() {
       
       if(!FLASHCARDS[testTitle]) { 
           FLASHCARDS[testTitle] = []; 
-          window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), testTitle), {data: []}); 
+          const docId = `${currentUser.user}_${testTitle}`;
+          window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), {data: []}); 
       }
       
-      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}" ${k===testTitle?'selected':''}>${k}</option>`).join('');
+      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}" ${k===testTitle?'selected':''}>📁 My Deck: ${k}</option>`).join('');
       document.getElementById('student-fc-modal').classList.remove('hidden');
     }
     
-    function closeStudentFlashcardCreator() { document.getElementById('student-fc-modal').classList.add('hidden'); }
-    
-    async function saveStudentFlashcard() {
-      const term = document.getElementById('fc-term-input').value, def = document.getElementById('fc-def-input').value, list = document.getElementById('fc-list-select').value;
-      FLASHCARDS[list].push({ term, def }); 
-      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), list), {data: FLASHCARDS[list]});
-      closeStudentFlashcardCreator();
-      if(!document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
-         document.getElementById('panel-fc-list-select').value = list; renderFlashcardPanel();
-      }
-    }
+    window.saveStudentFlashcard = async function() {
+        const term = document.getElementById('fc-term-input').value.trim();
+        const def = document.getElementById('fc-def-input').value.trim();
+        const listId = document.getElementById('fc-list-select').value;
+        
+        if (!term || !def || !listId) {
+            window.showModalMsg("Error", "Please fill in all fields.");
+            return;
+        }
 
-    function renderFlashcardPanel() {
-      const listName = document.getElementById('panel-fc-list-select').value;
-      const c = document.getElementById('panel-fc-container');
-      let cards = [];
-      if (listName.startsWith('tv_')) {
-          const partName = listName.replace('tv_', '');
-          cards = (APP_DATA.vocab || []).filter(v => (v.part || 'General') === partName);
-      } else {
-          cards = FLASHCARDS[listName] || [];
-      }
+        if (!FLASHCARDS[listId]) FLASHCARDS[listId] = [];
 
-      if (!cards.length) { c.innerHTML = '<div class="text-center text-slate-500 mt-10">No cards in this deck.</div>'; return; }
-      
-      let html = `<div class="mb-5"><button onclick="window.openStudyMode('${listName.replace(/'/g, "\\'")}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg> Active Recall Study</button></div>`;
+        const newCard = {
+            id: 'fc_' + Date.now(),
+            term: term,
+            def: def,
+            list: listId,
+            
+            // --- ✨ SM-2 Spaced Repetition Fields ---
+            repetition: 0,
+            interval: 0,
+            efactor: 2.5,
+            nextReviewDate: Date.now()
+        };
 
-      html += cards.map((card, i) => `
-        <div class="flip-card w-full h-40 mb-4 cursor-pointer perspective-1000 relative group" onclick="this.classList.toggle('flipped')">
-          ${listName.startsWith('tv_') ? `<button onclick="event.stopPropagation(); window.importCardToMine('${card.term.replace(/'/g, "\\'")}')" class="absolute -top-2 -right-2 w-6 h-6 bg-blue-600 text-white rounded-full font-bold shadow opacity-0 group-hover:opacity-100 transition z-10">+</button>` : ''}
-          <div class="flip-card-inner w-full h-full relative shadow-md rounded-xl">
-            <div class="flip-card-front absolute w-full h-full bg-white border border-slate-200 rounded-xl flex items-center justify-center p-4">
-              <h3 class="font-bold text-xl text-blue-800 text-center">${card.term}</h3>
+        FLASHCARDS[listId].push(newCard);
+
+        try {
+            const docId = `${currentUser.user}_${listId}`;
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: FLASHCARDS[listId] });
+            window.showToast("Saved", "Flashcard added successfully!");
+            
+            document.getElementById('student-fc-modal').classList.add('hidden');
+            document.getElementById('fc-term-input').value = '';
+            document.getElementById('fc-def-input').value = '';
+            
+            if (!document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
+                window.renderFlashcardPanel();
+            }
+        } catch (err) {
+            console.error(err);
+            window.showModalMsg("Error", "Failed to save flashcard.");
+        }
+    };
+
+    // Overwrite or update your renderFlashcardPanel function to use Spaced Repetition:
+    window.renderFlashcardPanel = function() {
+        const select = document.getElementById('panel-fc-list-select');
+        if (!select) return;
+        
+        const listId = select.value;
+        const container = document.getElementById('panel-fc-container');
+        if (!container) return;
+
+        // 1. Populate dropdown lists if empty
+        const lists = Object.keys(FLASHCARDS);
+        if (lists.length === 0) {
+            select.innerHTML = '<option value="">No Flashcard Decks Found</option>';
+            container.innerHTML = '<div class="text-center text-slate-400 mt-10 text-sm">Highlight any word during practice to create a flashcard deck!</div>';
+            return;
+        }
+
+        if (!select.innerHTML || select.options.length === 0) {
+            select.innerHTML = lists.map(l => `<option value="${l}">${l}</option>`).join('');
+        }
+
+        const activeList = select.value || lists[0];
+        
+        // 2. ✨ SRS FILTER: Pull only cards that are mathematically due for review today!
+        const dueCards = window.getCardsDueForReview(activeList);
+
+        if (dueCards.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center p-6 animate-fade-in">
+                    <span class="text-5xl mb-3">🎉</span>
+                    <h3 class="font-black text-lg text-slate-700 mb-1">Deck Completed!</h3>
+                    <p class="text-xs text-slate-500 font-medium">No flashcards are due for review in this deck right now. Excellent habit formation!</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Grab the first due card to review
+        const card = dueCards[0];
+
+        container.innerHTML = `
+            <div class="flex flex-col h-full justify-between animate-fade-in">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-2">
+                    Due Reviews Left: <span class="text-blue-600 font-black">${dueCards.length}</span>
+                </div>
+                
+                <!-- Flip Card Box -->
+                <div class="perspective-1000 flex-1 flex items-center justify-center my-4 cursor-pointer" onclick="this.querySelector('.flip-card-inner').classList.toggle('flipped')">
+                    <div class="flip-card-inner relative w-full h-64 text-center transition-transform duration-500 rounded-2xl shadow-md" style="transform-style: preserve-3d;">
+                        
+                        <!-- Front (Term) -->
+                        <div class="flip-card-front absolute inset-0 bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center backface-hidden">
+                            <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 bg-blue-50 px-2.5 py-1 rounded-full">Tap to Flip 🔄</span>
+                            <h3 class="text-2xl font-black text-slate-800 tracking-tight">${card.term}</h3>
+                        </div>
+                        
+                        <!-- Back (Definition) -->
+                        <div class="flip-card-back absolute inset-0 bg-blue-900 text-white rounded-2xl p-6 flex flex-col items-center justify-center backface-hidden" style="transform: rotateY(180deg);">
+                            <span class="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-3 bg-blue-800 px-2.5 py-1 rounded-full">Definition</span>
+                            <p class="text-base font-medium leading-relaxed">${card.def}</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SM-2 Rating Scale Buttons -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 text-center mb-3 uppercase tracking-wider">How well did you recall this?</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 0)" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl text-xs transition border border-rose-200 shadow-sm">0: Blank ❌</button>
+                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 2)" class="py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl text-xs transition border border-orange-200 shadow-sm">2: Hard ⚠️</button>
+                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 4)" class="py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition border border-blue-200 shadow-sm">4: Good 👍</button>
+                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 5)" class="py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs transition border border-emerald-200 shadow-sm">5: Easy 🌟</button>
+                    </div>
+                </div>
             </div>
-            <div class="flip-card-back absolute w-full h-full bg-blue-50 border border-blue-200 rounded-xl flex flex-col items-center justify-center p-4 overflow-y-auto">
-              ${card.pron ? `<span class="text-xs font-mono text-blue-600 bg-white px-2 py-0.5 rounded mb-2">${card.pron}</span>` : ''}
-              <p class="font-medium text-slate-800 text-center text-sm">${card.def || card.eng || ''}</p>
-              ${card.vi ? `<p class="font-medium text-slate-600 text-center text-sm border-t border-blue-200 mt-2 pt-2">${card.vi}</p>` : ''}
-            </div>
-          </div>
-        </div>
-      `).join('');
-      
-      c.innerHTML = html;
-    }
+        `;
+    };
 
     window.importCardToMine = async function(term) {
       const v = APP_DATA.vocab.find(x => x.term === term); if(!v) return;
@@ -8266,12 +8479,150 @@ window.initFirebaseSystem = async function() {
       
       if(Object.keys(FLASHCARDS).length === 0) { 
           FLASHCARDS['My List'] = []; 
-          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), 'My List'), {data: []}); 
+          const docId = `${currentUser.user}_My List`;
+          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), {data: []}); 
       }
       
-      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">${k}</option>`).join('');
+      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 My Deck: ${k}</option>`).join('');
       document.getElementById('student-fc-modal').classList.remove('hidden');
     }
+
+    // ==========================================
+    // 🧠 SRS & FLASHCARD PANEL OVERRIDES
+    // ==========================================
+    
+    window.getCardsDueForReview = function(listId) {
+        if (!listId) return [];
+        if (listId.startsWith('tv_')) {
+            const partName = listId.replace('tv_', '');
+            return (APP_DATA.vocab || []).filter(v => (v.part || 'Global') === partName).map((c, idx) => ({
+                id: 'temp_' + idx, term: c.term, def: c.eng || c.vi || c.def || ''
+            }));
+        }
+        
+        const deck = FLASHCARDS[listId] || [];
+        const now = Date.now();
+        
+        // Auto-patch older legacy cards that don't have SM-2 data or IDs
+        let needsSave = false;
+        deck.forEach((c, i) => {
+            if (!c.id) { c.id = 'fc_leg_' + i + '_' + Date.now(); needsSave = true; }
+            if (c.repetition === undefined) {
+                c.repetition = 0; c.interval = 0; c.efactor = 2.5; c.nextReviewDate = 0; needsSave = true;
+            }
+        });
+        
+        // Silently save patched legacy cards to the cloud
+        if (needsSave && currentUser) {
+             window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), `${currentUser.user}_${listId}`), { data: deck }).catch(e=>console.log(e));
+        }
+        
+        let dueCards = deck.filter(card => !card.nextReviewDate || card.nextReviewDate <= now);
+        dueCards.sort((a, b) => (a.nextReviewDate || 0) - (b.nextReviewDate || 0));
+        return dueCards;
+    };
+
+    window.submitFlashcardReview = async function(listId, cardId, quality, cardTerm) {
+        if (listId.startsWith('tv_')) {
+            window.showModalMsg("Teacher Deck", "To use Spaced Repetition tracking, please click the '+' button on the flashcard to save it to your personal list first.");
+            return;
+        }
+
+        const deck = FLASHCARDS[listId];
+        if (!deck) return;
+        
+        let cardIndex = deck.findIndex(c => c.id === cardId);
+        if (cardIndex === -1) cardIndex = deck.findIndex(c => c.term === cardTerm);
+        if (cardIndex === -1) {
+            window.showToast("Error", "Could not find card to update.");
+            return;
+        }
+
+        // Apply SM-2 algorithm math
+        deck[cardIndex] = window.calculateSM2(deck[cardIndex], quality);
+        
+        // ✨ UI RESPONDS INSTANTLY: Re-render the panel immediately before waiting for cloud sync
+        if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
+            window.renderFlashcardPanel();
+        }
+
+        try {
+            const docId = `${currentUser.user}_${listId}`;
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: deck });
+        } catch (err) {
+            console.error("SRS Sync Error:", err);
+        }
+    };
+
+    window.renderFlashcardPanel = function() {
+        const select = document.getElementById('panel-fc-list-select');
+        if (!select) return;
+        
+        const listId = select.value;
+        const container = document.getElementById('panel-fc-container');
+        if (!container) return;
+
+        const lists = Object.keys(FLASHCARDS);
+        const activeList = select.value || lists[0];
+        
+        const dueCards = window.getCardsDueForReview(activeList);
+        const isTeacherDeck = activeList.startsWith('tv_');
+
+        if (dueCards.length === 0) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-center p-6 animate-fade-in">
+                    <span class="text-5xl mb-3">🎉</span>
+                    <h3 class="font-black text-lg text-slate-700 mb-1">Deck Completed!</h3>
+                    <p class="text-xs text-slate-500 font-medium">No flashcards are due for review in this deck right now. Excellent habit formation!</p>
+                </div>`;
+            return;
+        }
+
+        const card = dueCards[0];
+        
+        // Safely escape terms to prevent quotes from breaking the button clicks
+        const safeList = activeList.replace(/'/g, "\\'");
+        const safeId = card.id || '';
+        const safeTerm = (card.term || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+        container.innerHTML = `
+            <div class="flex flex-col h-full justify-between animate-fade-in">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-2">
+                    ${isTeacherDeck ? 'Reviewing Teacher Vocab' : `Due Reviews Left: <span class="text-blue-600 font-black">${dueCards.length}</span>`}
+                </div>
+                
+                <!-- ✨ FIX: Added 'flip-card' class to parent, and strict backface-visibility inline styles -->
+                <div class="flip-card perspective-1000 flex-1 flex items-center justify-center my-4 cursor-pointer group relative" onclick="this.classList.toggle('flipped')">
+                    ${isTeacherDeck ? `<button onclick="event.stopPropagation(); window.importCardToMine('${safeTerm}')" class="absolute -top-2 -right-2 w-8 h-8 bg-blue-600 text-white rounded-full font-bold shadow-md opacity-0 group-hover:opacity-100 transition z-20 text-lg leading-none">+</button>` : ''}
+                    
+                    <div class="flip-card-inner relative w-full h-64 text-center transition-transform duration-500 rounded-2xl shadow-md" style="transform-style: preserve-3d;">
+                        
+                        <!-- Front Face -->
+                        <div class="flip-card-front absolute inset-0 bg-blue-800 border-2 border-blue-900 rounded-2xl p-6 flex flex-col items-center justify-center text-white shadow-inner" style="-webkit-backface-visibility: hidden; backface-visibility: hidden;">
+                            <span class="text-[10px] font-black text-blue-200 uppercase tracking-widest absolute top-4 bg-blue-900 px-3 py-1 rounded-full">Tap to Flip 🔄</span>
+                            <h3 class="text-3xl font-black tracking-tight drop-shadow-md">${card.term}</h3>
+                        </div>
+
+                        <!-- Back Face (Definition) -->
+                        <div class="flip-card-back absolute inset-0 bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center" style="-webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateY(180deg);">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest absolute top-4 bg-slate-100 px-3 py-1 rounded-full">Definition</span>
+                            <p class="text-lg font-bold text-slate-700 leading-relaxed overflow-y-auto w-full">${card.def}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mt-auto">
+                    <p class="text-[11px] font-bold text-slate-500 text-center mb-3 uppercase tracking-wider">How well did you recall this?</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 0, '${safeTerm}')" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl text-xs transition border border-rose-200 shadow-sm flex items-center justify-center gap-1">0: Blank <span>❌</span></button>
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 2, '${safeTerm}')" class="py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl text-xs transition border border-orange-200 shadow-sm flex items-center justify-center gap-1">2: Hard <span>⚠️</span></button>
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 4, '${safeTerm}')" class="py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition border border-blue-200 shadow-sm flex items-center justify-center gap-1">4: Good <span>👍</span></button>
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 5, '${safeTerm}')" class="py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs transition border border-emerald-200 shadow-sm flex items-center justify-center gap-1">5: Easy <span>🌟</span></button>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
 
 
     // ==========================================
@@ -10550,6 +10901,69 @@ window.initFirebaseSystem = async function() {
     };
 
     // ==========================================
+    // ✨ VYGOTSKY ZPD & SCAFFOLDING SYSTEM
+    // ==========================================
+
+    window.showScaffoldHint = function(blockIdx) {
+        const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
+        if (!q || !q.hint) return;
+        
+        window.showModalMsg("💡 Scaffolding Hint", `<div class="text-slate-700 text-base leading-relaxed bg-sky-50 p-4 rounded-xl border border-sky-200 shadow-inner">${q.hint}</div>`);
+    };
+
+    window.applyFiftyFifty = function(blockIdx) {
+        const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
+        if (!q || q.type !== 'multiple_choice' || q.multi) return;
+
+        const qId = q.ids[0];
+        const correctAns = (q.correctAnswers?.[qId] || '').toString().toLowerCase().trim();
+        
+        if (!correctAns) {
+            window.showToast("Error", "Teacher hasn't set a correct answer yet.");
+            return;
+        }
+
+        const radios = document.querySelectorAll(`input[name="q-${qId}"]`);
+        let wrongOptions = [];
+
+        radios.forEach(radio => {
+            const val = radio.value.toLowerCase().trim();
+            const exList = correctAns.split(/[/|]/).map(x => x.trim()); 
+            
+            if (!exList.includes(val)) {
+                wrongOptions.push(radio);
+            }
+        });
+
+        // Calculate how many to remove (Half of the wrong options)
+        const amountToRemove = Math.ceil(wrongOptions.length / 2);
+        
+        // Shuffle the wrong options array randomly
+        wrongOptions.sort(() => Math.random() - 0.5);
+
+        // Disable and fade out the selected wrong options
+        for (let i = 0; i < amountToRemove; i++) {
+            const radioToDisable = wrongOptions[i];
+            radioToDisable.disabled = true;
+            
+            const labelEl = radioToDisable.closest('label');
+            if (labelEl) {
+                labelEl.classList.add('opacity-30', 'pointer-events-none', 'grayscale', 'line-through');
+            }
+        }
+
+        // Disable the 50/50 button so they can only use it once
+        const btn = document.getElementById(`btn-5050-${blockIdx}`);
+        if (btn) {
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed', 'grayscale');
+            btn.innerHTML = '🪄 Used';
+        }
+
+        window.showToast("🪄 Magic 50/50", `Removed ${amountToRemove} incorrect options to help you focus!`);
+    };
+
+    // ==========================================
     // VIRTUAL ECONOMY, MASCOTS & GAMIFICATION
     // ==========================================
     
@@ -10857,9 +11271,10 @@ window.initFirebaseSystem = async function() {
 
     // Replace editCurrentTestMeta to include the Price
     window.editCurrentTestMeta = function() {
-      showTestMetaModal("Edit Test Settings", APP_DATA.title, (APP_DATA.topics || []).join(", "), (title, topics) => {
+      showTestMetaModal("Edit Test Settings", APP_DATA.title, (APP_DATA.topics || []).join(", "), APP_DATA.difficulty, (title, topics, diff) => {
         APP_DATA.title = title;
         APP_DATA.topics = topics;
+        APP_DATA.difficulty = diff;
         APP_DATA.price = Number(document.getElementById('meta-price-input').value) || 0;
         document.getElementById('builder-test-name').textContent = title;
         triggerEditorAutosave();
