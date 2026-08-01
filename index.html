@@ -7600,8 +7600,9 @@ window.initFirebaseSystem = async function() {
           };
           
           SUBMISSIONS.unshift(sub);
+          window.currentActiveSubmissionId = sub.id; // ✨ ADDED THIS: Save the ID so we can review it instantly
           try { 
-              await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub); 
+              await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub);
               
               // 🏆 ECONOMY REWARD: Grant 50 Gems for completing a test!
               if (!window.isFullExamMode || window.fullExamCurrentIndex === 2) {
@@ -7683,12 +7684,21 @@ window.initFirebaseSystem = async function() {
       }
     }
     
-    function openExplanationsReview() {
+    window.openExplanationsReview = function() {
       document.getElementById('results-modal').classList.add('hidden');
-      document.getElementById('review-ui').classList.remove('hidden');
-      document.getElementById('review-module-badge').textContent = APP_DATA.module + (isPreviewMode ? ' (Preview)' : '');
-      buildSplitReviewUI(false, null, {});
-    }
+      
+      if (!isPreviewMode && window.currentActiveSubmissionId) {
+          // 🚀 SMART FIX: Route them through the official past submission reviewer!
+          // This guarantees the subId is passed, the answers are pulled from the DB state,
+          // and Full Mock Exams will load all 3 sections instead of just the last one.
+          reviewPastSubmission(window.currentActiveSubmissionId);
+      } else {
+          // Fallback for Teacher Preview Mode
+          document.getElementById('review-ui').classList.remove('hidden');
+          document.getElementById('review-module-badge').textContent = APP_DATA.module + (isPreviewMode ? ' (Preview)' : '');
+          buildSplitReviewUI(false, null, {});
+      }
+    };
     
     function closeReviewScreen() {
       sessionStorage.removeItem('lms_grading_sub');
@@ -7797,12 +7807,12 @@ window.initFirebaseSystem = async function() {
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('review-ui').classList.remove('hidden');
       document.getElementById('review-module-badge').textContent = APP_DATA.module;
-      buildSplitReviewUI(false, subId, sub.teacherFeedback || {});
+      window.buildSplitReviewUI(false, subId, sub.teacherFeedback || {});
     }
 
-    function buildSplitReviewUI(isGrading, subId, feedbackObj) {
+    window.buildSplitReviewUI = function(isGrading, subId, feedbackObj) {
       const l = document.getElementById('review-left-pane'), r = document.getElementById('review-right-pane');
-      const sub = SUBMISSIONS.find(x => x.id === subId) || {}; // ✨ Access submission data
+      const sub = SUBMISSIONS.find(x => x.id === subId) || {}; 
       
       let lHtml = '';
       APP_DATA.parts.forEach((p, i) => {
@@ -7845,11 +7855,10 @@ window.initFirebaseSystem = async function() {
                   }).join('')}
               </div></div>`;
           } else if (q.type === 'map_labelling_grid' && q.image) {
-              qImageHtml = ``; // Image is handled inside qTextHtml now
+              qImageHtml = ``; 
           }
 
           if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-             // ✨ NEW: Removed the redundant Given/Correct list! Now we only render content here if there is an explanation.
              content = '';
              if(q.explanation) content += `<div class="bg-purple-50 border border-purple-200 p-4 rounded-lg text-[15px] leading-relaxed text-purple-900 shadow-inner"><b>💡 Explanation:</b><br>${q.explanation}</div>`;
           } else if(q.type === 'essay') {
@@ -7860,11 +7869,9 @@ window.initFirebaseSystem = async function() {
                 fbData.comment = feedbackObj[q.ids[0]]; // Legacy fallback
             }
             
-            // Helper for the bottom 4 dropdowns (auto-populates text area)
             const bandOpts = [9, 8.5, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4].map(b => `<option value="${b}">${b}</option>`).join('');
             const mkSelect = (id, lbl, val, crit, qId) => `<div><label class="block text-xs font-bold text-slate-500 mb-1">${lbl}</label><select id="${id}" onchange="window.updateFeedbackText('${qId}', '${crit}', this.value)" class="w-full border border-slate-300 p-2 rounded outline-none focus:border-blue-500"><option value="">--</option>${bandOpts.replace(`value="${val}"`, `value="${val}" selected`)}</select></div>`;
 
-            // Helper for the inline toolbar dropdown
             const inlineOpts = Object.keys(IELTS_DESCRIPTORS).map(crit => {
                 const labels = { tr: 'Task Response', cc: 'Coherence', lr: 'Lexical', gra: 'Grammar' };
                 return `<optgroup label="${labels[crit]}">` + 
@@ -7875,7 +7882,6 @@ window.initFirebaseSystem = async function() {
             if (isGrading) {
                 content = `
                 <div class="flex flex-col xl:flex-row gap-6 items-start w-full relative">
-                    <!-- Essay Area (Left, Flexible) -->
                     <div class="flex-1 w-full min-w-0">
                         <div class="flex flex-wrap gap-2 mb-2 bg-slate-100 p-2 rounded-t-xl border border-slate-300 border-b-0 items-center sticky top-0 z-20 shadow-md">
                             <div class="flex gap-1">
@@ -7898,7 +7904,6 @@ window.initFirebaseSystem = async function() {
                         <div id="essay-content-${q.ids[0]}" contenteditable="true" class="bg-white border border-slate-300 p-6 rounded-b-xl font-sans text-[1.1rem] leading-loose whitespace-pre-wrap outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 min-h-[500px] shadow-sm transition-all">${fbData.annotated || '<em class="text-slate-400">No response.</em>'}</div>
                     </div>
                     
-                    <!-- Sticky Rubric Sidebar (Right, Fixed Width) -->
                     <div class="w-full xl:w-80 shrink-0 bg-blue-50 border border-blue-200 p-6 rounded-2xl shadow-sm xl:sticky xl:top-0 z-10 flex flex-col gap-4">
                         <h4 class="font-black text-blue-900 border-b border-blue-200 pb-3 uppercase tracking-widest text-xs flex items-center gap-2"><span>📊</span> Criteria Grading</h4>
                         <div class="flex flex-col gap-4">
@@ -7910,7 +7915,6 @@ window.initFirebaseSystem = async function() {
                         <label class="block text-xs font-bold text-slate-500 mt-2 uppercase tracking-widest">Overall Comments</label>
                         <textarea id="fb-${q.ids[0]}" class="w-full border-2 border-blue-200 rounded-xl p-4 text-sm outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 min-h-[160px] resize-y shadow-inner font-medium text-slate-700 transition-all bg-white" placeholder="Write overall feedback here...">${fbData.comment}</textarea>
                         
-                        <!-- ✨ NEW: Show Student Reply to Teacher -->
                         ${sub.studentReply ? `
                         <div class="mt-2 pt-4 border-t border-blue-200">
                             <label class="block text-[10px] font-black text-blue-600 mb-2 uppercase tracking-widest flex items-center gap-1">💬 Student Reply</label>
@@ -7919,22 +7923,13 @@ window.initFirebaseSystem = async function() {
                     </div>
                 </div>`;
             } else {
-                // 1. Clean the HTML for the student: Remove delete buttons, lock text boxes, and fix spacing
                 let readOnlyAnnotation = fbData.annotated || '<em class="text-slate-400">No response.</em>';
-                
-                // Remove the button AND any <br> tags immediately before/after it that cause extra top space
                 readOnlyAnnotation = readOnlyAnnotation.replace(/\s*(?:<br\s*\/?>)?\s*<button[^>]*onclick="this\.parentElement\.remove\(\)"[^>]*>.*?<\/button>\s*(?:<br\s*\/?>)?\s*/gi, '');
-                
-                // Aggressively remove extra <br> or empty <p> tags sitting right at the bottom of the amber box
                 readOnlyAnnotation = readOnlyAnnotation.replace(/(?:<br\s*\/?>|<p><br\s*\/?>\s*<\/p>|\s)+<\/div>/gi, '</div>');
-
-                // Shrink the right-padding (pr-8 to pr-3) so it looks balanced now that the 'X' button is gone
                 readOnlyAnnotation = readOnlyAnnotation.replace(/pr-8/gi, 'pr-4');
-
-                // Lock editable fields
                 readOnlyAnnotation = readOnlyAnnotation.replace(/contenteditable="true"/gi, 'contenteditable="false"');
 
-                content = ''; // Initialize empty content
+                content = ''; 
                 
                 let feedbackSidebarHtml = '';
                 if (feedbackObj[q.ids[0]]) {
@@ -7949,7 +7944,6 @@ window.initFirebaseSystem = async function() {
                         </div>
                         <div class="text-emerald-900 text-sm leading-relaxed bg-white p-4 rounded-xl border border-emerald-200 shadow-inner font-medium">${fbData.comment || '<i>No overall comments provided.</i>'}</div>
                         
-                        <!-- ✨ NEW: Student Reply Box -->
                         <div class="mt-2 pt-4 border-t border-emerald-200">
                             <label class="block text-[10px] font-black text-emerald-700 mb-2 uppercase tracking-widest flex items-center gap-1">💬 Reply to Teacher</label>
                             ${sub.studentReply 
@@ -7968,27 +7962,19 @@ window.initFirebaseSystem = async function() {
                     </div>`;
                 }
 
-                // 3. Render the Annotated Essay text and Feedback side-by-side
-                // Note: Using flex-col-reverse on mobile puts the Rubric at the TOP so students see their score immediately!
                 content += `
                 <div class="flex flex-col-reverse xl:flex-row gap-6 items-start w-full relative">
                     <div class="flex-1 w-full min-w-0 bg-white border border-slate-300 p-6 sm:p-8 rounded-2xl shadow-sm font-sans text-[1.1rem] leading-loose whitespace-pre-wrap">${readOnlyAnnotation}</div>
                     ${feedbackSidebarHtml}
                 </div>`;
             }
-          } else if(q.type === 'audio_record') {
-             const a = answers[q.ids[0]];
-             content = a ? `<audio controls src="${a}" class="w-full"></audio>` : `<p class="italic text-slate-500">No recording.</p>`;
-             if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
-             else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
-          } else if(APP_DATA.module === 'speaking') {
+          } else if(q.type === 'audio_record' || APP_DATA.module === 'speaking') {
              const a = answers[q.ids[0]];
              content = a ? `<audio controls src="${a}" class="w-full"></audio>` : `<p class="italic text-slate-500">No recording.</p>`;
              if(isGrading) content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-3 border border-amber-300 bg-amber-50 rounded p-3 font-bold outline-none" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
              else if(feedbackObj[q.ids[0]]) content += `<div class="mt-3 bg-amber-50 border-l-4 border-amber-400 p-3 font-bold text-amber-900"><b>Teacher Feedback:</b><br>${feedbackObj[q.ids[0]]}</div>`;
           }
 
-          // ✨ FIXED: Secure tokenized replacement to completely prevent duplicated or nested badges
           let qTextHtml = '';
           let qOptsHtml = '';
           const cleanText = (q.text || '').trim();
@@ -8080,7 +8066,6 @@ window.initFirebaseSystem = async function() {
               let rawText = q.text;
               const givenArr = q.multi ? q.ids.map(id => (answers[id]||'').toString().toLowerCase()).filter(Boolean) : [];
               
-              // 1. Build the HTML badge map
               const badgeMap = {};
               q.ids.forEach(id => {
                   const g = answers[id] || '';
@@ -8098,7 +8083,7 @@ window.initFirebaseSystem = async function() {
                   }
                   
                   if (APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-                      if (s.score && s.score.includes('/')) {
+                      if (isC) {
                           badgeMap[id] = `<span class="inline-flex items-center align-middle bg-emerald-50 border border-emerald-400 text-emerald-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span>${g}</span>`;
                       } else {
                           badgeMap[id] = `<span class="inline-flex items-center align-middle bg-rose-50 border border-rose-300 text-rose-800 text-[14px] font-bold rounded px-1.5 py-0.5 mx-1 shadow-sm whitespace-nowrap"><span class="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded-sm mr-1.5">${id}</span><s class="opacity-70 mr-1.5 text-rose-600">${g || '—'}</s><span class="text-emerald-700 bg-emerald-100 px-1 rounded border border-emerald-400 ml-0.5 shadow-inner">✓ ${e}</span></span>`;
@@ -8108,7 +8093,6 @@ window.initFirebaseSystem = async function() {
                   }
               });
 
-              // 2. Clean up redundant typed numbers before explicit blanks (e.g., "2 {blank:2}" -> "{blank:2}")
               q.ids.forEach(id => {
                   const regexDrop = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)\\s*\\{drop:${id}\\}`, 'g');
                   rawText = rawText.replace(regexDrop, `$1{drop:${id}}`);
@@ -8116,12 +8100,10 @@ window.initFirebaseSystem = async function() {
                   rawText = rawText.replace(regexBlank, `$1{blank:${id}}`);
               });
 
-              // 3. Swap explicit markers for safe temporary tokens
               rawText = rawText.replace(/\{(blank|drop):(\d+)\}/g, (match, type, idStr) => {
                   return `[[BADGE_${idStr}]]`;
               });
               
-              // 4. Safely swap remaining loose question numbers for tokens (won't match inside HTML anymore)
               q.ids.forEach(id => {
                   if (badgeMap[id]) {
                       const regex = new RegExp(`(^|[\\s>])(${id})([\\.\\)]?)(?=\\s|<|$)`, 'g');
@@ -8129,14 +8111,11 @@ window.initFirebaseSystem = async function() {
                   }
               });
 
-              // 5. Finally inject the HTML badges replacing the safe tokens
               q.ids.forEach(id => {
                   if (badgeMap[id]) {
                       rawText = rawText.split(`[[BADGE_${id}]]`).join(badgeMap[id]);
                   }
               });
-
-              rawText = highlightVocab(rawText);
 
               qTextHtml = `<div class="mb-4 text-slate-800 bg-slate-50 p-4 rounded-lg border border-slate-200 text-[15px] overflow-x-auto leading-relaxed">${rawText}</div>`;
           }
@@ -8194,7 +8173,6 @@ window.initFirebaseSystem = async function() {
           const cleanInst = (q.instruction || '').trim();
           const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
           
-          // ✨ NEW: Only render the Results header divider if there is actually content to show (like an explanation or essay feedback)
           const resultsSectionHtml = content ? `<div class="border-t-2 border-slate-100 pt-4 mt-4"><h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Results & Feedback</h4>${content}</div>` : '';
 
           rHtml += `<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-5">
