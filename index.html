@@ -620,21 +620,65 @@
   <div id="csv-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
     <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[950px] max-h-[90vh] animate-scale-up">
       <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
-        <h2 class="text-xl font-bold text-slate-800">📋 Bulk Import Questions</h2>
+        <h2 id="csv-import-title" class="text-xl font-bold text-slate-800">📋 Bulk Import Questions</h2>
         <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
       </div>
       <div class="p-6 overflow-y-auto flex-1">
-        <p class="text-sm text-slate-600 mb-4">Type manually into the grid below, or <strong class="text-blue-600">click the first box and paste directly from Excel</strong> to auto-fill everything!</p>
+        
+        <!-- ✨ NEW: Rapid Test Meta Section (Hidden by default) -->
+        <div id="csv-meta-section" class="hidden mb-6 p-5 bg-purple-50 border border-purple-200 rounded-xl shadow-inner">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-purple-200 pb-3 gap-3">
+                <h3 class="font-black text-purple-900 flex items-center gap-2">🚀 Rapid Question Import</h3>
+                <div class="flex gap-4 bg-white px-3 py-1.5 rounded-lg border border-purple-200 shadow-sm">
+                    <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="rapid-mode" value="new" checked onchange="window.toggleRapidMode()"> <span class="text-xs font-bold text-purple-800">Create New Test</span></label>
+                    <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="rapid-mode" value="existing" onchange="window.toggleRapidMode()"> <span class="text-xs font-bold text-purple-800">Add to Existing Test</span></label>
+                </div>
+            </div>
+            
+            <!-- Mode: New Test -->
+            <div id="rapid-mode-new" class="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Test Title</label>
+                    <input type="text" id="rapid-test-title" placeholder="e.g. Cam 15 Reading Test 1" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Module</label>
+                    <select id="rapid-test-mod" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white">
+                        <option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Band / Diff</label>
+                    <input type="text" id="rapid-test-diff" placeholder="e.g. 7.0" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500">
+                </div>
+            </div>
+
+            <!-- Mode: Existing Test -->
+            <div id="rapid-mode-existing" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                <div>
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Select Existing Test</label>
+                    <select id="rapid-existing-test" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white" onchange="window.updateRapidPartOptions()"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Select Target Part</label>
+                    <select id="rapid-existing-part" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white"></select>
+                </div>
+            </div>
+        </div>
+
+        <p id="csv-import-desc" class="text-sm text-slate-600 mb-4">Type manually into the grid below, or <strong class="text-blue-600">click the first box and paste directly from Excel</strong> to auto-fill everything!</p>
         
         <div class="border border-slate-200 rounded-lg mb-3 overflow-hidden shadow-sm">
             <table class="w-full text-left border-collapse" id="bulk-import-table">
                 <thead class="bg-slate-100 border-b border-slate-200">
                     <tr class="text-xs text-slate-500 uppercase tracking-wider">
-                        <th class="p-3 font-bold w-[15%]">Type</th>
-                        <th class="p-3 font-bold w-[20%]">Instruction</th>
-                        <th class="p-3 font-bold w-[25%]">Question Text</th>
-                        <th class="p-3 font-bold w-[20%]">Options (comma sep)</th>
-                        <th class="p-3 font-bold w-[20%]">Answer</th>
+                        <th class="p-3 font-bold w-[12%]">Type</th>
+                        <th class="p-3 font-bold w-[16%]">Instruction</th>
+                        <th class="p-3 font-bold w-[18%]">Question Text</th>
+                        <th class="p-3 font-bold w-[14%]">Options (csv)</th>
+                        <th class="p-3 font-bold w-[14%]">Answer</th>
+                        <th class="p-3 font-bold w-[13%]">Hint</th>
+                        <th class="p-3 font-bold w-[13%]">Explanation</th>
                     </tr>
                 </thead>
                 <tbody id="bulk-import-tbody" class="divide-y divide-slate-100" onpaste="handleGridPaste(event)">
@@ -648,6 +692,44 @@
         <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold">Cancel</button>
         <button onclick="processBulkImport()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow">Import Questions</button>
       </div>
+    </div>
+  </div>
+
+  <!-- BULK TEST IMPORT MODAL (TEST BANK) -->
+  <div id="bulk-test-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[90vh] animate-scale-up">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+            <h2 class="text-xl font-bold text-slate-800">📥 Bulk Import Tests</h2>
+            <button onclick="document.getElementById('bulk-test-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1">
+            <label class="block text-sm font-bold text-slate-700 mb-2 leading-relaxed">Paste rows from Excel/Sheets (Order is important): <br><span class="font-mono text-blue-600 text-xs bg-blue-50 px-2 py-1 rounded">Title ➔ Module (reading/listening/writing/speaking) ➔ Tags (comma separated) ➔ Target Band (e.g., 6.5)</span></label>
+            <textarea id="bulk-test-input" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none h-48 mb-3 bg-slate-50 whitespace-pre font-mono" placeholder="Cam 18 Test 1 Reading&#9;reading&#9;Academic, Mock&#9;7.0&#10;Cam 18 Test 1 Listening&#9;listening&#9;Academic, Mock&#9;7.0"></textarea>
+            <p class="text-xs text-slate-500 font-medium">This will instantly create empty tests in your bank. You can then edit each one to add parts and questions.</p>
+        </div>
+        <div class="p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl flex justify-end gap-3 shrink-0">
+            <button onclick="document.getElementById('bulk-test-import-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-bold transition">Cancel</button>
+            <button onclick="window.processBulkTestImport()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow-md transition">Import Tests</button>
+        </div>
+    </div>
+  </div>
+
+  <!-- BULK STUDENT IMPORT MODAL -->
+  <div id="bulk-student-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[90vh] animate-scale-up">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+            <h2 class="text-xl font-bold text-slate-800">👥 Bulk Import Students</h2>
+            <button onclick="document.getElementById('bulk-student-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+        </div>
+        <div class="p-6 overflow-y-auto flex-1">
+            <label class="block text-sm font-bold text-slate-700 mb-2 leading-relaxed">Paste rows from Excel/Sheets (Order is important): <br><span class="font-mono text-blue-600 text-xs bg-blue-50 px-2 py-1 rounded">Username ➔ Password ➔ Class Name (Optional - Auto Enroll)</span></label>
+            <textarea id="bulk-student-input" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none h-48 mb-3 bg-slate-50 whitespace-pre font-mono" placeholder="john_doe&#9;pass123&#9;IELTS Intensive&#10;jane_smith&#9;secure456&#9;IELTS Intensive"></textarea>
+            <p class="text-xs text-slate-500 font-medium text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2"><b>Note:</b> Students created this way are instantly granted "Paid/Active" access. If a matching class name is provided, they will be automatically enrolled.</p>
+        </div>
+        <div class="p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl flex justify-end gap-3 shrink-0">
+            <button onclick="document.getElementById('bulk-student-import-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-bold transition">Cancel</button>
+            <button onclick="window.processBulkStudentImport()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold shadow-md transition">Import Students</button>
+        </div>
     </div>
   </div>
 
@@ -822,6 +904,29 @@
           <div class="p-4 border-t border-slate-200 bg-slate-50 rounded-b-xl flex justify-end gap-3 shrink-0">
               <button onclick="document.getElementById('availability-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-bold transition">Cancel</button>
               <button onclick="window.saveAvailability()" id="btn-save-avail" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition">Save Availability</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- TEMPLATE MANAGER MODAL -->
+  <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[80vh] animate-scale-up">
+          <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+              <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">📝 Manage Teacher Templates</h2>
+              <button onclick="document.getElementById('template-manager-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+          </div>
+          <div class="flex flex-1 overflow-hidden">
+              <!-- Template List Sidebar -->
+              <div class="w-1/3 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0">
+                  <div class="p-4 border-b border-slate-200">
+                      <button onclick="window.createNewTemplate()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition text-sm">+ New Template</button>
+                  </div>
+                  <div id="template-list-container" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+              </div>
+              <!-- Template Editor Area -->
+              <div class="w-2/3 p-6 flex flex-col bg-white overflow-y-auto" id="template-editor-area">
+                  <div class="text-center text-slate-400 mt-20 italic font-medium">Select a template from the left or create a new one.</div>
+              </div>
           </div>
       </div>
   </div>
@@ -1315,6 +1420,9 @@
     <div id="editor-view-bank" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-7xl mx-auto pb-20">
         
+        <!-- ✨ NEW: TEACHER AT-A-GLANCE WIDGETS -->
+        <div id="teacher-quick-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-fade-in hidden"></div>
+
         <div class="flex justify-center mb-8">
             <div class="bg-white p-1.5 rounded-2xl flex space-x-2 shadow-sm border border-blue-50">
                 <button onclick="toggleDashboardView('tests')" id="dash-btn-tests" class="px-8 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl shadow-sm transition duration-200 flex items-center gap-2">
@@ -1341,6 +1449,11 @@
               <button onclick="createNewTest('listening')" class="bg-sky-50 hover:bg-sky-500 hover:text-white text-sky-700 border border-sky-100 hover:border-sky-500 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🎧 Listening</button>
               <button onclick="createNewTest('writing')" class="bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-100 hover:border-indigo-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">✍️ Writing</button>
               <button onclick="createNewTest('speaking')" class="bg-cyan-50 hover:bg-cyan-600 hover:text-white text-cyan-700 border border-cyan-100 hover:border-cyan-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🗣️ Speaking</button>
+              <div class="hidden md:block w-px h-10 bg-slate-200 mx-1"></div>
+              <button onclick="window.openBulkTestImport()" class="bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-100 hover:border-emerald-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2" title="Import empty tests">📥 Tests</button>
+              <button onclick="window.openRapidFullTestImport()" class="bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-700 border border-purple-100 hover:border-purple-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🚀 Rapid Test+Q Import</button>
+              <div class="hidden md:block w-px h-10 bg-slate-200 mx-1"></div>
+              <button onclick="window.openTemplateManager()" class="bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-700 border border-amber-100 hover:border-amber-500 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">📝 Templates</button>
             </div>
           </div>
 
@@ -1373,7 +1486,8 @@
               </h2>
               <p class="text-sm text-slate-500 font-medium mt-1">Manage your student groups and grade their work</p>
             </div>
-            <div class="flex gap-3 mt-4 md:mt-0">
+            <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
+               <button onclick="window.exportGradesCSV()" class="px-5 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-sm shadow-sm hover:bg-emerald-100 transition flex items-center gap-2">📊 Export Grades</button>
                <button onclick="clearAllSubmissions()" class="px-5 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-bold text-sm shadow-sm hover:bg-rose-100 hover:text-rose-700 transition flex items-center gap-2">🗑️ Clear Submissions</button>
                <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition hover:-translate-y-0.5 flex items-center gap-2">＋ New Class</button>
             </div>
@@ -1408,9 +1522,11 @@
       <div class="max-w-6xl mx-auto">
         <div class="flex flex-wrap justify-between items-center gap-4 mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
           <h2 class="text-2xl font-black text-blue-900">User & Payment Management</h2>
-          <div class="flex gap-3">
+          <div class="flex gap-3 items-center">
             <button onclick="window.promptCreateTeacher()" class="bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm">＋ Add Teacher</button>
             <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm">＋ Add Student</button>
+            <div class="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
+            <button onclick="window.openBulkStudentImport()" class="bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-100 hover:border-emerald-600 px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm flex items-center gap-2">📥 Bulk Import</button>
           </div>
         </div>
         
@@ -1819,6 +1935,44 @@
     <div id="panel-fc-container" class="flex-1 overflow-y-auto p-4 bg-slate-100 relative stagger-fade-in"></div>
   </div>
 
+  <!-- ✨ NEW: CLASSIN-STYLE VIRTUAL CLASSROOM -->
+  <div id="live-classroom-ui" class="hidden fixed inset-0 bg-slate-900 z-[1000] flex flex-col font-sans animate-fade-in">
+      <!-- Header -->
+      <header class="bg-slate-950 border-b border-slate-800 p-3 flex justify-between items-center shrink-0 shadow-md z-20 relative">
+          <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg text-white font-black text-xl border border-indigo-400/30">🎥</div>
+              <div>
+                  <h2 id="live-class-title" class="font-black text-white text-lg leading-none">Interactive Live Class</h2>
+                  <p class="text-xs text-slate-400 font-medium mt-1"><span class="w-2 h-2 rounded-full bg-rose-500 inline-block animate-pulse mr-1 shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span> Real-time Sync Active</p>
+              </div>
+          </div>
+          <div class="flex items-center gap-2 sm:gap-3">
+              <button onclick="window.toggleLiveWhiteboard()" id="btn-toggle-board" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-lg font-bold transition flex items-center gap-2 border border-slate-600 shadow-sm text-sm">
+                  🖍️ <span class="hidden sm:inline">Toggle Blackboard</span>
+              </button>
+              <button onclick="window.toggleChatPanel()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition flex items-center gap-2 shadow-sm text-sm">
+                  💬 <span class="hidden sm:inline">Class Chat</span>
+              </button>
+              <div class="w-px h-6 bg-slate-700 mx-1"></div>
+              <button onclick="window.leaveLiveClass()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition shadow-sm text-sm flex items-center gap-2">
+                  👋 <span class="hidden sm:inline">Leave</span>
+              </button>
+          </div>
+      </header>
+      
+      <!-- Main Stage (Split View) -->
+      <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative bg-slate-800">
+          <!-- Left: Jitsi Video Matrix -->
+          <div id="jitsi-container" class="flex-1 w-full h-1/2 md:h-full transition-all duration-300 relative z-10 shadow-2xl"></div>
+          
+          <!-- Right: Collaborative Whiteboard -->
+          <div id="whiteboard-container" class="hidden w-full md:w-1/2 h-1/2 md:h-full border-t md:border-t-0 md:border-l border-slate-700 bg-white relative transition-all duration-300 z-10">
+              <div class="absolute top-3 left-3 z-20 bg-amber-100 text-amber-900 text-[10px] font-black uppercase px-2 py-1 rounded shadow-md border border-amber-300 pointer-events-none tracking-widest">Collaborative Blackboard</div>
+              <iframe id="whiteboard-iframe" class="w-full h-full border-none" src=""></iframe>
+          </div>
+      </div>
+  </div>
+
   <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -1964,6 +2118,7 @@ window.initFirebaseSystem = async function() {
     let SCHEDULES = [];
     let ATTENDANCE = [];
     let PACKAGES = []; 
+    let TEACHER_TEMPLATES = [];
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
     let HOF_STUDENTS = []; // ✨ NEW: Dedicated Collection for Hall of Fame
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
@@ -2054,6 +2209,49 @@ window.initFirebaseSystem = async function() {
             '4.5': '[GRA] Band 4.5: Meets all criteria for Band 4 and some for Band 5.',
             '4': '[GRA] Band 4: A very limited range of structures is used. Subordinate clauses are rare and simple sentences predominate. Some structures are produced accurately but grammatical errors are frequent and may impede meaning.'
         }
+    };
+
+    // --- SMART TEACHER TEMPLATES ---
+    window.insertStrategyTemplate = function(editorId, type) {
+        const editor = document.getElementById(editorId);
+        if (!editor || !type) return;
+        editor.focus();
+        
+        let html = '';
+        if (type === 'mcq') {
+            html = `<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Kỹ thuật làm bài</strong><br><b>Multiple Choice Strategy:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Gạch chân từ khóa (keywords) trong câu hỏi.</li><li>Dùng từ khóa để scan vị trí đoạn văn tương ứng.</li><li>Đọc cẩn thận xung quanh vị trí chứa từ khóa.</li><li>Loại trừ (Eliminate) các đáp án sai rõ ràng (chứa từ tuyệt đối như <i>always, all, completely...</i>).</li></ul></div><p><br></p>`;
+        } else if (type === 'tfng') {
+            html = `<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Kỹ thuật làm bài</strong><br><b>TFNG / YNNG Strategy:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Xác định "Chủ thể" và "Thông tin cần kiểm chứng" trong câu hỏi.</li><li>Tìm câu trong bài đọc nhắc đến chủ thể đó.</li><li>So sánh: Khớp hoàn toàn = <b>TRUE/YES</b>. Ngược nghĩa = <b>FALSE/NO</b>. Không nhắc đến thông tin cần kiểm chứng = <b>NOT GIVEN</b>.</li></ul></div><p><br></p>`;
+        } else if (type === 'matching_heading') {
+            html = `<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Kỹ thuật làm bài</strong><br><b>Matching Headings Strategy:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Đọc lướt danh sách Heading để nắm ý chính, gạch chân điểm khác biệt giữa chúng.</li><li>Đọc câu đầu và câu cuối của mỗi đoạn văn (Topic Sentences).</li><li>Tìm Heading tóm tắt được toàn bộ ý của đoạn, tránh các Heading chỉ nhắc đến chi tiết nhỏ.</li></ul></div><p><br></p>`;
+        } else if (type === 'matching_info') {
+            html = `<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Kỹ thuật làm bài</strong><br><b>Matching Information Strategy:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Nên làm dạng bài này <b>CUỐI CÙNG</b> vì nó yêu cầu đọc kỹ toàn bài.</li><li>Tìm kiếm các từ đồng nghĩa (synonyms) của câu hỏi trong đoạn văn thay vì tìm từ chính xác.</li></ul></div><p><br></p>`;
+        } else if (type === 'gapfill') {
+            html = `<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Kỹ thuật làm bài</strong><br><b>Gap Fill Strategy:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Kiểm tra giới hạn từ (VD: NO MORE THAN TWO WORDS).</li><li>Xác định loại từ cần điền (Danh từ, Động từ, Tính từ...).</li><li>Dựa vào từ khóa xung quanh chỗ trống để định vị thông tin trong bài.</li></ul></div><p><br></p>`;
+        }
+        
+        document.execCommand('insertHTML', false, html);
+        if(window.triggerEditorAutosave) window.triggerEditorAutosave();
+    };
+
+    window.insertExplTemplate = function(editorId, type) {
+        const editor = document.getElementById(editorId);
+        if (!editor || !type) return;
+        editor.focus();
+        
+        let html = '';
+        if (type === 'paraphrase') {
+            html = `<table class="w-full border-collapse border border-slate-300 mb-3 text-sm text-left bg-white shadow-sm"><thead><tr class="bg-emerald-50 text-emerald-900"><th class="border border-slate-300 p-2 font-bold w-1/3">Từ khóa (Question)</th><th class="border border-slate-300 p-2 font-bold w-1/3">Từ đồng nghĩa (Passage)</th><th class="border border-slate-300 p-2 font-bold w-1/3">Nghĩa tiếng Việt</th></tr></thead><tbody><tr><td class="border border-slate-300 p-2">...</td><td class="border border-slate-300 p-2 text-emerald-700 font-medium">...</td><td class="border border-slate-300 p-2">...</td></tr></tbody></table><p><br></p>`;
+        } else if (type === 'grammar') {
+            html = `<div class="bg-slate-50 border border-slate-200 p-4 rounded-lg mb-3 text-sm text-slate-800 shadow-sm"><strong class="text-indigo-600 uppercase tracking-widest text-[10px] block mb-1">🔍 Phân tích Ngữ pháp</strong>Cấu trúc: <span class="bg-white px-2 py-0.5 border border-slate-300 rounded font-mono text-indigo-600 font-bold">[Cấu trúc ngữ pháp]</span><br><br><b>Cách dùng trong bài:</b> [Giải thích cách tác giả sử dụng cấu trúc này để truyền đạt ý nghĩa...]</div><p><br></p>`;
+        } else if (type === 'attitude') {
+            html = `<div class="bg-slate-50 border border-slate-200 p-4 rounded-lg mb-3 text-sm text-slate-800 shadow-sm"><strong class="text-amber-600 uppercase tracking-widest text-[10px] block mb-1">🎭 Phân tích Thái độ tác giả</strong>Từ vựng thể hiện cảm xúc/thái độ: <b class="text-amber-700">[Nhập từ vựng]</b><br><br>=> Tác giả đang thể hiện thái độ <b>[Tích cực / Tiêu cực / Nghi ngờ / Khách quan]</b> về vấn đề này.</div><p><br></p>`;
+        } else if (type === 'tfng') {
+            html = `<div class="bg-slate-50 border border-slate-200 p-4 rounded-lg mb-3 text-sm text-slate-800 shadow-sm"><strong class="text-rose-600 uppercase tracking-widest text-[10px] block mb-2">⚖️ Logic Breakdown</strong><div class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2"><div class="font-bold text-slate-500">Câu hỏi:</div><div class="font-medium text-rose-700">[Ý nghĩa câu hỏi]</div><div class="font-bold text-slate-500">Bài đọc:</div><div class="font-medium text-emerald-700">[Trích dẫn/Ý nghĩa trong bài]</div></div><div class="mt-3 pt-2 border-t border-slate-200">=> <b>Kết luận:</b> Chọn <span class="bg-white px-2 py-0.5 border border-slate-300 rounded font-bold">[T/F/NG]</span> vì [Lý do].</div></div><p><br></p>`;
+        }
+        
+        document.execCommand('insertHTML', false, html);
+        if(window.triggerEditorAutosave) window.triggerEditorAutosave();
     };
 
     // --- SPACED REPETITION SYSTEM (SM-2) ---
@@ -2407,7 +2605,8 @@ window.initFirebaseSystem = async function() {
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => { if (snap.exists()) AVAILABILITY = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => { PACKAGES = snap.docs.map(d => d.data()); if(currentUser?.role === 'teacher') renderStudentsList(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => { if (snap.exists()) PUBLIC_PROFILE = snap.data(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => { HOF_STUDENTS = snap.docs.map(d => d.data()); if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); })
+                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => { HOF_STUDENTS = snap.docs.map(d => d.data()); if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => { if (snap.exists()) TEACHER_TEMPLATES = snap.data().items || []; resolve(); }); })
             ]);
 
             // 3. Attach RESTRICTED listeners based on role
@@ -2970,6 +3169,47 @@ window.initFirebaseSystem = async function() {
 
         const totalNots = pendingStudents + pendingSubs + newBookings + newReplies;
 
+        // ✨ NEW: Update Teacher Dashboard Quick Stats Widgets
+        const statsContainer = document.getElementById('teacher-quick-stats');
+        if (statsContainer) {
+            const activeStudents = USERS.filter(u => u.role === 'student' && u.isPaid).length;
+            const d = new Date();
+            const localToday = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const classesToday = SCHEDULES.filter(s => s.date === localToday).length;
+
+            statsContainer.classList.remove('hidden');
+            statsContainer.innerHTML = `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-default">
+                    <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl font-black shrink-0">👨‍🎓</div>
+                    <div>
+                        <div class="text-2xl font-black text-slate-800 leading-none">${activeStudents}</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Active Students</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-pointer" onclick="toggleDashboardView('classes'); toggleEditorTab('bank');">
+                    <div class="w-12 h-12 rounded-full ${pendingSubs > 0 ? 'bg-amber-100 text-amber-600 animate-pulse' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-2xl font-black shrink-0">📝</div>
+                    <div>
+                        <div class="text-2xl font-black text-slate-800 leading-none">${pendingSubs}</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Ungraded Tests</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-pointer" onclick="toggleEditorTab('timetable')">
+                    <div class="w-12 h-12 rounded-full ${classesToday > 0 ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-2xl font-black shrink-0">📅</div>
+                    <div>
+                        <div class="text-2xl font-black text-slate-800 leading-none">${classesToday}</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Classes Today</div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-pointer" onclick="toggleEditorTab('students')">
+                    <div class="w-12 h-12 rounded-full ${pendingStudents > 0 ? 'bg-rose-100 text-rose-600 animate-pulse' : 'bg-purple-100 text-purple-600'} flex items-center justify-center text-2xl font-black shrink-0">💸</div>
+                    <div>
+                        <div class="text-2xl font-black text-slate-800 leading-none">${pendingStudents}</div>
+                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pending Pays</div>
+                    </div>
+                </div>
+            `;
+        }
+
         const el = document.getElementById('badge-global-notifications');
         if (el) {
             if (parseInt(el.textContent) !== totalNots && totalNots > 0) {
@@ -3276,156 +3516,41 @@ window.initFirebaseSystem = async function() {
           btn.textContent = "OK"; btn.disabled = false;
       };
     };
-
-    window.executeMergeTest = async function(sourceId, targetId, deleteSource) {
-        const sourceTest = TEST_BANK.find(t => t.id === sourceId);
-        const targetTest = TEST_BANK.find(t => t.id === targetId);
-        if (!sourceTest || !targetTest) throw new Error("Test not found");
-
-        // 1. Calculate max ID in the target test to offset the incoming source IDs
-        let currentMaxId = 0;
-        targetTest.parts.forEach(p => {
-            p.questions.forEach(q => {
-                (q.ids || []).forEach(id => {
-                    if (id > currentMaxId) currentMaxId = id;
-                });
-            });
-        });
-
-        // 2. Deep Clone source parts and remap all their IDs
-        let newParts = JSON.parse(JSON.stringify(sourceTest.parts));
-        newParts.forEach((p, pIndex) => {
-            // Automatically sequence the new part titles
-            p.title = `Part ${targetTest.parts.length + pIndex + 1}`;
-
-            p.questions.forEach(q => {
-                q.blockId += '_merged_' + Date.now();
-                let newIds = [];
-                let newCorrectAnswers = {};
-
-                (q.ids || []).forEach(oldId => {
-                    currentMaxId++;
-                    let newId = currentMaxId;
-                    newIds.push(newId);
-
-                    if (q.correctAnswers && q.correctAnswers[oldId] !== undefined) {
-                        newCorrectAnswers[newId] = q.correctAnswers[oldId];
-                    }
-
-                    // String replacement to safely update {blank:X}, {drop:X}, and loose inline numbers in texts
-                    if (q.text) {
-                        q.text = q.text.split(`{blank:${oldId}}`).join(`{blank:${newId}}`);
-                        q.text = q.text.split(`{drop:${oldId}}`).join(`{drop:${newId}}`);
-                        q.text = q.text.replace(new RegExp(`(^|[\\s>])(${oldId})([\\.\\)]?)(?=\\s|<|$)`, 'g'), `$1${newId}$3`);
-                    }
-                });
-
-                q.ids = newIds;
-                q.correctAnswers = newCorrectAnswers;
-            });
-        });
-
-        // 3. Append the parts and vocabulary
-        targetTest.parts.push(...newParts);
-        if (sourceTest.vocab && sourceTest.vocab.length > 0) {
-            if (!targetTest.vocab) targetTest.vocab = [];
-            targetTest.vocab.push(...JSON.parse(JSON.stringify(sourceTest.vocab)));
-        }
-
-        // 4. Save Target Test to DB
-        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), targetId), targetTest);
-
-        // 5. Delete Source Test if requested
-        if (deleteSource) {
-            TEST_BANK = TEST_BANK.filter(t => t.id !== sourceId);
-            
-            // Clean up class assignments associated with the deleted test
-            for (let c of CLASSES) {
-                if (c.assignedTests && c.assignedTests.includes(sourceId)) {
-                    c.assignedTests = c.assignedTests.filter(tid => tid !== sourceId);
-                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
-                }
-            }
-            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('tests'), sourceId));
-
-            // Clean up any stray student notes associated with the deleted test
-            const noteIdsToDelete = Object.keys(ALL_NOTES).filter(k => k.endsWith(`_${sourceId}`));
-            for (let nid of noteIdsToDelete) {
-                delete ALL_NOTES[nid];
-                await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('notes'), nid));
-            }
-        }
-
-        renderTestBank();
-    };
-
-    window.promptAssignTest = function(tid) {
-      const test = TEST_BANK.find(t => t.id === tid);
-      if (!test) return;
-
-      if (CLASSES.length === 0) {
-          showModalMsg("No Classes", "Please create a class in the 'Classes' tab first.");
-          return;
-      }
-
-      let classChecks = CLASSES.map(c => {
-          const isAssigned = c.assignedTests && c.assignedTests.includes(tid);
-          return `<label class="flex items-center space-x-3 cursor-pointer hover:bg-slate-50 p-2 rounded transition border border-slate-200 mb-2 bg-white shadow-sm">
-              <input type="checkbox" id="assign_c_${c.id}" ${isAssigned ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded">
-              <span class="font-bold text-slate-700">${c.name}</span>
-          </label>`;
-      }).join('');
-
-      document.getElementById('modal-title').textContent = `Assign: ${test.title}`;
-      document.getElementById('modal-message').innerHTML = `
-          <p class="text-sm text-slate-500 mb-4">Select the classes that should have access to this test. Students in unassigned classes will not see it.</p>
-          <div class="max-h-60 overflow-y-auto pr-2 bg-slate-50 p-2 rounded-lg border border-slate-200">${classChecks}</div>
-      `;
-      
-      document.getElementById('modal-input').classList.add('hidden');
-      document.getElementById('modal-cancel').classList.remove('hidden');
-      document.getElementById('custom-modal').classList.remove('hidden');
-
-      document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
-      
-      document.getElementById('modal-confirm').onclick = async () => {
-          const btn = document.getElementById('modal-confirm');
-          btn.textContent = "Saving..."; btn.disabled = true;
-          
-          try {
-              for (let c of CLASSES) {
-                  const isChecked = document.getElementById(`assign_c_${c.id}`).checked;
-                  if (!c.assignedTests) c.assignedTests = [];
-                  
-                  const currentlyAssigned = c.assignedTests.includes(tid);
-                  
-                  if (isChecked && !currentlyAssigned) {
-                      c.assignedTests.push(tid);
-                      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
-                  } else if (!isChecked && currentlyAssigned) {
-                      c.assignedTests = c.assignedTests.filter(id => id !== tid);
-                      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
-                  }
-              }
-              document.getElementById('custom-modal').classList.add('hidden');
-              renderTestBank(); 
-              
-              const dashView = document.getElementById('editor-view-bank');
-              if(dashView && !dashView.classList.contains('hidden')) {
-                  renderClasses(); 
-              }
-          } catch (e) {
-              console.error(e);
-              showModalMsg("Error", "Could not save assignments to cloud.");
-          }
-          
-          btn.textContent = "OK"; btn.disabled = false;
-      };
-    };
     
+    // ✨ NEW: Smart IELTS Template Generator
+    function getSmartIeltsStructure(mod) {
+        if (mod === 'reading') {
+            return [
+                { title: "Reading Passage 1", text: "", questions: [] },
+                { title: "Reading Passage 2", text: "", questions: [] },
+                { title: "Reading Passage 3", text: "", questions: [] }
+            ];
+        } else if (mod === 'listening') {
+            return [
+                { title: "Part 1", text: "", audioUrl: "", questions: [] },
+                { title: "Part 2", text: "", audioUrl: "", questions: [] },
+                { title: "Part 3", text: "", audioUrl: "", questions: [] },
+                { title: "Part 4", text: "", audioUrl: "", questions: [] }
+            ];
+        } else if (mod === 'writing') {
+            return [
+                { title: "Task 1", text: "You should spend about 20 minutes on this task.\n\n[Insert chart/graph description here]\n\nWrite at least 150 words.", questions: [{ blockId: 'w1_'+Date.now(), type: 'essay', ids: [1], instruction: 'Write your essay below.', points: 1 }] },
+                { title: "Task 2", text: "You should spend about 40 minutes on this task.\n\n[Insert essay prompt here]\n\nWrite at least 250 words.", questions: [{ blockId: 'w2_'+Date.now(), type: 'essay', ids: [2], instruction: 'Write your essay below.', points: 1 }] }
+            ];
+        } else if (mod === 'speaking') {
+            return [
+                { title: "Part 1: Introduction", text: "Let's talk about [Topic].\n\n- Question 1\n- Question 2\n- Question 3", questions: [{ blockId: 's1_'+Date.now(), type: 'audio_record', ids: [1], instruction: 'Record your answer for Part 1' }] },
+                { title: "Part 2: Cue Card", text: "Describe [Topic].\nYou should say:\n- point 1\n- point 2\n- point 3\n\nYou will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say.", questions: [{ blockId: 's2_'+Date.now(), type: 'audio_record', ids: [2], instruction: 'Record your answer for Part 2' }] },
+                { title: "Part 3: Discussion", text: "Let's consider first of all [Topic].\n\n- Question 1\n- Question 2", questions: [{ blockId: 's3_'+Date.now(), type: 'audio_record', ids: [3], instruction: 'Record your answer for Part 3' }] }
+            ];
+        }
+        return [{ title: "Part 1", text: "", questions: [] }];
+    }
+
     async function createNewTest(mod) {
       showTestMetaModal(`New ${mod.charAt(0).toUpperCase()+mod.slice(1)} Test`, "", "", "", async (title, topics, diff) => {
-        const newTest = { id: 't_'+Date.now(), title, module: mod, topics, difficulty: diff, parts: [{title:"Part 1", text:"", questions:[]}], vocab: [] };
+        const smartParts = getSmartIeltsStructure(mod);
+        const newTest = { id: 't_'+Date.now(), title, module: mod, topics, difficulty: diff, parts: smartParts, vocab: [] };
         TEST_BANK.unshift(newTest); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), newTest.id), newTest);
         editTest(newTest.id);
@@ -3449,6 +3574,59 @@ window.initFirebaseSystem = async function() {
         renderTestBank();
       });
     }
+
+    window.openBulkTestImport = function() {
+        document.getElementById('bulk-test-input').value = '';
+        document.getElementById('bulk-test-import-modal').classList.remove('hidden');
+    };
+
+    window.processBulkTestImport = async function() {
+        const text = document.getElementById('bulk-test-input').value.trim();
+        if (!text) {
+            showModalMsg("Empty", "Please paste some data from Excel first.");
+            return;
+        }
+
+        const lines = text.split('\n');
+        let count = 0;
+        
+        // Show loading state
+        const btn = document.querySelector('button[onclick="window.processBulkTestImport()"]');
+        if (btn) { btn.textContent = "Importing..."; btn.disabled = true; }
+        
+        for (let line of lines) {
+            const parts = line.split('\t');
+            if (parts[0] && parts[0].trim()) {
+                const title = parts[0].trim();
+                let mod = (parts[1] || '').trim().toLowerCase();
+                if (!['reading', 'listening', 'writing', 'speaking'].includes(mod)) {
+                    mod = 'reading'; // default fallback
+                }
+                const topics = (parts[2] || '').split(',').map(s => s.trim()).filter(Boolean);
+                const diff = (parts[3] || '').trim();
+
+                const newTest = { 
+                    id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), 
+                    title, 
+                    module: mod, 
+                    topics, 
+                    difficulty: diff, 
+                    parts: getSmartIeltsStructure(mod), 
+                    vocab: [] 
+                };
+                
+                TEST_BANK.unshift(newTest);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), newTest.id), newTest);
+                count++;
+            }
+        }
+        
+        document.getElementById('bulk-test-import-modal').classList.add('hidden');
+        renderTestBank();
+        
+        if (btn) { btn.textContent = "Import Tests"; btn.disabled = false; }
+        showModalMsg("Success", `Imported ${count} new tests!`);
+    };
 
     function renderClasses() {
       const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
@@ -4842,19 +5020,21 @@ window.initFirebaseSystem = async function() {
             <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
         </div>`;
 
-        const mkExplanationToolbar = () => `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
-            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">• List</button>
-            <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">1. List</button>
-            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-            <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank', ${i})" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition" title="Insert Gap Fill Blank">{_} Blank</button>
-            <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop', ${i})" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
-            <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-            <button type="button" onmousedown="event.preventDefault(); window.insertVideo()" class="px-2.5 py-1 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded shadow-sm transition" title="Insert Local Video File">🎥 Video</button>
-        </div>`;
+        const mkTemplateToolbar = (editorId) => {
+            const tplOpts = TEACHER_TEMPLATES.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            return `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
+                <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
+                <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
+                <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
+                <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+                <select onchange="window.insertCustomTemplate('${editorId}', this.value); this.value='';" class="border border-slate-300 rounded-lg px-2 py-1 text-xs outline-none bg-white font-bold text-emerald-700 shadow-sm cursor-pointer hover:border-emerald-500 transition flex-1 sm:flex-none">
+                    <option value="">+ Chèn Form Mẫu...</option>
+                    ${tplOpts}
+                </select>
+                <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+                <button type="button" onmousedown="event.preventDefault(); window.insertVideo()" class="px-2.5 py-1 bg-rose-50 border border-rose-200 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded shadow-sm transition" title="Insert Local Video File">🎥 Video</button>
+            </div>`;
+        };
         
         const editorId = `rich-text-${i}`;
         const advToolbar = `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
@@ -4971,8 +5151,9 @@ window.initFirebaseSystem = async function() {
            }
         }
         
-        html += `<div>${mkLbl('Hint / Scaffolding (Optional - Shows in Practice Mode)')}${mkExplanationToolbar()}<div class="q-hint rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[60px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.hint||''}</div></div>`;
-        html += `<div>${mkLbl('Explanation (Optional)')}${mkExplanationToolbar()}<div class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
+        html += `<div>${mkLbl('Kỹ thuật làm bài / Hint (Optional - Shows as a 💡 Hint button during Practice Mode)')}${mkTemplateToolbar(`hint-editor-${i}`)}<div id="hint-editor-${i}" class="q-hint rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[60px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.hint||''}</div></div>`;
+        
+        html += `<div>${mkLbl('Giải thích đáp án (Optional - Only shows in Detailed Review)')}${mkTemplateToolbar(`expl-editor-${i}`)}<div id="expl-editor-${i}" class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
         
         html += `</div>`; 
         div.innerHTML = html; 
@@ -5114,11 +5295,66 @@ window.initFirebaseSystem = async function() {
             <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-text focus:border-blue-500 resize-none h-14 bg-white" placeholder="Question Text" data-col="2"></textarea></td>
             <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-opts focus:border-blue-500 resize-none h-14 bg-white" placeholder="A, B, C" data-col="3"></textarea></td>
             <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-ans focus:border-blue-500 resize-none h-14 font-bold text-emerald-700 bg-white" placeholder="Answer" data-col="4"></textarea></td>
+            <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-hint focus:border-blue-500 resize-none h-14 bg-white" placeholder="Hint" data-col="5"></textarea></td>
+            <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-expl focus:border-blue-500 resize-none h-14 bg-white" placeholder="Explanation" data-col="6"></textarea></td>
         `;
         tbody.appendChild(tr);
     };
 
+    window.isRapidTestImport = false;
+
+    window.toggleRapidMode = function() {
+        const mode = document.querySelector('input[name="rapid-mode"]:checked').value;
+        if(mode === 'new') {
+            document.getElementById('rapid-mode-new').classList.remove('hidden');
+            document.getElementById('rapid-mode-existing').classList.add('hidden');
+        } else {
+            document.getElementById('rapid-mode-new').classList.add('hidden');
+            document.getElementById('rapid-mode-existing').classList.remove('hidden');
+            window.populateRapidExistingTests();
+        }
+    };
+
+    window.populateRapidExistingTests = function() {
+        const sel = document.getElementById('rapid-existing-test');
+        sel.innerHTML = TEST_BANK.map(t => `<option value="${t.id}">${t.title} (${t.module})</option>`).join('');
+        window.updateRapidPartOptions();
+    };
+
+    window.updateRapidPartOptions = function() {
+        const tid = document.getElementById('rapid-existing-test').value;
+        const test = TEST_BANK.find(t => t.id === tid);
+        const pSel = document.getElementById('rapid-existing-part');
+        if(test && test.parts) {
+            pSel.innerHTML = test.parts.map((p, i) => `<option value="${i}">${p.title || 'Part '+(i+1)}</option>`).join('');
+        } else {
+            pSel.innerHTML = '';
+        }
+    };
+
+    window.openRapidFullTestImport = function() {
+        window.isRapidTestImport = true;
+        document.getElementById('csv-meta-section').classList.remove('hidden');
+        
+        // Reset to "new" mode by default when opened
+        const newRadio = document.querySelector('input[name="rapid-mode"][value="new"]');
+        if (newRadio) { newRadio.checked = true; window.toggleRapidMode(); }
+
+        document.getElementById('csv-import-title').innerHTML = "🚀 Rapid Import";
+        document.getElementById('csv-import-desc').innerHTML = "Configure your destination above, then paste your questions from Excel below. The system will auto-calculate question numbers and inject them instantly!";
+        
+        document.getElementById('bulk-import-tbody').innerHTML = ''; 
+        for(let i=0; i<3; i++) window.addBulkImportRow(); // Start with 3 blank rows
+        
+        document.getElementById('csv-import-modal').classList.remove('hidden');
+    };
+
     window.openCSVImport = function() {
+        window.isRapidTestImport = false;
+        document.getElementById('csv-meta-section').classList.add('hidden');
+        document.getElementById('csv-import-title').innerHTML = "📋 Bulk Import Questions";
+        document.getElementById('csv-import-desc').innerHTML = "Type manually into the grid below, or <strong class='text-blue-600'>click the first box and paste directly from Excel</strong> to auto-fill everything!";
+        
         document.getElementById('bulk-import-tbody').innerHTML = ''; 
         for(let i=0; i<3; i++) window.addBulkImportRow(); // Start with 3 blank rows
         document.getElementById('csv-import-modal').classList.remove('hidden');
@@ -5151,7 +5387,15 @@ window.initFirebaseSystem = async function() {
                 }
                 
                 const tr = tbody.children[targetRowIdx];
-                const inputs = [tr.querySelector('.row-type'), tr.querySelector('.row-inst'), tr.querySelector('.row-text'), tr.querySelector('.row-opts'), tr.querySelector('.row-ans')];
+                const inputs = [
+                    tr.querySelector('.row-type'), 
+                    tr.querySelector('.row-inst'), 
+                    tr.querySelector('.row-text'), 
+                    tr.querySelector('.row-opts'), 
+                    tr.querySelector('.row-ans'),
+                    tr.querySelector('.row-hint'),
+                    tr.querySelector('.row-expl')
+                ];
 
                 pasteCols.forEach((pasteVal, j) => {
                     const targetColIdx = startColIdx + j;
@@ -5182,16 +5426,29 @@ window.initFirebaseSystem = async function() {
         }
     };
 
-    window.processBulkImport = function() {
-        saveCurrentEditorPart();
+    window.processBulkImport = async function() {
+        if (!window.isRapidTestImport) saveCurrentEditorPart();
+        
         const rows = document.querySelectorAll('.import-row');
         let importedCount = 0;
+        let newQuestions = [];
         
-        // Find highest existing ID in this part
+        // Find highest existing ID to prevent question number conflicts
         let currentMaxId = 0;
-        APP_DATA.parts[currentEditorPartIdx].questions.forEach(q => {
-            (q.ids || []).forEach(id => { if (id > currentMaxId) currentMaxId = id; });
-        });
+        if (!window.isRapidTestImport) {
+            APP_DATA.parts[currentEditorPartIdx].questions.forEach(q => {
+                (q.ids || []).forEach(id => { if (id > currentMaxId) currentMaxId = id; });
+            });
+        } else {
+            const rapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+            if (rapidMode === 'existing') {
+                const tid = document.getElementById('rapid-existing-test').value;
+                const test = TEST_BANK.find(t => t.id === tid);
+                if (test) {
+                    test.parts.forEach(p => p.questions.forEach(q => (q.ids||[]).forEach(id => { if (id > currentMaxId) currentMaxId = id; })));
+                }
+            }
+        }
         
         rows.forEach((row, i) => {
             const type = row.querySelector('.row-type').value;
@@ -5199,8 +5456,10 @@ window.initFirebaseSystem = async function() {
             const text = row.querySelector('.row-text').value.trim();
             const optsRaw = row.querySelector('.row-opts').value.trim();
             const ans = row.querySelector('.row-ans').value.trim();
+            const hint = row.querySelector('.row-hint').value.trim();
+            const expl = row.querySelector('.row-expl').value.trim();
 
-            if (!text && !ans && !inst) return; // Skip blank rows
+            if (!text && !ans && !inst && !hint && !expl) return; // Skip blank rows
 
             // Sequential ID logic
             currentMaxId++; 
@@ -5216,12 +5475,13 @@ window.initFirebaseSystem = async function() {
                 instruction: inst || "Answer the question.",
                 text: text,
                 options: options,
-                explanation: "",
+                hint: hint,
+                explanation: expl,
                 correctAnswers: {}
             };
 
             newBlock.correctAnswers[newId] = ans;
-            APP_DATA.parts[currentEditorPartIdx].questions.push(newBlock);
+            newQuestions.push(newBlock);
             importedCount++;
         });
 
@@ -5230,10 +5490,57 @@ window.initFirebaseSystem = async function() {
             return;
         }
 
-        document.getElementById('csv-import-modal').classList.add('hidden');
-        renderEditorQuestions();
-        triggerEditorAutosave();
-        showModalMsg("Success", `Imported ${importedCount} questions successfully!`);
+        if (window.isRapidTestImport) {
+            const rapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+            
+            if (rapidMode === 'new') {
+                // Create New Test Workflow
+                const title = document.getElementById('rapid-test-title').value.trim() || 'Untitled Rapid Test';
+                const mod = document.getElementById('rapid-test-mod').value;
+                const diff = document.getElementById('rapid-test-diff').value.trim();
+                
+                let smartParts = getSmartIeltsStructure(mod);
+                smartParts[0].questions = newQuestions; 
+                
+                const newTest = { 
+                    id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), 
+                    title, 
+                    module: mod, 
+                    topics: [], 
+                    difficulty: diff, 
+                    parts: smartParts, 
+                    vocab: [] 
+                };
+                
+                TEST_BANK.unshift(newTest);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), newTest.id), newTest);
+                
+                document.getElementById('csv-import-modal').classList.add('hidden');
+                renderTestBank();
+                showModalMsg("Success! 🎉", `Created "${title}" and injected ${importedCount} questions successfully!`);
+            } else {
+                // Add to Existing Test Workflow
+                const tid = document.getElementById('rapid-existing-test').value;
+                const pIdx = parseInt(document.getElementById('rapid-existing-part').value);
+                const test = TEST_BANK.find(t => t.id === tid);
+                
+                if (test && test.parts[pIdx]) {
+                    test.parts[pIdx].questions.push(...newQuestions);
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), test.id), test);
+                    
+                    document.getElementById('csv-import-modal').classList.add('hidden');
+                    renderTestBank();
+                    showModalMsg("Success! 🎉", `Added ${importedCount} questions to "${test.title}" (Part ${pIdx + 1}) successfully!`);
+                }
+            }
+        } else {
+            // STANDARD EDITOR WORKFLOW: Inject into current part
+            APP_DATA.parts[currentEditorPartIdx].questions.push(...newQuestions);
+            document.getElementById('csv-import-modal').classList.add('hidden');
+            renderEditorQuestions();
+            triggerEditorAutosave();
+            showModalMsg("Success", `Imported ${importedCount} questions successfully!`);
+        }
     };
     
     function moveEditorQuestion(idx, dir) {
@@ -7131,22 +7438,29 @@ window.initFirebaseSystem = async function() {
         
         let chkBtn = '';
         let btnContainer = '';
-        if (isTimeFree && q.type !== 'essay' && q.type !== 'audio_record') {
-            // ✨ VYGOTSKY SCAFFOLDING BUTTONS
+        
+        if (isTimeFree) {
             if (q.type === 'multiple_choice' && !q.multi) {
                 btnContainer += `<button id="btn-5050-${i}" onclick="window.applyFiftyFifty(${i})" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-amber-200">🪄 50/50</button>`;
             }
             if (q.hint && q.hint.trim() !== '' && q.hint !== '<br>' && q.hint !== '<p><br></p>') {
-                btnContainer += `<button onclick="window.showScaffoldHint(${i})" class="text-xs bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-sky-200">💡 Hint</button>`;
+                btnContainer += `<button onclick="window.toggleScaffoldHint(${i})" class="text-xs bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-sky-200">💡 Hint / Kỹ thuật</button>`;
             }
-            
-            btnContainer += `<button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition shadow-sm">Check Answer</button>`;
+            if (q.type !== 'essay' && q.type !== 'audio_record') {
+                btnContainer += `<button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition shadow-sm">Check Answer</button>`;
+            }
         }
+        
         if (isPreviewMode && q.type !== 'essay' && q.type !== 'audio_record') {
             btnContainer += `<button onclick="window.savePreviewAnswersToBank(${i})" class="text-xs bg-purple-100 hover:bg-purple-200 text-purple-700 hover:text-purple-800 font-bold px-3 py-1.5 rounded transition border border-purple-200 ml-2 flex items-center gap-1 shadow-sm"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Add Answer</button>`;
         }
+        
         if (btnContainer) {
-            chkBtn = `<div class="mt-4 flex justify-end items-center">${btnContainer}</div><div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-base font-bold"></div>`;
+            chkBtn = `<div class="mt-4 flex justify-end items-center">${btnContainer}</div>
+                      <div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-base font-bold"></div>
+                      <div id="inline-hint-${i}" class="hidden mt-4 text-slate-700 text-[15px] leading-relaxed bg-sky-50 p-5 rounded-xl border border-sky-200 shadow-inner animate-fade-in-up">
+                          ${q.hint || ''}
+                      </div>`;
         }
 
         let leftoverBadges = Array.from(unplacedIds).map(id => makeBadge(id)).join('');
@@ -7741,8 +8055,29 @@ window.initFirebaseSystem = async function() {
         </div>`;
     }
     
+    window.exportGradesCSV = function() {
+        if(SUBMISSIONS.length === 0) {
+            showModalMsg("Notice", "No submissions available to export.");
+            return;
+        }
+        let csv = "ID,Date,Student,Class,Test Name,Score\n";
+        SUBMISSIONS.forEach(s => {
+            csv += `"${s.id}","${s.date}","${s.student}","${s.className}","${s.testName}","${s.score}"\n`;
+        });
+        // Uint8Array applies the UTF-8 BOM to ensure Excel reads accents correctly
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' }); 
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `lms_grades_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     async function clearAllSubmissions() { 
-      showConfirm("Clear All", "Delete all student data from cloud?", async () => { 
+      showConfirm("Clear All", "Delete all student data from cloud?", async () => {
         const btn = document.querySelector('button[onclick="clearAllSubmissions()"]');
         if (btn) { btn.textContent = "Clearing..."; btn.disabled = true; }
         
@@ -7860,10 +8195,9 @@ window.initFirebaseSystem = async function() {
 
           if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
              content = '';
-             if(q.explanation) content += `<div class="bg-purple-50 border border-purple-200 p-4 rounded-lg text-[15px] leading-relaxed text-purple-900 shadow-inner"><b>💡 Explanation:</b><br>${q.explanation}</div>`;
           } else if(q.type === 'essay') {
             let fbData = { annotated: answers[q.ids[0]] || '', tr: '', cc: '', lr: '', gra: '', comment: '' };
-            try { 
+            try {
                 if (feedbackObj[q.ids[0]]) fbData = JSON.parse(feedbackObj[q.ids[0]]); 
             } catch(e) { 
                 fbData.comment = feedbackObj[q.ids[0]]; // Legacy fallback
@@ -8173,7 +8507,12 @@ window.initFirebaseSystem = async function() {
           const cleanInst = (q.instruction || '').trim();
           const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
           
-          const resultsSectionHtml = content ? `<div class="border-t-2 border-slate-100 pt-4 mt-4"><h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Results & Feedback</h4>${content}</div>` : '';
+          let explHtml = '';
+          if (q.explanation && q.explanation.trim() !== '' && q.explanation !== '<br>' && q.explanation !== '<p><br></p>') {
+              explHtml = `<div class="mt-4 bg-purple-50 border border-purple-200 p-5 rounded-xl text-[15px] leading-relaxed text-purple-900 shadow-inner"><b>📖 Giải thích đáp án (Explanation):</b><br><div class="mt-2">${q.explanation}</div></div>`;
+          }
+
+          const resultsSectionHtml = (content || explHtml) ? `<div class="border-t-2 border-slate-100 pt-4 mt-4"><h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Results & Feedback</h4>${content}${explHtml}</div>` : '';
 
           rHtml += `<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-5">
               ${hasInst ? `<div class="text-slate-900 font-bold mb-3 whitespace-pre-wrap leading-relaxed">${q.instruction}</div>` : ''}
@@ -9298,6 +9637,76 @@ window.initFirebaseSystem = async function() {
             });
         });
     }
+
+    window.openBulkStudentImport = function() {
+        document.getElementById('bulk-student-input').value = '';
+        document.getElementById('bulk-student-import-modal').classList.remove('hidden');
+    };
+
+    window.processBulkStudentImport = async function() {
+        const text = document.getElementById('bulk-student-input').value.trim();
+        if (!text) {
+            showModalMsg("Empty", "Please paste some data from Excel first.");
+            return;
+        }
+
+        const lines = text.split('\n');
+        let count = 0;
+        let classUpdates = new Set();
+        
+        // Show loading state
+        const btn = document.querySelector('button[onclick="window.processBulkStudentImport()"]');
+        if (btn) { btn.textContent = "Importing..."; btn.disabled = true; }
+        
+        for (let line of lines) {
+            const parts = line.split('\t');
+            if (parts[0] && parts[0].trim() && parts[1] && parts[1].trim()) {
+                const username = parts[0].trim();
+                const password = parts[1].trim();
+                const className = parts[2] ? parts[2].trim() : null;
+
+                // Check if user already exists to prevent overwriting
+                if (!USERS.find(u => u.user === username)) {
+                    const newStudent = { 
+                        user: username, 
+                        pass: password, 
+                        role: 'student', 
+                        isPaid: true, 
+                        paymentStatus: 'paid', 
+                        pendingClasses: null, 
+                        createdAt: new Date().toLocaleDateString() 
+                    };
+                    USERS.push(newStudent);
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newStudent);
+                    count++;
+                    
+                    // Auto-enroll if class is specified and exists
+                    if (className) {
+                        const cls = CLASSES.find(c => c.name.toLowerCase() === className.toLowerCase());
+                        if (cls) {
+                            if (!cls.enrolledStudents) cls.enrolledStudents = [];
+                            if (!cls.enrolledStudents.includes(username)) {
+                                cls.enrolledStudents.push(username);
+                                classUpdates.add(cls);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Save any modified classes to Firestore
+        for (let cls of classUpdates) {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+        }
+        
+        document.getElementById('bulk-student-import-modal').classList.add('hidden');
+        renderStudentsList();
+        renderClasses(); // Refresh class view in case enrollments changed
+        
+        if (btn) { btn.textContent = "Import Students"; btn.disabled = false; }
+        showModalMsg("Success", `Created and imported ${count} new student accounts!`);
+    };
 
     async function togglePaymentStatus(username, status) {
         const user = USERS.find(u => u.user === username);
@@ -10882,11 +11291,9 @@ window.initFirebaseSystem = async function() {
     // ✨ VYGOTSKY ZPD & SCAFFOLDING SYSTEM
     // ==========================================
 
-    window.showScaffoldHint = function(blockIdx) {
-        const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
-        if (!q || !q.hint) return;
-        
-        window.showModalMsg("💡 Scaffolding Hint", `<div class="text-slate-700 text-base leading-relaxed bg-sky-50 p-4 rounded-xl border border-sky-200 shadow-inner">${q.hint}</div>`);
+    window.toggleScaffoldHint = function(blockIdx) {
+        const el = document.getElementById(`inline-hint-${blockIdx}`);
+        if (el) el.classList.toggle('hidden');
     };
 
     window.applyFiftyFifty = function(blockIdx) {
@@ -11429,6 +11836,87 @@ window.initFirebaseSystem = async function() {
         document.execCommand('insertHTML', false, temp.innerHTML);
         if (window.triggerEditorAutosave) window.triggerEditorAutosave();
     });
+    
+    // ==========================================
+    // ✨ SMART TEMPLATE MANAGER & UNIFIED EDITOR
+    // ==========================================
+
+    window.currentTemplateId = null;
+
+    window.openTemplateManager = function() {
+        document.getElementById('template-manager-modal').classList.remove('hidden');
+        window.renderTemplateList();
+        document.getElementById('template-editor-area').innerHTML = '<div class="text-center text-slate-400 mt-20 italic font-medium">Select a template from the left or create a new one.</div>';
+        window.currentTemplateId = null;
+    };
+
+    window.renderTemplateList = function() {
+        const container = document.getElementById('template-list-container');
+        container.innerHTML = TEACHER_TEMPLATES.map(t => `
+            <div class="p-3 rounded-lg border ${window.currentTemplateId === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300'} transition cursor-pointer flex justify-between items-center group" onclick="window.editTemplate('${t.id}')">
+                <span class="font-bold text-sm text-slate-700 truncate pr-2">${t.name}</span>
+                <button onclick="event.stopPropagation(); window.deleteTemplate('${t.id}')" class="text-rose-400 hover:text-white hover:bg-rose-500 px-1.5 py-0.5 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition">&times;</button>
+            </div>
+        `).join('');
+    };
+
+    window.createNewTemplate = function() {
+        const id = 'tpl_' + Date.now();
+        TEACHER_TEMPLATES.push({ id, name: 'New Strategy / Explanation', html: '<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Tiêu đề</strong><br><b>Nội dung:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Điểm 1.</li><li>Điểm 2.</li></ul></div><p><br></p>' });
+        window.saveTemplatesToCloud();
+        window.editTemplate(id);
+    };
+
+    window.editTemplate = function(id) {
+        window.currentTemplateId = id;
+        window.renderTemplateList();
+        const t = TEACHER_TEMPLATES.find(x => x.id === id);
+        if(!t) return;
+        
+        document.getElementById('template-editor-area').innerHTML = `
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Template Name (Dropdown Label)</label>
+            <input type="text" value="${t.name.replace(/"/g, '&quot;')}" oninput="window.updateTemplateName('${id}', this.value)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-colors mb-5">
+            
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">HTML Design / Content</label>
+            <div class="flex gap-1.5 bg-slate-100 p-2 rounded-t-lg border border-slate-300 shadow-sm">
+                <button onmousedown="event.preventDefault(); document.execCommand('bold')" class="px-3 py-1 bg-white border border-slate-200 rounded text-xs font-bold shadow-sm hover:bg-slate-50">B</button>
+                <button onmousedown="event.preventDefault(); document.execCommand('italic')" class="px-3 py-1 bg-white border border-slate-200 rounded text-xs italic shadow-sm hover:bg-slate-50">I</button>
+                <button onmousedown="event.preventDefault(); document.execCommand('underline')" class="px-3 py-1 bg-white border border-slate-200 rounded text-xs underline shadow-sm hover:bg-slate-50">U</button>
+            </div>
+            <div id="tpl-edit-html" contenteditable="true" class="rich-editor flex-1 border border-slate-300 rounded-b-lg p-5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white overflow-y-auto leading-relaxed" oninput="window.updateTemplateContent('${id}')">${t.html}</div>
+        `;
+    };
+
+    window.updateTemplateName = function(id, val) {
+        const t = TEACHER_TEMPLATES.find(x => x.id === id);
+        if(t) { t.name = val; window.saveTemplatesToCloud(); window.renderTemplateList(); }
+    };
+    window.updateTemplateContent = function(id) {
+        const t = TEACHER_TEMPLATES.find(x => x.id === id);
+        if(t) { t.html = document.getElementById('tpl-edit-html').innerHTML; window.saveTemplatesToCloud(); }
+    };
+    window.deleteTemplate = function(id) {
+        if(confirm('Permanently delete this template?')) {
+            TEACHER_TEMPLATES = TEACHER_TEMPLATES.filter(x => x.id !== id);
+            window.saveTemplatesToCloud();
+            if(window.currentTemplateId === id) window.currentTemplateId = null;
+            window.openTemplateManager(); 
+        }
+    };
+    window.saveTemplatesToCloud = async function() {
+        try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'templates'), { items: TEACHER_TEMPLATES }); } catch(e) { console.error(e); }
+    };
+
+    window.insertCustomTemplate = function(editorId, templateId) {
+        const t = TEACHER_TEMPLATES.find(x => x.id === templateId);
+        const editor = document.getElementById(editorId);
+        if(t && editor) {
+             editor.focus();
+             document.execCommand('insertHTML', false, t.html);
+             if(window.triggerEditorAutosave) window.triggerEditorAutosave();
+        }
+    };
+
     window.insertVideo = function() {
         // Create a hidden dynamic file input
         const fileInput = document.createElement('input');
