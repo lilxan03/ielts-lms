@@ -3519,11 +3519,85 @@ window.initFirebaseSystem = async function() {
       }
     }
 
+    window.promptAssignTest = function(tid) {
+        const test = TEST_BANK.find(t => t.id === tid);
+        if (!test) return;
+
+        if (CLASSES.length === 0) {
+            showModalMsg("No Classes Found", "Please create a class first from the 'Classes & Subs' tab before assigning tests.");
+            return;
+        }
+
+        let classOpts = CLASSES.map(c => {
+            const isAssigned = c.assignedTests && c.assignedTests.includes(tid);
+            return `
+            <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-slate-100 rounded-lg border border-slate-200 mb-2 bg-white shadow-sm transition">
+                <input type="checkbox" class="assign-class-cb w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500" value="${c.id}" ${isAssigned ? 'checked' : ''}>
+                <span class="font-bold text-sm text-slate-700">${c.name}</span>
+            </label>
+            `;
+        }).join('');
+
+        document.getElementById('modal-title').textContent = `Assign: ${test.title}`;
+        document.getElementById('modal-message').innerHTML = `
+            <p class="text-sm text-slate-500 mb-4">Select the classes that should have access to this material:</p>
+            <div class="max-h-60 overflow-y-auto bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner">
+                ${classOpts}
+            </div>
+        `;
+        
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        
+        document.getElementById('modal-confirm').onclick = async () => {
+            const btn = document.getElementById('modal-confirm');
+            btn.textContent = "Saving..."; btn.disabled = true;
+            
+            const selectedClassIds = Array.from(document.querySelectorAll('.assign-class-cb:checked')).map(cb => cb.value);
+            
+            try {
+                let updates = [];
+                CLASSES.forEach(c => {
+                    let changed = false;
+                    if (!c.assignedTests) c.assignedTests = [];
+                    
+                    const shouldBeAssigned = selectedClassIds.includes(c.id);
+                    const isCurrentlyAssigned = c.assignedTests.includes(tid);
+                    
+                    if (shouldBeAssigned && !isCurrentlyAssigned) {
+                        c.assignedTests.push(tid);
+                        changed = true;
+                    } else if (!shouldBeAssigned && isCurrentlyAssigned) {
+                        c.assignedTests = c.assignedTests.filter(id => id !== tid);
+                        changed = true;
+                    }
+                    
+                    if (changed) {
+                        updates.push(window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c));
+                    }
+                });
+                
+                await Promise.all(updates);
+                
+                document.getElementById('custom-modal').classList.add('hidden');
+                renderTestBank(); // Refreshes the Unassigned/Assigned badges
+                if (typeof renderClasses === 'function') renderClasses(); // Updates the class views
+                if (typeof window.showToast === 'function') window.showToast("Assigned", "Test assignments updated successfully.");
+                
+            } catch(e) {
+                console.error("Assignment error:", e);
+                showModalMsg("Error", "Could not save assignments to cloud.");
+            }
+            
+            btn.textContent = "OK"; btn.disabled = false;
+        };
+    };
+
     window.promptMergeTest = function(tid) {
       const sourceTest = TEST_BANK.find(t => t.id === tid);
-      if (!sourceTest) return;
-
-      const compatibleTests = TEST_BANK.filter(t => t.module === sourceTest.module && t.id !== tid);
       if (compatibleTests.length === 0) {
           showModalMsg("Cannot Merge", `There are no other ${sourceTest.module} tests available to merge this into.`);
           return;
