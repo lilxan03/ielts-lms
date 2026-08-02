@@ -1471,11 +1471,13 @@
                 <option value="all">All Tags</option>
               </select>
               <select id="bank-sort" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
-                <option value="newest">Newest First</option><option value="az">A-Z</option><option value="za">Z-A</option>
-              </select>
-            </div>
-            
-            <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 stagger-fade-in"></div>
+              <option value="newest">Newest First</option><option value="az">A-Z</option><option value="za">Z-A</option>
+            </select>
+            <!-- ✨ NEW: Dynamic Bulk Assign Button -->
+            <button id="btn-bulk-assign" onclick="window.promptBulkAssignSelected()" class="hidden items-center gap-1 border-2 border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 rounded-xl px-4 py-2.5 text-sm font-bold transition shadow-sm whitespace-nowrap shrink-0 animate-pop">👥 Assign (0)</button>
+          </div>
+          
+          <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 stagger-fade-in"></div>
             
             <!-- ✨ NEW: Pagination Container -->
             <div id="test-bank-pagination" class="flex flex-wrap justify-center items-center gap-2 mt-8 pb-4"></div>
@@ -3410,6 +3412,46 @@ window.initFirebaseSystem = async function() {
 
     let currentTestBankPage = 1;
     const TESTS_PER_PAGE = 16;
+    window.selectedBulkTests = new Set(); // Tracks checked tests across pages
+
+    window.updateBulkTestSelection = function(cb) {
+        if (cb.checked) window.selectedBulkTests.add(cb.value);
+        else window.selectedBulkTests.delete(cb.value);
+        
+        const btn = document.getElementById('btn-bulk-assign');
+        if (btn) {
+            if (window.selectedBulkTests.size > 0) {
+                btn.classList.remove('hidden');
+                btn.classList.add('flex');
+                btn.innerHTML = `👥 Assign (${window.selectedBulkTests.size})`;
+            } else {
+                btn.classList.add('hidden');
+                btn.classList.remove('flex');
+            }
+        }
+        
+        // Slightly highlight the card background if checked
+        const card = cb.closest('.min-h-\\[160px\\]');
+        if (card) {
+            if (cb.checked) {
+                card.classList.remove('border-slate-200');
+                card.classList.add('border-indigo-400', 'bg-indigo-50/30', 'ring-1', 'ring-indigo-200');
+            } else {
+                card.classList.add('border-slate-200');
+                card.classList.remove('border-indigo-400', 'bg-indigo-50/30', 'ring-1', 'ring-indigo-200');
+            }
+        }
+    };
+
+    window.clearBulkTestSelection = function() {
+        window.selectedBulkTests.clear();
+        const btn = document.getElementById('btn-bulk-assign');
+        if (btn) {
+            btn.classList.add('hidden');
+            btn.classList.remove('flex');
+        }
+        renderTestBank(false);
+    };
 
     window.changeTestBankPage = function(page) {
         currentTestBankPage = page;
@@ -3465,11 +3507,13 @@ window.initFirebaseSystem = async function() {
             : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
 
         const testDiff = t.difficulty ? `<span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200">Band ${parseFloat(t.difficulty).toFixed(1)}</span>` : '';
+        const isChecked = window.selectedBulkTests.has(t.id) ? 'checked' : '';
 
         return `
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
+        <div class="bg-white border ${isChecked ? 'border-indigo-400 bg-indigo-50/30 ring-1 ring-indigo-200' : 'border-slate-200'} rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
           <div class="flex justify-between items-start mb-3 shrink-0">
-             <div class="flex gap-2 flex-wrap">
+             <div class="flex gap-2 flex-wrap items-center">
+                 <input type="checkbox" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer shadow-sm" value="${t.id}" onchange="window.updateBulkTestSelection(this)" ${isChecked}>
                  <span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide">${t.module}</span>
                  ${testDiff}
              </div>
@@ -3589,6 +3633,85 @@ window.initFirebaseSystem = async function() {
                 
             } catch(e) {
                 console.error("Assignment error:", e);
+                showModalMsg("Error", "Could not save assignments to cloud.");
+            }
+            
+            btn.textContent = "OK"; btn.disabled = false;
+        };
+    };
+
+    // ✨ NEW: Bulk Assign Selected Tests to Classes
+    window.promptBulkAssignSelected = function() {
+        if (window.selectedBulkTests.size === 0) return;
+        
+        if (CLASSES.length === 0) {
+            showModalMsg("No Classes Found", "Please create a class first from the 'Classes & Subs' tab before assigning tests.");
+            return;
+        }
+
+        let classOpts = CLASSES.map(c => `
+            <label class="flex items-center space-x-3 cursor-pointer p-3 hover:bg-slate-100 rounded-lg border border-slate-200 mb-2 bg-white shadow-sm transition">
+                <input type="checkbox" class="bulk-assign-class-cb w-5 h-5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500" value="${c.id}">
+                <span class="font-bold text-sm text-slate-700">${c.name}</span>
+            </label>
+        `).join('');
+
+        document.getElementById('modal-title').textContent = `Bulk Assign (${window.selectedBulkTests.size} Tests)`;
+        document.getElementById('modal-message').innerHTML = `
+            <p class="text-sm text-slate-500 mb-4">Select the classes to assign these <b>${window.selectedBulkTests.size} tests</b> to. <br><span class="text-[11px] font-bold text-emerald-600 mt-1 block">Existing assignments will be preserved safely.</span></p>
+            <div class="max-h-60 overflow-y-auto bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-inner">
+                ${classOpts}
+            </div>
+        `;
+        
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        
+        document.getElementById('modal-confirm').onclick = async () => {
+            const btn = document.getElementById('modal-confirm');
+            btn.textContent = "Saving..."; btn.disabled = true;
+            
+            const selectedClassIds = Array.from(document.querySelectorAll('.bulk-assign-class-cb:checked')).map(cb => cb.value);
+            const testIdsArray = Array.from(window.selectedBulkTests);
+            
+            if (selectedClassIds.length === 0) {
+                alert("Please select at least one class.");
+                btn.textContent = "OK"; btn.disabled = false;
+                return;
+            }
+
+            try {
+                let updates = [];
+                CLASSES.forEach(c => {
+                    if (selectedClassIds.includes(c.id)) {
+                        if (!c.assignedTests) c.assignedTests = [];
+                        let changed = false;
+                        
+                        testIdsArray.forEach(tid => {
+                            if (!c.assignedTests.includes(tid)) {
+                                c.assignedTests.push(tid);
+                                changed = true;
+                            }
+                        });
+                        
+                        if (changed) {
+                            updates.push(window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c));
+                        }
+                    }
+                });
+                
+                await Promise.all(updates);
+                
+                document.getElementById('custom-modal').classList.add('hidden');
+                window.clearBulkTestSelection(); // Clears memory and re-renders
+                if (typeof renderClasses === 'function') renderClasses();
+                if (typeof window.showToast === 'function') window.showToast("Assigned", `Assigned ${testIdsArray.length} tests to ${selectedClassIds.length} class(es)!`);
+                
+            } catch(e) {
+                console.error("Bulk assignment error:", e);
                 showModalMsg("Error", "Could not save assignments to cloud.");
             }
             
