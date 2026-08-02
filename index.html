@@ -1715,15 +1715,20 @@
         <div class="p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 transition-all duration-300" id="builder-left" style="width: 50%;">
           <h2 class="text-xl font-black mb-6 border-b border-slate-100 pb-3 text-slate-800 flex items-center gap-2">📝 1. Content Details</h2>
           
-          <div class="flex justify-between items-end mb-1">
+          <div class="flex flex-col xl:flex-row xl:justify-between xl:items-end mb-1 gap-2">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" id="edit-title-label">Part Title / Main Prompt</label>
-              <div class="flex flex-wrap gap-1 bg-slate-100 px-2 py-1 rounded-t-lg border border-b-0 border-slate-300 shadow-inner">
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] font-bold rounded transition">B</button>
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] italic rounded transition">I</button>
-                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] underline rounded transition">U</button>
+              <div class="flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 shadow-md">
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
+                  <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">• List</button>
+                  <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">1. List</button>
+                  <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+                  <button type="button" onmousedown="event.preventDefault(); document.execCommand('hiliteColor', false, '#fef08a')" class="px-2.5 py-1 bg-yellow-200 border border-yellow-400 rounded shadow-sm hover:bg-yellow-300 text-xs font-medium transition text-slate-800">Highlight</button>
               </div>
           </div>
-          <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-3 rounded-b-lg rounded-tl-lg mb-1 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white" style="min-height: 60px;" oninput="window.triggerEditorAutosave()"></div>
+          <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-4 rounded-b-lg rounded-tl-lg mb-1 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white text-[1.05rem] leading-relaxed" style="min-height: 80px;" oninput="window.saveCurrentEditorPart(); window.renderEditorTabs(); window.triggerEditorAutosave();"></div>
           <div id="edit-title-hint" class="hidden text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 mb-4">🎓 This is the real task question. It's shown to students in Practice Mode AND Full Mock Test.</div>
           
           <div id="builder-media-fields" class="mt-3">
@@ -5012,23 +5017,33 @@ window.initFirebaseSystem = async function() {
       window.triggerEditorAutosave();
     };
 
+    window.renderEditorTabs = function() {
+        const tabsContainer = document.getElementById('editor-tabs');
+        if(!tabsContainer) return;
+        
+        tabsContainer.innerHTML = APP_DATA.parts.map((p, i) => {
+            let safeTitle = (p.title || `Part ${i+1}`).replace(/<[^>]*>?/gm, '').trim();
+            if (!safeTitle) safeTitle = `Part ${i+1}`;
+            if (safeTitle.length > 25) safeTitle = safeTitle.substring(0, 25) + '...';
+            
+            return `<button 
+              draggable="true" 
+              ondragstart="window.partDragStart(event, ${i})" 
+              ondragover="window.partDragOver(event)" 
+              ondrop="window.partDrop(event, ${i})" 
+              ondragleave="window.partDragLeave(event)" 
+              ondragend="window.partDragEnd(event)"
+              onclick="saveCurrentEditorPart(); loadEditorPart(${i})" 
+              class="px-6 py-2.5 font-bold rounded-t-lg transition-all border-x border-t flex items-center gap-2 cursor-grab active:cursor-grabbing ${currentEditorPartIdx===i ? 'bg-white text-blue-700 border-slate-300 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] border-b-white translate-y-[1px] z-10' : 'bg-slate-100 text-slate-500 border-transparent hover:bg-slate-200 hover:text-slate-700 border-b-slate-300 z-0'}" title="Drag to reorder parts">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 pointer-events-none shrink-0"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
+              <span class="truncate max-w-[150px] pointer-events-none">${safeTitle}</span>
+            </button>`;
+        }).join('') + `<button onclick="window.addEditorPart()" class="px-5 py-2 font-black text-blue-600 hover:text-blue-800 hover:bg-blue-100/50 rounded-t-lg transition flex items-center gap-1 shrink-0 mt-[2px] ml-2 border border-transparent hover:border-blue-200 border-b-0">+ Add Part</button>`;
+    };
+
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
-      
-      document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => 
-        `<button 
-          draggable="true" 
-          ondragstart="window.partDragStart(event, ${i})" 
-          ondragover="window.partDragOver(event)" 
-          ondrop="window.partDrop(event, ${i})" 
-          ondragleave="window.partDragLeave(event)" 
-          ondragend="window.partDragEnd(event)"
-          onclick="saveCurrentEditorPart(); loadEditorPart(${i})" 
-          class="px-6 py-2.5 font-bold rounded-t-lg transition-all border-x border-t flex items-center gap-2 cursor-grab active:cursor-grabbing ${currentEditorPartIdx===i ? 'bg-white text-blue-700 border-slate-300 shadow-[0_-2px_10px_rgba(0,0,0,0.03)] border-b-white translate-y-[1px]' : 'bg-slate-100 text-slate-500 border-transparent hover:bg-slate-200 hover:text-slate-700 border-b-slate-300'}" title="Drag to reorder parts">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-40 pointer-events-none"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg>
-          Part ${i+1}
-        </button>`
-      ).join('') + `<button onclick="window.addEditorPart()" class="px-5 py-2 font-black text-blue-600 hover:text-blue-800 hover:bg-blue-100/50 rounded-t-lg transition flex items-center gap-1 shrink-0 mt-[2px] ml-2 border border-transparent hover:border-blue-200 border-b-0">+ Add Part</button>`;
+      window.renderEditorTabs();
       
       const titleEl = document.getElementById('edit-passage-title');
       if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = p.title||'';
@@ -11839,8 +11854,8 @@ window.initFirebaseSystem = async function() {
 
         // 2. IF FORMATTED TEXT (Sanitize to remove inline styles, fonts, and colors)
         const doc = new DOMParser().parseFromString(html, 'text/html');
-        // Allowed tags (removes span, div, style, script, etc.)
-        const allowedTags = ['B', 'I', 'U', 'STRONG', 'EM', 'P', 'BR', 'UL', 'OL', 'LI', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD', 'H1', 'H2', 'H3'];
+        // Allowed tags (removes span, div, style, script, etc. but ALLOWS IMG!)
+        const allowedTags = ['B', 'I', 'U', 'STRONG', 'EM', 'P', 'BR', 'UL', 'OL', 'LI', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD', 'H1', 'H2', 'H3', 'IMG', 'SPAN'];
         
         function cleanNode(node) {
             // Keep text nodes
@@ -11854,13 +11869,21 @@ window.initFirebaseSystem = async function() {
                 const tagName = node.nodeName === 'STRONG' ? 'B' : (node.nodeName === 'EM' ? 'I' : node.nodeName);
                 newNode = document.createElement(tagName);
                 
-                // Preserve table structures
+                // Preserve structural attributes and images
                 if (node.hasAttribute('colspan')) newNode.setAttribute('colspan', node.getAttribute('colspan'));
                 if (node.hasAttribute('rowspan')) newNode.setAttribute('rowspan', node.getAttribute('rowspan'));
+                if (node.hasAttribute('src')) newNode.setAttribute('src', node.getAttribute('src'));
+                if (node.hasAttribute('alt')) newNode.setAttribute('alt', node.getAttribute('alt'));
+                
+                // Preserve highlight logic if it exists
+                if (node.hasAttribute('class') && node.classList.contains('highlighted-text')) {
+                    newNode.className = node.className;
+                }
                 
                 // Automatically style pasted tables to match LMS theme
                 if (tagName === 'TABLE') newNode.className = 'border-collapse border border-slate-300 mb-4 bg-white w-full';
                 if (tagName === 'TH' || tagName === 'TD') newNode.className = 'border border-slate-300 p-2';
+                if (tagName === 'IMG') newNode.className = 'max-w-full rounded shadow-sm my-2';
                 
             } else {
                 // If tag is NOT allowed (like <span> or <div>), unwrap it and keep its children
