@@ -241,6 +241,25 @@
     .drop-zone.drag-over { background-color: #dbeafe !important; border-color: #3b82f6 !important; border-style: solid !important; }
     .drop-zone-options.drag-over { background-color: #f1f5f9; border-color: #94a3b8; border-style: dashed; }
 
+    .roadmap-card { position: relative; overflow: visible; }
+    .roadmap-card::before { content: ''; position: absolute; left: 29px; top: 96px; bottom: 28px; width: 2px; background: linear-gradient(180deg, rgba(59,130,246,0.18), rgba(59,130,246,0.04)); z-index: 0; }
+    .roadmap-step { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: start; }
+    .roadmap-step .roadmap-node { position: relative; z-index: 10; width: 2.25rem; height: 2.25rem; min-width: 2.25rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 800; border: 2px solid #cbd5e1; background: #f8fafc; color: #1e293b; }
+    .roadmap-step.completed .roadmap-node { border-color: #22c55e; background: #dcfce7; color: #166534; }
+    .roadmap-step.current .roadmap-node { border-color: #2563eb; background: #dbeafe; color: #1d4ed8; box-shadow: 0 0 0 4px rgba(59,130,246,0.08); }
+    .roadmap-step.locked .roadmap-node { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
+    .roadmap-step .roadmap-connector { position: absolute; left: 1.2rem; top: 2.5rem; width: 2px; bottom: 0; background: rgba(148,163,184,0.2); z-index: 1; }
+    .roadmap-step:last-child .roadmap-connector { display: none; }
+    .roadmap-step-content { position: relative; z-index: 10; }
+    .roadmap-step-title { font-weight: 900; color: #0f172a; }
+    .roadmap-step-meta { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; padding: 0.35rem 0.75rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.35rem; }
+    .roadmap-step-meta.completed { background: #ecfdf5; color: #166534; border: 1px solid #22c55e; }
+    .roadmap-step-meta.current { background: #eff6ff; color: #1d4ed8; border: 1px solid #3b82f6; }
+    .roadmap-step-meta.locked { background: #fffbeb; color: #92400e; border: 1px solid #fbbf24; }
+    .roadmap-step-copy { color: #475569; font-size: 0.95rem; line-height: 1.65; }
+    .roadmap-step-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.85rem 1.1rem; border-radius: 1rem; font-weight: 700; transition: all 0.2s; }
+    .roadmap-step-button:hover { transform: translateY(-1px); }
+
     .vocab-word { border-bottom: 2px dotted #2563eb; cursor: pointer; color: #1d4ed8; font-weight: 600; transition: all 0.2s; }
     .vocab-word:hover { background-color: #dbeafe; border-bottom-color: #1e40af; }
 
@@ -1084,7 +1103,7 @@
       <div class="absolute top-[-20%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 pointer-events-none"></div>
       <div class="absolute bottom-[-20%] left-[-10%] w-72 h-72 bg-sky-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20 pointer-events-none"></div>
 
-      <header class="max-w-7xl mx-auto flex justify-between items-center relative z-10">
+      <header class="max-w-[1400px] mx-auto flex justify-between items-center relative z-10">
         
         <!-- LEFT SIDE: Logo, Title & Streak -->
         <div class="flex items-center gap-6">
@@ -1137,7 +1156,7 @@
     </div>
 
     <!-- Main Dashboard Container -->
-    <div class="max-w-7xl mx-auto -mt-20 relative z-20 px-4 lg:px-8 space-y-6 pb-20">
+    <div class="max-w-[1400px] mx-auto -mt-20 relative z-20 px-4 lg:px-8 space-y-6 pb-20">
 
       <!-- TARGET GOALS WIDGET -->
       <div id="student-target-widget" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-blue-100 flex-col md:flex-row justify-between items-center gap-6 overflow-hidden relative">
@@ -1214,100 +1233,105 @@
       </div>
 
       <!-- MAIN DASHBOARD GRID -->
-      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-6 hidden animate-fade-in-up">
+      <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 hidden animate-fade-in-up items-start">
         
-        <!-- LEFT COLUMN: Settings & Progress -->
-        <div class="lg:col-span-4 flex flex-col gap-6">
+        <!-- LEFT/MAIN COLUMN: Learning Path & Timetable (Primary Focus) -->
+        <div class="lg:col-span-8 xl:col-span-8 flex flex-col gap-6 xl:gap-8 order-2 lg:order-1" id="bottom-student-sections">
           
-          <!-- Class Setup -->
-          <div class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex flex-col gap-4">
-            <h2 class="font-bold text-sm text-slate-400 uppercase tracking-widest">1. Select Class</h2>
-            <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full bg-slate-50 border border-slate-200 text-blue-900 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-bold transition-all shadow-sm cursor-pointer appearance-none">
-            </select>
-          </div>
-
-          <!-- Quick Actions -->
-          <div id="student-quick-actions" class="hidden bg-blue-600 p-6 rounded-2xl shadow-md border border-blue-500 text-white flex-col gap-3 relative overflow-hidden">
-              <div class="absolute -right-4 -bottom-4 text-6xl opacity-10 pointer-events-none">🚀</div>
-              <h2 class="font-bold text-sm text-blue-200 uppercase tracking-widest mb-1 z-10">Quick Actions</h2>
-              
-              <button onclick="window.installPWA()" id="btn-install-pwa" class="hidden w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black py-3 px-4 rounded-xl transition shadow-lg flex justify-between items-center z-10 border border-emerald-300">
-                  <span class="flex items-center gap-2">📱 Install Mobile App</span>
-                  <span>&darr;</span>
-              </button>
-
-              <button onclick="window.toggleForumPanel()" class="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold py-3 px-4 rounded-xl transition shadow-sm flex justify-between items-center z-10">
-                  <span class="flex items-center gap-2">🗂️ Course Forum</span>
-                  <span>&rarr;</span>
-              </button>
-              
-              <button onclick="window.startFullExam()" class="w-full bg-white text-blue-800 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-md flex justify-between items-center z-10 border border-blue-100">
-                  <span class="flex items-center gap-2">🎓 Full Mock Exam</span>
-                  <span>&rarr;</span>
-              </button>
-
-              <!-- ✨ NEW: DIRECT FLASHCARD ACCESS BUTTON -->
-              <button onclick="window.toggleStudentFlashcardPanel()" class="w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-black py-3 px-4 rounded-xl transition shadow-sm flex justify-between items-center z-10">
-                  <span class="flex items-center gap-2">🗂️ Flashcards & Study</span>
-                  <span>&rarr;</span>
-              </button>
-              
-              <!-- HISTORY BUTTON -->
-              <button onclick="window.openStudentHistory()" class="w-full bg-indigo-800/50 hover:bg-indigo-700/50 border border-indigo-400/30 text-indigo-100 font-bold py-3 px-4 rounded-xl transition shadow-sm flex justify-between items-center z-10">
-                  <span class="flex items-center gap-2">📜 My History & Activity</span>
-                  <span>&rarr;</span>
-              </button>
-          </div> <!-- THIS DIV RESTORES THE BLUE BOX -->
-
-          <!-- Progress Section -->
-          <div id="student-progress-section" class="bg-white p-6 rounded-2xl border border-blue-50 shadow-sm flex-col hidden max-h-[500px] overflow-y-auto"></div>
-
-        </div> <!-- THIS DIV RESTORES THE LEFT COLUMN -->
-
-        <!-- RIGHT COLUMN: Timetable & Library -->
-        <div class="lg:col-span-8 flex flex-col gap-6" id="bottom-student-sections">
-          
-          <!-- Timetable -->
-          <div id="student-schedule-section" class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden hidden flex-col">
-             <div class="bg-slate-50/80 px-6 py-5 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4">
-               <h2 class="font-bold text-slate-800 text-lg flex items-center gap-2">📅 Timetable</h2>
-               <div class="flex items-center gap-3">
-                 <div class="flex items-center bg-white border border-slate-200 rounded-lg shadow-sm p-1">
-                   <button onclick="changeCalendarMonth(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded font-bold transition">&larr;</button>
-                   <span id="student-cal-month" class="font-bold text-blue-900 min-w-[110px] text-center text-sm">Month Year</span>
-                   <button onclick="changeCalendarMonth(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded font-bold transition">&rarr;</button>
-                 </div>
-                 <button onclick="window.openStudentBooking()" class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition font-bold whitespace-nowrap">＋ Book Slot</button>
-               </div>
-             </div>
-             <div class="p-6 flex-1 bg-white">
-                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-[10px] font-black text-slate-400 mb-3 tracking-widest uppercase">
-                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                 </div>
-                 <div id="student-cal-grid" class="grid grid-cols-7 gap-1 md:gap-2"></div>
-             </div>
-          </div>
-
-          <!-- Course Material Library -->
-          <div class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden flex flex-col flex-1">
-            <div class="bg-slate-50/80 px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-              <h2 class="font-bold text-slate-800 text-lg">📚 Course Materials</h2>
+          <!-- Course Material Library (Moved to TOP for priority) -->
+          <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden flex flex-col flex-1">
+            <div class="bg-slate-50/50 px-6 py-5 border-b border-slate-100 flex flex-col xl:flex-row justify-between xl:items-center gap-4">
+              <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-blue-600">📚</span> My Learning Path</h2>
               <div class="flex flex-wrap items-center gap-2">
-                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search..." class="flex-1 min-w-[120px] border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition">
-                <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-600 bg-white shadow-sm transition cursor-pointer">
+                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search materials..." class="flex-1 min-w-[140px] border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition font-medium">
+                <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
                   <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
                 </select>
-                <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-medium text-slate-600 bg-white shadow-sm transition cursor-pointer hidden md:block">
+                <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer hidden md:block">
                   <option value="all">All Tags</option>
                 </select>
-                <select id="student-test-sort" onchange="renderStudentDashboard()" class="hidden border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none font-medium text-slate-600 bg-white shadow-sm transition cursor-pointer">
+                <select id="student-test-sort" onchange="renderStudentDashboard()" class="hidden border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
                   <option value="default">Default</option><option value="az">A-Z</option><option value="za">Z-A</option>
                 </select>
               </div>
             </div>
             <!-- Test List grid styling -->
-            <div id="student-tests-list" class="p-6 bg-white flex flex-col gap-6 max-h-[650px] overflow-y-auto stagger-fade-in"></div>
+            <div id="student-tests-list" class="p-6 xl:p-8 bg-white flex flex-col gap-6 max-h-[800px] overflow-y-auto stagger-fade-in"></div>
           </div>
+
+          <!-- Timetable (Moved BELOW materials) -->
+          <div id="student-schedule-section" class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden hidden flex-col">
+             <div class="bg-slate-50/50 px-6 py-5 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4">
+               <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-indigo-500">📅</span> Live Timetable</h2>
+               <div class="flex items-center gap-3">
+                 <div class="flex items-center bg-white border border-slate-200 rounded-xl shadow-sm p-1">
+                   <button onclick="changeCalendarMonth(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&larr;</button>
+                   <span id="student-cal-month" class="font-bold text-blue-900 min-w-[120px] text-center text-sm">Month Year</span>
+                   <button onclick="changeCalendarMonth(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&rarr;</button>
+                 </div>
+                 <button onclick="window.openStudentBooking()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-bold whitespace-nowrap">＋ Book Slot</button>
+               </div>
+             </div>
+             <div class="p-6 xl:p-8 flex-1 bg-white">
+                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-[10px] font-black text-slate-400 mb-4 tracking-widest uppercase">
+                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                 </div>
+                 <div id="student-cal-grid" class="grid grid-cols-7 gap-2 xl:gap-3"></div>
+             </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT/SIDE COLUMN: Analytics & Actions (Secondary Focus) -->
+        <div class="lg:col-span-4 xl:col-span-4 flex flex-col gap-6 xl:gap-8 order-1 lg:order-2">
+          
+          <!-- Class Setup -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col gap-3">
+            <h2 class="font-black text-xs text-slate-400 uppercase tracking-widest flex items-center gap-2">🏫 Active Enrollment</h2>
+            <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full bg-slate-50 border border-slate-200 text-blue-900 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-black text-lg transition-all shadow-sm cursor-pointer appearance-none">
+            </select>
+          </div>
+
+          <!-- Modernized Quick Actions Bento (App Grid Style) -->
+          <div id="student-quick-actions" class="hidden bg-white p-5 xl:p-6 rounded-3xl shadow-sm border border-slate-200 flex-col gap-4 relative overflow-hidden">
+              <h2 class="font-black text-xs text-slate-400 uppercase tracking-widest mb-1 z-10 flex items-center gap-2">⚡ Quick Actions</h2>
+              
+              <div class="grid grid-cols-3 gap-3 z-10">
+                  <button onclick="window.startFullExam()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
+                      <span class="text-2xl drop-shadow-sm">🎓</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Mock<br>Exam</span>
+                  </button>
+                  <button onclick="window.toggleStudentFlashcardPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
+                      <span class="text-2xl drop-shadow-sm">🧠</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Study<br>Cards</span>
+                  </button>
+                  <button onclick="window.toggleForumPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition border border-purple-100 shadow-sm active:scale-95">
+                      <span class="text-2xl drop-shadow-sm">🗂️</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Class<br>Forum</span>
+                  </button>
+                  <button onclick="window.openStudentHistory()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 text-slate-700 hover:bg-slate-100 transition border border-slate-200 shadow-sm active:scale-95">
+                      <span class="text-2xl drop-shadow-sm">📜</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">My<br>History</span>
+                  </button>
+                  <button onclick="window.showPeerReviewList()" class="relative flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
+                      <span id="quick-badge-peer" class="hidden absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black w-5 h-5 items-center justify-center rounded-full shadow-md animate-bounce"></span>
+                      <span class="text-2xl drop-shadow-sm">🤝</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Peer<br>Review</span>
+                  </button>
+                  <button onclick="window.showLeaderboardModal()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition border border-amber-100 shadow-sm active:scale-95">
+                      <span class="text-2xl drop-shadow-sm">🏆</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Top<br>Scores</span>
+                  </button>
+              </div>
+
+              <button onclick="window.installPWA()" id="btn-install-pwa" class="hidden w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black hover:to-black text-white font-bold py-3.5 px-5 rounded-xl transition shadow-md flex justify-between items-center z-10 border border-slate-700 text-sm mt-1">
+                  <span class="flex items-center gap-2"><span class="text-lg">📱</span> Install App</span>
+                  <span class="text-slate-400">&darr;</span>
+              </button>
+          </div>
+
+          <!-- Progress Section Container -->
+          <div id="student-progress-section" class="flex-col hidden gap-6"></div>
 
         </div>
       </div>
@@ -1438,23 +1462,43 @@
         </div>
 
         <div id="dash-view-tests" class="flex flex-col gap-6 animate-fade-in-up">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
-            <div>
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
+            <div class="mb-5 border-b border-slate-100 pb-4">
               <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
                  <span class="text-3xl">📚</span> Test Bank
               </h2>
               <p class="text-sm text-slate-500 font-medium mt-1">Manage and assign your cloud-synced materials</p>
             </div>
-            <div class="flex flex-wrap gap-2 mt-4 md:mt-0">
-              <button onclick="createNewTest('reading')" class="bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">📖 Reading</button>
-              <button onclick="createNewTest('listening')" class="bg-sky-50 hover:bg-sky-500 hover:text-white text-sky-700 border border-sky-100 hover:border-sky-500 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🎧 Listening</button>
-              <button onclick="createNewTest('writing')" class="bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 border border-indigo-100 hover:border-indigo-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">✍️ Writing</button>
-              <button onclick="createNewTest('speaking')" class="bg-cyan-50 hover:bg-cyan-600 hover:text-white text-cyan-700 border border-cyan-100 hover:border-cyan-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🗣️ Speaking</button>
-              <div class="hidden md:block w-px h-10 bg-slate-200 mx-1"></div>
-              <button onclick="window.openBulkTestImport()" class="bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-100 hover:border-emerald-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2" title="Import empty tests">📥 Tests</button>
-              <button onclick="window.openRapidFullTestImport()" class="bg-purple-50 hover:bg-purple-600 hover:text-white text-purple-700 border border-purple-100 hover:border-purple-600 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">🚀 Rapid Test+Q Import</button>
-              <div class="hidden md:block w-px h-10 bg-slate-200 mx-1"></div>
-              <button onclick="window.openTemplateManager()" class="bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-700 border border-amber-100 hover:border-amber-500 px-4 py-2.5 rounded-xl font-bold shadow-sm hover:-translate-y-0.5 text-sm transition-all flex items-center gap-2">📝 Templates</button>
+            
+            <div class="grid grid-cols-3 md:grid-cols-7 gap-3">
+                <button onclick="createNewTest('reading')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">📖</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Reading</span>
+                </button>
+                <button onclick="createNewTest('listening')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-sky-50 text-sky-700 hover:bg-sky-100 transition border border-sky-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">🎧</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Listening</span>
+                </button>
+                <button onclick="createNewTest('writing')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">✍️</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Writing</span>
+                </button>
+                <button onclick="createNewTest('speaking')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-cyan-50 text-cyan-700 hover:bg-cyan-100 transition border border-cyan-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">🗣️</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Speaking</span>
+                </button>
+                <button onclick="window.openBulkTestImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">📥</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Bulk<br>Tests</span>
+                </button>
+                <button onclick="window.openRapidFullTestImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition border border-purple-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">🚀</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Rapid<br>Import</span>
+                </button>
+                <button onclick="window.openTemplateManager()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition border border-amber-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">📝</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Manage<br>Templates</span>
+                </button>
             </div>
           </div>
 
@@ -1483,17 +1527,26 @@
           </div>
 
         <div id="dash-view-classes" class="hidden flex-col gap-6 animate-fade-in-up">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
-            <div>
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
+            <div class="mb-5 border-b border-slate-100 pb-4">
               <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
                  <span class="text-3xl">👥</span> Classes & Submissions
               </h2>
               <p class="text-sm text-slate-500 font-medium mt-1">Manage your student groups and grade their work</p>
             </div>
-            <div class="flex flex-wrap gap-3 mt-4 md:mt-0">
-               <button onclick="window.exportGradesCSV()" class="px-5 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl font-bold text-sm shadow-sm hover:bg-emerald-100 transition flex items-center gap-2">📊 Export Grades</button>
-               <button onclick="clearAllSubmissions()" class="px-5 py-2.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl font-bold text-sm shadow-sm hover:bg-rose-100 hover:text-rose-700 transition flex items-center gap-2">🗑️ Clear Submissions</button>
-               <button onclick="promptCreateClass()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition hover:-translate-y-0.5 flex items-center gap-2">＋ New Class</button>
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+               <button onclick="promptCreateClass()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
+                   <span class="text-2xl drop-shadow-sm">➕</span>
+                   <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">New<br>Class</span>
+               </button>
+               <button onclick="window.exportGradesCSV()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
+                   <span class="text-2xl drop-shadow-sm">📊</span>
+                   <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Export<br>Grades</span>
+               </button>
+               <button onclick="clearAllSubmissions()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-100 shadow-sm active:scale-95">
+                   <span class="text-2xl drop-shadow-sm">🗑️</span>
+                   <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Clear<br>Data</span>
+               </button>
             </div>
           </div>
           <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-50">
@@ -1513,9 +1566,19 @@
     <!-- Submissions -->
     <div id="editor-view-subs" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-5xl mx-auto space-y-6">
-        <div class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
-          <h2 class="text-2xl font-black text-blue-900">Student Submissions</h2>
-          <button onclick="clearAllSubmissions()" class="px-5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl font-bold text-sm shadow-sm transition hover:-translate-y-0.5">Clear All Data</button>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50 mb-6">
+          <div class="mb-5 border-b border-slate-100 pb-4">
+              <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
+                 <span class="text-3xl">📝</span> Student Submissions
+              </h2>
+              <p class="text-sm text-slate-500 font-medium mt-1">Grade and review tests completed by your students</p>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <button onclick="clearAllSubmissions()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-100 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">🗑️</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Clear<br>All Data</span>
+            </button>
+          </div>
         </div>
         <div id="submissions-list" class="space-y-4 pb-20 stagger-fade-in"></div>
       </div>
@@ -1524,13 +1587,26 @@
     <!-- Students & Payments -->
     <div id="editor-view-students" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-6xl mx-auto">
-        <div class="flex flex-wrap justify-between items-center gap-4 mb-6 bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
-          <h2 class="text-2xl font-black text-blue-900">User & Payment Management</h2>
-          <div class="flex gap-3 items-center">
-            <button onclick="window.promptCreateTeacher()" class="bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm">＋ Add Teacher</button>
-            <button onclick="promptCreateStudent()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm">＋ Add Student</button>
-            <div class="w-px h-8 bg-slate-200 mx-1 hidden sm:block"></div>
-            <button onclick="window.openBulkStudentImport()" class="bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 border border-emerald-100 hover:border-emerald-600 px-5 py-2.5 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5 text-sm flex items-center gap-2">📥 Bulk Import</button>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50 mb-6">
+          <div class="mb-5 border-b border-slate-100 pb-4">
+              <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
+                 <span class="text-3xl">👥</span> User & Payment Management
+              </h2>
+              <p class="text-sm text-slate-500 font-medium mt-1">Add accounts and manage platform access</p>
+          </div>
+          <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+            <button onclick="promptCreateStudent()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">🎓</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Student</span>
+            </button>
+            <button onclick="window.promptCreateTeacher()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">👨‍🏫</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Teacher</span>
+            </button>
+            <button onclick="window.openBulkStudentImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">📥</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Bulk<br>Import</span>
+            </button>
           </div>
         </div>
         
@@ -1584,12 +1660,26 @@
     <!-- Timetable & Attendance (Calendar View) -->
     <div id="editor-view-timetable" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-7xl mx-auto space-y-6">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-2xl shadow-sm border border-blue-50 gap-4">
-          <h2 class="text-2xl font-black text-blue-900">Monthly Timetable & Attendance</h2>
-          <div class="flex flex-wrap gap-3">
-            <button onclick="window.toggleForumPanel()" class="bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 px-4 py-2.5 rounded-xl font-black shadow-sm flex items-center gap-2 text-sm transition hover:-translate-y-0.5">🗂️ Course Forum</button>
-            <button onclick="window.openAvailabilitySettings()" class="bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-bold shadow-sm flex items-center gap-2 text-sm transition hover:-translate-y-0.5">⚙️ Booking Settings</button>
-            <button onclick="promptCreateSchedule()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm text-sm transition hover:-translate-y-0.5">＋ Schedule Class</button>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50 mb-2">
+          <div class="mb-5 border-b border-slate-100 pb-4">
+              <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
+                 <span class="text-3xl">📅</span> Monthly Timetable & Attendance
+              </h2>
+              <p class="text-sm text-slate-500 font-medium mt-1">Manage schedules, availability, and class discussions</p>
+          </div>
+          <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+            <button onclick="promptCreateSchedule()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">➕</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Schedule<br>Class</span>
+            </button>
+            <button onclick="window.openAvailabilitySettings()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 text-slate-700 hover:bg-slate-100 transition border border-slate-200 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">⚙️</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Booking<br>Settings</span>
+            </button>
+            <button onclick="window.toggleForumPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">🗂️</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Course<br>Forum</span>
+            </button>
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
@@ -3878,16 +3968,18 @@ window.initFirebaseSystem = async function() {
         const enrolled = cls.enrolledStudents || [];
         const assigned = cls.assignedTests || [];
         const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
+        const isPathEnabled = cls.learningPathEnabled !== false;
         
         return `
         <div class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden mb-6">
             <div class="bg-blue-50/50 px-6 py-5 border-b border-blue-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                 <h3 class="font-black text-2xl text-blue-950 flex items-center gap-2"><span class="text-blue-600">🏫</span> ${cls.name}</h3>
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-3">
                     <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-blue-100 shadow-sm">
                         <label class="text-[10px] font-black text-blue-400 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
                         <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-600 font-black outline-none text-right bg-transparent border-none p-0 focus:ring-0">
                     </div>
+                    <button onclick="window.toggleClassLearningPath('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2 transition ${isPathEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}">${isPathEnabled ? 'Learning Path: On' : 'Learning Path: Off'}</button>
                     <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-500 border border-rose-200 hover:border-rose-500 rounded-xl font-bold text-sm px-4 py-2 transition shadow-sm shrink-0">Delete</button>
                 </div>
             </div>
@@ -4007,9 +4099,24 @@ window.initFirebaseSystem = async function() {
         }
     };
 
+    window.toggleClassLearningPath = async function(cid) {
+      const cls = CLASSES.find(c => c.id === cid);
+      if (!cls) return;
+      cls.learningPathEnabled = cls.learningPathEnabled !== false ? false : true;
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+      renderClasses();
+    };
+
     function promptCreateClass() { 
       showInputPrompt("New Class", "Name:", async (name) => { 
-        const newCls = {id:'c_'+Date.now(), name, assignedTests:[], enrolledStudents:[], feePerLesson: BILLING_SETTINGS.feePerLesson || 100000};
+        const newCls = {
+          id:'c_'+Date.now(),
+          name,
+          assignedTests:[],
+          enrolledStudents:[],
+          feePerLesson: BILLING_SETTINGS.feePerLesson || 100000,
+          learningPathEnabled: false
+        };
         CLASSES.push(newCls); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), newCls.id), newCls);
         renderClasses(); 
@@ -6773,7 +6880,11 @@ window.initFirebaseSystem = async function() {
 
     function getClassLearningPaths(cls) {
       if (!cls) return [];
-      if (Array.isArray(cls.learningPaths) && cls.learningPaths.length) {
+      const learningPathEnabled = cls.learningPathEnabled !== false;
+      const fallbackTests = Array.isArray(cls.assignedTests) ? cls.assignedTests : [];
+      const hasPaths = Array.isArray(cls.learningPaths) && cls.learningPaths.length;
+
+      if (learningPathEnabled && hasPaths) {
         return cls.learningPaths.map((path, idx) => ({
           id: path.id || `path_${idx + 1}`,
           title: path.title || `Week ${idx + 1}`,
@@ -6788,7 +6899,6 @@ window.initFirebaseSystem = async function() {
         }));
       }
 
-      const fallbackTests = Array.isArray(cls.assignedTests) ? cls.assignedTests : [];
       return [{
         id: 'default_path',
         title: 'Assigned Materials',
@@ -6902,6 +7012,60 @@ window.initFirebaseSystem = async function() {
           ${comments ? `<div class="space-y-2">${comments}</div>` : ''}
         </div>`;
     }
+
+    window.showLeaderboardModal = function() {
+        const topStudents = USERS.filter(u => u.role === 'student' && u.isPaid).sort((a,b) => (b.gems || 0) - (a.gems || 0)).slice(0, 10);
+        let html = `<div class="space-y-2 mt-4">`;
+        topStudents.forEach((u, i) => {
+            let rankStyles = "text-slate-400 bg-slate-50 border-slate-200";
+            if (i === 0) rankStyles = "text-amber-600 bg-amber-50 border-amber-200 shadow-inner";
+            else if (i === 1) rankStyles = "text-slate-500 bg-slate-100 border-slate-300";
+            else if (i === 2) rankStyles = "text-amber-800 bg-orange-50 border-orange-200";
+            const isMe = u.user === currentUser.user;
+            html += `
+            <div class="flex items-center justify-between p-2.5 rounded-xl border ${isMe ? 'bg-blue-50/50 border-blue-200 shadow-sm' : 'border-slate-100 bg-slate-50'} transition">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="w-7 h-7 flex items-center justify-center font-black text-xs rounded-lg border ${rankStyles} shrink-0">${i+1}</div>
+                    <img src="${u.avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(u.user) + '&background=random')}" class="w-8 h-8 rounded-full border border-slate-200 shrink-0 object-cover shadow-sm">
+                    <span class="font-bold text-sm truncate ${isMe ? 'text-blue-800' : 'text-slate-700'}">${u.user} ${isMe ? '<span class="text-[9px] uppercase tracking-widest opacity-50 ml-1">(You)</span>' : ''}</span>
+                </div>
+                <div class="font-black text-amber-500 text-xs bg-white border border-slate-100 shadow-sm px-2.5 py-1.5 rounded-lg shrink-0 ml-3 flex items-center gap-1">${(u.gems||0).toLocaleString()} <span class="text-[10px]">💎</span></div>
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('modal-title').innerHTML = '🏆 Global Leaderboard';
+        document.getElementById('modal-message').innerHTML = html;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.add('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+        document.getElementById('modal-confirm').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+    };
+
+    window.showPeerReviewList = function() {
+        const candidates = getPeerReviewCandidatesForCurrentStudent();
+        if (candidates.length === 0) {
+            showModalMsg("Peer Review", "All caught up! No submissions are pending your review right now.");
+            return;
+        }
+        let html = `<div class="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-2">`;
+        candidates.forEach(sub => {
+            html += `
+            <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-3 shadow-sm flex justify-between items-center gap-3">
+                <div class="min-w-0">
+                    <div class="font-black text-indigo-900 text-sm truncate">${escapeForumHtml(getSubmissionModule(sub) === 'speaking' ? 'Speaking sample' : 'Writing sample')}</div>
+                    <div class="text-[10px] font-bold text-indigo-500 mt-1 truncate">${escapeForumHtml(sub.testName || 'Peer submission')}</div>
+                </div>
+                <button onclick="document.getElementById('custom-modal').classList.add('hidden'); window.openPeerReviewModal(${sub.id})" class="text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg shadow-sm transition shrink-0">Review</button>
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('modal-title').innerHTML = '🤝 Pending Peer Reviews';
+        document.getElementById('modal-message').innerHTML = html;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.add('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+        document.getElementById('modal-confirm').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+    };
 
     window.openPeerReviewModal = function(subId) {
       const sub = (SUBMISSIONS || []).find(x => x.id === subId);
@@ -7117,10 +7281,9 @@ window.initFirebaseSystem = async function() {
 
       const skillBands = { reading: radarData[0], listening: radarData[1], writing: radarData[2], speaking: radarData[3] };
 
-      const renderPathItem = (item) => {
+      const renderRoadmapStep = (item, index, totalSteps) => {
         const t = item.testId ? TEST_BANK.find(x => x.id === item.testId) : null;
         const title = item.title || (t ? t.title : 'Material');
-        const modColors = { reading:'blue', listening:'sky', writing:'indigo', speaking:'cyan' };
         const module = t ? t.module : null;
         const price = Number(t?.price) || 0;
         const unlockedTests = currentUser.unlockedTests || [];
@@ -7129,47 +7292,53 @@ window.initFirebaseSystem = async function() {
         const isLocked = premiumLocked || prereqLocked;
         const isCompleted = Boolean(item.testId && completedTestIds.includes(item.testId));
 
-        const prereqText = item.prerequisite && item.prerequisite.testId ? `<div class="text-[11px] text-amber-700 font-semibold mt-2">Requires ${item.prerequisite.minScore}+ on ${item.prerequisite.testId}</div>` : '';
-        
         const myBand = module ? skillBands[module] || 0 : 0;
         const targetIPlusOne = myBand > 0 ? myBand + 0.5 : null;
         const testDiff = t ? parseFloat(t.difficulty) : null;
-        
         const isIPlusOne = testDiff && targetIPlusOne && (testDiff === targetIPlusOne || testDiff === targetIPlusOne + 0.5);
         const isStarterRec = myBand === 0 && testDiff && testDiff <= 5.0;
         const isRecommended = !isCompleted && !isLocked && (isIPlusOne || isStarterRec);
 
-        const borderClass = isLocked ? 'border-amber-200 bg-amber-50/50' : (isRecommended ? 'border-emerald-400 bg-emerald-50/30 ring-2 ring-emerald-100 shadow-emerald-100 hover:shadow-md' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md');
-        
-        const recBadge = isRecommended ? `<div class="mb-3"><span class="text-[10px] font-black px-2 py-1 rounded bg-emerald-500 text-white shadow-sm flex items-center gap-1 animate-pulse w-max" title="Optimal difficulty for your current level!">🚀 i+1 Recommended</span></div>` : '';
-
-        const lockLabel = prereqLocked ? '🔒 Locked by Prerequisite' : (premiumLocked ? `🔒 Unlock for ${price} 💎` : 'Start Practice →');
-        const actionButton = isLocked
-            ? `<button disabled class="w-full bg-amber-100 text-amber-800 border border-amber-200 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-1.5 shadow-sm">${lockLabel}</button>`
-            : `<button onclick="openModeSelection('${item.testId}')" class="w-full ${isRecommended ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md' : 'bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-700 border border-blue-100 hover:border-blue-600 shadow-sm'} font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center">Start Practice &rarr;</button>`;
+        const statusLabel = isCompleted ? 'Completed' : isLocked ? 'Locked' : 'On Track';
+        const statusClass = isCompleted ? 'completed' : isLocked ? 'locked' : 'current';
+        const statusMeta = isCompleted ? 'completed' : isLocked ? 'locked' : 'current';
+        const showPrereq = item.prerequisite && item.prerequisite.testId;
+        const actionLabel = isLocked ? (prereqLocked ? `Locked by ${item.prerequisite.testId}` : premiumLocked ? `Unlock ${price} 💎` : 'Locked') : (isCompleted ? 'Completed' : 'Start Practice →');
+        const actionClass = isLocked ? 'bg-amber-100 text-amber-900 border border-amber-200' : isRecommended ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white';
 
         return `
-        <div class="flex flex-col p-5 border ${borderClass} rounded-xl transition relative overflow-hidden group h-full min-h-[160px]">
-            <div class="flex justify-between items-start shrink-0 mb-3 gap-2">
-                <div class="flex items-center gap-2 flex-wrap">
-                    ${module ? `<span class="text-[10px] font-black px-2.5 py-1 rounded bg-${modColors[module]}-100 text-${modColors[module]}-800 uppercase tracking-widest">${module}</span>` : ''}
-                    ${testDiff ? `<span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200">Band ${testDiff.toFixed(1)}</span>` : ''}
-                </div>
-                ${isLocked ? `<span class="text-amber-500 bg-amber-100 p-1 rounded-md leading-none shadow-sm" title="${prereqLocked ? 'Prerequisite required' : 'Premium Content'}">${prereqLocked ? '🔒' : '💎'}</span>` : (isCompleted ? '<span class="text-emerald-500 font-black text-sm" title="Completed">✓ Done</span>' : '')}
+        <div class="roadmap-step ${statusClass}">
+            <div class="relative">
+                <div class="roadmap-node">${index + 1}</div>
+                <div class="roadmap-connector"></div>
             </div>
-            <div class="font-bold ${isLocked ? 'text-amber-900' : 'text-slate-800 group-hover:text-blue-700'} text-base leading-snug transition-colors mb-2 flex-1 break-words">${title}</div>
-            ${prereqText}
-            ${recBadge}
-            <div class="mt-auto w-full shrink-0">
-                ${actionButton}
+            <div class="roadmap-step-content rounded-3xl border ${isLocked ? 'border-amber-200 bg-amber-50/80' : isCompleted ? 'border-emerald-200 bg-emerald-50/80' : 'border-slate-200 bg-white'} p-5 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                    <div class="space-y-2">
+                        <div class="roadmap-step-title">${title}</div>
+                        <div class="text-xs text-slate-500">${module ? module.charAt(0).toUpperCase() + module.slice(1) : 'Study Material'}${testDiff ? ` · Band ${testDiff.toFixed(1)}` : ''}</div>
+                    </div>
+                    <span class="roadmap-step-meta ${statusMeta}">${statusLabel}</span>
+                </div>
+                ${showPrereq ? `<div class="text-[11px] text-amber-700 font-semibold mb-3">Requires ${item.prerequisite.minScore}+ on ${item.prerequisite.testId}</div>` : ''}
+                <p class="roadmap-step-copy">${t ? (t.description || t.topics?.join(', ') || 'Complete this lesson to advance your score') : 'Follow this step to keep your learning momentum moving forward.'}</p>
+                <div class="mt-5">
+                    ${isLocked ? `<button disabled class="roadmap-step-button ${actionClass} w-full text-sm rounded-full">${actionLabel}</button>` : isCompleted ? `<button disabled class="roadmap-step-button bg-slate-100 text-slate-600 w-full text-sm rounded-full border border-slate-200">✓ Completed</button>` : `<button onclick="openModeSelection('${item.testId}')" class="roadmap-step-button ${actionClass} w-full text-sm rounded-full">${actionLabel}</button>`}
+                </div>
             </div>
         </div>`;
       };
 
+      const classSchedules = SCHEDULES.filter(s => s.className === cls.name);
       if (schedSec) {
-          schedSec.classList.remove('hidden');
-          schedSec.classList.add('flex');
-          window.renderCalendar('student');
+          if (classSchedules.length) {
+              schedSec.classList.remove('hidden');
+              schedSec.classList.add('flex');
+              window.renderCalendar('student');
+          } else {
+              schedSec.classList.add('hidden');
+              schedSec.classList.remove('flex');
+          }
       }
       
       let allTestsHtml = '<div class="col-span-full text-sm text-slate-500 italic py-4">No materials assigned to this course yet.</div>';
@@ -7212,7 +7381,7 @@ window.initFirebaseSystem = async function() {
 
           if (groupedItems.length) {
               allTestsHtml = groupedItems.map(group => `
-                <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 shadow-sm">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-5 shadow-sm roadmap-card">
                     <div class="flex items-center justify-between gap-3 mb-5 border-b border-slate-200/60 pb-3">
                         <div>
                             <h3 class="text-xl font-black text-blue-950">${group.pathTitle}</h3>
@@ -7220,8 +7389,8 @@ window.initFirebaseSystem = async function() {
                         </div>
                         <span class="text-[10px] uppercase tracking-widest font-black text-blue-700 bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg shadow-sm">${group.items.length} ITEM(S)</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                        ${group.items.map(renderPathItem).join('')}
+                    <div class="space-y-5">
+                        ${group.items.map((item, idx) => renderRoadmapStep(item, idx, group.items.length)).join('')}
                     </div>
                 </div>`).join('');
           } else if (query || mod !== 'all' || selectedTag !== 'all') {
@@ -7230,95 +7399,43 @@ window.initFirebaseSystem = async function() {
       } 
       list.innerHTML = allTestsHtml;
 
-      prog.innerHTML = `
-        <h2 class="font-bold text-sm text-slate-400 uppercase tracking-widest mb-4">Class Progress</h2>
-        
-        <div class="mb-6">
-            <div class="flex justify-between items-end mb-2">
-                <span class="font-black text-4xl text-blue-900 tracking-tighter">${progressPct}%</span>
-                <span class="font-bold text-slate-500 text-sm bg-slate-100 px-2.5 py-1 rounded-md">${completedCount}/${totalTests} Tests</span>
-            </div>
-            <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden shadow-inner border border-slate-200">
-                <div class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: ${progressPct}%"></div>
-            </div>
-        </div>
-
-        <div class="mb-6 bg-slate-50 rounded-xl p-4 border border-slate-100 shadow-inner flex justify-center">
-            <canvas id="skills-radar-chart" style="max-height: 250px; width: 100%;"></canvas>
-        </div>
-
-        <div class="mb-6 bg-indigo-50 rounded-xl p-4 border border-indigo-100 shadow-sm">
-            <div class="flex justify-between items-start gap-3 mb-2">
-                <div>
-                    <h3 class="font-black text-sm text-indigo-800 uppercase tracking-widest">Anonymous Peer Review</h3>
-                    <p class="text-sm text-indigo-700 mt-1">Grade a classmate’s writing or speaking submission using the IELTS rubric before the teacher reviews it.</p>
-                </div>
-                <span class="text-[10px] font-black bg-indigo-600 text-white px-2.5 py-1 rounded-full shadow-sm">${getPeerReviewCandidatesForCurrentStudent().length} pending</span>
-            </div>
-            ${getPeerReviewCandidatesForCurrentStudent().length ? getPeerReviewCandidatesForCurrentStudent().slice(0, 3).map(sub => `
-                <div class="mt-3 rounded-xl border border-indigo-200 bg-white p-3 shadow-sm flex justify-between items-center gap-3">
-                    <div>
-                        <div class="font-black text-slate-800 text-sm">${escapeForumHtml(getSubmissionModule(sub) === 'speaking' ? 'Speaking sample' : 'Writing sample')}</div>
-                        <div class="text-[11px] text-slate-500 mt-1">${escapeForumHtml(sub.testName || 'Peer submission')}</div>
-                    </div>
-                    <button onclick="window.openPeerReviewModal(${sub.id})" class="text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-lg shadow-sm transition">Review</button>
-                </div>`).join('') : '<div class="mt-3 text-sm text-indigo-700 bg-white/70 border border-indigo-200 rounded-xl p-3">No peer submissions are waiting for review right now.</div>'}
-        </div>
-
-        <h3 class="font-bold text-xs text-slate-400 uppercase tracking-widest mb-3 border-t border-slate-100 pt-5">Recent Feedback</h3>
-        <div class="space-y-3 stagger-fade-in">
-          ${mySubs.length ? mySubs.slice(0, 5).map(s => `
-            <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-2 hover:bg-blue-50 hover:border-blue-200 transition group cursor-default">
-              <div class="flex justify-between items-start gap-2">
-                <strong class="text-slate-700 group-hover:text-blue-900 text-sm leading-tight transition-colors">${s.testName}</strong>
-                <span class="font-black text-blue-700 bg-blue-100 px-2 py-0.5 rounded text-xs shrink-0 shadow-sm">${s.score}</span>
-              </div>
-              <div class="flex justify-between items-center mt-1">
-                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${s.date}</span>
-                <button onclick="reviewPastSubmission(${s.id})" class="text-[10px] bg-white border border-slate-200 hover:bg-blue-600 hover:text-white text-slate-600 font-bold px-3 py-1.5 rounded-lg shadow-sm transition">Review</button>
-              </div>
-            </div>`).join('') : '<p class="text-sm text-slate-400 italic bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">No completed tests yet.</p>'}
-        </div>`;
-      
-      // 2. Render the Chart using a slight timeout to ensure the DOM is ready
-      setTimeout(() => {
-          const ctx = document.getElementById('skills-radar-chart');
-          if (ctx) {
-              if (window.studentRadarChart) window.studentRadarChart.destroy();
-              
-              window.studentRadarChart = new Chart(ctx, {
-                  type: 'radar',
-                  data: {
-                      labels: ['Reading', 'Listening', 'Writing', 'Speaking'],
-                      datasets: [{
-                          label: 'Estimated Band',
-                          data: radarData,
-                          backgroundColor: 'rgba(59, 130, 246, 0.2)', // Tailwind blue-500 with opacity
-                          borderColor: 'rgba(59, 130, 246, 1)',
-                          pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-                          pointBorderColor: '#fff',
-                          pointHoverBackgroundColor: '#fff',
-                          pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
-                      }]
-                  },
-                  options: {
-                      scales: {
-                          r: {
-                              min: 0,
-                              max: 9,
-                              beginAtZero: true,
-                              angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
-                              grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                              pointLabels: { font: { size: 11, weight: 'bold', family: 'sans-serif' }, color: '#475569' },
-                              ticks: { display: false, stepSize: 1.5 }
-                          }
-                      },
-                      plugins: { legend: { display: false } },
-                      maintainAspectRatio: false
-                  }
-              });
+      // Update Peer Review App Badge
+      const peerBadge = document.getElementById('quick-badge-peer');
+      const peerCount = getPeerReviewCandidatesForCurrentStudent().length;
+      if (peerBadge) {
+          if (peerCount > 0) {
+              peerBadge.textContent = peerCount;
+              peerBadge.classList.remove('hidden');
+              peerBadge.classList.add('flex');
+          } else {
+              peerBadge.classList.add('hidden');
+              peerBadge.classList.remove('flex');
           }
-      }, 50);
+      }
+
+      prog.innerHTML = `
+        <!-- Class Progress Bar -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+            <div class="flex justify-between items-end mb-3">
+                <div>
+                    <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest">Course Progress</h3>
+                    <div class="font-bold text-slate-600 text-sm mt-1">${completedCount} of ${totalTests} modules</div>
+                </div>
+                <span class="font-black text-4xl text-blue-600 tracking-tighter leading-none">${progressPct}%</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden shadow-inner border border-slate-200/60 mt-4">
+                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-full rounded-full transition-all duration-1000 shadow-sm" style="width: ${progressPct}%"></div>
+            </div>
+        </div>
+
+        <!-- Radar Chart -->
+        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex flex-col items-center">
+            <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest w-full text-left mb-2 pl-1">Skill Analysis</h3>
+            <div class="w-full flex justify-center" style="height: 220px;">
+                <canvas id="skills-radar-chart"></canvas>
+            </div>
+        </div>
+      `;
     };
 
     let pendingTestId = null;
@@ -11753,6 +11870,7 @@ window.initFirebaseSystem = async function() {
 
     // --- COURSE FORUM LOGIC ---
     let currentForumThreadId = null;
+    let currentForumEditId = null;
     let FORUM_POSTS = [];
 
     const escapeForumHtml = (value = '') => String(value)
@@ -11894,29 +12012,66 @@ window.initFirebaseSystem = async function() {
         }
 
         const replies = FORUM_POSTS.filter(post => post.parentId === thread.id).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        const canEdit = currentUser?.role === 'teacher';
+        const isEditingThread = currentForumEditId === thread.id;
 
-        detail.innerHTML = `
+        const threadHtml = isEditingThread ? `
+            <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+                <div class="flex items-center justify-between gap-3">
+                    <div class="flex-1">
+                        <input id="forum-edit-title" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm mb-3 outline-none focus:border-indigo-500" value="${escapeForumHtml(thread.title || '')}" />
+                        <div class="text-xs text-slate-500 mb-2">Edit thread title</div>
+                    </div>
+                    <button onclick="window.cancelForumEdit()" class="text-slate-500 hover:text-slate-700 text-sm font-bold">Cancel</button>
+                </div>
+                <textarea id="forum-edit-body" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm min-h-[120px] outline-none focus:border-indigo-500" placeholder="Thread body">${escapeForumHtml(thread.text || '')}</textarea>
+                <div class="mt-3 flex gap-2">
+                    <button onclick="window.saveForumPostEdit('${thread.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-2 font-bold text-sm transition">Save Changes</button>
+                    <button onclick="window.cancelForumEdit()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl px-4 py-2 font-bold text-sm transition">Cancel</button>
+                </div>
+            </div>` : `
             <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="font-black text-lg text-slate-800">${escapeForumHtml(thread.title || 'Untitled question')}</div>
                         <div class="text-xs text-slate-500 mt-1">${escapeForumHtml(thread.author || 'Student')} • ${new Date(thread.timestamp || Date.now()).toLocaleString()}</div>
                     </div>
-                    ${thread.role === 'teacher' ? '<span class="bg-rose-100 text-rose-700 text-[10px] font-black uppercase px-2 py-1 rounded">Teacher</span>' : ''}
+                    <div class="flex items-center gap-2">
+                        ${thread.role === 'teacher' ? '<span class="bg-rose-100 text-rose-700 text-[10px] font-black uppercase px-2 py-1 rounded">Teacher</span>' : ''}
+                        ${canEdit ? `<button onclick="window.editForumPost('${thread.id}')" class="text-indigo-600 hover:text-indigo-800 text-sm font-bold">Edit</button>` : ''}
+                    </div>
                 </div>
                 <p class="mt-3 text-sm text-slate-700 whitespace-pre-wrap">${escapeForumHtml(thread.text || '')}</p>
-            </div>
-            <div class="mt-4 space-y-3">
-                ${replies.length ? replies.map(reply => `
-                    <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
-                        <div class="flex items-center justify-between gap-2">
-                            <div class="font-black text-sm text-slate-800">${escapeForumHtml(reply.author || 'Student')}</div>
-                            <div class="text-[11px] text-slate-500">${new Date(reply.timestamp || Date.now()).toLocaleString()}</div>
-                        </div>
-                        <p class="mt-2 text-sm text-slate-700 whitespace-pre-wrap">${escapeForumHtml(reply.text || '')}</p>
-                    </div>
-                `).join('') : '<div class="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 p-3">No replies yet. Be the first to help.</div>'}
             </div>`;
+
+        const repliesHtml = replies.length ? replies.map(reply => {
+            const isEditingReply = currentForumEditId === reply.id;
+            return isEditingReply ? `
+                <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <div class="font-black text-sm text-slate-800">${escapeForumHtml(reply.author || 'Student')}</div>
+                        <div class="text-[11px] text-slate-500">${new Date(reply.timestamp || Date.now()).toLocaleString()}</div>
+                    </div>
+                    <textarea id="forum-edit-body" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm min-h-[100px] outline-none focus:border-indigo-500">${escapeForumHtml(reply.text || '')}</textarea>
+                    <div class="mt-3 flex gap-2">
+                        <button onclick="window.saveForumPostEdit('${reply.id}')" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-2 font-bold text-sm transition">Save Reply</button>
+                        <button onclick="window.cancelForumEdit()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl px-4 py-2 font-bold text-sm transition">Cancel</button>
+                    </div>
+                </div>` : `
+                <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="font-black text-sm text-slate-800">${escapeForumHtml(reply.author || 'Student')}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="text-[11px] text-slate-500">${new Date(reply.timestamp || Date.now()).toLocaleString()}</div>
+                            ${canEdit ? `<button onclick="window.editForumPost('${reply.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold">Edit</button>` : ''}
+                        </div>
+                    </div>
+                    <p class="mt-2 text-sm text-slate-700 whitespace-pre-wrap">${escapeForumHtml(reply.text || '')}</p>
+                </div>`;
+        }).join('') : '<div class="text-sm text-slate-500 rounded-xl border border-dashed border-slate-200 p-3">No replies yet. Be the first to help.</div>';
+
+        detail.innerHTML = `${threadHtml}
+            <div class="mt-4 space-y-3">${repliesHtml}</div>`;
     };
 
     window.postForumThread = async function() {
@@ -11979,6 +12134,52 @@ window.initFirebaseSystem = async function() {
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('messages'), reply.id), reply);
         } catch (e) {
             console.error('Forum reply error:', e);
+        }
+    };
+
+    window.editForumPost = function(postId) {
+        currentForumEditId = postId;
+        window.renderForumThreadDetail();
+        setTimeout(() => {
+            const editor = document.getElementById('forum-edit-body');
+            if (editor) editor.focus();
+        }, 20);
+    };
+
+    window.cancelForumEdit = function() {
+        currentForumEditId = null;
+        window.renderForumThreadDetail();
+    };
+
+    window.saveForumPostEdit = async function(postId) {
+        const bodyEl = document.getElementById('forum-edit-body');
+        if (!bodyEl) return;
+        const text = bodyEl.value.trim();
+        if (!text) return;
+
+        const post = FORUM_POSTS.find(p => p.id === postId);
+        if (!post) return;
+
+        if (!post.parentId) {
+            const titleEl = document.getElementById('forum-edit-title');
+            const title = titleEl ? titleEl.value.trim() : post.title || '';
+            if (!title) return;
+            post.title = title;
+        }
+
+        post.text = text;
+        post.editedAt = Date.now();
+        post.editedBy = currentUser?.user || 'Teacher';
+
+        currentForumEditId = null;
+        window.renderForumThreadDetail();
+
+        try {
+            if (window.db) {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('messages'), postId), post);
+            }
+        } catch (e) {
+            console.error('Forum edit error:', e);
         }
     };
 
