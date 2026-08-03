@@ -1037,6 +1037,41 @@
       </div>
   </div>
 
+  <!-- CLASS COLLABORATORS MODAL -->
+  <div id="class-collaborators-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[650px] max-h-[90vh] animate-scale-up overflow-hidden font-sans">
+          <div class="px-6 pt-6 pb-4 bg-white shrink-0 flex justify-between items-center">
+              <h2 class="text-2xl font-bold text-slate-800">Share and permissions</h2>
+              <button onclick="document.getElementById('class-collaborators-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl border border-slate-200 rounded-lg w-8 h-8 flex items-center justify-center transition">&times;</button>
+          </div>
+          
+          <div class="px-6 pb-8 overflow-y-auto flex-1 bg-white space-y-6">
+              <p id="collab-modal-subtitle" class="text-slate-700 text-sm font-medium">Manage who can access and edit "Class Name".</p>
+
+              <!-- Collaborators Setup -->
+              <div>
+                  <h3 class="font-bold text-slate-800 text-sm mb-3">Collaborators</h3>
+                  <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-white">
+                      <select id="collab-input" class="flex-1 bg-slate-100 border border-transparent focus:bg-white rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 font-medium text-slate-700 transition-colors appearance-none cursor-pointer">
+                          <option value="">-- Select a collaborator --</option>
+                      </select>
+                      <div class="flex gap-2">
+                          <select class="bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 font-bold text-slate-600 shadow-sm cursor-pointer w-32 shrink-0">
+                              <option>Edit & assign</option>
+                          </select>
+                          <button id="btn-add-collab" onclick="window.addClassCollaborator()" class="bg-slate-200 text-slate-600 hover:bg-blue-600 hover:text-white px-4 py-2.5 rounded-lg text-sm font-bold transition whitespace-nowrap shrink-0">Add collaborator</button>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- List -->
+              <div id="collab-list" class="space-y-1">
+                  <!-- JS INJECTED -->
+              </div>
+          </div>
+      </div>
+  </div>
+
   <!-- TEMPLATE MANAGER MODAL -->
   <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
       <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[80vh] animate-scale-up">
@@ -1483,7 +1518,7 @@
             </button>
             <div class="h-6 w-px bg-blue-700 hidden sm:block"></div>
             
-            <button onclick="window.promptAssignTest(editingTestId)" class="text-sm font-bold text-indigo-300 hover:text-white bg-indigo-500/20 hover:bg-indigo-500/40 px-4 py-2 rounded-xl border border-indigo-400/30 transition flex items-center gap-1.5 shadow-sm" title="Assign to Class">
+            <button id="btn-assign-builder" onclick="window.promptAssignTest(editingTestId)" class="text-sm font-bold text-indigo-300 hover:text-white bg-indigo-500/20 hover:bg-indigo-500/40 px-4 py-2 rounded-xl border border-indigo-400/30 transition flex items-center gap-1.5 shadow-sm" title="Assign to Class">
                 👥 Assign
             </button>
             <div class="h-6 w-px bg-blue-700"></div>
@@ -1534,8 +1569,8 @@
             </button>
             <div id="teacher-dropdown-content" class="hidden absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50 animate-scale-up origin-top-right">
                 <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black">T</div>
-                    <div class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Logged in as</span><span class="font-bold text-slate-800 text-sm">Teacher</span></div>
+                    <div id="profile-drop-icon" class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black">T</div>
+                    <div class="flex flex-col"><span class="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Logged in as</span><span id="profile-drop-role" class="font-bold text-slate-800 text-sm">Teacher</span></div>
                 </div>
                 <button onclick="window.toggleTheme()" class="w-full text-left px-4 py-3.5 text-sm font-bold text-slate-700 hover:bg-slate-50 border-b border-slate-100 flex items-center gap-3 transition-colors">
                     <span class="theme-toggle-btn flex items-center justify-center w-5 text-lg">🌙</span> Toggle Theme
@@ -1716,6 +1751,10 @@
             <button onclick="window.promptCreateTeacher()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
                 <span class="text-2xl drop-shadow-sm">👨‍🏫</span>
                 <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Teacher</span>
+            </button>
+            <button onclick="window.promptCreateCollaborator()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition border border-amber-100 shadow-sm active:scale-95">
+                <span class="text-2xl drop-shadow-sm">🤝</span>
+                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Collab</span>
             </button>
             <button onclick="window.openBulkStudentImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
                 <span class="text-2xl drop-shadow-sm">📥</span>
@@ -2896,6 +2935,16 @@ window.initFirebaseSystem = async function() {
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => { CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); resolve(); }); }));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data); resolve(); }); }));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); resolve(); }); }));
+        } else if (currentUser.role === 'collaborator') {
+            // COLLABORATOR: Only downloads their own minimal user doc to stay authenticated, completely isolated from submissions/chats
+            promises.push(new Promise(resolve => { 
+                window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
+                    if(snap.exists()) { 
+                        const me = snap.data(); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
+                    } 
+                    window.triggerUIRefresh(); resolve(); 
+                }); 
+            }));
         } else {
             // ✨ STUDENT: Restricted queries. ONLY downloads their own private data.
             promises.push(new Promise(resolve => { 
@@ -2986,7 +3035,7 @@ window.initFirebaseSystem = async function() {
         const savedTheme = localStorage.getItem('ielts_theme') || 'standard';
         if (typeof window.applyTheme === 'function') window.applyTheme(savedTheme);
 
-        if (currentUser.role === 'teacher') {
+        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator') {
             openEditor();
         } else { 
             // ✨ SMART RESTORE: Did the student refresh while reviewing a test?
@@ -3547,13 +3596,42 @@ window.initFirebaseSystem = async function() {
 
     function openEditor() {
       document.getElementById('editor-ui').classList.remove('hidden');
+
+      // ✨ ROLE RESTRICTIONS FOR COLLABORATORS
+      if (currentUser.role === 'collaborator') {
+          document.getElementById('tab-btn-students')?.classList.add('hidden');
+          document.getElementById('tab-btn-timetable')?.classList.add('hidden');
+          document.getElementById('tab-btn-landing')?.classList.add('hidden');
+          
+          // NOTE: We allow dash-btn-classes to remain visible so they can manage the classes they are collaborating on!
+          
+          document.getElementById('editor-inbox-btn')?.classList.add('hidden');
+          document.getElementById('editor-notifications-menu')?.classList.add('hidden');
+          document.getElementById('btn-assign-builder')?.classList.add('hidden');
+          
+          document.querySelector('#editor-default-header h1').innerHTML = `
+              <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🤝</div>
+              LMS <span class="font-light text-blue-200 text-lg">| Collab</span>
+          `;
+          
+          const pIcon = document.getElementById('profile-drop-icon');
+          if (pIcon) pIcon.textContent = 'C';
+          const pRole = document.getElementById('profile-drop-role');
+          if (pRole) pRole.textContent = 'Collaborator';
+      }
       
       // ✨ SMART RESTORE: Read memory to see where the teacher was before refreshing
       const savedSub = sessionStorage.getItem('lms_grading_sub');
       const savedTest = sessionStorage.getItem('lms_editing_test');
-      const savedTab = sessionStorage.getItem('lms_teacher_tab') || 'bank';
+      let savedTab = sessionStorage.getItem('lms_teacher_tab') || 'bank';
 
-      if (savedSub) {
+      // Secure route override for collaborators
+      if (currentUser.role === 'collaborator') {
+          if (['students', 'timetable', 'landing'].includes(savedTab)) savedTab = 'bank';
+          sessionStorage.setItem('lms_dash_view', 'tests');
+      }
+
+      if (savedSub && currentUser.role === 'teacher') {
           const subId = Number(savedSub);
           if (SUBMISSIONS.find(s => s.id === subId)) {
               openGradingView(subId);
@@ -3730,7 +3808,7 @@ window.initFirebaseSystem = async function() {
           <div class="shrink-0">${assignedBadge}</div>
           <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100 shrink-0">
             <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Edit Test">✏️</button>
-            <button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>
+            ${currentUser.role === 'teacher' ? `<button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>` : ''}
             <button onclick="window.promptMergeTest('${t.id}')" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Merge Test">🔀</button>
             <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>
           </div>
@@ -4254,7 +4332,13 @@ window.currentAssignTestId = null;
 
     function renderClasses() {
       const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
-      const filteredClasses = CLASSES.filter(c => c.name.toLowerCase().includes(query));
+      
+      let viewableClasses = CLASSES;
+      if (currentUser && currentUser.role === 'collaborator') {
+          viewableClasses = CLASSES.filter(c => (c.collaborators || []).includes(currentUser.user));
+      }
+
+      const filteredClasses = viewableClasses.filter(c => c.name.toLowerCase().includes(query));
       
       document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
@@ -4262,10 +4346,9 @@ window.currentAssignTestId = null;
         const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
         const isPathEnabled = cls.learningPathEnabled !== false;
         
-        return `
-        <div class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden mb-6">
-            <div class="bg-blue-50/50 px-6 py-5 border-b border-blue-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                <h3 class="font-black text-2xl text-blue-950 flex items-center gap-2"><span class="text-blue-600">🏫</span> ${cls.name}</h3>
+        const isOwner = currentUser.role === 'teacher';
+
+        const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-blue-100 shadow-sm">
                         <label class="text-[10px] font-black text-blue-400 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
@@ -4275,22 +4358,61 @@ window.currentAssignTestId = null;
                     <button onclick="window.toggleClassBooking('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2 transition ${cls.allowBooking ? 'bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}" title="Allow students to manually book lessons from your availability schedule">${cls.allowBooking ? 'Booking: Allowed' : 'Booking: Off'}</button>
                     <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-500 border border-rose-200 hover:border-rose-500 rounded-xl font-bold text-sm px-4 py-2 transition shadow-sm shrink-0">Delete</button>
                 </div>
+        ` : `<div class="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm uppercase tracking-widest">Collaborator Mode</div>`;
+
+        return `
+        <div class="bg-white border border-blue-50 rounded-2xl shadow-sm overflow-hidden mb-6">
+            <div class="bg-blue-50/50 px-6 py-5 border-b border-blue-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                <h3 class="font-black text-2xl text-blue-950 flex items-center gap-2"><span class="text-blue-600">🏫</span> ${cls.name}</h3>
+                ${topActionsHtml}
             </div>
             <div class="grid grid-cols-1 xl:grid-cols-3 divide-y xl:divide-y-0 xl:divide-x divide-slate-100">
                 
                 <div class="p-6 bg-white">
                     <h4 class="font-bold text-slate-700 mb-4 flex justify-between items-center border-b border-slate-100 pb-3">
                         Enrolled Students (${enrolled.length})
-                        <button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200">+ Assign User</button>
+                        ${isOwner ? `<button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200">+ Assign User</button>` : ''}
                     </h4>
-                    <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                    <div class="space-y-2 max-h-60 overflow-y-auto pr-1 ${isOwner ? 'mb-6' : ''}">
                         ${enrolled.length ? enrolled.map(student => `
                             <div class="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition">
                                 <span class="font-medium text-slate-800 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span> ${student}</span>
-                                <button onclick="window.unenrollStudent('${cls.id}', '${student}')" class="text-rose-400 text-xs font-bold hover:text-rose-600 px-2 py-1">Remove</button>
+                                ${isOwner ? `<button onclick="window.unenrollStudent('${cls.id}', '${student}')" class="text-rose-400 text-xs font-bold hover:text-rose-600 px-2 py-1">Remove</button>` : ''}
                             </div>
                         `).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center"><svg class="w-8 h-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg><p class="text-xs font-bold text-slate-500">No students enrolled</p></div>'}
                     </div>
+
+                    ${isOwner ? `
+                    <!-- NEW COLLABORATORS SECTION -->
+                    <div class="border-t border-slate-100 pt-6">
+                        <h4 class="font-bold text-slate-800 text-lg flex justify-between items-center mb-4">
+                            Collaborators 
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 cursor-pointer hover:text-slate-700 transition transform rotate-180"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="text-[11px] font-bold text-slate-500 mb-2">Owner</div>
+                                <div class="flex items-center gap-3">
+                                    <div class="relative">
+                                        <img src="https://ui-avatars.com/api/?name=${cls.owner || 'Teacher'}&background=0f766e&color=fff&bold=true" class="w-8 h-8 rounded-full shadow-sm">
+                                        <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#22c55e] border-2 border-white rounded-full"></div>
+                                    </div>
+                                    <span class="text-sm text-slate-800">${cls.owner || 'Teacher'}</span>
+                                </div>
+                            </div>
+                            
+                            ${(cls.collaborators && cls.collaborators.length > 0) ? `
+                            <div>
+                                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Shared With</div>
+                                <div class="flex items-center gap-[-8px]">
+                                    ${cls.collaborators.slice(0,3).map(collab => `<img src="https://ui-avatars.com/api/?name=${collab}&background=0ea5e9&color=fff&bold=true" class="w-8 h-8 rounded-full border-2 border-white shadow-sm -ml-2 first:ml-0" title="${collab}">`).join('')}
+                                    ${cls.collaborators.length > 3 ? `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm -ml-2 bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">+${cls.collaborators.length - 3}</div>` : ''}
+                                </div>
+                            </div>` : ''}
+
+                            <button onclick="window.openClassCollaborators('${cls.id}')" class="mt-2 text-[#2563eb] border border-[#2563eb] hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-bold transition bg-white w-max">Add Collaborators</button>
+                        </div>
+                    </div>` : ''}
                 </div>
                 
                 <div class="p-6 bg-white">
@@ -4418,13 +4540,128 @@ window.currentAssignTestId = null;
           enrolledStudents:[],
           feePerLesson: BILLING_SETTINGS.feePerLesson || 100000,
           learningPathEnabled: false,
-          allowBooking: false
+          allowBooking: false,
+          owner: currentUser.user,
+          collaborators: []
         };
         CLASSES.push(newCls); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), newCls.id), newCls);
         renderClasses(); 
       }); 
     }
+
+    // ✨ COLLABORATORS MODAL LOGIC
+    window.currentCollabClassId = null;
+
+    window.openClassCollaborators = function(cid) {
+        window.currentCollabClassId = cid;
+        const cls = CLASSES.find(c => c.id === cid);
+        if (!cls) return;
+
+        document.getElementById('collab-modal-subtitle').textContent = `Manage who can access and edit "${cls.name}".`;
+        
+        // Auto-populate the select dropdown with valid users
+        const selectEl = document.getElementById('collab-input');
+        const availableCollabs = USERS.filter(u => 
+            (u.role === 'collaborator' || u.role === 'teacher') && 
+            u.user !== cls.owner && 
+            !(cls.collaborators || []).includes(u.user)
+        );
+        
+        if (availableCollabs.length > 0) {
+            selectEl.innerHTML = '<option value="">-- Select a collaborator --</option>' + availableCollabs.map(u => `<option value="${u.user}">${u.user} (${u.role})</option>`).join('');
+            document.getElementById('btn-add-collab').disabled = false;
+            document.getElementById('btn-add-collab').classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+            selectEl.innerHTML = '<option value="">No available collaborators</option>';
+            document.getElementById('btn-add-collab').disabled = true;
+            document.getElementById('btn-add-collab').classList.add('opacity-50', 'cursor-not-allowed');
+        }
+        
+        window.renderCollabModalList();
+        document.getElementById('class-collaborators-modal').classList.remove('hidden');
+    };
+
+    window.renderCollabModalList = function() {
+        const cls = CLASSES.find(c => c.id === window.currentCollabClassId);
+        if (!cls) return;
+
+        const listEl = document.getElementById('collab-list');
+        const getSafeEmail = (u) => `${encodeURIComponent(u).replace(/%/g, '').toLowerCase()}@khanhlms.com`;
+        
+        let html = (cls.collaborators || []).map(collab => `
+            <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
+                <div class="flex items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name=${collab}&background=0ea5e9&color=fff&bold=true" class="w-10 h-10 rounded-full border border-slate-200">
+                    <div class="flex flex-col">
+                        <span class="font-bold text-sm text-slate-800">${collab}</span>
+                        <span class="text-[11px] text-slate-500">${getSafeEmail(collab)}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold text-slate-600">Editor</span>
+                    <button onclick="window.removeClassCollaborator('${collab}')" class="text-slate-400 hover:text-rose-500 transition font-bold text-xl">&times;</button>
+                </div>
+            </div>
+        `).join('');
+
+        // Render Owner at the bottom
+        html += `
+            <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0 ${cls.collaborators?.length ? 'mt-2' : ''}">
+                <div class="flex items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name=${cls.owner || 'Teacher'}&background=0f766e&color=fff&bold=true" class="w-10 h-10 rounded-full border border-slate-200">
+                    <div class="flex flex-col">
+                        <span class="font-bold text-sm text-slate-800">${cls.owner || 'Teacher'}</span>
+                        <span class="text-[11px] text-slate-500">${getSafeEmail(cls.owner || 'Teacher')}</span>
+                    </div>
+                </div>
+                <span class="text-sm font-bold text-slate-500 px-3 py-1">Owner</span>
+            </div>
+        `;
+        
+        listEl.innerHTML = `<div class="mt-4 border-t border-slate-100 pt-2">${html}</div>`;
+    };
+
+    window.addClassCollaborator = async function() {
+        const input = document.getElementById('collab-input').value.trim();
+        if (!input) return;
+
+        const cls = CLASSES.find(c => c.id === window.currentCollabClassId);
+        if (!cls) return;
+
+        if (!cls.collaborators) cls.collaborators = [];
+        if (cls.collaborators.includes(input)) return;
+
+        const btn = document.getElementById('btn-add-collab');
+        btn.textContent = 'Adding...'; btn.disabled = true;
+
+        cls.collaborators.push(input);
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            window.openClassCollaborators(cls.id); // Refresh dropdown and list instantly
+            renderClasses(); 
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not save collaborator to cloud.");
+            cls.collaborators.pop();
+        }
+        btn.textContent = 'Add collaborator'; btn.disabled = false;
+    };
+
+    window.removeClassCollaborator = async function(username) {
+        const cls = CLASSES.find(c => c.id === window.currentCollabClassId);
+        if (!cls) return;
+
+        cls.collaborators = cls.collaborators.filter(c => c !== username);
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            window.openClassCollaborators(cls.id); // Refresh dropdown and list instantly
+            renderClasses();
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not remove collaborator.");
+        }
+    };
     
     async function deleteClass(id) {
       CLASSES = CLASSES.filter(c => c.id !== id); 
@@ -10786,6 +11023,18 @@ window.currentAssignTestId = null;
                 USERS.push(newTeacher);
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newTeacher);
                 showModalMsg("Success", `Teacher account '${username}' created successfully.`);
+            });
+        });
+    };
+
+    window.promptCreateCollaborator = function() {
+        showInputPrompt("Add Collaborator", "Enter new collaborator username:", async (username) => {
+            if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
+            showInputPrompt("Password", `Enter password for collaborator ${username}:`, async (password) => {
+                const newCollab = { user: username, pass: password, role: 'collaborator', createdAt: new Date().toLocaleDateString() };
+                USERS.push(newCollab);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newCollab);
+                showModalMsg("Success", `Collaborator account '${username}' created successfully. They can login to create and modify tests.`);
             });
         });
     };
