@@ -928,6 +928,115 @@
       </div>
   </div>
 
+  <!-- ASSIGN SETTINGS MODAL -->
+  <div id="assign-settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm">
+      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[600px] max-h-[90vh] animate-scale-up overflow-hidden font-sans">
+          <div class="px-8 pt-8 pb-4 bg-white shrink-0 flex flex-col justify-between items-start gap-2">
+              <div class="flex justify-between items-center w-full">
+                  <h2 class="text-3xl font-semibold text-slate-800 tracking-tight">Assign settings</h2>
+                  <button onclick="document.getElementById('assign-settings-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-3xl leading-none">&times;</button>
+              </div>
+              <p id="assign-modal-subtitle" class="text-sm font-bold text-blue-600 truncate w-full"></p>
+          </div>
+          
+          <div class="px-8 pb-8 overflow-y-auto flex-1 bg-white space-y-8">
+              <!-- Class Selection -->
+              <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Assign to Class</label>
+                  <select id="assign-class-select" class="w-full border border-slate-300 rounded-md px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 bg-white transition-colors cursor-pointer shadow-sm"></select>
+              </div>
+
+              <!-- Grading and feedback -->
+              <div>
+                  <h3 class="text-base font-medium text-slate-800 mb-4">Grading and feedback</h3>
+                  <div class="space-y-5">
+                      <div class="flex justify-between items-center">
+                          <label class="text-sm text-slate-700">Total attempts</label>
+                          <select id="assign-attempts" class="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer w-48 shadow-sm">
+                              <option value="unlimited">Unlimited</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                          </select>
+                      </div>
+                      
+                      <div class="flex justify-between items-center">
+                          <label class="text-sm text-slate-700 pl-6">Keep correct answers</label>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" id="assign-keep-correct" class="sr-only peer" checked>
+                              <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#22c55e]"></div>
+                          </label>
+                      </div>
+
+                      <div class="flex justify-between items-center">
+                          <label class="text-sm text-slate-700">After submission</label>
+                          <select id="assign-after-sub" class="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer w-48 shadow-sm">
+                              <option value="allow_edits">Allow edits</option>
+                              <option value="view_only">View only</option>
+                          </select>
+                      </div>
+
+                      <div class="flex justify-between items-center">
+                          <label class="text-sm text-slate-700">Return scores</label>
+                          <select id="assign-return-score" class="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer w-48 shadow-sm">
+                              <option value="instantly">Instantly</option>
+                              <option value="manual">Manual Release</option>
+                          </select>
+                      </div>
+
+                      <div class="flex justify-between items-center">
+                          <label class="text-sm text-slate-700">Return correct answers</label>
+                          <select id="assign-return-ans" class="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white cursor-pointer w-48 shadow-sm">
+                              <option value="after_submit">After student submits</option>
+                              <option value="never">Never</option>
+                          </select>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Enhanced test security -->
+              <div class="border-t border-slate-200 pt-6">
+                  <h3 class="text-base font-medium text-slate-800 mb-4">Enhanced test security</h3>
+                  <div class="space-y-5">
+                      <div class="flex justify-between items-center">
+                          <label class="text-sm text-slate-700">Require password to enter</label>
+                          <div class="flex items-center gap-3">
+                              <input type="text" id="assign-password-input" class="hidden border border-slate-300 rounded px-2.5 py-1 text-sm w-32 outline-none focus:border-blue-500 font-mono shadow-inner bg-slate-50" placeholder="Password...">
+                              <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" id="assign-req-pass" class="sr-only peer" onchange="document.getElementById('assign-password-input').classList.toggle('hidden', !this.checked)">
+                                  <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#22c55e]"></div>
+                              </label>
+                          </div>
+                      </div>
+                      <div class="flex justify-between items-center">
+                          <label class="text-sm text-slate-700">Secure exam browser mode</label>
+                          <label class="relative inline-flex items-center cursor-pointer">
+                              <input type="checkbox" id="assign-secure-mode" class="sr-only peer">
+                              <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#22c55e]"></div>
+                          </label>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Text-to-speech -->
+              <div class="border-t border-slate-200 pt-6">
+                  <div class="flex justify-between items-center">
+                      <label class="text-base font-medium text-slate-800">Text-to-speech</label>
+                      <label class="relative inline-flex items-center cursor-pointer">
+                          <input type="checkbox" id="assign-tts" class="sr-only peer">
+                          <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-[20px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#22c55e]"></div>
+                      </label>
+                  </div>
+              </div>
+
+          </div>
+          <div class="px-8 py-5 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shrink-0">
+              <button onclick="document.getElementById('assign-settings-modal').classList.add('hidden')" class="px-5 py-2 text-blue-600 hover:bg-blue-50 rounded-lg font-semibold transition">Cancel</button>
+              <button id="btn-confirm-assign" onclick="window.confirmAssignTest()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-sm transition hover:-translate-y-0.5">Assign</button>
+          </div>
+      </div>
+  </div>
+
   <!-- TEMPLATE MANAGER MODAL -->
   <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
       <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[80vh] animate-scale-up">
@@ -1269,7 +1378,7 @@
                    <span id="student-cal-month" class="font-bold text-blue-900 min-w-[120px] text-center text-sm">Month Year</span>
                    <button onclick="changeCalendarMonth(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&rarr;</button>
                  </div>
-                 <button onclick="window.openStudentBooking()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-bold whitespace-nowrap">＋ Book Slot</button>
+                 <button id="btn-student-book-slot" onclick="window.openStudentBooking()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-bold whitespace-nowrap hidden">＋ Book Slot</button>
                </div>
              </div>
              <div class="p-6 xl:p-8 flex-1 bg-white">
@@ -1372,8 +1481,13 @@
                 <span id="builder-test-name" class="font-bold text-lg text-white truncate max-w-[400px]">Editing Test...</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-300 group-hover:text-white"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>
-            <div class="h-6 w-px bg-blue-700"></div>
+            <div class="h-6 w-px bg-blue-700 hidden sm:block"></div>
             
+            <button onclick="window.promptAssignTest(editingTestId)" class="text-sm font-bold text-indigo-300 hover:text-white bg-indigo-500/20 hover:bg-indigo-500/40 px-4 py-2 rounded-xl border border-indigo-400/30 transition flex items-center gap-1.5 shadow-sm" title="Assign to Class">
+                👥 Assign
+            </button>
+            <div class="h-6 w-px bg-blue-700"></div>
+
             <!-- NEW: Toggle Layout Button -->
             <button onclick="window.toggleBuilderLeftPanel()" class="text-sm font-bold text-sky-300 hover:text-white bg-sky-500/20 hover:bg-sky-500/40 px-4 py-2 rounded-xl border border-sky-400/30 transition flex items-center gap-1.5 shadow-sm" title="Toggle Passage Content View">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
@@ -3656,6 +3770,184 @@ window.initFirebaseSystem = async function() {
       }
     }
 
+    window.currentAssignTestId = null;
+
+    window.promptAssignTest = function(tid) {
+        window.currentAssignTestId = tid;
+        
+        if (CLASSES.length === 0) {
+            showModalMsg("Notice", "Please create at least one class first before assigning tests.");
+            return;
+        }
+
+        // Populate the class dropdown dynamically based on available classes
+        const classSelect = document.getElementById('assign-class-select');
+        classSelect.innerHTML = CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+        // Reset the form back to sensible defaults upon opening
+        document.getElementById('assign-attempts').value = 'unlimited';
+        document.getElementById('assign-keep-correct').checked = true;
+        document.getElementById('assign-after-sub').value = 'allow_edits';
+        document.getElementById('assign-return-score').value = 'instantly';
+        document.getElementById('assign-return-ans').value = 'after_submit';
+        
+        // Reset New Security Defaults
+        document.getElementById('assign-req-pass').checked = false;
+        const passInput = document.getElementById('assign-password-input');
+        passInput.value = '';
+        passInput.classList.add('hidden');
+        document.getElementById('assign-secure-mode').checked = false;
+        document.getElementById('assign-tts').checked = false;
+
+        document.getElementById('assign-settings-modal').classList.remove('hidden');
+    };
+
+    window.confirmAssignTest = async function() {
+        if (!window.currentAssignTestId) return;
+        const tid = window.currentAssignTestId;
+        const cid = document.getElementById('assign-class-select').value;
+        const cls = CLASSES.find(c => c.id === cid);
+        
+        if (!cls) return;
+
+        const btn = document.getElementById('btn-confirm-assign');
+        btn.textContent = "Assigning..."; btn.disabled = true;
+
+        if (!cls.assignedTests) cls.assignedTests = [];
+        
+        // Only push to array if it hasn't been assigned yet
+        if (!cls.assignedTests.includes(tid)) {
+            cls.assignedTests.push(tid);
+        }
+
+        // Store the configuration settings inside the class object
+        if (!cls.testSettings) cls.testSettings = {};
+        cls.testSettings[tid] = {
+            attempts: document.getElementById('assign-attempts').value,
+            keepCorrect: document.getElementById('assign-keep-correct').checked,
+            afterSub: document.getElementById('assign-after-sub').value,
+            returnScore: document.getElementById('assign-return-score').value,
+            returnAns: document.getElementById('assign-return-ans').value,
+            requirePassword: document.getElementById('assign-req-pass').checked,
+            password: document.getElementById('assign-password-input').value.trim(),
+            secureMode: document.getElementById('assign-secure-mode').checked,
+            tts: document.getElementById('assign-tts').checked,
+            assignedAt: Date.now()
+        };
+
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            document.getElementById('assign-settings-modal').classList.add('hidden');
+            
+            if (typeof window.showToast === 'function') {
+                window.showToast("Assigned Successfully", "The test and its custom rules have been applied to the class.");
+            } else {
+                showModalMsg("Assigned", "Test has been applied to the class.");
+            }
+            
+            renderTestBank(false); // Refreshes assignment badges
+            renderClasses();
+        } catch (e) {
+            console.error(e);
+            showModalMsg("Error", "Could not assign test to class due to a cloud error.");
+        }
+
+        btn.textContent = "Assign"; btn.disabled = false;
+    };
+
+window.currentAssignTestId = null;
+
+    window.promptAssignTest = function(tid) {
+        if (!tid) return;
+        window.currentAssignTestId = tid;
+        
+        if (CLASSES.length === 0) {
+            showModalMsg("Notice", "Please create at least one class first before assigning tests.");
+            return;
+        }
+
+        const t = TEST_BANK.find(x => x.id === tid);
+        if (!t) return;
+
+        // Inform the teacher which test they are assigning
+        const subLabel = document.getElementById('assign-modal-subtitle');
+        if (subLabel) subLabel.textContent = `Assigning: ${t.title}`;
+
+        // Populate the class dropdown dynamically based on available classes
+        const classSelect = document.getElementById('assign-class-select');
+        classSelect.innerHTML = CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+        // Reset the form back to sensible defaults upon opening
+        document.getElementById('assign-attempts').value = 'unlimited';
+        document.getElementById('assign-keep-correct').checked = true;
+        document.getElementById('assign-after-sub').value = 'allow_edits';
+        document.getElementById('assign-return-score').value = 'instantly';
+        document.getElementById('assign-return-ans').value = 'after_submit';
+        
+        // Reset New Security Defaults
+        document.getElementById('assign-req-pass').checked = false;
+        const passInput = document.getElementById('assign-password-input');
+        passInput.value = '';
+        passInput.classList.add('hidden');
+        document.getElementById('assign-secure-mode').checked = false;
+        document.getElementById('assign-tts').checked = false;
+
+        document.getElementById('assign-settings-modal').classList.remove('hidden');
+    };
+
+    window.confirmAssignTest = async function() {
+        if (!window.currentAssignTestId) return;
+        const tid = window.currentAssignTestId;
+        const cid = document.getElementById('assign-class-select').value;
+        const cls = CLASSES.find(c => c.id === cid);
+        
+        if (!cls) return;
+
+        const btn = document.getElementById('btn-confirm-assign');
+        btn.textContent = "Assigning..."; btn.disabled = true;
+
+        if (!cls.assignedTests) cls.assignedTests = [];
+        
+        // Only push to array if it hasn't been assigned yet
+        if (!cls.assignedTests.includes(tid)) {
+            cls.assignedTests.push(tid);
+        }
+
+        // Store the configuration settings inside the class object
+        if (!cls.testSettings) cls.testSettings = {};
+        cls.testSettings[tid] = {
+            attempts: document.getElementById('assign-attempts').value,
+            keepCorrect: document.getElementById('assign-keep-correct').checked,
+            afterSub: document.getElementById('assign-after-sub').value,
+            returnScore: document.getElementById('assign-return-score').value,
+            returnAns: document.getElementById('assign-return-ans').value,
+            requirePassword: document.getElementById('assign-req-pass').checked,
+            password: document.getElementById('assign-password-input').value.trim(),
+            secureMode: document.getElementById('assign-secure-mode').checked,
+            tts: document.getElementById('assign-tts').checked,
+            assignedAt: Date.now()
+        };
+
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            document.getElementById('assign-settings-modal').classList.add('hidden');
+            
+            if (typeof window.showToast === 'function') {
+                window.showToast("Assigned Successfully", "The test and its custom rules have been applied to the class.");
+            } else {
+                showModalMsg("Assigned", "Test has been applied to the class.");
+            }
+            
+            if (typeof renderTestBank === 'function') renderTestBank(false);
+            if (typeof renderClasses === 'function') renderClasses();
+        } catch (e) {
+            console.error(e);
+            showModalMsg("Error", "Could not assign test to class due to a cloud error.");
+        }
+
+        btn.textContent = "Assign"; btn.disabled = false;
+    };
+
     window.promptMergeTest = function(tid) {
       const sourceTest = TEST_BANK.find(t => t.id === tid);
       if (!sourceTest) return;
@@ -3979,7 +4271,8 @@ window.initFirebaseSystem = async function() {
                         <label class="text-[10px] font-black text-blue-400 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
                         <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000}" class="w-24 text-sm text-emerald-600 font-black outline-none text-right bg-transparent border-none p-0 focus:ring-0">
                     </div>
-                    <button onclick="window.toggleClassLearningPath('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2 transition ${isPathEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}">${isPathEnabled ? 'Learning Path: On' : 'Learning Path: Off'}</button>
+                    <button onclick="window.toggleClassLearningPath('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2 transition ${isPathEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}" title="Enable sequential material locking">${isPathEnabled ? 'Learning Path: On' : 'Learning Path: Off'}</button>
+                    <button onclick="window.toggleClassBooking('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2 transition ${cls.allowBooking ? 'bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100' : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}" title="Allow students to manually book lessons from your availability schedule">${cls.allowBooking ? 'Booking: Allowed' : 'Booking: Off'}</button>
                     <button onclick="deleteClass('${cls.id}')" class="text-rose-500 hover:text-white bg-rose-50 hover:bg-rose-500 border border-rose-200 hover:border-rose-500 rounded-xl font-bold text-sm px-4 py-2 transition shadow-sm shrink-0">Delete</button>
                 </div>
             </div>
@@ -4069,6 +4362,7 @@ window.initFirebaseSystem = async function() {
                                 <div class="flex justify-between items-center pl-2 mt-2 pt-2 border-t border-slate-50">
                                     <span class="text-[11px] text-slate-500 truncate max-w-[120px] font-medium" title="${s.testName}">${s.testName}</span>
                                     <div class="flex gap-1 shrink-0 items-center">
+                                        ${s.secureInfractions > 0 ? `<span class="bg-rose-100 text-rose-700 border border-rose-300 text-[9px] font-bold px-1.5 py-0.5 rounded mr-1" title="${s.secureInfractions} Tab Switches Detected">⚠️ ${s.secureInfractions}</span>` : ''}
                                         ${s.studentReply && !s.teacherReadReply ? `<span class="bg-rose-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded animate-pulse mr-1">New Reply</span>` : ''}
                                         <button onclick="openGradingView(${s.id})" class="text-[10px] bg-slate-50 border border-slate-200 text-slate-700 hover:bg-blue-600 hover:text-white font-bold px-3 py-1.5 rounded-lg transition shadow-sm">Review</button>
                                         <button onclick="window.deleteSubmission(${s.id})" class="text-[10px] bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-500 hover:text-white font-bold px-2 py-1.5 rounded-lg transition shadow-sm" title="Delete Submission">Del</button>
@@ -4107,6 +4401,14 @@ window.initFirebaseSystem = async function() {
       renderClasses();
     };
 
+    window.toggleClassBooking = async function(cid) {
+      const cls = CLASSES.find(c => c.id === cid);
+      if (!cls) return;
+      cls.allowBooking = cls.allowBooking ? false : true;
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+      renderClasses();
+    };
+
     function promptCreateClass() { 
       showInputPrompt("New Class", "Name:", async (name) => { 
         const newCls = {
@@ -4115,7 +4417,8 @@ window.initFirebaseSystem = async function() {
           assignedTests:[],
           enrolledStudents:[],
           feePerLesson: BILLING_SETTINGS.feePerLesson || 100000,
-          learningPathEnabled: false
+          learningPathEnabled: false,
+          allowBooking: false
         };
         CLASSES.push(newCls); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), newCls.id), newCls);
@@ -7331,7 +7634,8 @@ window.initFirebaseSystem = async function() {
 
       const classSchedules = SCHEDULES.filter(s => s.className === cls.name);
       if (schedSec) {
-          if (classSchedules.length) {
+          // Show the Timetable if they have classes OR if they are allowed to book them!
+          if (classSchedules.length || cls.allowBooking) {
               schedSec.classList.remove('hidden');
               schedSec.classList.add('flex');
               window.renderCalendar('student');
@@ -7339,6 +7643,12 @@ window.initFirebaseSystem = async function() {
               schedSec.classList.add('hidden');
               schedSec.classList.remove('flex');
           }
+      }
+      
+      const bookBtn = document.getElementById('btn-student-book-slot');
+      if (bookBtn) {
+          if (cls.allowBooking) bookBtn.classList.remove('hidden');
+          else bookBtn.classList.add('hidden');
       }
       
       let allTestsHtml = '<div class="col-span-full text-sm text-slate-500 italic py-4">No materials assigned to this course yet.</div>';
@@ -7508,6 +7818,60 @@ window.initFirebaseSystem = async function() {
       }
     }
 
+    // ✨ SECURE BROWSER MODE ENGINE
+    window.isSecureModeActive = false;
+    window.secureInfractions = 0;
+
+    window.enterSecureMode = async function() {
+        window.isSecureModeActive = true;
+        window.secureInfractions = 0;
+        try {
+            if (document.documentElement.requestFullscreen) {
+                await document.documentElement.requestFullscreen();
+            }
+        } catch (err) {
+            console.warn("Fullscreen API blocked or unsupported:", err);
+        }
+    };
+
+    window.returnToSecureMode = function() {
+        document.getElementById('secure-mode-warning').classList.add('hidden');
+        document.getElementById('secure-mode-warning').classList.remove('flex');
+        window.enterSecureMode();
+    };
+
+    window.exitSecureMode = function() {
+        window.isSecureModeActive = false;
+        try {
+            if (document.fullscreenElement && document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        } catch (e) {}
+    };
+
+    document.addEventListener('visibilitychange', () => {
+        if (window.isSecureModeActive && document.hidden) {
+            window.secureInfractions++;
+            
+            // Build the overlay dynamically if it doesn't exist
+            let warnEl = document.getElementById('secure-mode-warning');
+            if (!warnEl) {
+                const overlayHtml = `
+                <div id="secure-mode-warning" class="hidden fixed inset-0 bg-rose-950/95 z-[9999] flex-col items-center justify-center p-8 text-center text-white backdrop-blur-md">
+                    <span class="text-7xl mb-6 drop-shadow-lg">⚠️</span>
+                    <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight text-rose-500">Security Violation Detected</h1>
+                    <p class="text-lg md:text-xl max-w-2xl font-medium mb-8 text-rose-100">You have left the secure exam environment (switched tabs or minimized the browser). This incident has been recorded.</p>
+                    <button onclick="window.returnToSecureMode()" class="px-8 py-4 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-black text-xl transition shadow-xl border border-rose-400">Return to Exam</button>
+                </div>`;
+                document.body.insertAdjacentHTML('beforeend', overlayHtml);
+                warnEl = document.getElementById('secure-mode-warning');
+            }
+            
+            warnEl.classList.remove('hidden');
+            warnEl.classList.add('flex');
+        }
+    });
+
     window.startFullExam = function() {
         // Pull directly from the GLOBAL Test Bank
         const allListening = TEST_BANK.filter(t => t.module === 'listening');
@@ -7590,7 +7954,7 @@ window.initFirebaseSystem = async function() {
         window.fullExamSequence = [synthListening, synthReading, synthWriting];
         window.fullExamCurrentIndex = 0;
 
-        showConfirm("Start Full Exam", "This will start a timed mock exam consisting of Listening (40m), Reading (60m), and Writing (60m). The parts have been dynamically mixed and matched from your entire Test Bank to create a completely unique test! Make sure you have roughly 2.5 hours available.", () => {
+        showConfirm("Start Full Exam", "This will start a timed mock exam consisting of Listening (40m), Reading (60m), and Writing (60m). The parts have been dynamically mixed and matched from your entire Test Bank to create a completely unique test! Make sure you have roughly 2.5 hours available.<br><br><b class='text-rose-600'>⚠️ Note: This exam runs in Secure Browser Mode. Leaving the tab will record a security violation.</b>", () => {
             testMode = 'restricted';
             isTimeFree = false;
             startTest(null, null, window.fullExamSequence[0]);
@@ -7607,6 +7971,18 @@ window.initFirebaseSystem = async function() {
           if (selectedParts && selectedParts.length > 0) {
               APP_DATA.parts = selectedParts.map(idx => APP_DATA.parts[idx]).filter(Boolean);
           }
+      }
+
+      // Check for Secure Mode
+      let requireSecure = window.isFullExamMode;
+      const cid = document.getElementById('student-class-select')?.value;
+      const cls = CLASSES.find(c => c.id === cid);
+      if (!window.isFullExamMode && cls && cls.testSettings && APP_DATA.id && cls.testSettings[APP_DATA.id]?.secureMode) {
+          requireSecure = true;
+      }
+
+      if (requireSecure) {
+          window.enterSecureMode();
       }
 
       answers = {}; reviewStatus = {};
@@ -8607,6 +8983,7 @@ window.initFirebaseSystem = async function() {
 
     window.exitTestWithoutSaving = function() {
       showConfirm("Leave Practice Mode", "Are you sure you want to go back? Your progress will NOT be saved and no score will be recorded.", () => {
+        window.exitSecureMode();
         finalizeCurrentQuestionTiming();
         clearInterval(timerInterval); 
         document.getElementById('exam-ui').classList.add('hidden');
@@ -8677,7 +9054,8 @@ window.initFirebaseSystem = async function() {
               answers: JSON.parse(JSON.stringify(answers)), 
               score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade',
               syntheticData: window.isFullExamMode ? JSON.parse(JSON.stringify(APP_DATA)) : null,
-              questionAnalytics
+              questionAnalytics,
+              secureInfractions: window.secureInfractions || 0
           };
           
           SUBMISSIONS.unshift(sub);
@@ -8710,10 +9088,12 @@ window.initFirebaseSystem = async function() {
                 }, 3000);
             } else {
                 window.isFullExamMode = false;
+                window.exitSecureMode();
                 document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Full Exam Complete!</div><p class="text-sm text-slate-500 mt-2">All your responses have been recorded.</p><div class="mt-4 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
                 document.getElementById('results-modal').classList.remove('hidden');
             }
         } else {
+            window.exitSecureMode();
             if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
                document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div><div class="mt-6 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
             } else {
@@ -8803,7 +9183,9 @@ window.initFirebaseSystem = async function() {
         <div class="bg-white border border-blue-50 rounded-2xl p-5 mb-4 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h3 class="font-black text-lg text-slate-800 flex items-center gap-2">👤 ${s.student} <span class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-md border border-blue-100">${s.className}</span></h3>
-            <p class="text-sm font-medium text-slate-600 mt-1 flex items-center gap-2">📝 ${s.testName} <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-slate-100 px-2 py-0.5 rounded">${s.date}</span></p>
+            <p class="text-sm font-medium text-slate-600 mt-1 flex items-center gap-2">📝 ${s.testName} <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-slate-100 px-2 py-0.5 rounded">${s.date}</span>
+                ${s.secureInfractions > 0 ? `<span class="bg-rose-100 text-rose-700 border border-rose-300 text-[9px] font-bold px-1.5 py-0.5 rounded" title="${s.secureInfractions} Tab Switches Detected">⚠️ ${s.secureInfractions} Warnings</span>` : ''}
+            </p>
           </div>
           <div class="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center">
             <div class="flex items-center gap-2">
@@ -11440,6 +11822,12 @@ window.initFirebaseSystem = async function() {
         const cid = document.getElementById('student-class-select').value;
         if (!cid) {
             showModalMsg("Notice", "Please select a class from the top left dropdown first before booking an appointment.");
+            return;
+        }
+
+        const cls = CLASSES.find(c => c.id === cid);
+        if (cls && !cls.allowBooking) {
+            showModalMsg("Notice", "This class does not support manual slot booking. Please wait for your teacher to schedule lessons.");
             return;
         }
 
