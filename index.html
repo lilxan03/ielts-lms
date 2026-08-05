@@ -376,6 +376,11 @@
 
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
 <body class="font-sans bg-slate-100 overflow-hidden h-screen text-slate-800 transition-colors duration-300">
@@ -1421,24 +1426,23 @@
           </div>
 
           <!-- Timetable (Moved BELOW materials) -->
-          <div id="student-schedule-section" class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden hidden flex-col">
-             <div class="bg-slate-50/50 px-6 py-5 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4">
+          <div id="student-schedule-section" class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden hidden flex-col h-[650px]">
+             <div class="bg-slate-50/50 px-6 py-5 border-b border-slate-100 flex justify-between items-center flex-wrap gap-4 shrink-0">
                <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-indigo-500">📅</span> Live Timetable</h2>
                <div class="flex items-center gap-3">
                  <div class="flex items-center bg-white border border-slate-200 rounded-xl shadow-sm p-1">
-                   <button onclick="changeCalendarMonth(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&larr;</button>
-                   <span id="student-cal-month" class="font-bold text-blue-900 min-w-[120px] text-center text-sm">Month Year</span>
-                   <button onclick="changeCalendarMonth(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&rarr;</button>
+                   <button onclick="window.navigateCalendar(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&larr;</button>
+                   <span id="student-cal-month" class="font-bold text-blue-900 min-w-[120px] text-center text-sm uppercase">Month Year</span>
+                   <button onclick="window.navigateCalendar(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&rarr;</button>
                  </div>
+                 <select id="student-cal-view-select" onchange="window.changeCalendarView(this.value, 'student')" class="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-600 outline-none cursor-pointer shadow-sm bg-white hidden sm:block">
+                    <option value="week" selected>Week</option>
+                    <option value="month">Month</option>
+                 </select>
                  <button id="btn-student-book-slot" onclick="window.openStudentBooking()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-bold whitespace-nowrap hidden">＋ Book Slot</button>
                </div>
              </div>
-             <div class="p-6 xl:p-8 flex-1 bg-white">
-                 <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-[10px] font-black text-slate-400 mb-4 tracking-widest uppercase">
-                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                 </div>
-                 <div id="student-cal-grid" class="grid grid-cols-7 gap-2 xl:gap-3"></div>
-             </div>
+             <div id="student-cal-container" class="flex-1 overflow-hidden flex flex-col relative w-full p-2 sm:p-4 bg-white"></div>
           </div>
 
         </div>
@@ -1916,16 +1920,20 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
           
           <!-- Calendar Left Column -->
-          <div class="lg:col-span-2 bg-white border border-blue-50 rounded-2xl shadow-sm p-6">
-             <div class="flex justify-between items-center mb-6 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                <button onclick="changeCalendarMonth(-1, 'teacher')" class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg font-bold text-slate-600 shadow-sm transition">&larr; Prev</button>
-                <h3 id="teacher-cal-month" class="font-black text-xl text-blue-900 tracking-wide uppercase">Month Year</h3>
-                <button onclick="changeCalendarMonth(1, 'teacher')" class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg font-bold text-slate-600 shadow-sm transition">Next &rarr;</button>
+          <div class="lg:col-span-2 bg-white border border-blue-50 rounded-2xl shadow-sm p-6 flex flex-col h-[700px]">
+             <div class="flex justify-between items-center mb-4 bg-slate-50 p-2 rounded-xl border border-slate-100 shrink-0">
+                <div class="flex items-center gap-1 sm:gap-2">
+                    <button onclick="window.navigateCalendar(-1, 'teacher')" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg font-bold text-slate-600 shadow-sm transition">&larr;</button>
+                    <button onclick="window.navigateCalendar(1, 'teacher')" class="px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg font-bold text-slate-600 shadow-sm transition">&rarr;</button>
+                    <button onclick="currentCalDate = new Date(); window.renderCalendar('teacher');" class="px-4 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg font-bold text-slate-600 shadow-sm transition ml-2 hidden sm:block">Today</button>
+                </div>
+                <h3 id="teacher-cal-month" class="font-black text-base md:text-xl text-blue-900 tracking-wide uppercase truncate px-2">Month Year</h3>
+                <select id="teacher-cal-view-select" onchange="window.changeCalendarView(this.value, 'teacher')" class="border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 font-bold text-slate-600 outline-none cursor-pointer shadow-sm bg-white text-sm sm:text-base">
+                    <option value="week" selected>Week</option>
+                    <option value="month">Month</option>
+                </select>
              </div>
-             <div class="grid grid-cols-7 gap-2 text-center text-[10px] font-black text-slate-400 mb-2 tracking-widest uppercase">
-                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-             </div>
-             <div id="teacher-cal-grid" class="grid grid-cols-7 gap-2"></div>
+             <div id="teacher-cal-container" class="flex-1 overflow-hidden flex flex-col relative w-full"></div>
           </div>
 
           <!-- Day Schedule Right Column -->
@@ -9036,7 +9044,19 @@ window.initFirebaseSystem = async function() {
       }
     }
 
-    function handleAns(id, v) { answers[id] = v; triggerAutosave(); updateExamUI(); }
+    function handleAns(id, v) { 
+        answers[id] = v; 
+        
+        // Clear visual feedback on edit so the user knows they are modifying it
+        const textInput = document.querySelector(`input[oninput="handleAns(${id}, this.value)"]`);
+        if (textInput) {
+            textInput.parentElement.classList.remove('border-emerald-500', 'border-rose-500', 'bg-emerald-50', 'bg-rose-50', 'shake');
+            textInput.parentElement.classList.add('border-slate-400');
+        }
+        
+        triggerAutosave(); 
+        updateExamUI(); 
+    }
 
     function buildQuestionAnalyticsSnapshot() {
       if (!APP_DATA || !APP_DATA.parts) return [];
@@ -9053,6 +9073,8 @@ window.initFirebaseSystem = async function() {
         if (q.multi) {
             // Check Checkbox/Multi-select answers
             const given = q.ids.map(id => (answers[id] || '').toString().toLowerCase()).filter(Boolean);
+            const correctOpts = q.ids.flatMap(id => (q.correctAnswers?.[id] || '').toString().toLowerCase().split(/[/|]/).map(x => x.trim())).filter(Boolean);
+            
             q.ids.forEach(id => {
                 total++;
                 const ex = (q.correctAnswers?.[id] || '').toString().toLowerCase();
@@ -9061,6 +9083,26 @@ window.initFirebaseSystem = async function() {
                     if (matchIdx !== -1) { correct++; given.splice(matchIdx, 1); }
                 }
             });
+
+            // UI Highlight Logic
+            const blockEl = document.getElementById(`q-block-${blockIdx}`);
+            if(blockEl) {
+                const labels = blockEl.querySelectorAll('label');
+                labels.forEach(lbl => {
+                    const cb = lbl.querySelector('input[type="checkbox"]');
+                    if (cb) {
+                        const val = cb.value.toLowerCase().trim();
+                        lbl.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'ring-1', 'ring-emerald-500', 'bg-rose-50', 'border-rose-500', 'text-rose-900', 'ring-rose-500', 'shake');
+                        if (cb.checked) {
+                            if (correctOpts.includes(val)) {
+                                lbl.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'ring-1', 'ring-emerald-500');
+                            } else {
+                                lbl.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-900', 'ring-1', 'ring-rose-500', 'shake');
+                            }
+                        }
+                    }
+                });
+            }
         } else {
             // Check standard questions (Text, Radio, Dropdowns)
             q.ids.forEach(id => {
@@ -9068,7 +9110,67 @@ window.initFirebaseSystem = async function() {
                 const exStr = (q.correctAnswers?.[id] || '').toString().toLowerCase();
                 const gv = (answers[id] || '').toString().toLowerCase().trim();
                 const exList = exStr.split(/[/|]/).map(x => x.trim()); // Supports multiple valid answers separated by / or |
-                if (exStr && exList.includes(gv) && gv !== '') correct++;
+                const isC = exStr && exList.includes(gv) && gv !== '';
+                if (isC) correct++;
+
+                // UI Highlight Logic
+                
+                // 1. Text Inputs (Fill Blanks)
+                const textInput = document.querySelector(`input[oninput="handleAns(${id}, this.value)"]`);
+                if (textInput) {
+                    const parent = textInput.parentElement;
+                    parent.classList.remove('border-slate-400', 'border-emerald-500', 'border-rose-500', 'bg-emerald-50', 'bg-rose-50', 'shake');
+                    if (gv === '') {
+                        parent.classList.add('border-slate-400');
+                    } else if (isC) {
+                        parent.classList.add('border-emerald-500', 'bg-emerald-50');
+                    } else {
+                        parent.classList.add('border-rose-500', 'bg-rose-50', 'shake');
+                    }
+                }
+
+                // 2. Drop Zones (Passage & Question)
+                const dropZones = document.querySelectorAll(`.drop-zone[ondrop="drop(event, ${id})"]`);
+                dropZones.forEach(dz => {
+                    dz.classList.remove('border-blue-500', 'border-slate-300', 'border-slate-400', 'border-emerald-500', 'border-rose-500', 'bg-blue-50', 'bg-emerald-50', 'bg-rose-50', 'text-emerald-900', 'text-rose-900', 'shake');
+                    if (gv === '') {
+                        dz.classList.add('border-slate-400', 'border-dashed');
+                    } else if (isC) {
+                        dz.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900', 'border-solid', 'border-2');
+                    } else {
+                        dz.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900', 'border-solid', 'border-2', 'shake');
+                    }
+                });
+
+                // 3. Radio Buttons (Standard & Matching Info)
+                const radios = document.querySelectorAll(`input[type="radio"][name="q-${id}"], input[type="radio"][onchange="handleAns(${id}, this.value)"]`);
+                radios.forEach(radio => {
+                    const lbl = radio.closest('label');
+                    const td = radio.closest('td');
+                    if (lbl) {
+                        lbl.classList.remove('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'ring-1', 'ring-emerald-500', 'bg-rose-50', 'border-rose-500', 'text-rose-900', 'ring-rose-500', 'shake');
+                        if (radio.checked) {
+                            if (isC) lbl.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'ring-1', 'ring-emerald-500');
+                            else lbl.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-900', 'ring-1', 'ring-rose-500', 'shake');
+                        }
+                    } else if (td) {
+                        td.classList.remove('bg-emerald-100', 'bg-rose-100');
+                        if (radio.checked) {
+                            if (isC) td.classList.add('bg-emerald-100');
+                            else td.classList.add('bg-rose-100');
+                        }
+                    }
+                });
+                
+                // 4. Map Labelling Grid
+                const mapCells = document.querySelectorAll(`td[onclick*="handleAns(${id}"]`);
+                mapCells.forEach(td => {
+                    td.classList.remove('bg-emerald-100', 'bg-rose-100');
+                    if (td.innerHTML.includes('svg')) {
+                        if (isC) td.classList.add('bg-emerald-100');
+                        else td.classList.add('bg-rose-100');
+                    }
+                });
             });
         }
 
@@ -11529,60 +11631,187 @@ window.initFirebaseSystem = async function() {
 
     // --- TIMETABLE & ATTENDANCE LOGIC ---
     let currentCalDate = new Date();
+    window.currentCalView = 'week';
 
-    window.changeCalendarMonth = function(dir, role) {
-        currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+    window.changeCalendarView = function(view, role) {
+        window.currentCalView = view;
         window.renderCalendar(role);
-    }
+    };
+
+    window.navigateCalendar = function(dir, role) {
+        if (window.currentCalView === 'month') {
+            currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+        } else {
+            currentCalDate.setDate(currentCalDate.getDate() + (dir * 7));
+        }
+        window.renderCalendar(role);
+    };
 
     window.renderCalendar = function(role) {
+        const containerId = role === 'teacher' ? 'teacher-cal-container' : 'student-cal-container';
+        const monthLabelId = role === 'teacher' ? 'teacher-cal-month' : 'student-cal-month';
+        const container = document.getElementById(containerId);
+        const monthLabel = document.getElementById(monthLabelId);
+        if (!container || !monthLabel) return;
+
         const year = currentCalDate.getFullYear();
         const month = currentCalDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         
-        let gridHtml = '';
-        // Blank cells before the 1st of the month
-        for (let i = 0; i < firstDay; i++) {
-            gridHtml += `<div class="p-2 border border-transparent"></div>`;
-        }
-        
-        // NEW: Get the exact local date based on the user's timezone
         const today = new Date();
         const localTodayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-        
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-            const isToday = localTodayStr === dateStr;
+
+        if (window.currentCalView === 'month') {
+            monthLabel.textContent = `${monthNames[month]} ${year}`;
             
-            let daySchedules = SCHEDULES.filter(s => s.date === dateStr);
-            if (role === 'student') {
-                const cid = document.getElementById('student-class-select').value;
-                const cls = CLASSES.find(c => c.id === cid);
-                if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name);
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let gridHtml = `
+            <div class="grid grid-cols-7 gap-1 md:gap-2 text-center text-[10px] font-black text-slate-400 mb-2 tracking-widest uppercase shrink-0 pt-2">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            <div class="grid grid-cols-7 gap-2 flex-1 overflow-y-auto pb-4 custom-scrollbar pr-1 content-start">`;
+            
+            for (let i = 0; i < firstDay; i++) {
+                gridHtml += `<div class="p-2 border border-transparent min-h-[60px]"></div>`;
             }
             
-            const hasClass = daySchedules.length > 0;
-            const badgeColor = role === 'student' ? 'bg-indigo-500' : 'bg-blue-500';
-            const badgeHtml = hasClass ? `<div class="mt-2 w-2 h-2 rounded-full ${badgeColor} mx-auto shadow-sm"></div>` : '';
-            
-            let classesStr = "p-2 min-h-[70px] border rounded-lg cursor-pointer transition flex flex-col items-center justify-start hover:shadow-md";
-            if (isToday) classesStr += " bg-slate-800 font-bold text-white border-slate-900";
-            else classesStr += " bg-white text-slate-700 border-slate-200 hover:border-slate-400";
-            if (hasClass && !isToday) classesStr += role === 'student' ? " ring-2 ring-indigo-200 border-indigo-300 bg-indigo-50" : " ring-2 ring-blue-200 border-blue-300 bg-blue-50";
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const isToday = localTodayStr === dateStr;
+                
+                let daySchedules = SCHEDULES.filter(s => s.date === dateStr);
+                if (role === 'student') {
+                    const cid = document.getElementById('student-class-select')?.value;
+                    const cls = CLASSES.find(c => c.id === cid);
+                    if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name);
+                }
+                
+                const hasClass = daySchedules.length > 0;
+                const badgeColor = role === 'student' ? 'bg-indigo-500' : 'bg-blue-500';
+                const badgeHtml = hasClass ? `<div class="mt-auto pt-2"><div class="w-2 h-2 rounded-full ${badgeColor} mx-auto shadow-sm"></div></div>` : '';
+                
+                let classesStr = "p-2 min-h-[60px] border rounded-lg cursor-pointer transition flex flex-col items-center justify-start hover:shadow-md";
+                if (isToday) classesStr += " bg-slate-800 font-bold text-white border-slate-900";
+                else classesStr += " bg-white text-slate-700 border-slate-200 hover:border-slate-400";
+                if (hasClass && !isToday) classesStr += role === 'student' ? " ring-2 ring-indigo-200 border-indigo-300 bg-indigo-50" : " ring-2 ring-blue-200 border-blue-300 bg-blue-50";
 
-            gridHtml += `<div onclick="selectDate('${dateStr}', '${role}')" class="${classesStr}">
-                <span class="${isToday ? '' : 'mt-1'}">${day}</span>
-                ${badgeHtml}
+                gridHtml += `<div onclick="selectDate('${dateStr}', '${role}')" class="${classesStr}">
+                    <span class="${isToday ? '' : 'mt-1'}">${day}</span>
+                    ${badgeHtml}
+                </div>`;
+            }
+            gridHtml += `</div>`;
+            container.innerHTML = gridHtml;
+
+        } else {
+            // WEEK VIEW LOGIC
+            const startOfWeek = new Date(currentCalDate);
+            startOfWeek.setDate(currentCalDate.getDate() - currentCalDate.getDay());
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            if (startOfWeek.getMonth() === endOfWeek.getMonth()) {
+                monthLabel.textContent = `${monthNames[startOfWeek.getMonth()]} ${startOfWeek.getFullYear()}`;
+            } else {
+                monthLabel.textContent = `${monthNames[startOfWeek.getMonth()]} - ${monthNames[endOfWeek.getMonth()]} ${endOfWeek.getFullYear()}`;
+            }
+
+            const weekDays = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(startOfWeek);
+                d.setDate(startOfWeek.getDate() + i);
+                weekDays.push(d);
+            }
+
+            const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+            let headerHtml = `<div class="flex border-b border-slate-200 shrink-0 pr-[8px]">
+                <div class="w-12 sm:w-16 shrink-0 border-r border-slate-100"></div>`;
+            
+            weekDays.forEach((d, i) => {
+                const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                const isToday = localTodayStr === dateStr;
+                const num = d.getDate();
+                
+                headerHtml += `
+                <div class="flex-1 flex flex-col items-center justify-center py-2 cursor-pointer hover:bg-slate-50 transition border-l border-slate-100 first:border-l-0" onclick="selectDate('${dateStr}', '${role}')">
+                    <span class="text-[10px] sm:text-xs font-black uppercase ${isToday ? 'text-blue-600' : 'text-slate-400'}">${dayNames[i]}</span>
+                    <div class="mt-1 w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full text-sm sm:text-base font-bold ${isToday ? 'bg-blue-600 text-white shadow-md' : 'text-slate-700'}">${num}</div>
+                </div>`;
+            });
+            headerHtml += `</div>`;
+
+            // 06:00 to 22:00 -> 17 hours
+            const START_HOUR = 6;
+            const END_HOUR = 22;
+            const ROW_HEIGHT = 60; 
+            const TOTAL_HEIGHT = (END_HOUR - START_HOUR + 1) * ROW_HEIGHT;
+            
+            let gridBgHtml = '';
+            for (let h = START_HOUR; h <= END_HOUR; h++) {
+                gridBgHtml += `
+                <div class="flex border-b border-slate-100 box-border w-full" style="height: ${ROW_HEIGHT}px;">
+                    <div class="w-12 sm:w-16 shrink-0 flex items-start justify-center pt-2 text-[10px] sm:text-xs font-bold text-slate-400 border-r border-slate-200 bg-slate-50/50">${String(h).padStart(2,'0')}:00</div>
+                    <div class="flex-1 flex w-full">
+                        ${[0,1,2,3,4,5,6].map(i => `<div class="flex-1 border-l border-slate-100 first:border-l-0"></div>`).join('')}
+                    </div>
+                </div>`;
+            }
+
+            const gridContainerHtml = `
+            <div class="flex-1 overflow-y-auto custom-scrollbar bg-white w-full block">
+                <div class="relative w-full" style="height: ${TOTAL_HEIGHT}px;">
+                    <!-- Background Grid -->
+                    <div class="absolute inset-0 flex flex-col z-0 pointer-events-none">
+                        ${gridBgHtml}
+                    </div>
+                    
+                    <!-- Events Overlay -->
+                    <div class="absolute inset-0 pl-12 sm:pl-16 flex pointer-events-none z-10">
+                        ${weekDays.map((d, i) => {
+                            const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                            let daySchedules = SCHEDULES.filter(s => s.date === dateStr);
+                            if (role === 'student') {
+                                const cid = document.getElementById('student-class-select')?.value;
+                                const cls = CLASSES.find(c => c.id === cid);
+                                if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name);
+                            }
+                            
+                            let colsEventsHtml = '';
+                            daySchedules.forEach(s => {
+                                const parsed = window.parseClassDateTime(s.date, s.time);
+                                if (!parsed) return;
+                                const eventHour = parsed.getHours();
+                                const eventMin = parsed.getMinutes();
+                                
+                                const topPx = ((eventHour - START_HOUR) + (eventMin / 60)) * ROW_HEIGHT;
+                                const durMins = AVAILABILITY.duration || 60;
+                                const heightPx = (durMins / 60) * ROW_HEIGHT;
+                                const evColor = role === 'student' ? 'bg-indigo-500 hover:bg-indigo-600 border-indigo-400' : 'bg-blue-600 hover:bg-blue-700 border-blue-500';
+                                
+                                colsEventsHtml += `
+                                <div onclick="selectDate('${dateStr}', '${role}')" 
+                                     class="absolute inset-x-0.5 sm:inset-x-1 z-10 ${evColor} text-white rounded-md p-1 sm:p-1.5 shadow-sm border cursor-pointer pointer-events-auto transition-transform hover:scale-[1.02] hover:z-20 overflow-hidden flex flex-col"
+                                     style="top: ${topPx}px; height: ${heightPx}px;"
+                                     title="${s.time} - ${s.className}\n${s.topic || ''}">
+                                    <div class="text-[9px] sm:text-[11px] font-black leading-tight truncate drop-shadow-sm">${s.className}</div>
+                                    <div class="text-[8px] sm:text-[10px] font-medium opacity-90 truncate leading-tight mt-0.5">${s.time}</div>
+                                </div>`;
+                            });
+                            
+                            return `<div class="flex-1 relative h-full">${colsEventsHtml}</div>`;
+                        }).join('')}
+                    </div>
+                </div>
             </div>`;
+
+            container.innerHTML = `<div class="flex flex-col h-full w-full bg-white">${headerHtml}${gridContainerHtml}</div>`;
         }
-        
+
         if (role === 'teacher') {
-            document.getElementById('teacher-cal-month').textContent = `${monthNames[month]} ${year}`;
-            document.getElementById('teacher-cal-grid').innerHTML = gridHtml;
-            document.getElementById('timetable-list').innerHTML = '<p class="text-sm text-slate-500 italic mt-10 text-center">Click a day on the calendar to view or add class schedules.</p>';
+            document.getElementById('timetable-list').innerHTML = '<p class="text-sm text-slate-500 italic mt-10 text-center">Click an event or day header on the calendar to manage.</p>';
             document.getElementById('teacher-selected-date-label').textContent = 'Select a date';
             
             const students = USERS.filter(u => u.role === 'student');
@@ -11593,9 +11822,6 @@ window.initFirebaseSystem = async function() {
                 </div>
             `).join('');
             
-        } else if (role === 'student') {
-            document.getElementById('student-cal-month').textContent = `${monthNames[month]} ${year}`;
-            document.getElementById('student-cal-grid').innerHTML = gridHtml;
         }
     }
 
