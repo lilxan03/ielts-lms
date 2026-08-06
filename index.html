@@ -551,7 +551,17 @@
       </select>
 
       <label class="block text-sm font-black text-amber-600 mb-1 flex items-center gap-1">💎 Premium Unlock Price (Gems)</label>
-      <input type="number" id="meta-price-input" placeholder="0 for Free" class="w-full border-2 border-amber-200 bg-amber-50 rounded px-3 py-2 mb-6 focus:border-amber-500 outline-none text-sm font-black text-amber-700 shadow-inner" />
+      <input type="number" id="meta-price-input" placeholder="0 for Free" class="w-full border-2 border-amber-200 bg-amber-50 rounded px-3 py-2 mb-4 focus:border-amber-500 outline-none text-sm font-black text-amber-700 shadow-inner" />
+      
+      <div class="border-t border-slate-200 pt-4 mb-6">
+          <label class="block text-sm font-bold text-slate-700 mb-1">Assign to (Collaborator)</label>
+          <select id="meta-assignee-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none text-sm font-medium bg-white cursor-pointer"></select>
+
+          <label class="block text-sm font-black text-emerald-600 mb-1 flex items-center gap-1">💰 Incentive / Bounty (VND)</label>
+          <input type="number" id="meta-incentive-input" placeholder="e.g. 20000" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded px-3 py-2 mb-2 focus:border-emerald-500 outline-none text-sm font-black text-emerald-700 shadow-inner" />
+          <p class="text-[10px] text-slate-500">Earnings are credited when status is changed to "Approved".</p>
+      </div>
+
       <div class="flex justify-end gap-3">
         <button id="meta-cancel" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
         <button id="meta-confirm" class="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 font-bold shadow">Save Settings</button>
@@ -1709,6 +1719,10 @@
                 <option value="review_ready">🟣 Ready for Review</option>
                 <option value="approved">🟢 Approved</option>
               </select>
+              <select id="bank-filter-assignee" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
+                <option value="all">All Authors</option>
+                <option value="me">Assigned to Me</option>
+              </select>
             </div>
             
             <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 stagger-fade-in"></div>
@@ -1740,15 +1754,22 @@
                </button>
             </div>
           </div>
-          <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-50">
-            <div class="relative w-full">
+          <div class="flex flex-col sm:flex-row gap-3 bg-white p-4 rounded-2xl shadow-sm border border-blue-50 items-center">
+            <div class="relative flex-1 w-full">
                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <span class="text-slate-400">🔍</span>
                </div>
-               <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-base focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
+               <input type="text" id="classes-search" onkeyup="renderClasses()" placeholder="Search classes by name..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
             </div>
+            <select id="classes-sort" onchange="renderClasses()" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[180px] shrink-0">
+                <option value="default">Default Order</option>
+                <option value="az">Name (A-Z)</option>
+                <option value="za">Name (Z-A)</option>
+                <option value="students_high">Most Students</option>
+                <option value="subs_high">Most Submissions</option>
+            </select>
           </div>
-          <div id="classes-list" class="space-y-6 stagger-fade-in"></div>
+          <div id="classes-list" class="space-y-4 stagger-fade-in"></div>
         </div>
 
       </div>
@@ -4038,6 +4059,7 @@ window.initFirebaseSystem = async function() {
       const query = (document.getElementById('bank-search')?.value || '').toLowerCase();
       const mod = document.getElementById('bank-filter-mod')?.value || 'all';
       const statusFilter = document.getElementById('bank-filter-status')?.value || 'all';
+      const assigneeFilter = document.getElementById('bank-filter-assignee')?.value || 'all';
       const sort = document.getElementById('bank-sort')?.value || 'newest';
       
       const tagSelect = document.getElementById('bank-filter-tag');
@@ -4060,8 +4082,9 @@ window.initFirebaseSystem = async function() {
           
           const tStatus = t.status || 'not_started';
           const matchStatus = statusFilter === 'all' || tStatus === statusFilter;
+          const matchAssignee = assigneeFilter === 'all' || (assigneeFilter === 'me' && t.assignee === currentUser.user);
           
-          return matchQuery && matchMod && matchTag && matchStatus;
+          return matchQuery && matchMod && matchTag && matchStatus && matchAssignee;
       });
 
       if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
@@ -4085,6 +4108,10 @@ window.initFirebaseSystem = async function() {
 
         const testDiff = t.difficulty ? `<span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200 shadow-sm">Band ${parseFloat(t.difficulty).toFixed(1)}</span>` : '';
         
+        let bountyBadge = '';
+        if (t.assignee) bountyBadge += `<span class="text-[10px] font-bold px-2 py-1 rounded bg-purple-50 text-purple-700 border border-purple-200 shadow-sm flex items-center gap-1"><span class="text-xs">🧑‍💻</span> ${t.assignee}</span>`;
+        if (t.incentive > 0) bountyBadge += `<span class="text-[10px] font-black px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm flex items-center gap-1"><span class="text-xs">💰</span> ${(t.incentive/1000)}k</span>`;
+
         const statusMap = {
             'not_started': { label: 'Not Started', color: 'rose' },
             'in_progress': { label: 'In Progress', color: 'amber' },
@@ -4101,6 +4128,7 @@ window.initFirebaseSystem = async function() {
              <div class="flex gap-2 flex-wrap">
                  <span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide shadow-sm">${t.module}</span>
                  ${testDiff}
+                 ${bountyBadge}
              </div>
              ${statBadge}
           </div>
@@ -4555,13 +4583,29 @@ window.initFirebaseSystem = async function() {
 
     function renderClasses() {
       const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
+      const sortVal = document.getElementById('classes-sort')?.value || 'default';
       
       let viewableClasses = CLASSES;
       if (currentUser && currentUser.role === 'collaborator') {
           viewableClasses = CLASSES.filter(c => (c.collaborators || []).includes(currentUser.user));
       }
 
-      const filteredClasses = viewableClasses.filter(c => c.name.toLowerCase().includes(query));
+      let filteredClasses = viewableClasses.filter(c => c.name.toLowerCase().includes(query));
+      
+      // Apply Sorting Logic
+      if (sortVal === 'az') {
+          filteredClasses.sort((a, b) => a.name.localeCompare(b.name));
+      } else if (sortVal === 'za') {
+          filteredClasses.sort((a, b) => b.name.localeCompare(a.name));
+      } else if (sortVal === 'students_high') {
+          filteredClasses.sort((a, b) => (b.enrolledStudents || []).length - (a.enrolledStudents || []).length);
+      } else if (sortVal === 'subs_high') {
+          filteredClasses.sort((a, b) => {
+              const subsA = SUBMISSIONS.filter(s => s.className === a.name).length;
+              const subsB = SUBMISSIONS.filter(s => s.className === b.name).length;
+              return subsB - subsA;
+          });
+      }
       
       document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
@@ -5927,6 +5971,12 @@ window.initFirebaseSystem = async function() {
     window.quickUpdateTestStatus = function(val) {
         if (!APP_DATA || !APP_DATA.id) return;
         APP_DATA.status = val;
+        
+        // Track the exact moment it was approved for monthly earning calculations
+        if (val === 'approved' && !APP_DATA.approvedAt) {
+            APP_DATA.approvedAt = Date.now();
+        }
+
         window.triggerEditorAutosave();
         
         if (val === 'review_ready') {
@@ -8724,6 +8774,28 @@ window.initFirebaseSystem = async function() {
         const nowHidden = content.classList.toggle('hidden');
         if (label) label.textContent = nowHidden ? 'Show Sample Answer' : 'Hide Sample Answer';
     };
+    window.calculateIELTSBand = function(correct, total) {
+        if (total === 0) return 0;
+        let projected = Math.round((correct / total) * 40); // Standardize to a 40-question scale
+        if (projected >= 39) return 9.0;
+        if (projected >= 37) return 8.5;
+        if (projected >= 35) return 8.0;
+        if (projected >= 33) return 7.5;
+        if (projected >= 30) return 7.0;
+        if (projected >= 27) return 6.5;
+        if (projected >= 23) return 6.0;
+        if (projected >= 20) return 5.5;
+        if (projected >= 16) return 5.0;
+        if (projected >= 13) return 4.5;
+        if (projected >= 10) return 4.0;
+        if (projected >= 7) return 3.5;
+        if (projected >= 5) return 3.0;
+        if (projected >= 3) return 2.5;
+        if (projected >= 2) return 2.0; 
+        if (projected >= 1) return 1.0; 
+        return 0; 
+    };
+
     window.toggleTranscript = function() {
         const passage = document.getElementById('passage-container');
         const resizer = document.getElementById('resizer');
@@ -8736,6 +8808,7 @@ window.initFirebaseSystem = async function() {
             resizer.classList.add('hidden');
         }
     };
+
     function renderPart(idx) {
       finalizeCurrentQuestionTiming();
       currentPartIdx = idx; currentBlockIdx = 0;
@@ -8798,6 +8871,7 @@ window.initFirebaseSystem = async function() {
                   if (examAudio.getAttribute('src') !== p.audioUrl) {
                       if (examAudio.src) examAudio.pause();
                       examAudio.src = p.audioUrl;
+                      examAudio.load(); // ✨ FIX: Force browser to buffer the audio to prevent blocked playback!
                       if (listeningOverlay) {
                           listeningOverlay.classList.remove('hidden');
                           listeningOverlay.classList.add('flex');
@@ -9700,6 +9774,8 @@ window.initFirebaseSystem = async function() {
         if (practiceAudio) { practiceAudio.pause(); }
         
         let total = 0, correct = 0;
+        let bandScoreText = 'Pending Grade';
+
         if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
           APP_DATA.parts.forEach(p => p.questions.forEach(q => {
              if (q.multi) {
@@ -9717,12 +9793,15 @@ window.initFirebaseSystem = async function() {
                     total++; 
                     const exStr = (q.correctAnswers?.[id]||'').toString().toLowerCase(); 
                     const gv = (answers[id]||'').toString().toLowerCase().trim();
-                    // ✨ NEW: Multi-valid answer evaluation
                     const exList = exStr.split(/[/|]/).map(x => x.trim());
                     if(exStr && exList.includes(gv) && gv !== '') correct++;
                  });
              }
           }));
+          
+          // ✨ CALCULATE BAND SCORE
+          const band = window.calculateIELTSBand(correct, total);
+          bandScoreText = `${correct}/${total} (Band ${band.toFixed(1)})`;
         }
         
         if (!isPreviewMode) {
@@ -9737,19 +9816,27 @@ window.initFirebaseSystem = async function() {
               className: CLASSES.find(c=>c.id===clsId)?.name||'', 
               date: new Date().toLocaleDateString(), 
               answers: JSON.parse(JSON.stringify(answers)), 
-              score: APP_DATA.module==='reading'||APP_DATA.module==='listening' ? `${correct}/${total}` : 'Pending Grade',
+              score: bandScoreText, // Store the calculated band in the DB!
               syntheticData: window.isFullExamMode ? JSON.parse(JSON.stringify(APP_DATA)) : null,
               questionAnalytics,
               secureInfractions: window.secureInfractions || 0
           };
           
           SUBMISSIONS.unshift(sub);
-          window.currentActiveSubmissionId = sub.id; // ✨ ADDED THIS: Save the ID so we can review it instantly
+          
+          // ✨ SUPPORT FOR FULL MOCKS
+          if (window.isFullExamMode) {
+              if (!window.fullExamSubmissions) window.fullExamSubmissions = [];
+              window.fullExamSubmissions.push(sub);
+          } else {
+              window.currentActiveSubmissionId = sub.id; 
+          }
+
           try { 
               await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub);
               
-              // 🏆 ECONOMY REWARD: Grant 50 Gems for completing a test!
-              if (!window.isFullExamMode || window.fullExamCurrentIndex === 2) {
+              // 🏆 ECONOMY REWARD: Grant 50 Gems for normal test
+              if (!window.isFullExamMode) {
                   currentUser.gems = (currentUser.gems || 0) + 50;
                   await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
                   sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
@@ -9766,23 +9853,59 @@ window.initFirebaseSystem = async function() {
                 setTimeout(() => {
                     document.getElementById('custom-modal').classList.add('hidden');
                     const nextStep = window.fullExamSequence[window.fullExamCurrentIndex];
-                    
-                    // FIXED: We pass the entire synthetic test object directly to startTest!
                     startTest(null, null, nextStep);
-                    
                 }, 3000);
             } else {
+                // ✨ FULL MOCK COMPLETED
                 window.isFullExamMode = false;
                 window.exitSecureMode();
-                document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Full Exam Complete!</div><p class="text-sm text-slate-500 mt-2">All your responses have been recorded.</p><div class="mt-4 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
+
+                let resultsHtml = '<div class="space-y-3 mt-6 text-left max-h-[300px] overflow-y-auto">';
+                (window.fullExamSubmissions || []).forEach(s => {
+                    let scoreBadge = '';
+                    if (s.score.includes('Band')) {
+                        const bandMatch = s.score.match(/(Band [0-9.]+)/);
+                        if (bandMatch) scoreBadge = `<span class="bg-blue-100 text-blue-800 border border-blue-300 font-black px-3 py-1.5 rounded-lg shadow-sm text-sm">${bandMatch[1]}</span>`;
+                    } else {
+                        scoreBadge = `<span class="bg-amber-100 text-amber-800 border border-amber-300 font-bold px-3 py-1.5 rounded-lg shadow-sm text-xs uppercase tracking-widest">${s.score}</span>`;
+                    }
+                    
+                    resultsHtml += `
+                    <div class="flex justify-between items-center p-4 border border-slate-200 rounded-xl bg-white shadow-sm hover:border-blue-300 transition cursor-default">
+                        <span class="font-bold text-slate-800 text-[15px] truncate pr-4">${s.testName.replace(' (Full Exam)', '')}</span>
+                        ${scoreBadge}
+                    </div>`;
+                });
+                resultsHtml += '</div>';
+
+                document.getElementById('results-score-area').innerHTML = `
+                    <div class="text-3xl font-black text-slate-800 mb-2">Exam Complete!</div>
+                    <p class="text-sm font-medium text-slate-500">You have completed all 3 sections of the mock exam.</p>
+                    ${resultsHtml}
+                    <div class="mt-8 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-6 py-3 rounded-xl shadow-sm animate-bounce text-lg tracking-wide">🎉 +150 💎 Earned!</div>
+                `;
                 document.getElementById('results-modal').classList.remove('hidden');
+                
+                // Grant Full Exam Bonus
+                if (!isPreviewMode) {
+                    currentUser.gems = (currentUser.gems || 0) + 150;
+                    window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                    sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                    window.updateDashboardHeader();
+                }
             }
         } else {
             window.exitSecureMode();
             if(APP_DATA.module === 'reading' || APP_DATA.module === 'listening') {
-               document.getElementById('results-score-area').innerHTML = `<div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div><div class="text-sm font-bold text-slate-400 uppercase">Correct Answers</div><div class="mt-6 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
+               const band = window.calculateIELTSBand(correct, total);
+               document.getElementById('results-score-area').innerHTML = `
+                    <div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div>
+                    <div class="text-xl font-bold text-emerald-600 mb-3 bg-emerald-50 border border-emerald-200 inline-block px-4 py-1.5 rounded-xl shadow-sm">Estimated Band: ${band.toFixed(1)}</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Score Recorded</div>
+                    <div class="mt-6 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>
+               `;
             } else {
-               document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p><div class="mt-4 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
+               document.getElementById('results-score-area').innerHTML = `<div class="text-2xl font-bold text-amber-600">Response Recorded</div><p class="text-sm text-slate-500 mt-2">${isPreviewMode ? 'Preview session ended.' : 'Waiting for teacher review.'}</p><div class="mt-6 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>`;
             }
             document.getElementById('results-modal').classList.remove('hidden');
         }
@@ -9888,10 +10011,12 @@ window.initFirebaseSystem = async function() {
     window.openExplanationsReview = function() {
       document.getElementById('results-modal').classList.add('hidden');
       
-      if (!isPreviewMode && window.currentActiveSubmissionId) {
-          // 🚀 SMART FIX: Route them through the official past submission reviewer!
-          // This guarantees the subId is passed, the answers are pulled from the DB state,
-          // and Full Mock Exams will load all 3 sections instead of just the last one.
+      // ✨ ROUTE TO HISTORY FOR FULL EXAMS
+      if (window.fullExamSubmissions && window.fullExamSubmissions.length > 0) {
+          window.fullExamSubmissions = []; // Clear array
+          document.getElementById('start-screen').classList.remove('hidden'); 
+          window.openStudentHistory(); // Send to history so they can pick which specific section to review!
+      } else if (!isPreviewMode && window.currentActiveSubmissionId) {
           reviewPastSubmission(window.currentActiveSubmissionId);
       } else {
           // Fallback for Teacher Preview Mode
@@ -11619,19 +11744,25 @@ window.initFirebaseSystem = async function() {
             const staff = USERS.filter(u => u.role === 'collaborator' || u.role === 'teacher');
             if (countBadge) countBadge.textContent = staff.length;
 
-            let html = `<table class="w-full text-left border-collapse whitespace-nowrap min-w-[600px]">
+            const formatVND = (amt) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amt);
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            let html = `<table class="w-full text-left border-collapse whitespace-nowrap min-w-[900px]">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         <th class="p-4">Staff Account</th>
-                        <th class="p-4">Role / Access Level</th>
-                        <th class="p-4">Date Added</th>
+                        <th class="p-4">Role</th>
+                        <th class="p-4 text-center">Approved Tasks</th>
+                        <th class="p-4 text-right">Earned (This Month)</th>
+                        <th class="p-4 text-right">Earned (Total)</th>
                         <th class="p-4 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm">`;
 
             if (staff.length === 0) {
-                html += '<tr><td colspan="4" class="p-8 text-center text-slate-500 italic text-sm">No staff found.</td></tr>';
+                html += '<tr><td colspan="6" class="p-8 text-center text-slate-500 italic text-sm">No staff found.</td></tr>';
             } else {
                 html += staff.map(s => {
                     const isMe = s.user === currentUser.user;
@@ -11641,18 +11772,43 @@ window.initFirebaseSystem = async function() {
                         actions += `<button onclick="window.deleteStaff('${s.user}')" class="bg-rose-50 border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold ml-2">🗑️ Delete</button>`;
                     }
 
+                    // ✨ Calculate Earnings for Collaborators
+                    let tasksDone = 0;
+                    let earnedMonth = 0;
+                    let earnedTotal = 0;
+                    
+                    if (s.role === 'collaborator') {
+                        TEST_BANK.forEach(t => {
+                            if (t.assignee === s.user && t.status === 'approved') {
+                                tasksDone++;
+                                const inc = Number(t.incentive) || 0;
+                                earnedTotal += inc;
+                                
+                                const appAt = new Date(t.approvedAt || 0);
+                                if (appAt.getMonth() === currentMonth && appAt.getFullYear() === currentYear) {
+                                    earnedMonth += inc;
+                                }
+                            }
+                        });
+                    }
+
                     return `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-4">
                             <div class="flex items-center gap-3">
                                 <img src="${s.avatar || `https://ui-avatars.com/api/?name=${s.user}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
-                                <span class="font-bold text-slate-800 text-sm">${s.user} ${isMe ? '<span class="text-xs font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded ml-1 uppercase tracking-widest border border-blue-200">You</span>' : ''}</span>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-slate-800 text-sm">${s.user} ${isMe ? '<span class="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded ml-1 uppercase tracking-widest">You</span>' : ''}</span>
+                                    <span class="text-[10px] font-medium text-slate-400">Added: ${s.createdAt || 'N/A'}</span>
+                                </div>
                             </div>
                         </td>
                         <td class="p-4">
                             <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm ${s.role === 'teacher' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-purple-100 text-purple-700 border border-purple-200'}">${s.role}</span>
                         </td>
-                        <td class="p-4 text-xs font-bold text-slate-500">${s.createdAt || 'N/A'}</td>
+                        <td class="p-4 text-center font-bold text-slate-700">${s.role === 'collaborator' ? tasksDone : '—'}</td>
+                        <td class="p-4 text-right font-black text-emerald-600">${s.role === 'collaborator' ? formatVND(earnedMonth) : '—'}</td>
+                        <td class="p-4 text-right font-black text-blue-600">${s.role === 'collaborator' ? formatVND(earnedTotal) : '—'}</td>
                         <td class="p-4 text-right">${actions}</td>
                     </tr>
                     `;
@@ -14159,6 +14315,31 @@ window.initFirebaseSystem = async function() {
       });
       // Populate the price field when opening
       document.getElementById('meta-price-input').value = APP_DATA.price || 0;
+    };// Replace editCurrentTestMeta to include the Price and Bounties!
+    window.editCurrentTestMeta = function() {
+      showTestMetaModal("Edit Test Settings", APP_DATA.title, (APP_DATA.topics || []).join(", "), APP_DATA.difficulty, APP_DATA.status, (title, topics, diff, status) => {
+        APP_DATA.title = title;
+        APP_DATA.topics = topics;
+        APP_DATA.difficulty = diff;
+        APP_DATA.status = status;
+        APP_DATA.price = Number(document.getElementById('meta-price-input').value) || 0;
+        
+        APP_DATA.assignee = document.getElementById('meta-assignee-input').value;
+        APP_DATA.incentive = Number(document.getElementById('meta-incentive-input').value) || 0;
+        
+        if (status === 'approved' && !APP_DATA.approvedAt) APP_DATA.approvedAt = Date.now();
+
+        document.getElementById('builder-test-name').textContent = title;
+        triggerEditorAutosave();
+      });
+      
+      // Populate the fields when opening
+      document.getElementById('meta-price-input').value = APP_DATA.price || 0;
+      
+      const collabOpts = '<option value="">-- Unassigned --</option>' + USERS.filter(u => u.role === 'collaborator').map(u => `<option value="${u.user}">${u.user}</option>`).join('');
+      document.getElementById('meta-assignee-input').innerHTML = collabOpts;
+      document.getElementById('meta-assignee-input').value = APP_DATA.assignee || '';
+      document.getElementById('meta-incentive-input').value = APP_DATA.incentive || '';
     };
 
     // ==========================================
