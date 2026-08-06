@@ -2935,8 +2935,17 @@ window.initFirebaseSystem = async function() {
                 const btn = document.getElementById('btn-push-noti') || document.getElementById('btn-push-noti-teacher');
                 if(btn) { btn.textContent = "Connecting..."; btn.disabled = true; }
                 
+                // Explicitly register the Service Worker to prevent pathing errors
+                let swRegistration = null;
+                if ('serviceWorker' in navigator) {
+                    swRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+                }
+
                 // Get unique device token
-                const token = await window.fsGetToken(messaging, { vapidKey: window.FCM_VAPID_KEY });
+                const token = await window.fsGetToken(messaging, { 
+                    vapidKey: window.FCM_VAPID_KEY,
+                    serviceWorkerRegistration: swRegistration
+                });
                 
                 if (token && currentUser) {
                     currentUser.fcmToken = token;
@@ -2957,7 +2966,14 @@ window.initFirebaseSystem = async function() {
             }
         } catch (err) {
             console.error('Push Notification Error:', err);
-            showModalMsg("Error", "Could not enable push notifications. Check console for details.");
+            
+            let errMsg = "Could not enable push notifications. Ensure you are running on a local server (http://127.0.0.1) or HTTPS.";
+            if (err.message) errMsg += `<br><br><span class="text-[10px] font-mono text-rose-500">${err.message}</span>`;
+            
+            showModalMsg("Error", errMsg);
+            
+            const btn = document.getElementById('btn-push-noti') || document.getElementById('btn-push-noti-teacher');
+            if(btn) { btn.innerHTML = "🔔 Enable Device Alerts"; btn.disabled = false; }
         }
     };
 
