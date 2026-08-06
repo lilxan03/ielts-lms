@@ -868,12 +868,13 @@
   
   <!-- RESULTS MODAL -->
   <div id="results-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-2xl p-8 w-[400px] shadow-2xl text-center animate-scale-up">
+    <div class="bg-white rounded-2xl p-8 w-[90%] sm:w-[500px] shadow-2xl text-center animate-scale-up">
       <h2 class="text-3xl font-black text-slate-800 mb-2">Test Complete!</h2>
       <div id="results-score-area" class="my-6 py-6 bg-slate-50 rounded-xl border border-slate-200"></div>
-      <div class="flex gap-3 mt-8">
-        <button onclick="openExplanationsReview()" class="flex-1 border-2 border-blue-600 text-blue-700 py-3 rounded-lg font-bold hover:bg-blue-50 transition">Review</button>
-        <button onclick="exitToDashboard()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow transition">Exit</button>
+      <div class="flex flex-col sm:flex-row gap-3 mt-8">
+        <button onclick="window.retakeCurrentTest()" class="flex-1 border-2 border-slate-200 text-slate-600 py-3 rounded-lg font-bold hover:bg-slate-50 transition shadow-sm" title="Try again">↻ Retake</button>
+        <button onclick="openExplanationsReview()" class="flex-1 border-2 border-blue-600 text-blue-700 py-3 rounded-lg font-bold hover:bg-blue-50 transition shadow-sm">Review</button>
+        <button onclick="exitToDashboard()" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 shadow-md transition">Exit</button>
       </div>
     </div>
   </div>
@@ -2289,9 +2290,10 @@
   <div id="review-ui" class="hidden h-screen flex flex-col bg-slate-100 z-[60] relative overflow-hidden animate-fade-in">
     <header class="bg-slate-800 text-white p-4 flex justify-between items-center shrink-0 shadow-md">
       <h1 class="text-xl font-bold flex items-center gap-3">📖 Detailed Review <span id="review-module-badge" class="bg-blue-600 text-[10px] uppercase px-2 py-1 rounded">Module</span></h1>
-      <div class="flex gap-3">
-        <button onclick="toggleStudentFlashcardPanel()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-emerald-400 rounded font-bold transition flex items-center gap-2 border border-slate-500">🗂️ My Flashcards</button>
-        <button onclick="closeReviewScreen()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded font-bold transition shadow">Done Reviewing</button>
+      <div class="flex gap-2 sm:gap-3">
+        <button id="review-retake-btn" onclick="window.retakeFromReview()" class="hidden sm:flex px-4 py-2 bg-slate-700 hover:bg-emerald-600 text-emerald-400 hover:text-white rounded font-bold transition items-center gap-2 border border-slate-500 hover:border-emerald-500 shadow-sm">↻ Retake</button>
+        <button onclick="toggleStudentFlashcardPanel()" class="hidden sm:flex px-4 py-2 bg-slate-700 hover:bg-slate-600 text-sky-400 rounded font-bold transition items-center gap-2 border border-slate-500 shadow-sm">🗂️ Cards</button>
+        <button onclick="closeReviewScreen()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded font-bold transition shadow-sm">Done</button>
       </div>
     </header>
     
@@ -9600,6 +9602,61 @@ window.initFirebaseSystem = async function() {
       }
     };
     
+    window.retakeCurrentTest = function() {
+        document.getElementById('results-modal').classList.add('hidden');
+        
+        if (isPreviewMode) {
+            previewActiveTest();
+        } else if (window.isFullExamMode) {
+            window.fullExamCurrentIndex = 0;
+            startTest(null, null, window.fullExamSequence[0]);
+        } else {
+            // Keep the exact same APP_DATA (which already has the specific selected parts filtered)
+            startTest(null, null, JSON.parse(JSON.stringify(APP_DATA)));
+        }
+    };
+
+    window.retakeFromReview = function() {
+        document.getElementById('review-ui').classList.add('hidden');
+        sessionStorage.removeItem('lms_grading_sub');
+        sessionStorage.removeItem('lms_grading_mode');
+        
+        const tid = APP_DATA?.id;
+        
+        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator') {
+            document.getElementById('editor-ui').classList.remove('hidden');
+            if (tid && TEST_BANK.find(t=>t.id === tid)) {
+                editTest(tid);
+            } else {
+                toggleEditorTab('bank');
+            }
+            return;
+        } 
+        
+        // Student routing logic
+        document.getElementById('start-screen').classList.remove('hidden');
+        
+        if (!tid || tid.startsWith('mock_') || !TEST_BANK.find(t=>t.id === tid)) {
+            renderStudentDashboard();
+            if (tid && tid.startsWith('mock_')) {
+                if (typeof window.showToast === 'function') window.showToast("Notice", "Please generate a new Mock Exam from the dashboard.", "info");
+            } else if (tid) {
+                if (typeof window.showToast === 'function') window.showToast("Notice", "This test is no longer available in the bank.", "error");
+            }
+            return;
+        }
+
+        // Check if still legally assigned to their class
+        const item = getCurrentStudentClassPathItem(tid);
+        if (!item) {
+            renderStudentDashboard();
+            if (typeof window.showToast === 'function') window.showToast("Notice", "This test is no longer assigned to your current class.", "error");
+            return;
+        }
+
+        openModeSelection(tid);
+    };
+
     function exitToDashboard() { 
       document.getElementById('results-modal').classList.add('hidden'); 
       if (isPreviewMode) {
