@@ -2977,6 +2977,27 @@ window.initFirebaseSystem = async function() {
         }
     };
 
+    window.fireLocalOSNotification = function(title, body) {
+        // If the user hasn't granted permission, fall back to the in-app toast
+        if (Notification.permission !== 'granted') {
+            if (typeof window.showToast === 'function') window.showToast(title, body, 'info');
+            return;
+        }
+
+        // Fire native OS notification
+        const noti = new Notification(title, {
+            body: body,
+            icon: 'https://ui-avatars.com/api/?name=LMS&background=1e3a8a&color=fff',
+            requireInteraction: false
+        });
+
+        // If clicked, bring the browser tab back to the front!
+        noti.onclick = function() {
+            window.focus();
+            this.close();
+        };
+    };
+
     // --- FULLY REAL-TIME CLOUD SYNC SYSTEM ---
     window.triggerUIRefresh = () => {
         if(window.refreshTimeout) clearTimeout(window.refreshTimeout);
@@ -3101,16 +3122,77 @@ window.initFirebaseSystem = async function() {
         const promises = [];
         
         if (currentUser.role === 'teacher') {
-            // TEACHER: Needs access to everything to grade and manage
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => { USERS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('submissions')), snap => { SUBMISSIONS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            
+            // TEACHER SUBMISSION LISTENER WITH NATIVE OS NOTIFICATIONS
+            let isSubInitial = true;
+            promises.push(new Promise(resolve => { 
+                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('submissions')), snap => { 
+                    SUBMISSIONS = snap.docs.map(d => d.data()); 
+                    window.triggerUIRefresh(); 
+                    
+                    if (!isSubInitial) {
+                        snap.docChanges().forEach(change => {
+                            if (change.type === 'added') {
+                                const s = change.doc.data();
+                                if (s.student !== currentUser.user) window.fireLocalOSNotification("📝 New Submission!", `${s.student} completed: ${s.testName}`);
+                            }
+                            if (change.type === 'modified') {
+                                const s = change.doc.data();
+                                if (s.studentReply && !s.teacherReadReply && s.student !== currentUser.user) window.fireLocalOSNotification("💬 New Question", `${s.student} asked a question regarding: ${s.testName}`);
+                            }
+                        });
+                    }
+                    isSubInitial = false;
+                    resolve(); 
+                }); 
+            }));
+            
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('attendance')), snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('schedules')), snap => { SCHEDULES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => { CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); resolve(); }); }));
+            
+            // TEACHER SCHEDULE LISTENER WITH NATIVE OS NOTIFICATIONS
+            let isSchedInitial = true;
+            promises.push(new Promise(resolve => { 
+                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('schedules')), snap => { 
+                    SCHEDULES = snap.docs.map(d => d.data()); 
+                    window.triggerUIRefresh(); 
+                    
+                    if (!isSchedInitial) {
+                        snap.docChanges().forEach(change => {
+                            if (change.type === 'added') {
+                                const s = change.doc.data();
+                                if (s.isNewBooking) window.fireLocalOSNotification("📅 New Booking!", `A student booked an appointment for ${s.date} at ${s.time}`);
+                            }
+                        });
+                    }
+                    isSchedInitial = false;
+                    resolve(); 
+                }); 
+            }));
+
+            // TEACHER FORUM LISTENER
+            let isMsgInitial = true;
+            promises.push(new Promise(resolve => { 
+                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => { 
+                    CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); 
+                    if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); 
+                    
+                    if (!isMsgInitial) {
+                        snap.docChanges().forEach(change => {
+                            if (change.type === 'added') {
+                                const m = change.doc.data();
+                                if (m.author !== currentUser.user) window.fireLocalOSNotification("🗂️ New Forum Post", `${m.author}: ${m.text.substring(0, 40)}...`);
+                            }
+                        });
+                    }
+                    isMsgInitial = false;
+                    resolve(); 
+                }); 
+            }));
+
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data); resolve(); }); }));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); resolve(); }); }));
         } else if (currentUser.role === 'collaborator') {
-            // COLLABORATOR: Only downloads their own minimal user doc to stay authenticated, completely isolated from submissions/chats
             promises.push(new Promise(resolve => { 
                 window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
@@ -3120,7 +3202,7 @@ window.initFirebaseSystem = async function() {
                 }); 
             }));
         } else {
-            // ✨ STUDENT: Restricted queries. ONLY downloads their own private data.
+            // STUDENT: Restricted queries. ONLY downloads their own private data.
             promises.push(new Promise(resolve => { 
                 window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
@@ -3130,35 +3212,66 @@ window.initFirebaseSystem = async function() {
                 }); 
             }));
             
-            // Query only submissions and attendance belonging to this specific user
+            // STUDENT SUBMISSION LISTENER WITH NATIVE OS NOTIFICATIONS
             const subQ = window.fsQuery(window.fsCollection(window.db, window.fPath('submissions')), window.fsWhere('student', '==', currentUser.user));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(subQ, snap => { SUBMISSIONS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            let isMySubInitial = true;
+            promises.push(new Promise(resolve => { 
+                window.fsOnSnapshot(subQ, snap => { 
+                    SUBMISSIONS = snap.docs.map(d => d.data()); 
+                    window.triggerUIRefresh(); 
+                    
+                    if (!isMySubInitial) {
+                        snap.docChanges().forEach(change => {
+                            if (change.type === 'modified') {
+                                const s = change.doc.data();
+                                if (s.teacherFeedback && Object.keys(s.teacherFeedback).length > 0) window.fireLocalOSNotification("🏆 Test Graded!", `The teacher has returned feedback for: ${s.testName}`);
+                            }
+                        });
+                    }
+                    isMySubInitial = false;
+                    resolve(); 
+                }); 
+            }));
             
             const attQ = window.fsQuery(window.fsCollection(window.db, window.fPath('attendance')), window.fsWhere('student', '==', currentUser.user));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(attQ, snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
 
-            // ✨ NEW: Restrict Schedules and Messages ONLY to enrolled classes
-            // (Note: CLASSES array is safely populated by the public listener before this runs)
             const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
             const myClassNames = myClasses.map(c => c.name);
             const myClassIds = myClasses.map(c => c.id);
 
             if (myClassNames.length > 0) {
-                // Firestore 'in' queries support a max of 10 elements. We slice to be safe.
                 const safeClassNames = myClassNames.slice(0, 10);
                 const safeClassIds = myClassIds.slice(0, 10);
 
                 const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('className', 'in', safeClassNames));
                 promises.push(new Promise(resolve => { window.fsOnSnapshot(schedQ, snap => { SCHEDULES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
                 
+                // STUDENT FORUM LISTENER WITH NATIVE OS NOTIFICATIONS
                 const msgQ = window.fsQuery(window.fsCollection(window.db, window.fPath('messages')), window.fsWhere('classId', 'in', safeClassIds));
-                promises.push(new Promise(resolve => { window.fsOnSnapshot(msgQ, snap => { CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); resolve(); }); }));
+                let isMyMsgInitial = true;
+                promises.push(new Promise(resolve => { 
+                    window.fsOnSnapshot(msgQ, snap => { 
+                        CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); 
+                        if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); 
+                        
+                        if (!isMyMsgInitial) {
+                            snap.docChanges().forEach(change => {
+                                if (change.type === 'added') {
+                                    const m = change.doc.data();
+                                    if (m.author !== currentUser.user) window.fireLocalOSNotification("🗂️ New Class Post", `${m.author}: ${m.text.substring(0, 40)}...`);
+                                }
+                            });
+                        }
+                        isMyMsgInitial = false;
+                        resolve(); 
+                    }); 
+                }));
             } else {
                 SCHEDULES = [];
                 CHAT_MESSAGES = [];
             }
             
-            // Students only download their own private notes and flashcards
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data; }); resolve(); }); }));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if (d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) { window.renderFlashcardPanel(); } resolve(); }); }));
         }
