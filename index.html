@@ -1806,27 +1806,15 @@
             </div>
             
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-20 animate-fade-in-up">
-                <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50/50">
-                    <h3 class="font-bold text-slate-700 text-sm">Student Registry</h3>
-                    <div class="text-xs font-bold text-slate-400">Total: <span id="student-count-badge" class="text-blue-600">0</span></div>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border-b border-slate-100 bg-slate-50/50 gap-4">
+                    <div class="flex gap-2 bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200">
+                        <button onclick="window.switchRegistryView('students')" id="reg-tab-students" class="px-5 py-2 rounded-lg text-sm font-bold bg-white text-blue-700 shadow-sm transition">🎓 Students</button>
+                        <button onclick="window.switchRegistryView('staff')" id="reg-tab-staff" class="px-5 py-2 rounded-lg text-sm font-bold bg-transparent text-slate-500 hover:text-slate-700 transition">🤝 Staff / Collabs</button>
+                    </div>
+                    <div class="text-xs font-bold text-slate-400 px-2">Total: <span id="student-count-badge" class="text-blue-600 text-base font-black">0</span></div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse whitespace-nowrap min-w-[900px]">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <th class="p-4">Student Account</th>
-                                <th class="p-4">Parent / Contact Name</th>
-                                <th class="p-4">Phone / Zalo</th>
-                                <th class="p-4 text-center">Lessons</th>
-                                <th class="p-4">Joined Date</th>
-                                <th class="p-4 text-center">Status</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="students-table-body" class="divide-y divide-slate-100 text-sm">
-                            <!-- JS Injected -->
-                        </tbody>
-                    </table>
+                <div class="overflow-x-auto" id="registry-table-container">
+                    <!-- JS Injected Table -->
                 </div>
             </div>
           </div>
@@ -11506,78 +11494,173 @@ window.initFirebaseSystem = async function() {
         });
     };
 
-    function renderStudentsList() {
-        const tbody = document.getElementById('students-table-body');
-        if (!tbody) return;
-        
-        const students = USERS.filter(u => u.role === 'student');
-        
-        const countBadge = document.getElementById('student-count-badge');
-        if (countBadge) countBadge.textContent = students.length;
+    window.currentRegistryView = 'students';
 
-        if (students.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-500 italic text-sm">No students found. Add a student to populate the registry.</td></tr>';
-            return;
+    window.switchRegistryView = function(view) {
+        window.currentRegistryView = view;
+        const btnStu = document.getElementById('reg-tab-students');
+        const btnStaff = document.getElementById('reg-tab-staff');
+        
+        if (view === 'students') {
+            if (btnStu) btnStu.className = "px-5 py-2 rounded-lg text-sm font-bold bg-white text-blue-700 shadow-sm transition";
+            if (btnStaff) btnStaff.className = "px-5 py-2 rounded-lg text-sm font-bold bg-transparent text-slate-500 hover:text-slate-700 transition";
+        } else {
+            if (btnStaff) btnStaff.className = "px-5 py-2 rounded-lg text-sm font-bold bg-white text-purple-700 shadow-sm transition";
+            if (btnStu) btnStu.className = "px-5 py-2 rounded-lg text-sm font-bold bg-transparent text-slate-500 hover:text-slate-700 transition";
         }
+        renderStudentsList();
+    };
 
-        // Sort: Pending payments float to the top
-        students.sort((a,b) => {
-            if (a.paymentStatus === 'pending' && b.paymentStatus !== 'pending') return -1;
-            if (b.paymentStatus === 'pending' && a.paymentStatus !== 'pending') return 1;
-            return 0;
-        });
-
-        tbody.innerHTML = students.map(s => {
-            const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
-            const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
-            const isPending = s.paymentStatus === 'pending';
-            const isGemRequest = isPending && s.pendingInfo && s.pendingInfo.includes('Top-Up');
+    window.deleteStaff = function(username) {
+        showConfirm("Delete Staff", `Are you sure you want to permanently delete the account for <b>${username}</b>? They will lose all access.`, async () => {
+            USERS = USERS.filter(u => u.user !== username);
+            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('users'), username));
             
-            let statusBadge = '';
-            if (isPending) {
-                statusBadge = `<div class="inline-flex flex-col gap-1"><span class="bg-rose-100 text-rose-700 border border-rose-200 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm animate-pulse whitespace-nowrap text-center">Pending</span>`;
-                if(s.pendingInfo) statusBadge += `<span class="text-[9px] text-rose-500 font-bold truncate max-w-[120px]" title="${s.pendingInfo}">${s.pendingInfo}</span></div>`;
-            } else if (s.isPaid) {
-                statusBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">Active</span>`;
-            } else {
-                statusBadge = `<span class="bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">Locked</span>`;
+            // Clean up from any class collaborator lists
+            for (let c of CLASSES) {
+                if (c.collaborators && c.collaborators.includes(username)) {
+                    c.collaborators = c.collaborators.filter(col => col !== username);
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+                }
             }
+            renderClasses();
+            renderStudentsList();
+            window.showToast("Deleted", `${username} has been removed from the platform.`);
+        });
+    };
 
-            let approveBtn = '';
-            if (isPending) {
-                approveBtn = `<button onclick="togglePaymentStatus('${s.user}', true)" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">✓ Approve</button>`;
+    function renderStudentsList() {
+        const container = document.getElementById('registry-table-container');
+        const countBadge = document.getElementById('student-count-badge');
+        if (!container) return;
+
+        if (window.currentRegistryView === 'students') {
+            const students = USERS.filter(u => u.role === 'student');
+            if (countBadge) countBadge.textContent = students.length;
+
+            let html = `<table class="w-full text-left border-collapse whitespace-nowrap min-w-[900px]">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <th class="p-4">Student Account</th>
+                        <th class="p-4">Parent / Contact Name</th>
+                        <th class="p-4">Phone / Zalo</th>
+                        <th class="p-4 text-center">Lessons</th>
+                        <th class="p-4">Joined Date</th>
+                        <th class="p-4 text-center">Status</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">`;
+
+            if (students.length === 0) {
+                html += '<tr><td colspan="7" class="p-8 text-center text-slate-500 italic text-sm">No students found. Add a student to populate the registry.</td></tr>';
             } else {
-                approveBtn = `<button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">${s.isPaid ? 'Lock' : 'Unlock'}</button>`;
-            }
+                students.sort((a,b) => {
+                    if (a.paymentStatus === 'pending' && b.paymentStatus !== 'pending') return -1;
+                    if (b.paymentStatus === 'pending' && a.paymentStatus !== 'pending') return 1;
+                    return 0;
+                });
 
-            return `
-            <tr class="hover:bg-blue-50/40 transition-colors ${isPending ? 'bg-rose-50/20' : ''}">
-                <td class="p-4">
-                    <div class="flex items-center gap-3">
-                        <img src="${s.avatar || `https://ui-avatars.com/api/?name=${s.user}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
-                        <div class="flex flex-col">
-                            <span class="font-bold text-slate-800 text-sm leading-tight">${s.user}</span>
-                            <span class="text-[10px] text-slate-400 font-bold mt-0.5">${s.realName || '<span class="italic font-medium">No real name set</span>'}</span>
-                        </div>
-                    </div>
-                </td>
-                <td class="p-4 text-sm font-medium text-slate-700">${s.parentName || '<span class="text-slate-300 italic text-xs">Unset</span>'}</td>
-                <td class="p-4 text-sm font-mono text-slate-600">${s.phone || '<span class="text-slate-300 italic text-xs font-sans">Unset</span>'}</td>
-                <td class="p-4 text-center">
-                    <span class="font-black text-lg ${remaining > 0 && remaining <= 3 ? 'text-amber-500' : remaining === 0 ? 'text-rose-500' : 'text-indigo-600'}">${remaining}</span>
-                    ${s.totalLessonsPaid ? `<span class="text-[10px] text-slate-400 font-bold ml-0.5">/ ${s.totalLessonsPaid}</span>` : ''}
-                </td>
-                <td class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">${s.createdAt || 'N/A'}</td>
-                <td class="p-4 text-center">${statusBadge}</td>
-                <td class="p-4 text-right space-x-1 whitespace-nowrap">
-                    ${approveBtn}
-                    <button onclick="window.promptEditStudentContact('${s.user}')" class="bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Contact Info">✏️</button>
-                    <button onclick="window.openRadarEditor('${s.user}')" class="bg-white border border-slate-200 hover:border-purple-400 hover:text-purple-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Radar Chart">📊</button>
-                    <button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Reset Password">🔑</button>
-                </td>
-            </tr>
-            `;
-        }).join('');
+                html += students.map(s => {
+                    const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
+                    const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
+                    const isPending = s.paymentStatus === 'pending';
+                    
+                    let statusBadge = '';
+                    if (isPending) {
+                        statusBadge = `<div class="inline-flex flex-col gap-1"><span class="bg-rose-100 text-rose-700 border border-rose-200 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm animate-pulse whitespace-nowrap text-center">Pending</span>`;
+                        if(s.pendingInfo) statusBadge += `<span class="text-[9px] text-rose-500 font-bold truncate max-w-[120px]" title="${s.pendingInfo}">${s.pendingInfo}</span></div>`;
+                    } else if (s.isPaid) {
+                        statusBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">Active</span>`;
+                    } else {
+                        statusBadge = `<span class="bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">Locked</span>`;
+                    }
+
+                    let approveBtn = '';
+                    if (isPending) {
+                        approveBtn = `<button onclick="togglePaymentStatus('${s.user}', true)" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">✓ Approve</button>`;
+                    } else {
+                        approveBtn = `<button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">${s.isPaid ? 'Lock' : 'Unlock'}</button>`;
+                    }
+
+                    return `
+                    <tr class="hover:bg-blue-50/40 transition-colors ${isPending ? 'bg-rose-50/20' : ''}">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${s.user}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-slate-800 text-sm leading-tight">${s.user}</span>
+                                    <span class="text-[10px] text-slate-400 font-bold mt-0.5">${s.realName || '<span class="italic font-medium">No real name set</span>'}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-sm font-medium text-slate-700">${s.parentName || '<span class="text-slate-300 italic text-xs">Unset</span>'}</td>
+                        <td class="p-4 text-sm font-mono text-slate-600">${s.phone || '<span class="text-slate-300 italic text-xs font-sans">Unset</span>'}</td>
+                        <td class="p-4 text-center">
+                            <span class="font-black text-lg ${remaining > 0 && remaining <= 3 ? 'text-amber-500' : remaining === 0 ? 'text-rose-500' : 'text-indigo-600'}">${remaining}</span>
+                            ${s.totalLessonsPaid ? `<span class="text-[10px] text-slate-400 font-bold ml-0.5">/ ${s.totalLessonsPaid}</span>` : ''}
+                        </td>
+                        <td class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">${s.createdAt || 'N/A'}</td>
+                        <td class="p-4 text-center">${statusBadge}</td>
+                        <td class="p-4 text-right space-x-1 whitespace-nowrap">
+                            ${approveBtn}
+                            <button onclick="window.promptEditStudentContact('${s.user}')" class="bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Contact Info">✏️</button>
+                            <button onclick="window.openRadarEditor('${s.user}')" class="bg-white border border-slate-200 hover:border-purple-400 hover:text-purple-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Radar Chart">📊</button>
+                            <button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Reset Password">🔑</button>
+                        </td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+        } else {
+            const staff = USERS.filter(u => u.role === 'collaborator' || u.role === 'teacher');
+            if (countBadge) countBadge.textContent = staff.length;
+
+            let html = `<table class="w-full text-left border-collapse whitespace-nowrap min-w-[600px]">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <th class="p-4">Staff Account</th>
+                        <th class="p-4">Role / Access Level</th>
+                        <th class="p-4">Date Added</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">`;
+
+            if (staff.length === 0) {
+                html += '<tr><td colspan="4" class="p-8 text-center text-slate-500 italic text-sm">No staff found.</td></tr>';
+            } else {
+                html += staff.map(s => {
+                    const isMe = s.user === currentUser.user;
+                    let actions = `<button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold" title="Reset Password">🔑 Reset Pass</button>`;
+                    
+                    if (s.role !== 'teacher' && !isMe) {
+                        actions += `<button onclick="window.deleteStaff('${s.user}')" class="bg-rose-50 border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold ml-2">🗑️ Delete</button>`;
+                    }
+
+                    return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${s.user}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
+                                <span class="font-bold text-slate-800 text-sm">${s.user} ${isMe ? '<span class="text-xs font-black text-blue-500 bg-blue-50 px-2 py-0.5 rounded ml-1 uppercase tracking-widest border border-blue-200">You</span>' : ''}</span>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm ${s.role === 'teacher' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-purple-100 text-purple-700 border border-purple-200'}">${s.role}</span>
+                        </td>
+                        <td class="p-4 text-xs font-bold text-slate-500">${s.createdAt || 'N/A'}</td>
+                        <td class="p-4 text-right">${actions}</td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
     }
 
     // ✨ NEW: Edit Student Contact Information Modal
