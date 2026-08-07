@@ -120,25 +120,25 @@
 
     /* MOBILE RESPONSIVE FIXES */
     @media (max-width: 768px) {
-        /* 1. Stack the Exam UI vertically */
+        /* 1. Stack the Exam UI vertically (No !important on heights so JS can drag) */
         #split-container { flex-direction: column !important; }
-        #passage-container { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
-        #questions-container { width: 100% !important; flex: 1 !important; height: 60vh !important; }
-        #resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
-        #resizer > div, #review-resizer > div, #builder-resizer > div { width: 30px !important; height: 4px !important; }
+        #passage-container { width: 100% !important; height: 40%; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
+        #questions-container { width: 100% !important; flex: 1 !important; }
+        #resizer { width: 100% !important; height: 16px !important; cursor: row-resize !important; z-index: 50; position: relative; }
+        #resizer > div, #review-resizer > div, #builder-resizer > div { width: 40px !important; height: 5px !important; background-color: #94a3b8; border-radius: 4px; }
         #review-split-container { flex-direction: column !important; }
-        #review-resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
+        #review-resizer { width: 100% !important; height: 16px !important; cursor: row-resize !important; z-index: 50; position: relative; }
 
         /* 2. Stack the Grading & Review Screens vertically */
         #review-ui > div.flex-1 { flex-direction: column !important; }
-        #review-left-pane { width: 100% !important; height: 40vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
-        #review-right-pane { width: 100% !important; flex: 1 !important; height: 60vh !important; }
+        #review-left-pane { width: 100% !important; height: 40%; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
+        #review-right-pane { width: 100% !important; flex: 1 !important; }
 
         /* 3. Stack the Teacher Test Builder vertically */
         #builder-split { flex-direction: column !important; }
-        #builder-left { width: 100% !important; height: 45vh !important; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
-        #builder-right { width: 100% !important; flex: 1 !important; height: 55vh !important; }
-        #builder-resizer { width: 100% !important; height: 12px !important; cursor: row-resize !important; }
+        #builder-left { width: 100% !important; height: 45%; border-right: none !important; border-bottom: 2px solid #cbd5e1; }
+        #builder-right { width: 100% !important; flex: 1 !important; }
+        #builder-resizer { width: 100% !important; height: 16px !important; cursor: row-resize !important; z-index: 50; position: relative; }
 
         /* 4. Squeeze Modals & Slide Panels to fit phone screens */
         .w-96, .w-\[400px\], .w-\[500px\], .w-\[550px\], .w-\[600px\], .w-\[700px\], .w-\[800px\], .w-\[950px\] {
@@ -569,9 +569,9 @@
     </div>
   </div>
 
-  <div id="teacher-vocab-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center">
-    <div class="bg-white rounded-lg w-[700px] max-h-[85vh] flex flex-col shadow-2xl animate-scale-up">
-      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-lg">
+  <div id="teacher-vocab-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center backdrop-blur-sm md:p-6">
+    <div class="bg-white md:rounded-[2rem] w-full max-w-6xl h-full md:h-[90vh] flex flex-col shadow-2xl animate-scale-up overflow-hidden border border-slate-200">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
         <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">🗂️ Test Vocabulary Bank</h2>
         <button onclick="closeTeacherVocabModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
       </div>
@@ -625,48 +625,105 @@
     </div>
   </div>
 
+  <!-- RANDOM SPIN MODAL -->
+  <div id="random-spin-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[400] flex items-center justify-center backdrop-blur-md animate-fade-in md:p-6">
+      <div class="bg-white md:rounded-[3rem] shadow-2xl flex flex-col w-full max-w-3xl p-6 md:p-16 h-full md:h-auto items-center justify-center text-center relative overflow-hidden animate-scale-up border border-slate-200">
+          <button onclick="document.getElementById('random-spin-modal').classList.add('hidden')" class="absolute top-5 right-6 text-slate-400 hover:text-slate-800 font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+          
+          <div class="text-7xl mb-4 drop-shadow-md" id="spin-icon">🎲</div>
+          <h2 class="text-3xl font-black text-slate-800 mb-2 tracking-tight" id="spin-title">Practice Roulette</h2>
+          <p class="text-sm text-slate-500 font-medium mb-8" id="spin-desc">Don't know what to study? Let fate decide!</p>
+          
+          <div class="w-full bg-slate-50 border-2 border-slate-200 rounded-2xl p-6 mb-8 shadow-inner min-h-[8rem] flex flex-col items-center justify-center relative overflow-hidden">
+              <div id="spin-result-text" class="text-xl font-black text-slate-400 leading-snug w-full text-center">Ready to roll?</div>
+          </div>
+
+          <div class="flex gap-3 w-full">
+              <button id="btn-start-spin" onclick="window.startRandomSpin()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black py-4 rounded-xl shadow-md transition text-xl hover:-translate-y-1">Spin Now!</button>
+              <button id="btn-go-spin" onclick="window.goToSpunTest()" class="hidden w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-md transition text-xl hover:-translate-y-1">Let's Go &rarr;</button>
+          </div>
+      </div>
+  </div>
+
   <!-- MODE SELECTION MODAL -->
-  <div id="test-mode-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl p-6 w-[500px] shadow-2xl animate-fade-in-up">
-      <h2 class="text-xl font-bold mb-4 text-slate-900 border-b pb-2">Select Test Mode</h2>
+  <div id="test-mode-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-md md:p-6">
+    <div class="bg-white md:rounded-[2rem] p-6 md:p-10 w-full max-w-4xl h-full md:h-[90vh] shadow-2xl animate-fade-in-up flex flex-col border border-slate-200">
+      <h2 class="text-2xl md:text-3xl font-black mb-5 text-slate-900 border-b border-slate-100 pb-4 tracking-tight shrink-0">Select Practice Mode</h2>
       
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-        <button type="button" id="mode-btn-free" onclick="selectTestMode('free')" class="border-2 border-slate-200 rounded-lg p-4 text-left transition hover:border-blue-300">
-          <div class="font-bold text-slate-800 text-md">🕊️ Time-Free</div>
-          <div class="text-xs text-slate-500 mt-1">Study vocab in-context. Instant check.</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <button type="button" id="mode-btn-free" onclick="selectTestMode('free')" class="border-2 border-slate-200 rounded-xl p-5 text-left transition hover:border-blue-300">
+          <div class="font-black text-slate-800 text-lg">🕊️ Time-Free</div>
+          <div class="text-xs font-medium text-slate-500 mt-1.5 leading-snug">Study vocab in-context. Instant check.</div>
         </button>
         
-        <div id="mode-btn-restricted" onclick="selectTestMode('restricted')" class="border-2 border-blue-500 bg-blue-50 rounded-lg p-4 text-left transition hover:border-blue-300 cursor-pointer flex flex-col">
-          <div class="font-bold text-slate-800 text-md">⏱️ Time-Restricted</div>
-          <div class="text-xs text-slate-500 mt-1">Simulate real exam conditions.</div>
+        <div id="mode-btn-restricted" onclick="selectTestMode('restricted')" class="border-2 border-blue-500 bg-blue-50 rounded-xl p-5 text-left transition hover:border-blue-400 cursor-pointer flex flex-col">
+          <div class="font-black text-slate-800 text-lg">⏱️ Time-Restricted</div>
+          <div class="text-xs font-medium text-slate-500 mt-1.5 leading-snug">Simulate real exam conditions.</div>
           
-          <div id="custom-time-container" class="mt-3 pt-3 border-t border-blue-200 flex items-center gap-2" onclick="event.stopPropagation()">
-             <label class="text-xs font-bold text-slate-700">Limit:</label>
-             <input type="number" id="custom-time-input" min="1" max="180" placeholder="Default" class="w-16 border border-slate-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-500 text-xs font-bold text-blue-700 bg-white">
-             <span class="text-xs text-slate-600">min</span>
+          <div id="custom-time-container" class="mt-4 pt-4 border-t border-blue-200 flex items-center gap-3" onclick="event.stopPropagation()">
+             <label class="text-xs font-black text-slate-600 uppercase tracking-widest">Limit:</label>
+             <input type="number" id="custom-time-input" min="1" max="180" placeholder="Default" class="w-20 border-2 border-white shadow-sm rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-black text-blue-700 bg-white text-center">
+             <span class="text-xs font-bold text-slate-500">min</span>
           </div>
         </div>
       </div>
 
+      <!-- ✨ NEW: Dynamic Activities Button -->
+      <button type="button" onclick="window.openTestActivities()" class="w-full border-2 border-fuchsia-200 bg-fuchsia-50 rounded-xl p-5 text-left transition hover:border-fuchsia-400 hover:bg-fuchsia-100 cursor-pointer mb-6 group flex items-center justify-between shadow-sm">
+          <div>
+              <div class="font-black text-fuchsia-900 text-lg flex items-center gap-2"><span class="text-2xl drop-shadow-sm">🎮</span> Classroom Activities</div>
+              <div class="text-xs font-bold text-fuchsia-700 mt-1.5 opacity-90">Instantly transform this test into a multiplayer vocab game, roleplay, or debate.</div>
+          </div>
+          <span class="text-fuchsia-400 group-hover:text-fuchsia-600 transition transform group-hover:translate-x-1 font-black text-2xl">&rarr;</span>
+      </button>
+
       <!-- Part Selection Area -->
-      <div id="part-selection-container" class="mb-6 border-t border-slate-200 pt-4 hidden">
-        <label class="block text-sm font-bold text-slate-700 mb-2">Select Parts to Practice:</label>
+      <div id="part-selection-container" class="mb-6 border-t border-slate-100 pt-5 hidden flex-1 overflow-y-auto">
+        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Select Parts to Practice:</label>
         <div id="part-checkboxes" class="flex flex-wrap gap-3">
            <!-- JS will inject checkboxes here -->
         </div>
       </div>
 
-      <div class="flex justify-end gap-3">
-        <button onclick="document.getElementById('test-mode-modal').classList.add('hidden')" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
-        <button onclick="confirmStartTest()" class="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-bold shadow">Start Test 🚀</button>
+      <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 mt-auto shrink-0">
+        <button onclick="document.getElementById('test-mode-modal').classList.add('hidden')" class="px-6 py-4 text-slate-500 hover:bg-slate-100 rounded-xl font-bold transition">Cancel</button>
+        <button onclick="confirmStartTest()" class="px-10 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-black shadow-md transition hover:-translate-y-0.5 text-lg">Start Test 🚀</button>
       </div>
     </div>
   </div>
 
+  <!-- ✨ NEW: CLASSROOM ACTIVITIES FULLSCREEN MODAL -->
+  <div id="test-activities-modal" class="hidden fixed inset-0 bg-slate-900/95 z-[800] flex items-center justify-center backdrop-blur-md animate-fade-in">
+      <div class="bg-white rounded-[2rem] shadow-2xl flex flex-col w-full max-w-6xl h-[90vh] max-h-[900px] overflow-hidden relative border border-slate-200">
+          <!-- Header -->
+          <div class="bg-fuchsia-950 text-white p-6 flex justify-between items-center shrink-0 z-20">
+              <div>
+                  <h2 class="text-2xl font-black flex items-center gap-3 tracking-tight"><span class="bg-white/20 p-2 rounded-xl border border-white/10 shadow-inner leading-none">🎮</span> Classroom Activities</h2>
+                  <p id="activity-mode-test-name" class="text-fuchsia-300 font-bold text-sm uppercase tracking-widest mt-1.5 opacity-90 truncate max-w-xl">Test Name</p>
+              </div>
+              <button onclick="document.getElementById('test-activities-modal').classList.add('hidden')" class="text-fuchsia-400 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+          </div>
+          
+          <!-- Mode Tabs -->
+          <div class="flex bg-slate-50 border-b border-slate-200 shrink-0 select-none shadow-sm z-10 overflow-x-auto custom-scrollbar">
+              <button id="activity-tab-vocab" onclick="window.switchActivityMode('vocab')" class="activity-tab-btn min-w-[120px] flex-1 py-5 font-black text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-2xl mb-1 drop-shadow-sm">🎲</span> Vocab Board</button>
+              <button id="activity-tab-jigsaw" onclick="window.switchActivityMode('jigsaw')" class="activity-tab-btn min-w-[120px] flex-1 py-5 font-black text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-2xl mb-1 drop-shadow-sm">🧩</span> Jigsaw Gap</button>
+              <button id="activity-tab-roleplay" onclick="window.switchActivityMode('roleplay')" class="activity-tab-btn min-w-[120px] flex-1 py-5 font-black text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-2xl mb-1 drop-shadow-sm">🎭</span> Roleplay</button>
+              <button id="activity-tab-debate" onclick="window.switchActivityMode('debate')" class="activity-tab-btn min-w-[120px] flex-1 py-5 font-black text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-2xl mb-1 drop-shadow-sm">🗣️</span> Debate</button>
+              <button id="activity-tab-fluency" onclick="window.switchActivityMode('fluency')" class="activity-tab-btn min-w-[120px] flex-1 py-5 font-black text-sm text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition border-b-4 border-transparent flex flex-col items-center gap-1"><span class="text-2xl mb-1 drop-shadow-sm">⏱️</span> 4/3/2 Fluency</button>
+          </div>
+          
+          <!-- Active Content Area -->
+          <div id="activity-mode-content" class="flex-1 p-4 sm:p-6 lg:p-10 overflow-y-auto bg-[#f8fafc] w-full custom-scrollbar block">
+              <!-- Content injected via JS -->
+          </div>
+      </div>
+  </div>
+
   <!-- BULK IMPORT MODAL -->
-  <div id="csv-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[950px] max-h-[90vh] animate-scale-up">
-      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+  <div id="csv-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-md md:p-6">
+    <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-7xl h-full md:h-[95vh] animate-scale-up overflow-hidden border border-slate-200">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0">
         <h2 id="csv-import-title" class="text-xl font-bold text-slate-800">📋 Bulk Import Questions</h2>
         <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
       </div>
@@ -748,9 +805,9 @@
   </div>
 
   <!-- BULK TEST IMPORT MODAL (TEST BANK) -->
-  <div id="bulk-test-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[90vh] animate-scale-up">
-        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+  <div id="bulk-test-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm md:p-6">
+    <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] animate-scale-up overflow-hidden border border-slate-200">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0">
             <h2 class="text-xl font-bold text-slate-800">📥 Bulk Import Tests</h2>
             <button onclick="document.getElementById('bulk-test-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
         </div>
@@ -767,9 +824,9 @@
   </div>
 
   <!-- BULK STUDENT IMPORT MODAL -->
-  <div id="bulk-student-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-    <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[90vh] animate-scale-up">
-        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+  <div id="bulk-student-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm md:p-6">
+    <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] animate-scale-up overflow-hidden border border-slate-200">
+        <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0">
             <h2 class="text-xl font-bold text-slate-800">👥 Bulk Import Students</h2>
             <button onclick="document.getElementById('bulk-student-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
         </div>
@@ -962,8 +1019,8 @@
   </div>
 
   <!-- ASSIGN SETTINGS MODAL -->
-  <div id="assign-settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[600px] max-h-[90vh] animate-scale-up overflow-hidden font-sans">
+  <div id="assign-settings-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm md:p-6">
+      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-4xl h-full md:h-[90vh] animate-scale-up overflow-hidden font-sans border border-slate-200">
           <div class="px-8 pt-8 pb-4 bg-white shrink-0 flex flex-col justify-between items-start gap-2">
               <div class="flex justify-between items-center w-full">
                   <h2 class="text-3xl font-semibold text-slate-800 tracking-tight">Assign settings</h2>
@@ -1071,8 +1128,8 @@
   </div>
 
   <!-- CLASS COLLABORATORS MODAL -->
-  <div id="class-collaborators-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[650px] max-h-[90vh] animate-scale-up overflow-hidden font-sans">
+  <div id="class-collaborators-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm md:p-6">
+      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-4xl h-full md:h-[90vh] animate-scale-up overflow-hidden font-sans border border-slate-200">
           <div class="px-6 pt-6 pb-4 bg-white shrink-0 flex justify-between items-center">
               <h2 class="text-2xl font-bold text-slate-800">Share and permissions</h2>
               <button onclick="document.getElementById('class-collaborators-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl border border-slate-200 rounded-lg w-8 h-8 flex items-center justify-center transition">&times;</button>
@@ -1106,9 +1163,9 @@
   </div>
 
   <!-- TEMPLATE MANAGER MODAL -->
-  <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[900px] h-[80vh] animate-scale-up">
-          <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl shrink-0">
+  <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm md:p-6">
+      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-7xl h-full md:h-[95vh] animate-scale-up overflow-hidden border border-slate-200">
+          <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0">
               <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">📝 Manage Teacher Templates</h2>
               <button onclick="document.getElementById('template-manager-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
           </div>
@@ -1129,9 +1186,9 @@
   </div>
 
   <!-- STUDENT BOOKING MODAL -->
-  <div id="student-booking-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-xl shadow-2xl flex flex-col w-[700px] max-h-[85vh] animate-scale-up">
-          <div class="p-5 border-b border-indigo-200 flex justify-between items-center bg-indigo-50 rounded-t-xl shrink-0">
+  <div id="student-booking-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm md:p-6">
+      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] animate-scale-up overflow-hidden border border-slate-200">
+          <div class="p-5 border-b border-indigo-200 flex justify-between items-center bg-indigo-50 shrink-0">
               <h2 class="text-xl font-black text-indigo-900 flex items-center gap-2">📅 Book an Appointment</h2>
               <button onclick="document.getElementById('student-booking-modal').classList.add('hidden')" class="text-indigo-400 hover:text-indigo-700 font-bold text-2xl leading-none">&times;</button>
           </div>
@@ -1189,8 +1246,8 @@
   </div>
 
   <!-- STUDENT PROFILE & TARGETS MODAL -->
-  <div id="student-profile-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[500px] max-h-[90vh] overflow-hidden animate-scale-up">
+  <div id="student-profile-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm md:p-6">
+      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-3xl h-full md:h-[90vh] overflow-hidden animate-scale-up border border-slate-200">
           <div class="bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-center relative">
               <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="absolute top-4 right-4 text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
               <div class="relative w-24 h-24 mx-auto mb-3 cursor-pointer group" onclick="document.getElementById('profile-avatar-upload').click()">
@@ -1232,8 +1289,8 @@
   </div>
 
   <!-- STUDENT HISTORY MODAL -->
-  <div id="student-history-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm">
-      <div class="bg-white rounded-2xl shadow-2xl flex flex-col w-[600px] max-h-[90vh] overflow-hidden animate-scale-up">
+  <div id="student-history-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm md:p-6">
+      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] overflow-hidden animate-scale-up border border-slate-200">
           <div class="bg-gradient-to-r from-indigo-700 to-blue-800 p-5 flex justify-between items-center shrink-0">
               <h2 class="text-xl font-black text-white flex items-center gap-2">📜 My History & Activity</h2>
               <button onclick="document.getElementById('student-history-modal').classList.add('hidden')" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
@@ -1503,6 +1560,10 @@
                   </button>
               </div>
 
+              <button onclick="window.openRandomSpinner()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black py-3.5 px-5 rounded-xl transition shadow-md flex justify-center items-center gap-2 z-10 border border-pink-400/50 hover:-translate-y-0.5 active:scale-95 mt-1">
+                  <span class="text-2xl drop-shadow-sm">🎲</span> Spin for Random Practice
+              </button>
+
               <button onclick="window.installPWA()" id="btn-install-pwa" class="hidden w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black hover:to-black text-white font-bold py-3.5 px-5 rounded-xl transition shadow-md flex justify-between items-center z-10 border border-slate-700 text-sm mt-1">
                   <span class="flex items-center gap-2"><span class="text-lg">📱</span> Install App</span>
                   <span class="text-slate-400">&darr;</span>
@@ -1681,6 +1742,10 @@
                     <span class="text-2xl drop-shadow-sm">🗣️</span>
                     <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Speaking</span>
                 </button>
+                <button onclick="createNewTest('activity')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 transition border border-fuchsia-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm">🎲</span>
+                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Activity</span>
+                </button>
                 <button onclick="window.openBulkTestImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
                     <span class="text-2xl drop-shadow-sm">📥</span>
                     <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Bulk<br>Tests</span>
@@ -1704,7 +1769,7 @@
                  <input type="text" id="bank-search" onkeyup="renderTestBank(true)" placeholder="Search tests by title or tag..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
               </div>
               <select id="bank-filter-mod" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
-                <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
+                <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option><option value="activity">Activities</option>
               </select>
               <select id="bank-filter-tag" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
                 <option value="all">All Tags</option>
@@ -2324,16 +2389,18 @@
     </div>
   </div>
 
-  <!-- ✨ GLOBAL: Flashcard Slide Panel (Student) -->
-  <div id="student-fc-panel" class="fixed top-0 right-0 h-screen w-96 max-w-[90vw] bg-white border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-[600] flex flex-col">
-    <div class="p-4 bg-gradient-to-r from-indigo-700 to-blue-800 flex justify-between items-center shrink-0">
-      <h2 class="font-black text-lg text-white">🗂️ Flashcard Decks</h2>
-      <button onclick="window.toggleStudentFlashcardPanel()" class="text-white/70 hover:text-white font-black text-3xl leading-none">&times;</button>
+  <!-- ✨ GLOBAL: Flashcard Immersive Modal (Student) -->
+  <div id="student-fc-panel" class="hidden fixed inset-0 bg-slate-900/80 z-[800] flex items-center justify-center backdrop-blur-md md:p-6 animate-fade-in">
+    <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] overflow-hidden border border-slate-200 animate-scale-up">
+      <div class="p-5 md:p-6 bg-gradient-to-r from-indigo-700 to-blue-800 flex justify-between items-center shrink-0 z-20 shadow-md">
+        <h2 class="font-black text-xl md:text-2xl text-white flex items-center gap-3 tracking-tight"><span class="bg-white/20 p-2 rounded-xl shadow-inner leading-none">🗂️</span> Study Cards</h2>
+        <button onclick="window.toggleStudentFlashcardPanel()" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+      </div>
+      <div class="p-4 md:p-6 bg-slate-50 border-b border-slate-200 shrink-0 shadow-sm z-10">
+        <select id="panel-fc-list-select" onchange="window.renderFlashcardPanel()" class="w-full border-2 border-slate-300 p-3 md:p-4 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none text-base md:text-lg cursor-pointer shadow-sm bg-white"></select>
+      </div>
+      <div id="panel-fc-container" class="flex-1 overflow-y-auto p-4 md:p-10 bg-[#f8fafc] relative flex flex-col w-full custom-scrollbar"></div>
     </div>
-    <div class="p-4 bg-slate-50 border-b border-slate-200 shrink-0">
-      <select id="panel-fc-list-select" onchange="renderFlashcardPanel()" class="w-full border-2 border-slate-300 p-2.5 rounded-lg font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"></select>
-    </div>
-    <div id="panel-fc-container" class="flex-1 overflow-y-auto p-4 bg-slate-100 relative stagger-fade-in"></div>
   </div>
 
   <!-- ✨ NEW: CLASSIN-STYLE VIRTUAL CLASSROOM -->
@@ -3200,7 +3267,7 @@ window.initFirebaseSystem = async function() {
             }));
 
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('hidden')) { window.renderFlashcardPanel(); } resolve(); }); }));
         } else if (currentUser.role === 'collaborator') {
             promises.push(new Promise(resolve => { 
                 window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
@@ -3262,7 +3329,7 @@ window.initFirebaseSystem = async function() {
                 promises.push(new Promise(resolve => { 
                     window.fsOnSnapshot(msgQ, snap => { 
                         CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); 
-                        if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); 
+                        if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) window.renderChatMessages(); 
                         
                         if (!isMyMsgInitial) {
                             snap.docChanges().forEach(change => {
@@ -4098,8 +4165,8 @@ window.initFirebaseSystem = async function() {
       const paginatedTests = filtered.slice(startIndex, startIndex + TESTS_PER_PAGE);
 
       grid.innerHTML = paginatedTests.length ? paginatedTests.map(t => {
-        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
-        const c = modColors[t.module];
+        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber', activity:'fuchsia' };
+        const c = modColors[t.module] || 'slate';
         
         const assignedClasses = CLASSES.filter(cls => cls.assignedTests && cls.assignedTests.includes(t.id)).map(cls => cls.name);
         const assignedBadge = assignedClasses.length > 0 
@@ -4343,6 +4410,11 @@ window.initFirebaseSystem = async function() {
                 { title: "Part 1: Introduction", text: "Let's talk about [Topic].\n\n- Question 1\n- Question 2\n- Question 3", questions: [{ blockId: 's1_'+Date.now(), type: 'audio_record', ids: [1], instruction: 'Record your answer for Part 1' }] },
                 { title: "Part 2: Cue Card", text: "Describe [Topic].\nYou should say:\n- point 1\n- point 2\n- point 3\n\nYou will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say.", questions: [{ blockId: 's2_'+Date.now(), type: 'audio_record', ids: [2], instruction: 'Record your answer for Part 2' }] },
                 { title: "Part 3: Discussion", text: "Let's consider first of all [Topic].\n\n- Question 1\n- Question 2", questions: [{ blockId: 's3_'+Date.now(), type: 'audio_record', ids: [3], instruction: 'Record your answer for Part 3' }] }
+            ];
+        } else if (mod === 'activity') {
+            return [
+                { title: "Warm-up Game", text: "", questions: [{ blockId: 'a1_'+Date.now(), type: 'vocab_game', ids: [1], instruction: '' }] },
+                { title: "Main Activity", text: "", questions: [{ blockId: 'a2_'+Date.now(), type: 'pair_roleplay', ids: [2], instruction: 'Find a partner. Decide who is Student A and Student B.', text: 'You are a tourist asking for directions.', hint: 'You are a local giving directions.' }] }
             ];
         }
         return [{ title: "Part 1", text: "", questions: [] }];
@@ -5957,6 +6029,7 @@ window.initFirebaseSystem = async function() {
       const qSel = document.getElementById('new-q-type'); qSel.innerHTML = '';
       if(APP_DATA.module==='writing') qSel.innerHTML = '<option value="essay">Writing Essay Box</option>';
       else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option><option value="essay">Notes / Text Box</option>';
+      else if(APP_DATA.module==='activity') qSel.innerHTML = '<option value="pair_roleplay">🎭 Pair Roleplay (Cards)</option><option value="group_debate">🗣️ Group Debate (Teams)</option><option value="vocab_game">🎲 Multiplayer Vocab Board</option>';
       else {
         qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option>`;
         if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Info (Grid)</option>`;
@@ -6379,6 +6452,17 @@ window.initFirebaseSystem = async function() {
            html += `</div>`;
            
            html += `</div>`;
+        } else if (q.type === 'pair_roleplay') {
+           html += `<div>${mkLbl('Student A Role')}<textarea class="q-text ${baseInputClass} min-h-[100px]" placeholder="Describe the scenario for Student A...">${q.text||''}</textarea></div>`;
+           html += `<div>${mkLbl('Student B Role')}<textarea class="q-hint ${baseInputClass} min-h-[100px]" placeholder="Describe the scenario for Student B...">${q.hint||''}</textarea></div>`;
+        } else if (q.type === 'group_debate') {
+           html += `<div>${mkLbl('Debate Motion / Topic')}<textarea class="q-inst ${baseInputClass} min-h-[60px]" placeholder="e.g. Social media does more harm than good.">${q.instruction||''}</textarea></div>`;
+           html += `<div class="grid grid-cols-2 gap-4">`;
+           html += `<div>${mkLbl('Affirmative (For) Points')}<textarea class="q-text ${baseInputClass} min-h-[100px]">${q.text||''}</textarea></div>`;
+           html += `<div>${mkLbl('Negative (Against) Points')}<textarea class="q-hint ${baseInputClass} min-h-[100px]">${q.hint||''}</textarea></div>`;
+           html += `</div>`;
+        } else if (q.type === 'vocab_game') {
+           html += `<div class="p-5 bg-fuchsia-50 border border-fuchsia-200 rounded-xl text-fuchsia-800 text-[15px] font-medium flex items-center gap-4 shadow-inner"><span class="text-4xl drop-shadow-sm">🎲</span> <p>This block automatically generates a multiplayer Vocabulary Board Game using the words in the <b>Test Vocabulary Bank</b> (click the 🗂️ icon in the top right to add words).</p></div>`;
         } else {
            if (q.type === 'fill_blanks' || q.type === 'dnd_list') {
                html += `<div>${mkLbl('Passage Text With Gaps')}${advToolbar}<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
@@ -6395,11 +6479,10 @@ window.initFirebaseSystem = async function() {
            }
         }
         
-        html += `<div>${mkLbl('Kỹ thuật làm bài / Hint (Optional - Shows as a 💡 Hint button during Practice Mode)')}${mkTemplateToolbar(`hint-editor-${i}`)}<div id="hint-editor-${i}" class="q-hint rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[60px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.hint||''}</div></div>`;
-        
-        html += `<div>${mkLbl('Giải thích đáp án (Optional - Only shows in Detailed Review)')}${mkTemplateToolbar(`expl-editor-${i}`)}<div id="expl-editor-${i}" class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
-        
-        html += `</div>`; 
+        if (!['pair_roleplay', 'group_debate', 'vocab_game'].includes(q.type)) {
+            html += `<div>${mkLbl('Kỹ thuật làm bài / Hint (Optional - Shows as a 💡 Hint button during Practice Mode)')}${mkTemplateToolbar(`hint-editor-${i}`)}<div id="hint-editor-${i}" class="q-hint rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[60px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.hint||''}</div></div>`;
+            html += `<div>${mkLbl('Giải thích đáp án (Optional - Only shows in Detailed Review)')}${mkTemplateToolbar(`expl-editor-${i}`)}<div id="expl-editor-${i}" class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
+        } 
         div.innerHTML = html; 
         list.appendChild(div);
       });
@@ -8270,7 +8353,7 @@ window.initFirebaseSystem = async function() {
         </div>`;
       };
 
-      const classSchedules = SCHEDULES.filter(s => s.className === cls.name);
+      const classSchedules = SCHEDULES.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
       if (schedSec) {
           // Show the Timetable if they have classes OR if they are allowed to book them!
           if (classSchedules.length || cls.allowBooking) {
@@ -8442,6 +8525,362 @@ window.initFirebaseSystem = async function() {
           startTest(pendingTestId, selectedParts); // Pass the chosen parts!
       }
     }
+
+    // ✨ NEW: Random Practice Spinner
+    window.spunTestId = null;
+    window.availableSpinTests = [];
+
+    window.openRandomSpinner = function() {
+        const cid = document.getElementById('student-class-select')?.value;
+        const cls = CLASSES.find(c => c.id === cid);
+        if (!cls) {
+            showModalMsg("Notice", "Please select an active class first.");
+            return;
+        }
+
+        // Gather all tests assigned to this student's class
+        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+        const pathItems = getClassPathItems(cls);
+        
+        // Strictly filter out tests they have already done, or tests that are locked by prerequisites/gems
+        window.availableSpinTests = pathItems.filter(item => {
+            if (!item.testId) return false;
+            const isCompleted = mySubs.some(s => s.testId === item.testId);
+            const isLocked = !isPrerequisiteSatisfied(item, mySubs);
+            const t = TEST_BANK.find(x => x.id === item.testId);
+            const isPremiumLocked = Boolean(t && Number(t.price) > 0 && !(currentUser.unlockedTests || []).includes(t.id));
+            
+            return !isCompleted && !isLocked && !isPremiumLocked && t; 
+        });
+
+        if (window.availableSpinTests.length === 0) {
+            window.showToast("All Caught Up!", "You have completed all available materials. Ask your teacher for more!");
+            return;
+        }
+
+        // Reset UI State
+        document.getElementById('spin-result-text').textContent = "Ready to roll?";
+        document.getElementById('spin-result-text').className = "text-xl font-black text-slate-400 leading-snug w-full text-center";
+        document.getElementById('btn-start-spin').classList.remove('hidden');
+        document.getElementById('btn-start-spin').disabled = false;
+        document.getElementById('btn-start-spin').classList.remove('opacity-50');
+        document.getElementById('btn-go-spin').classList.add('hidden');
+        
+        const icon = document.getElementById('spin-icon');
+        icon.classList.remove('animate-spin');
+        icon.textContent = '🎲';
+        
+        document.getElementById('random-spin-modal').classList.remove('hidden');
+    };
+
+    window.startRandomSpin = function() {
+        if (window.availableSpinTests.length === 0) return;
+        
+        const btnSpin = document.getElementById('btn-start-spin');
+        const resultText = document.getElementById('spin-result-text');
+        const icon = document.getElementById('spin-icon');
+        
+        btnSpin.disabled = true;
+        btnSpin.classList.add('opacity-50');
+        icon.classList.add('animate-spin'); // Uses native Tailwind spin
+        
+        let counter = 0;
+        const maxSpins = 20; // Will cycle through 20 random titles rapidly
+        const intervalTime = 80; // Super fast tick speed
+        
+        const spinInterval = setInterval(() => {
+            const randomItem = window.availableSpinTests[Math.floor(Math.random() * window.availableSpinTests.length)];
+            const t = TEST_BANK.find(x => x.id === randomItem.testId);
+            
+            resultText.textContent = t ? t.title : randomItem.title;
+            // Blur effect during the spin for visual motion
+            resultText.className = "text-xl font-bold text-slate-400 leading-snug blur-[2px] w-full text-center truncate";
+            
+            counter++;
+            if (counter >= maxSpins) {
+                clearInterval(spinInterval);
+                
+                // Final Selected Test
+                const finalItem = window.availableSpinTests[Math.floor(Math.random() * window.availableSpinTests.length)];
+                window.spunTestId = finalItem.testId;
+                const finalT = TEST_BANK.find(x => x.id === finalItem.testId);
+                
+                // Pop the final result into view safely centered!
+                resultText.innerHTML = `<span class="text-[10px] bg-pink-100 text-pink-700 px-3 py-1 rounded-full uppercase tracking-widest font-black inline-block mb-3 border border-pink-200 shadow-sm">${finalT.module}</span><br>${finalT.title}`;
+                resultText.className = "text-xl sm:text-2xl font-black text-pink-600 leading-snug animate-scale-up w-full text-center";
+                
+                icon.classList.remove('animate-spin');
+                icon.textContent = '🎉';
+                
+                btnSpin.classList.add('hidden');
+                document.getElementById('btn-go-spin').classList.remove('hidden');
+                
+                // Fire existing UI celebration hook
+                if (typeof window.playGemAnimation === 'function') window.playGemAnimation(); 
+            }
+        }, intervalTime);
+    };
+
+    window.goToSpunTest = function() {
+        document.getElementById('random-spin-modal').classList.add('hidden');
+        if (window.spunTestId) {
+            openModeSelection(window.spunTestId);
+        }
+    };
+
+    // ✨ NEW: Interactive Game Generation Engine
+    window.openTestActivities = function() {
+        if (!pendingTestId) return;
+        const t = TEST_BANK.find(x => x.id === pendingTestId);
+        if (!t) return;
+        
+        APP_DATA = JSON.parse(JSON.stringify(t));
+        
+        document.getElementById('test-mode-modal').classList.add('hidden');
+        document.getElementById('activity-mode-test-name').textContent = APP_DATA.title;
+        document.getElementById('test-activities-modal').classList.remove('hidden');
+        
+        window.switchActivityMode('vocab');
+    };
+
+    window.switchActivityMode = function(mode) {
+        document.querySelectorAll('.activity-tab-btn').forEach(btn => {
+            btn.classList.remove('text-fuchsia-700', 'border-fuchsia-600', 'bg-fuchsia-50');
+            btn.classList.add('text-slate-400', 'border-transparent');
+        });
+        const activeTab = document.getElementById(`activity-tab-${mode}`);
+        if(activeTab) {
+            activeTab.classList.add('text-fuchsia-700', 'border-fuchsia-600', 'bg-fuchsia-50');
+            activeTab.classList.remove('text-slate-400', 'border-transparent');
+        }
+
+        const content = document.getElementById('activity-mode-content');
+        // Extract intelligent topics for the prompts
+        const topics = (APP_DATA.topics && APP_DATA.topics.length > 0) ? APP_DATA.topics.join(', ') : APP_DATA.module.charAt(0).toUpperCase() + APP_DATA.module.slice(1);
+
+        if (window.activityTimer) clearInterval(window.activityTimer);
+
+        if (mode === 'vocab') {
+            const gameWords = APP_DATA.vocab || [];
+            if (gameWords.length < 2) {
+                content.innerHTML = `<div class="p-10 text-center bg-white border border-slate-200 rounded-3xl shadow-sm max-w-xl mx-auto mt-10"><span class="text-6xl mb-4 grayscale opacity-50 block">🎲</span><h3 class="text-xl font-black text-slate-800 mb-2">Not Enough Words</h3><p class="text-slate-500 font-medium">Your teacher needs to add at least 2 words to the <b class="text-blue-600">Test Vocabulary Bank</b> (via the Teacher Dashboard) to automatically generate the interactive board game for this specific test.</p></div>`;
+            } else {
+                content.innerHTML = `
+                <div class="w-full max-w-6xl mx-auto py-2 animate-scale-up">
+                    <div class="text-center mb-8">
+                        <span class="text-5xl drop-shadow-md mb-3 block">🎲</span>
+                        <h3 class="text-3xl md:text-4xl font-black text-fuchsia-950 tracking-tight">Vocabulary Challenge</h3>
+                        <p class="text-sm font-black text-fuchsia-600 mt-2 uppercase tracking-widest bg-fuchsia-100 border border-fuchsia-200 px-4 py-1.5 rounded-full inline-block shadow-sm">Team A vs Team B</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6">
+                        ${gameWords.map((v, idx) => `
+                            <div class="flip-card h-32 lg:h-40 cursor-pointer perspective-1000 group" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-inner w-full h-full relative transition-transform duration-500 rounded-2xl shadow-sm" style="transform-style: preserve-3d;">
+                                    <div class="flip-card-front absolute w-full h-full bg-white border-2 border-fuchsia-200 rounded-2xl flex items-center justify-center p-4 backface-hidden shadow-sm group-hover:border-fuchsia-400 group-hover:bg-fuchsia-50 transition-colors" style="-webkit-backface-visibility: hidden; backface-visibility: hidden;">
+                                        <span class="text-5xl font-black text-fuchsia-200 group-hover:text-fuchsia-400 transition-colors drop-shadow-sm">${idx + 1}</span>
+                                    </div>
+                                    <div class="flip-card-back absolute w-full h-full bg-gradient-to-br from-fuchsia-600 to-purple-700 border-2 border-fuchsia-800 rounded-2xl flex flex-col items-center justify-center p-5 backface-hidden shadow-lg text-center" style="transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;">
+                                        <span class="font-black text-white text-xl lg:text-2xl leading-tight drop-shadow-md mb-1">${v.term}</span>
+                                        <span class="text-xs text-fuchsia-200 font-bold leading-snug line-clamp-3">${v.eng || v.vi || ''}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
+        } else if (mode === 'jigsaw') {
+            const gameWords = [...(APP_DATA.vocab || [])].sort(() => Math.random() - 0.5);
+            if (gameWords.length < 4) {
+                content.innerHTML = `<div class="p-10 text-center bg-white border border-slate-200 rounded-3xl shadow-sm max-w-xl mx-auto mt-10"><span class="text-6xl mb-4 grayscale opacity-50 block">🧩</span><h3 class="text-xl font-black text-slate-800 mb-2">Not Enough Words</h3><p class="text-slate-500 font-medium">Your teacher needs to add at least 4 words to the <b class="text-blue-600">Test Vocabulary Bank</b> to generate a Jigsaw Gap activity.</p></div>`;
+                return;
+            }
+
+            const listA = gameWords.map((v, i) => i % 2 === 0 ? `<div class="p-3 bg-white border-2 border-indigo-200 rounded-xl text-indigo-900 font-black text-lg shadow-sm text-center">${v.term}</div>` : `<div class="p-3 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl text-slate-400 font-bold text-base shadow-inner flex items-center justify-center italic">Missing Word</div>`).join('');
+            const listB = gameWords.map((v, i) => i % 2 !== 0 ? `<div class="p-3 bg-white border-2 border-amber-200 rounded-xl text-amber-900 font-black text-lg shadow-sm text-center">${v.term}</div>` : `<div class="p-3 bg-slate-100 border-2 border-dashed border-slate-300 rounded-xl text-slate-400 font-bold text-base shadow-inner flex items-center justify-center italic">Missing Word</div>`).join('');
+
+            content.innerHTML = `
+            <div class="w-full max-w-5xl mx-auto py-2 animate-scale-up">
+                <div class="text-center mb-8">
+                    <span class="text-6xl drop-shadow-md mb-4 block">🧩</span>
+                    <h3 class="text-3xl md:text-4xl font-black text-fuchsia-950 tracking-tight mb-4">Jigsaw Information Gap</h3>
+                    <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-5 rounded-2xl max-w-3xl mx-auto text-sm font-medium shadow-sm text-left">
+                        <span class="font-black text-indigo-700 uppercase tracking-widest text-[10px] block mb-2">🧠 Interaction Hypothesis (Michael Long)</span>
+                        Sit back-to-back with your partner. You each have half of the vocabulary list. You must describe your words in English without saying the exact word, so your partner can guess it and fill in their blanks! This forces heavy negotiation of meaning.
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-indigo-50/50 rounded-3xl p-6 md:p-8 border-2 border-indigo-200 shadow-sm relative overflow-hidden">
+                        <h4 class="font-black text-indigo-800 uppercase tracking-widest text-xl mb-6 text-center border-b-2 border-indigo-100 pb-4">Partner A's Screen</h4>
+                        <div class="flex flex-col gap-3">${listA}</div>
+                    </div>
+                    <div class="bg-amber-50/50 rounded-3xl p-6 md:p-8 border-2 border-amber-200 shadow-sm relative overflow-hidden">
+                        <h4 class="font-black text-amber-800 uppercase tracking-widest text-xl mb-6 text-center border-b-2 border-amber-100 pb-4">Partner B's Screen</h4>
+                        <div class="flex flex-col gap-3">${listB}</div>
+                    </div>
+                </div>
+            </div>`;
+        } else if (mode === 'roleplay') {
+            
+            let pAText = "You are an expert on this topic. Summarize the main ideas from the text and explain them clearly to Student B.";
+            let pBText = "You are a journalist. Ask your partner 3 challenging, follow-up questions based on what they tell you.";
+            
+            if (APP_DATA.module === 'activity') {
+                APP_DATA.parts.forEach(p => {
+                    p.questions.forEach(q => {
+                        if (q.type === 'pair_roleplay') {
+                            if (q.text) pAText = q.text;
+                            if (q.hint) pBText = q.hint;
+                        }
+                    });
+                });
+            }
+
+            content.innerHTML = `
+            <div class="w-full max-w-5xl mx-auto py-2 animate-scale-up">
+                <div class="text-center mb-8">
+                    <span class="text-6xl drop-shadow-md mb-4 block">🎭</span>
+                    <h3 class="text-3xl md:text-4xl font-black text-fuchsia-950 tracking-tight mb-4">Pair Roleplay</h3>
+                    <p class="text-lg font-medium text-slate-500 mb-6">Find a partner. Decide who is Student A and Student B, then tap to reveal your secret roles.</p>
+                    <div class="bg-blue-100/50 border border-blue-200 text-blue-800 p-5 rounded-2xl max-w-3xl mx-auto text-sm font-medium shadow-sm text-left">
+                        <span class="font-black text-blue-900 uppercase tracking-widest text-[10px] block mb-2 flex items-center gap-1">🧠 Pedagogical Goal</span>
+                        Roleplays force students to shift from passive comprehension to active, spontaneous production, heavily utilizing <b>Merrill Swain's Output Hypothesis</b>.
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
+                    <!-- Student A -->
+                    <div class="relative rounded-[2rem] border-4 border-blue-200 bg-blue-50 overflow-hidden shadow-lg min-h-[360px] flex flex-col group cursor-pointer" onclick="this.querySelector('.cover-layer').classList.add('opacity-0', 'pointer-events-none', 'scale-105')">
+                        <div class="cover-layer absolute inset-0 bg-blue-900/95 backdrop-blur-md flex flex-col items-center justify-center text-white z-10 transition-all duration-500 hover:bg-blue-800">
+                            <span class="text-7xl mb-4 drop-shadow-md">🕵️‍♂️</span>
+                            <span class="font-black text-2xl md:text-3xl tracking-widest uppercase">Student A</span>
+                            <span class="text-sm font-bold text-blue-200 mt-4 border border-blue-400/50 bg-blue-800/50 px-6 py-2.5 rounded-full shadow-inner">Tap to reveal</span>
+                        </div>
+                        <div class="p-6 md:p-10 flex-1 flex flex-col justify-start text-center bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIgZmlsbD0iI2VvZTdmNSIvPgo8L3N2Zz4=')]">
+                            <h4 class="font-black text-blue-900 uppercase tracking-widest text-sm mb-6 border-b-2 border-blue-200 pb-3 bg-white/80 rounded px-2 inline-block mx-auto shrink-0">Your Secret Role</h4>
+                            <div class="text-lg font-bold text-slate-800 leading-relaxed bg-white/95 p-5 rounded-xl shadow-sm text-left whitespace-pre-wrap">${pAText}</div>
+                        </div>
+                    </div>
+                    <!-- Student B -->
+                    <div class="relative rounded-[2rem] border-4 border-emerald-200 bg-emerald-50 overflow-hidden shadow-lg min-h-[360px] flex flex-col group cursor-pointer" onclick="this.querySelector('.cover-layer').classList.add('opacity-0', 'pointer-events-none', 'scale-105')">
+                        <div class="cover-layer absolute inset-0 bg-emerald-900/95 backdrop-blur-md flex flex-col items-center justify-center text-white z-10 transition-all duration-500 hover:bg-emerald-800">
+                            <span class="text-7xl mb-4 drop-shadow-md">🕵️‍♀️</span>
+                            <span class="font-black text-2xl md:text-3xl tracking-widest uppercase">Student B</span>
+                            <span class="text-sm font-bold text-emerald-200 mt-4 border border-emerald-400/50 bg-emerald-800/50 px-6 py-2.5 rounded-full shadow-inner">Tap to reveal</span>
+                        </div>
+                        <div class="p-6 md:p-10 flex-1 flex flex-col justify-start text-center bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiAvPgo8Y2lyY2xlIGN4PSIxIiBjeT0iMSIgcj0iMSIgZmlsbD0iI2QxZmFlNSIvPgo8L3N2Zz4=')]">
+                            <h4 class="font-black text-emerald-900 uppercase tracking-widest text-sm mb-6 border-b-2 border-emerald-200 pb-3 bg-white/80 rounded px-2 inline-block mx-auto shrink-0">Your Secret Role</h4>
+                            <div class="text-lg font-bold text-slate-800 leading-relaxed bg-white/95 p-5 rounded-xl shadow-sm text-left whitespace-pre-wrap">${pBText}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        } else if (mode === 'debate') {
+            let dMotion = `This house believes that the issues discussed in "${APP_DATA.title}" represent the most significant challenges in modern society.`;
+            let dFor = "Argue IN FAVOR of the core concepts presented in the text. Use specific examples from the reading to build your case.";
+            let dAgainst = "Argue AGAINST or find flaws in the concepts presented. Prepare logical rebuttals for the Affirmative team's likely arguments.";
+
+            if (APP_DATA.module === 'activity') {
+                APP_DATA.parts.forEach(p => {
+                    p.questions.forEach(q => {
+                        if (q.type === 'group_debate') {
+                            if (q.instruction) dMotion = q.instruction;
+                            if (q.text) dFor = q.text;
+                            if (q.hint) dAgainst = q.hint;
+                        }
+                    });
+                });
+            }
+
+            content.innerHTML = `
+            <div class="w-full max-w-6xl mx-auto py-2 animate-fade-in-up">
+                <div class="flex flex-col items-center mb-8">
+                    <div class="bg-slate-100/50 border border-slate-200 text-slate-700 p-5 rounded-2xl max-w-3xl w-full mx-auto text-sm font-medium mb-8 shadow-sm text-left">
+                        <span class="font-black text-slate-800 uppercase tracking-widest text-[10px] block mb-2 flex items-center gap-1">🧠 Sociocultural Theory (Vygotsky)</span>
+                        Group debates create a Zone of Proximal Development (ZPD) where peer-to-peer scaffolding helps learners construct more complex arguments than they could alone.
+                    </div>
+                    <div class="bg-slate-800 text-white px-6 py-8 md:px-10 md:py-10 rounded-[2.5rem] shadow-2xl border-4 border-slate-700 text-center max-w-4xl w-full relative overflow-hidden">
+                        <div class="absolute -top-6 -right-6 text-[10rem] opacity-5 leading-none select-none pointer-events-none">🗣️</div>
+                        <span class="text-xs font-black uppercase tracking-[0.3em] text-fuchsia-400 block mb-4 relative z-10">Debate Motion</span>
+                        <h3 class="text-xl md:text-3xl lg:text-4xl font-black leading-snug tracking-tight relative z-10">${dMotion}</h3>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 w-full">
+                    <div class="bg-emerald-50 rounded-3xl p-6 md:p-10 border-2 border-emerald-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden h-full min-h-[250px]">
+                        <span class="text-5xl md:text-6xl mb-4 drop-shadow-md">👍</span>
+                        <h4 class="font-black text-emerald-800 uppercase tracking-widest text-lg md:text-xl mb-4">Affirmative Team</h4>
+                        <div class="text-base md:text-lg font-bold text-slate-700 leading-relaxed whitespace-pre-wrap text-left w-full bg-white/60 p-5 rounded-xl shadow-inner border border-emerald-100">${dFor}</div>
+                    </div>
+                    <div class="bg-rose-50 rounded-3xl p-6 md:p-10 border-2 border-rose-200 shadow-sm flex flex-col items-center text-center relative overflow-hidden h-full min-h-[250px]">
+                        <span class="text-5xl md:text-6xl mb-4 drop-shadow-md">👎</span>
+                        <h4 class="font-black text-rose-800 uppercase tracking-widest text-lg md:text-xl mb-4">Negative Team</h4>
+                        <div class="text-base md:text-lg font-bold text-slate-700 leading-relaxed whitespace-pre-wrap text-left w-full bg-white/60 p-5 rounded-xl shadow-inner border border-rose-100">${dAgainst}</div>
+                    </div>
+                </div>
+            </div>`;
+        } else if (mode === 'fluency') {
+            content.innerHTML = `
+            <div class="w-full max-w-4xl mx-auto py-10 animate-fade-in-up flex flex-col items-center text-center">
+                <span class="text-6xl md:text-7xl drop-shadow-md mb-4 block">⏱️</span>
+                <h3 class="text-3xl md:text-5xl font-black text-slate-800 tracking-tight mb-8">Fluency Speed Drill</h3>
+                
+                <div class="bg-sky-50 border border-sky-200 text-sky-900 p-6 rounded-2xl max-w-3xl mx-auto text-sm font-medium shadow-sm text-left mb-10">
+                    <span class="font-black text-sky-700 uppercase tracking-widest text-[10px] block mb-2">🧠 Skill Acquisition Theory & The 4/3/2 Technique</span>
+                    Stand up and find a partner. Explain the main concepts of <b class="text-sky-700">"${APP_DATA.title}"</b> to them before the timer runs out. When time is up, find a NEW partner, and explain the exact same thing, but faster. Repetition under increasing time pressure converts slow declarative knowledge into fast, automatic fluency!
+                </div>
+
+                <div class="bg-white border-4 border-slate-100 w-48 h-48 md:w-64 md:h-64 rounded-full flex flex-col items-center justify-center shadow-2xl mb-10 relative overflow-hidden group">
+                    <div id="fluency-pulse" class="absolute inset-0 bg-blue-100 opacity-0 transition-opacity duration-500"></div>
+                    <span id="fluency-display" class="font-mono text-5xl md:text-7xl font-black text-slate-800 relative z-10 tracking-tighter">00:00</span>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-3 w-full">
+                    <button onclick="window.startFluencyTimer(4, this)" class="fluency-btn bg-emerald-100 hover:bg-emerald-500 hover:text-white text-emerald-800 border-2 border-emerald-300 font-black text-base md:text-lg px-6 py-3 rounded-2xl transition shadow-sm">Round 1: 4 Mins</button>
+                    <button onclick="window.startFluencyTimer(3, this)" class="fluency-btn bg-amber-100 hover:bg-amber-500 hover:text-white text-amber-800 border-2 border-amber-300 font-black text-base md:text-lg px-6 py-3 rounded-2xl transition shadow-sm">Round 2: 3 Mins</button>
+                    <button onclick="window.startFluencyTimer(2, this)" class="fluency-btn bg-rose-100 hover:bg-rose-500 hover:text-white text-rose-800 border-2 border-rose-300 font-black text-base md:text-lg px-6 py-3 rounded-2xl transition shadow-sm">Round 3: 2 Mins</button>
+                    <button onclick="if(window.activityTimer) clearInterval(window.activityTimer); document.getElementById('fluency-display').textContent = '00:00'; document.getElementById('fluency-pulse').classList.remove('animate-ping', 'opacity-100'); document.querySelectorAll('.fluency-btn').forEach(b => b.classList.remove('opacity-50'));" class="bg-slate-100 hover:bg-slate-300 text-slate-600 font-bold text-base md:text-lg px-6 py-3 rounded-2xl transition shadow-sm">Reset</button>
+                </div>
+            </div>`;
+        }
+    };
+
+    window.startFluencyTimer = function(minutes, btnElement) {
+        if (window.activityTimer) clearInterval(window.activityTimer);
+        
+        document.querySelectorAll('.fluency-btn').forEach(b => b.classList.remove('opacity-50', 'ring-4'));
+        if (btnElement) btnElement.classList.add('opacity-50', 'ring-4', 'ring-slate-300');
+
+        let secs = minutes * 60;
+        const display = document.getElementById('fluency-display');
+        const pulse = document.getElementById('fluency-pulse');
+        
+        pulse.classList.remove('animate-ping', 'bg-rose-100', 'opacity-100');
+        pulse.classList.add('bg-blue-100');
+        display.classList.remove('text-rose-600');
+        display.classList.add('text-blue-600');
+
+        // Immediate first render
+        display.textContent = `${Math.floor(secs/60)}:${(secs%60).toString().padStart(2, '0')}`;
+
+        window.activityTimer = setInterval(() => {
+            secs--;
+            
+            if (secs <= 10 && secs > 0) {
+                pulse.classList.add('opacity-100', 'bg-rose-100');
+                display.classList.add('text-rose-600');
+            }
+
+            if (secs < 0) {
+                clearInterval(window.activityTimer);
+                display.textContent = `0:00`;
+                pulse.classList.add('animate-ping');
+                if (typeof window.showToast === 'function') window.showToast("Time's Up! ⏰", "Rotate partners and get ready for the next round!", "info");
+                return;
+            }
+            
+            display.textContent = `${Math.floor(secs/60)}:${(secs%60).toString().padStart(2, '0')}`;
+        }, 1000);
+    };
 
     function selectTestMode(m) {
       testMode = m; isTimeFree = (m === 'free');
@@ -8702,17 +9141,14 @@ window.initFirebaseSystem = async function() {
       if (window._resizersAttached) return;
       window._resizersAttached = true;
       
-      // Logic for Student Exam UI
       const examResizer = document.getElementById('resizer');
       const examLeft = document.getElementById('passage-container');
       const examSplit = document.getElementById('split-container');
       
-      // Logic for Teacher Review/Grading UI
       const revResizer = document.getElementById('review-resizer');
       const revLeft = document.getElementById('review-left-pane');
       const revSplit = document.getElementById('review-split-container');
 
-      // Logic for Teacher Builder UI
       const buildResizer = document.getElementById('builder-resizer');
       const buildLeft = document.getElementById('builder-left');
       const buildSplit = document.getElementById('builder-split');
@@ -8725,32 +9161,47 @@ window.initFirebaseSystem = async function() {
               drag = true; 
               document.body.style.cursor = window.innerWidth <= 768 ? 'row-resize' : 'col-resize'; 
               l.style.userSelect = 'none'; 
+              r.style.background = '#60a5fa'; // Highlight blue on grab
           };
           
           const onDrag = (e) => { 
               if(!drag) return;
+              
+              // Only prevent default during active drag to stop page from scrolling behind the bar
+              if (e.cancelable) e.preventDefault(); 
+              
               const clientX = e.touches ? e.touches[0].clientX : e.clientX;
               const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+              const rect = s.getBoundingClientRect();
               
               if (window.innerWidth <= 768) {
-                  let h = ((clientY - s.getBoundingClientRect().top)/s.getBoundingClientRect().height)*100; 
-                  l.style.height = `${Math.max(20, Math.min(h,80))}vh`; 
+                  // Calculate dynamic percentage relative to the screen height
+                  let h = ((clientY - rect.top) / rect.height) * 100; 
+                  l.style.height = `${Math.max(15, Math.min(h, 85))}%`; 
+                  l.style.flex = 'none'; // Ensure flexbox doesn't override the set height
               } else {
-                  let w = ((clientX - s.getBoundingClientRect().left)/s.getBoundingClientRect().width)*100; 
-                  l.style.width = `${Math.max(20, Math.min(w,80))}%`; 
+                  // Standard desktop horizontal width
+                  let w = ((clientX - rect.left) / rect.width) * 100; 
+                  l.style.width = `${Math.max(15, Math.min(w, 85))}%`; 
+                  l.style.flex = 'none';
               }
           };
           
           const endDrag = () => { 
-              if(drag) { drag = false; document.body.style.cursor=''; l.style.userSelect=''; } 
+              if(drag) { 
+                  drag = false; 
+                  document.body.style.cursor = ''; 
+                  l.style.userSelect = ''; 
+                  r.style.background = ''; // reset highlight
+              } 
           };
 
           r.onmousedown = startDrag;
-          document.addEventListener('mousemove', onDrag);
+          document.addEventListener('mousemove', onDrag, { passive: false });
           document.addEventListener('mouseup', endDrag);
           
-          r.addEventListener('touchstart', startDrag, {passive: false});
-          document.addEventListener('touchmove', onDrag, {passive: false});
+          r.addEventListener('touchstart', startDrag, { passive: true });
+          document.addEventListener('touchmove', onDrag, { passive: false });
           document.addEventListener('touchend', endDrag);
       };
 
@@ -9231,6 +9682,82 @@ window.initFirebaseSystem = async function() {
                txt = '';
            }
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
+        } else if (q.type === 'pair_roleplay') {
+            qTextHtml = `
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <!-- Student A -->
+                <div class="relative rounded-2xl border-2 border-blue-200 bg-blue-50 overflow-hidden shadow-sm group">
+                    <div class="absolute inset-0 bg-blue-900/90 backdrop-blur-sm flex flex-col items-center justify-center text-white z-10 transition-opacity duration-300 cursor-pointer" onclick="this.classList.add('opacity-0', 'pointer-events-none')">
+                        <span class="text-4xl mb-2">🕵️‍♂️</span>
+                        <span class="font-black tracking-widest uppercase">Student A</span>
+                        <span class="text-xs font-medium opacity-75 mt-1">Click to reveal your secret role</span>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-black text-blue-900 uppercase tracking-widest text-xs mb-3 border-b border-blue-200 pb-2">Student A's Card</h4>
+                        <div class="text-[1.05rem] text-slate-700 leading-relaxed whitespace-pre-wrap">${pt(q.text)}</div>
+                    </div>
+                </div>
+                <!-- Student B -->
+                <div class="relative rounded-2xl border-2 border-emerald-200 bg-emerald-50 overflow-hidden shadow-sm group">
+                    <div class="absolute inset-0 bg-emerald-900/90 backdrop-blur-sm flex flex-col items-center justify-center text-white z-10 transition-opacity duration-300 cursor-pointer" onclick="this.classList.add('opacity-0', 'pointer-events-none')">
+                        <span class="text-4xl mb-2">🕵️‍♀️</span>
+                        <span class="font-black tracking-widest uppercase">Student B</span>
+                        <span class="text-xs font-medium opacity-75 mt-1">Click to reveal your secret role</span>
+                    </div>
+                    <div class="p-6">
+                        <h4 class="font-black text-emerald-900 uppercase tracking-widest text-xs mb-3 border-b border-emerald-200 pb-2">Student B's Card</h4>
+                        <div class="text-[1.05rem] text-slate-700 leading-relaxed whitespace-pre-wrap">${pt(q.hint)}</div>
+                    </div>
+                </div>
+            </div>`;
+        } else if (q.type === 'group_debate') {
+            qTextHtml = `
+            <div class="flex flex-col items-center mb-8">
+                <div class="bg-slate-800 text-white px-6 py-4 rounded-2xl shadow-lg border-2 border-slate-700 text-center max-w-2xl w-full">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-2">Debate Motion</span>
+                    <h3 class="text-2xl font-black">${pt(q.instruction)}</h3>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-emerald-50 rounded-2xl p-6 border border-emerald-200 shadow-sm">
+                    <h4 class="font-black text-emerald-800 uppercase tracking-widest text-sm mb-4 flex items-center gap-2"><span>👍</span> Affirmative Team</h4>
+                    <div class="text-[1.05rem] text-slate-700 leading-relaxed whitespace-pre-wrap">${pt(q.text)}</div>
+                </div>
+                <div class="bg-rose-50 rounded-2xl p-6 border border-rose-200 shadow-sm">
+                    <h4 class="font-black text-rose-800 uppercase tracking-widest text-sm mb-4 flex items-center gap-2"><span>👎</span> Negative Team</h4>
+                    <div class="text-[1.05rem] text-slate-700 leading-relaxed whitespace-pre-wrap">${pt(q.hint)}</div>
+                </div>
+            </div>`;
+            instructionHtml = ''; // Suppress the standard instruction above the grid
+        } else if (q.type === 'vocab_game') {
+            const gameWords = APP_DATA.vocab || [];
+            if (gameWords.length < 2) {
+                qTextHtml = `<div class="p-6 text-center text-slate-500 italic bg-slate-50 border border-slate-200 rounded-xl">Teacher needs to add at least 2 words to the Test Vocabulary Bank to generate the game.</div>`;
+            } else {
+                qTextHtml = `
+                <div class="bg-fuchsia-50 rounded-3xl p-8 border border-fuchsia-200 shadow-inner">
+                    <div class="text-center mb-8">
+                        <span class="text-4xl drop-shadow-md mb-2 block">🎲</span>
+                        <h3 class="text-2xl font-black text-fuchsia-900 tracking-tight">Vocabulary Challenge</h3>
+                        <p class="text-sm font-bold text-fuchsia-600 mt-1 uppercase tracking-widest">Team A vs Team B</p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        ${gameWords.map((v, idx) => `
+                            <div class="flip-card h-32 cursor-pointer perspective-1000 group" onclick="this.classList.toggle('flipped')">
+                                <div class="flip-card-inner w-full h-full relative transition-transform duration-500 rounded-2xl shadow-sm" style="transform-style: preserve-3d;">
+                                    <div class="flip-card-front absolute w-full h-full bg-white border-2 border-fuchsia-300 rounded-2xl flex items-center justify-center p-4 backface-hidden shadow-sm group-hover:border-fuchsia-500 transition-colors" style="-webkit-backface-visibility: hidden; backface-visibility: hidden;">
+                                        <span class="text-3xl font-black text-fuchsia-200 group-hover:text-fuchsia-300 transition-colors">${idx + 1}</span>
+                                    </div>
+                                    <div class="flip-card-back absolute w-full h-full bg-fuchsia-600 border-2 border-fuchsia-700 rounded-2xl flex flex-col items-center justify-center p-4 backface-hidden shadow-md text-center" style="transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;">
+                                        <span class="font-black text-white text-lg leading-tight drop-shadow-sm">${v.term}</span>
+                                        <span class="text-[10px] text-fuchsia-200 font-medium mt-1 leading-snug line-clamp-2">${v.eng || v.vi || ''}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>`;
+            }
         }
         
         let chkBtn = '';
@@ -10699,12 +11226,13 @@ window.initFirebaseSystem = async function() {
 
     window.toggleStudentFlashcardPanel = function() {
       const p = document.getElementById('student-fc-panel');
-      if(p.classList.contains('translate-x-full')) {
-        p.classList.remove('translate-x-full');
+      
+      // Toggle logic targeting the new full-screen modal's 'hidden' state
+      if (p.classList.contains('hidden')) {
+        p.classList.remove('hidden');
         const sel = document.getElementById('panel-fc-list-select');
         
         let testVocabOpts = '';
-        // Only inject APP_DATA test vocab if the exam UI is currently visible
         const isExamActive = document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden');
         
         if (isExamActive && APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
@@ -10719,8 +11247,10 @@ window.initFirebaseSystem = async function() {
         }
         
         window.renderFlashcardPanel();
-      } else p.classList.add('translate-x-full');
-    }
+      } else {
+        p.classList.add('hidden');
+      }
+    };
     
     function promptCreateFcList() {
       showInputPrompt("New List", "Name your flashcard deck:", async (name) => {
@@ -10799,76 +11329,62 @@ window.initFirebaseSystem = async function() {
     // Overwrite or update your renderFlashcardPanel function to use Spaced Repetition:
     window.renderFlashcardPanel = function() {
         const select = document.getElementById('panel-fc-list-select');
-        if (!select) return;
-        
-        const listId = select.value;
         const container = document.getElementById('panel-fc-container');
-        if (!container) return;
+        if (!select || !container) return;
 
-        // 1. Populate dropdown lists if empty
         const lists = Object.keys(FLASHCARDS);
-        if (lists.length === 0) {
+        if (lists.length === 0 && (!select.options || select.options.length === 0)) {
             select.innerHTML = '<option value="">No Flashcard Decks Found</option>';
-            container.innerHTML = '<div class="text-center text-slate-400 mt-10 text-sm">Highlight any word during practice to create a flashcard deck!</div>';
+            container.innerHTML = '<div class="flex flex-col items-center justify-center h-full"><span class="text-6xl mb-4 block grayscale opacity-50">🗂️</span><h3 class="text-2xl font-black text-slate-800 mb-2 tracking-tight">No Decks Found</h3><p class="text-slate-500 font-medium">Create a flashcard deck or review a test to start studying.</p></div>';
             return;
-        }
-
-        if (!select.innerHTML || select.options.length === 0) {
-            select.innerHTML = lists.map(l => `<option value="${l}">${l}</option>`).join('');
         }
 
         const activeList = select.value || lists[0];
-        
-        // 2. ✨ SRS FILTER: Pull only cards that are mathematically due for review today!
         const dueCards = window.getCardsDueForReview(activeList);
+        const isTeacherDeck = activeList.startsWith('tv_');
 
         if (dueCards.length === 0) {
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-center p-6 animate-fade-in">
-                    <span class="text-5xl mb-3">🎉</span>
-                    <h3 class="font-black text-lg text-slate-700 mb-1">Deck Completed!</h3>
-                    <p class="text-xs text-slate-500 font-medium">No flashcards are due for review in this deck right now. Excellent habit formation!</p>
-                </div>
-            `;
+            container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center animate-scale-up"><span class="text-7xl mb-4 block drop-shadow-md">🎉</span><h3 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">All Caught Up!</h3><p class="text-slate-500 font-medium text-lg">You have reviewed all flashcards in this deck for today.</p></div>`;
             return;
         }
 
-        // Grab the first due card to review
         const card = dueCards[0];
+        const safeList = activeList.replace(/'/g, "\\'");
+        const safeId = card.id || '';
+        const safeTerm = (card.term || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
         container.innerHTML = `
-            <div class="flex flex-col h-full justify-between animate-fade-in">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-2">
-                    Due Reviews Left: <span class="text-blue-600 font-black">${dueCards.length}</span>
+            <div class="flex flex-col w-full max-w-4xl mx-auto h-full animate-fade-in">
+                <div class="text-sm font-black text-slate-400 uppercase tracking-widest text-center mb-4 mt-2 shrink-0">
+                    \${isTeacherDeck ? 'Reviewing Teacher Vocab' : \`Due Reviews Left: <span class="text-blue-600">\${dueCards.length}</span>\`}
                 </div>
                 
-                <!-- Flip Card Box -->
-                <div class="perspective-1000 flex-1 flex items-center justify-center my-4 cursor-pointer" onclick="this.querySelector('.flip-card-inner').classList.toggle('flipped')">
-                    <div class="flip-card-inner relative w-full h-64 text-center transition-transform duration-500 rounded-2xl shadow-md" style="transform-style: preserve-3d;">
+                <div class="flip-card perspective-1000 flex-1 flex items-stretch justify-center my-2 cursor-pointer group relative w-full shrink-0 min-h-[350px]" onclick="this.classList.toggle('flipped')">
+                    \${isTeacherDeck ? \`<button onclick="event.stopPropagation(); window.importCardToMine('\${safeTerm}')" class="absolute -top-4 -right-4 w-12 h-12 bg-blue-600 text-white rounded-full font-black shadow-lg opacity-0 group-hover:opacity-100 transition z-20 text-3xl leading-none flex items-center justify-center hover:scale-110 hover:bg-blue-700">+</button>\` : ''}
+                    
+                    <div class="flip-card-inner relative w-full h-full text-center transition-transform duration-500 rounded-[2.5rem] shadow-xl" style="transform-style: preserve-3d;">
                         
-                        <!-- Front (Term) -->
-                        <div class="flip-card-front absolute inset-0 bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center backface-hidden">
-                            <span class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 bg-blue-50 px-2.5 py-1 rounded-full">Tap to Flip 🔄</span>
-                            <h3 class="text-2xl font-black text-slate-800 tracking-tight">${card.term}</h3>
-                        </div>
-                        
-                        <!-- Back (Definition) -->
-                        <div class="flip-card-back absolute inset-0 bg-blue-900 text-white rounded-2xl p-6 flex flex-col items-center justify-center backface-hidden" style="transform: rotateY(180deg);">
-                            <span class="text-[10px] font-black text-blue-300 uppercase tracking-widest mb-3 bg-blue-800 px-2.5 py-1 rounded-full">Definition</span>
-                            <p class="text-base font-medium leading-relaxed">${card.def}</p>
+                        <div class="flip-card-front absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 border-4 border-blue-800 rounded-[2.5rem] p-6 md:p-10 flex flex-col items-center justify-center text-white shadow-inner" style="-webkit-backface-visibility: hidden; backface-visibility: hidden;">
+                            <span class="text-xs font-black text-blue-200 uppercase tracking-widest absolute top-6 bg-blue-950/50 px-4 py-1.5 rounded-full border border-blue-400/20">Tap to Flip 🔄</span>
+                            <h3 class="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight drop-shadow-lg px-4 leading-snug">\${card.term}</h3>
                         </div>
 
+                        <div class="flip-card-back absolute inset-0 bg-white border-4 border-slate-200 rounded-[2.5rem] p-6 md:p-10 flex flex-col items-center justify-center" style="-webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateY(180deg) translateZ(1px);">
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest absolute top-6 bg-slate-100 px-4 py-1.5 rounded-full border border-slate-200">Definition</span>
+                            <div class="w-full h-full flex flex-col justify-center items-center overflow-y-auto mt-8 custom-scrollbar">
+                                <p class="text-xl md:text-2xl lg:text-3xl font-bold text-slate-700 leading-relaxed px-2 md:px-6 w-full">\${card.def}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- SM-2 Rating Scale Buttons -->
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-                    <p class="text-[11px] font-bold text-slate-500 text-center mb-3 uppercase tracking-wider">How well did you recall this?</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 0)" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl text-xs transition border border-rose-200 shadow-sm">0: Blank ❌</button>
-                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 2)" class="py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl text-xs transition border border-orange-200 shadow-sm">2: Hard ⚠️</button>
-                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 4)" class="py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition border border-blue-200 shadow-sm">4: Good 👍</button>
-                        <button onclick="window.submitFlashcardReview('${activeList}', '${card.id}', 5)" class="py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs transition border border-emerald-200 shadow-sm">5: Easy 🌟</button>
+                <div class="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm mt-6 w-full shrink-0">
+                    <p class="text-[10px] md:text-xs font-black text-slate-500 text-center mb-3 md:mb-4 uppercase tracking-widest">How well did you recall this?</p>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <button onclick="window.submitFlashcardReview('\${safeList}', '\${safeId}', 0, '\${safeTerm}')" class="py-3 md:py-4 bg-rose-50 hover:bg-rose-100 text-rose-700 font-black rounded-xl text-sm transition border-2 border-rose-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">0: Blank <span>❌</span></button>
+                        <button onclick="window.submitFlashcardReview('\${safeList}', '\${safeId}', 2, '\${safeTerm}')" class="py-3 md:py-4 bg-orange-50 hover:bg-orange-100 text-orange-700 font-black rounded-xl text-sm transition border-2 border-orange-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">2: Hard <span>⚠️</span></button>
+                        <button onclick="window.submitFlashcardReview('\${safeList}', '\${safeId}', 4, '\${safeTerm}')" class="py-3 md:py-4 bg-blue-50 hover:bg-blue-100 text-blue-700 font-black rounded-xl text-sm transition border-2 border-blue-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">4: Good <span>👍</span></button>
+                        <button onclick="window.submitFlashcardReview('\${safeList}', '\${safeId}', 5, '\${safeTerm}')" class="py-3 md:py-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-black rounded-xl text-sm transition border-2 border-emerald-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">5: Easy <span>🌟</span></button>
                     </div>
                 </div>
             </div>
@@ -10975,19 +11491,25 @@ window.initFirebaseSystem = async function() {
         const container = document.getElementById('panel-fc-container');
         if (!container) return;
 
+        // 1. Populate dropdown lists if empty
         const lists = Object.keys(FLASHCARDS);
+        if (lists.length === 0) {
+            select.innerHTML = '<option value="">No Flashcard Decks Found</option>';
+            container.innerHTML = '<div class="text-center text-slate-400 mt-10 text-sm">Highlight any word during practice to create a flashcard deck!</div>';
+            return;
+        }
+
+        if (!select.innerHTML || select.options.length === 0) {
+            select.innerHTML = lists.map(l => `<option value="${l}">${l}</option>`).join('');
+        }
+
         const activeList = select.value || lists[0];
         
         const dueCards = window.getCardsDueForReview(activeList);
         const isTeacherDeck = activeList.startsWith('tv_');
 
         if (dueCards.length === 0) {
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-full text-center p-6 animate-fade-in">
-                    <span class="text-5xl mb-3">🎉</span>
-                    <h3 class="font-black text-lg text-slate-700 mb-1">Deck Completed!</h3>
-                    <p class="text-xs text-slate-500 font-medium">No flashcards are due for review in this deck right now. Excellent habit formation!</p>
-                </div>`;
+            container.innerHTML = `<div class="p-10 text-center flex flex-col items-center justify-center h-full"><span class="text-7xl mb-4 block drop-shadow-md">🎉</span><h3 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">All Caught Up!</h3><p class="text-slate-500 font-medium text-lg">You have reviewed all flashcards in this deck for today.</p></div>`;
             return;
         }
 
@@ -10999,38 +11521,35 @@ window.initFirebaseSystem = async function() {
         const safeTerm = (card.term || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 
         container.innerHTML = `
-            <div class="flex flex-col h-full justify-between animate-fade-in">
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-2">
-                    ${isTeacherDeck ? 'Reviewing Teacher Vocab' : `Due Reviews Left: <span class="text-blue-600 font-black">${dueCards.length}</span>`}
+            <div class="flex flex-col justify-between w-full max-w-4xl mx-auto animate-fade-in h-full">
+                <div class="text-sm font-black text-slate-400 uppercase tracking-widest text-center mb-4 mt-2 shrink-0">
+                    ${isTeacherDeck ? 'Reviewing Teacher Vocab' : `Due Reviews Left: <span class="text-blue-600">${dueCards.length}</span>`}
                 </div>
                 
-                <!-- ✨ FIX: Added 'flip-card' class to parent, and strict backface-visibility inline styles -->
-                <div class="flip-card perspective-1000 flex-1 flex items-center justify-center my-4 cursor-pointer group relative" onclick="this.classList.toggle('flipped')">
-                    ${isTeacherDeck ? `<button onclick="event.stopPropagation(); window.importCardToMine('${safeTerm}')" class="absolute -top-2 -right-2 w-8 h-8 bg-blue-600 text-white rounded-full font-bold shadow-md opacity-0 group-hover:opacity-100 transition z-20 text-lg leading-none">+</button>` : ''}
+                <div class="flip-card perspective-1000 flex-1 flex items-center justify-center my-2 md:my-4 cursor-pointer group relative w-full shrink-0 min-h-[300px]" onclick="this.classList.toggle('flipped')">
+                    ${isTeacherDeck ? `<button onclick="event.stopPropagation(); window.importCardToMine('${safeTerm}')" class="absolute -top-4 -right-4 w-12 h-12 bg-blue-600 text-white rounded-full font-black shadow-lg opacity-0 group-hover:opacity-100 transition z-20 text-3xl leading-none flex items-center justify-center hover:scale-110 hover:bg-blue-700">+</button>` : ''}
                     
-                    <div class="flip-card-inner relative w-full h-64 text-center transition-transform duration-500 rounded-2xl shadow-md" style="transform-style: preserve-3d;">
+                    <div class="flip-card-inner relative w-full h-full text-center transition-transform duration-500 rounded-[2.5rem] shadow-xl" style="transform-style: preserve-3d;">
                         
-                        <!-- Front Face -->
-                        <div class="flip-card-front absolute inset-0 bg-blue-800 border-2 border-blue-900 rounded-2xl p-6 flex flex-col items-center justify-center text-white shadow-inner" style="-webkit-backface-visibility: hidden; backface-visibility: hidden;">
-                            <span class="text-[10px] font-black text-blue-200 uppercase tracking-widest absolute top-4 bg-blue-900 px-3 py-1 rounded-full">Tap to Flip 🔄</span>
-                            <h3 class="text-3xl font-black tracking-tight drop-shadow-md">${card.term}</h3>
+                        <div class="flip-card-front absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 border-4 border-blue-800 rounded-[2.5rem] p-6 md:p-10 flex flex-col items-center justify-center text-white shadow-inner" style="-webkit-backface-visibility: hidden; backface-visibility: hidden;">
+                            <span class="text-xs font-black text-blue-200 uppercase tracking-widest absolute top-6 bg-blue-950/50 px-4 py-1.5 rounded-full border border-blue-400/20">Tap to Flip 🔄</span>
+                            <h3 class="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight drop-shadow-lg px-4 leading-snug">${card.term}</h3>
                         </div>
 
-                        <!-- Back Face (Definition) -->
-                        <div class="flip-card-back absolute inset-0 bg-white border-2 border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center" style="-webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateY(180deg);">
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest absolute top-4 bg-slate-100 px-3 py-1 rounded-full">Definition</span>
-                            <p class="text-lg font-bold text-slate-700 leading-relaxed overflow-y-auto w-full">${card.def}</p>
+                        <div class="flip-card-back absolute inset-0 bg-white border-4 border-slate-200 rounded-[2.5rem] p-6 md:p-10 flex flex-col items-center justify-center" style="-webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateY(180deg);">
+                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest absolute top-6 bg-slate-100 px-4 py-1.5 rounded-full border border-slate-200">Definition</span>
+                            <p class="text-xl md:text-3xl lg:text-4xl font-bold text-slate-700 leading-relaxed overflow-y-auto w-full px-2 md:px-6 custom-scrollbar mt-8">${card.def}</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mt-auto">
-                    <p class="text-[11px] font-bold text-slate-500 text-center mb-3 uppercase tracking-wider">How well did you recall this?</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 0, '${safeTerm}')" class="py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl text-xs transition border border-rose-200 shadow-sm flex items-center justify-center gap-1">0: Blank <span>❌</span></button>
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 2, '${safeTerm}')" class="py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold rounded-xl text-xs transition border border-orange-200 shadow-sm flex items-center justify-center gap-1">2: Hard <span>⚠️</span></button>
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 4, '${safeTerm}')" class="py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition border border-blue-200 shadow-sm flex items-center justify-center gap-1">4: Good <span>👍</span></button>
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 5, '${safeTerm}')" class="py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs transition border border-emerald-200 shadow-sm flex items-center justify-center gap-1">5: Easy <span>🌟</span></button>
+                <div class="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm mt-4 md:mt-6 w-full shrink-0">
+                    <p class="text-[10px] md:text-xs font-black text-slate-500 text-center mb-3 md:mb-4 uppercase tracking-widest">How well did you recall this?</p>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 0, '${safeTerm}')" class="py-3 md:py-4 bg-rose-50 hover:bg-rose-100 text-rose-700 font-black rounded-xl text-sm transition border-2 border-rose-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">0: Blank <span>❌</span></button>
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 2, '${safeTerm}')" class="py-3 md:py-4 bg-orange-50 hover:bg-orange-100 text-orange-700 font-black rounded-xl text-sm transition border-2 border-orange-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">2: Hard <span>⚠️</span></button>
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 4, '${safeTerm}')" class="py-3 md:py-4 bg-blue-50 hover:bg-blue-100 text-blue-700 font-black rounded-xl text-sm transition border-2 border-blue-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">4: Good <span>👍</span></button>
+                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 5, '${safeTerm}')" class="py-3 md:py-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-black rounded-xl text-sm transition border-2 border-emerald-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">5: Easy <span>🌟</span></button>
                     </div>
                 </div>
             </div>
@@ -12209,7 +12728,7 @@ window.initFirebaseSystem = async function() {
                 if (role === 'student') {
                     const cid = document.getElementById('student-class-select')?.value;
                     const cls = CLASSES.find(c => c.id === cid);
-                    if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name);
+                    if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
                 }
                 
                 const hasClass = daySchedules.length > 0;
@@ -12300,7 +12819,7 @@ window.initFirebaseSystem = async function() {
                             if (role === 'student') {
                                 const cid = document.getElementById('student-class-select')?.value;
                                 const cls = CLASSES.find(c => c.id === cid);
-                                if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name);
+                                if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
                             }
                             
                             let colsEventsHtml = '';
@@ -12392,7 +12911,7 @@ window.initFirebaseSystem = async function() {
             let dayScheds = SCHEDULES.filter(s => s.date === dateStr);
             const cid = document.getElementById('student-class-select').value;
             const cls = CLASSES.find(c => c.id === cid);
-            if (cls) dayScheds = dayScheds.filter(s => s.className === cls.name);
+            if (cls) dayScheds = dayScheds.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
             
             document.getElementById('day-modal-title').textContent = displayDate;
             const content = document.getElementById('day-modal-content');
@@ -13657,26 +14176,28 @@ window.initFirebaseSystem = async function() {
 
         if (!p) {
             const chatHtml = `
-            <div id="chat-panel" class="fixed top-0 right-0 h-full w-[560px] max-w-full bg-white border-l border-slate-300 shadow-2xl transform translate-x-full transition-transform duration-300 z-[400] flex flex-col">
-                <div class="bg-indigo-950 text-white p-4 flex justify-between items-center shrink-0 shadow-md z-20">
-                    <h2 class="font-bold flex items-center gap-2 text-lg">🗂️ Course Forum</h2>
-                    <button onclick="window.toggleForumPanel()" class="text-indigo-300 hover:text-white text-3xl leading-none">&times;</button>
-                </div>
-                <div class="flex flex-1 overflow-hidden">
-                    <div class="w-[280px] bg-slate-50 border-r border-slate-200 p-4 overflow-y-auto shrink-0 flex flex-col gap-3">
-                        <div class="rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm">
-                            <div class="text-[10px] font-black uppercase tracking-[0.24em] text-indigo-500 mb-2">New question</div>
-                            <input id="forum-new-title" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm mb-2 outline-none focus:border-indigo-500" placeholder="Short topic" />
-                            <textarea id="forum-new-body" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm min-h-[90px] outline-none focus:border-indigo-500" placeholder="Ask the class or teacher something like: Can someone explain why Q5 is False and not Not Given?"></textarea>
-                            <button onclick="window.postForumThread()" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2 font-bold text-sm transition">Post Question</button>
-                        </div>
-                        <div id="forum-thread-list" class="space-y-2"></div>
+            <div id="chat-panel" class="hidden fixed inset-0 bg-slate-900/80 z-[800] flex items-center justify-center backdrop-blur-md md:p-6 animate-fade-in">
+                <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-6xl h-full md:h-[90vh] overflow-hidden border border-slate-200 animate-scale-up">
+                    <div class="bg-indigo-950 text-white p-5 md:p-6 flex justify-between items-center shrink-0 shadow-md z-20">
+                        <h2 class="font-black flex items-center gap-3 text-xl md:text-2xl tracking-tight"><span class="bg-white/20 p-2 rounded-xl shadow-inner leading-none">🗂️</span> Course Forum</h2>
+                        <button onclick="window.toggleForumPanel()" class="text-indigo-300 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
                     </div>
-                    <div class="flex-1 flex flex-col bg-white">
-                        <div id="forum-thread-detail" class="flex-1 overflow-y-auto p-4"></div>
-                        <div class="border-t border-slate-200 p-3 bg-slate-50">
-                            <textarea id="forum-reply-input" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm min-h-[90px] outline-none focus:border-indigo-500" placeholder="Reply to this thread..."></textarea>
-                            <button onclick="window.postForumReply()" class="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-4 py-2 font-bold text-sm transition">Reply</button>
+                    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                        <div class="w-full md:w-[350px] bg-slate-50 border-r border-slate-200 p-5 overflow-y-auto shrink-0 flex flex-col gap-4 custom-scrollbar">
+                            <div class="rounded-2xl border border-indigo-200 bg-white p-4 shadow-sm">
+                                <div class="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-3 flex items-center gap-2"><span>💬</span> New Question</div>
+                                <input id="forum-new-title" class="w-full border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm mb-3 outline-none focus:border-indigo-500 font-bold text-slate-800" placeholder="Short topic..." />
+                                <textarea id="forum-new-body" class="w-full border-2 border-slate-200 rounded-xl px-3 py-2.5 text-sm min-h-[100px] outline-none focus:border-indigo-500 font-medium text-slate-600 resize-none" placeholder="Ask the class or teacher something..."></textarea>
+                                <button onclick="window.postForumThread()" class="mt-3 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 font-black text-sm shadow-sm transition hover:-translate-y-0.5">Post Question</button>
+                            </div>
+                            <div id="forum-thread-list" class="space-y-3"></div>
+                        </div>
+                        <div class="flex-1 flex flex-col bg-white">
+                            <div id="forum-thread-detail" class="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar"></div>
+                            <div class="border-t border-slate-200 p-4 md:p-6 bg-slate-50">
+                                <textarea id="forum-reply-input" class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 text-sm md:text-base min-h-[100px] outline-none focus:border-indigo-500 font-medium text-slate-700 resize-none" placeholder="Write a reply..."></textarea>
+                                <button onclick="window.postForumReply()" class="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 py-3 font-black text-sm shadow-md transition hover:-translate-y-0.5">Post Reply</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -13689,7 +14210,7 @@ window.initFirebaseSystem = async function() {
             window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => {
                 FORUM_POSTS = snap.docs.map(d => d.data()).filter(m => m.kind === 'forum' || m.parentId || m.threadId || m.postType).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                 CHAT_MESSAGES = [...FORUM_POSTS];
-                if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) {
+                if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) {
                     window.renderForumThreads();
                 }
             });
@@ -13698,11 +14219,11 @@ window.initFirebaseSystem = async function() {
 
         seedForumDemoData();
 
-        if (p.classList.contains('translate-x-full')) {
-            p.classList.remove('translate-x-full');
+        if (p.classList.contains('hidden')) {
+            p.classList.remove('hidden');
             window.renderForumThreads();
         } else {
-            p.classList.add('translate-x-full');
+            p.classList.add('hidden');
         }
     };
 
@@ -14374,10 +14895,10 @@ window.initFirebaseSystem = async function() {
             if (currentUser.role === 'teacher') {
                 isMe = true;
             } else if (currentUser.role === 'student') {
-                if (s.attendingStudents && s.attendingStudents.includes(currentUser.user)) {
-                    isMe = true;
+                if (s.attendingStudents) {
+                    if (s.attendingStudents.includes(currentUser.user)) isMe = true;
                 } else {
-                    // Check if they are enrolled in the overarching class
+                    // Check if they are enrolled in the overarching class (Legacy fallback)
                     const cls = CLASSES.find(c => c.name === s.className);
                     if (cls && cls.enrolledStudents && cls.enrolledStudents.includes(currentUser.user)) {
                         isMe = true;
