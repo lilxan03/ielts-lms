@@ -13689,7 +13689,7 @@ window.initFirebaseSystem = async function() {
         btn.textContent = "Save Availability"; btn.disabled = false;
     };
 
-    let selectedBookingSlot = null;
+    window.selectedBookingSlots = [];
 
     window.openStudentBooking = function() {
         const cid = document.getElementById('student-class-select').value;
@@ -13707,8 +13707,12 @@ window.initFirebaseSystem = async function() {
         document.getElementById('book-date').value = '';
         document.getElementById('book-date-preview').innerHTML = "Select a date above to see available slots.";
         document.getElementById('book-slots-container').innerHTML = '';
-        document.getElementById('btn-confirm-booking').disabled = true;
-        selectedBookingSlot = null;
+        
+        window.selectedBookingSlots = [];
+        const btn = document.getElementById('btn-confirm-booking');
+        btn.disabled = true;
+        btn.textContent = "Confirm Booking";
+        
         document.getElementById('student-booking-modal').classList.remove('hidden');
     };
 
@@ -13733,8 +13737,6 @@ window.initFirebaseSystem = async function() {
     window.generateBookingSlots = function() {
         const dateStr = document.getElementById('book-date').value;
         const container = document.getElementById('book-slots-container');
-        document.getElementById('btn-confirm-booking').disabled = true;
-        selectedBookingSlot = null;
         
         if(!dateStr) {
             container.innerHTML = '';
@@ -13771,7 +13773,6 @@ window.initFirebaseSystem = async function() {
                 if(ampm === 'PM' && h < 12) h += 12;
                 if(ampm === 'AM' && h === 12) h = 0;
                 const startMins = h * 60 + m;
-                // Treat existing scheduled items as blocking a full duration slot
                 return { start: startMins, end: startMins + (AVAILABILITY.duration || 60) };
             }
             return null;
@@ -13789,7 +13790,6 @@ window.initFirebaseSystem = async function() {
                 const slotStartMins = startMins;
                 const slotEndMins = startMins + dur;
                 
-                // Logic: A slot is blocked if (StartA < EndB) and (EndA > StartB)
                 const isOverlapping = bookedIntervals.some(booked => {
                     return (slotStartMins < booked.end) && (slotEndMins > booked.start);
                 });
@@ -13800,13 +13800,17 @@ window.initFirebaseSystem = async function() {
                     const start12 = formatTime12(startStr24);
                     const end12 = formatTime12(endStr24);
                     
+                    const isSelected = window.selectedBookingSlots.some(s => s.date === dateStr && s.val === startStr24);
+                    
                     slotsHtml += `
-                    <div onclick="window.selectBookingSlot('${startStr24}')" id="slot-card-${startStr24.replace(':','')}" class="p-4 border-2 border-slate-200 bg-white rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition flex justify-between items-center group shadow-sm hover:shadow-md">
+                    <div onclick="window.toggleBookingSlot('${dateStr}', '${startStr24}')" id="slot-card-${startStr24.replace(':','')}" class="p-4 border-2 transition-all duration-200 rounded-xl cursor-pointer flex justify-between items-center group ${isSelected ? 'border-indigo-600 bg-indigo-50 shadow-md transform scale-[1.02]' : 'border-slate-200 bg-white hover:border-indigo-400 hover:bg-indigo-50 shadow-sm hover:shadow-md'}">
                         <div>
-                            <div class="font-black text-indigo-900 text-lg">${start12} - ${end12}</div>
-                            <div class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">${dur} minutes</div>
+                            <div class="font-black text-lg transition-colors ${isSelected ? 'text-indigo-900' : 'text-slate-800 group-hover:text-indigo-900'}">${start12} - ${end12}</div>
+                            <div class="text-xs font-bold uppercase tracking-widest mt-1 transition-colors ${isSelected ? 'text-indigo-600' : 'text-slate-500'}">${dur} minutes</div>
                         </div>
-                        <div class="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 flex items-center justify-center bg-white transition-colors" id="slot-radio-${startStr24.replace(':','')}"></div>
+                        <div class="w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors shrink-0 ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300 bg-white group-hover:border-indigo-400'}" id="slot-box-${startStr24.replace(':','')}">
+                            ${isSelected ? '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                        </div>
                     </div>`;
                     hasSlots = true;
                 }
@@ -13821,35 +13825,49 @@ window.initFirebaseSystem = async function() {
             container.innerHTML = slotsHtml;
         }
     };
-
-    window.selectBookingSlot = function(slotVal) {
-        document.querySelectorAll('[id^="slot-card-"]').forEach(el => {
-            el.className = "p-4 border-2 border-slate-200 bg-white rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition flex justify-between items-center group shadow-sm hover:shadow-md";
-        });
-        document.querySelectorAll('[id^="slot-radio-"]').forEach(el => {
-            el.className = "w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 flex items-center justify-center bg-white transition-colors";
-            el.innerHTML = '';
-        });
-        
+    
+    window.toggleBookingSlot = function(dateStr, slotVal) {
+        const index = window.selectedBookingSlots.findIndex(s => s.date === dateStr && s.val === slotVal);
         const cardId = `slot-card-${slotVal.replace(':','')}`;
-        const radioId = `slot-radio-${slotVal.replace(':','')}`;
-        
+        const boxId = `slot-box-${slotVal.replace(':','')}`;
         const card = document.getElementById(cardId);
-        const radio = document.getElementById(radioId);
-        if(card && radio) {
-            card.className = "p-4 border-2 border-indigo-600 bg-indigo-50 rounded-xl cursor-pointer transition flex justify-between items-center shadow-md transform scale-[1.02]";
-            radio.className = "w-6 h-6 rounded-full border-2 border-indigo-600 flex items-center justify-center bg-white transition-colors";
-            radio.innerHTML = '<div class="w-3 h-3 bg-indigo-600 rounded-full"></div>';
+        const box = document.getElementById(boxId);
+        
+        if (index > -1) {
+            // Remove selection
+            window.selectedBookingSlots.splice(index, 1);
+            if(card && box) {
+                card.className = "p-4 border-2 border-slate-200 bg-white hover:border-indigo-400 hover:bg-indigo-50 rounded-xl cursor-pointer transition-all duration-200 flex justify-between items-center group shadow-sm hover:shadow-md";
+                card.querySelector('.font-black.text-lg').className = "font-black text-slate-800 group-hover:text-indigo-900 text-lg transition-colors";
+                card.querySelector('.text-xs.font-bold').className = "text-xs text-slate-500 font-bold uppercase tracking-widest mt-1 transition-colors";
+                box.className = "w-6 h-6 rounded-md border-2 border-slate-300 bg-white group-hover:border-indigo-400 flex items-center justify-center transition-colors shrink-0";
+                box.innerHTML = '';
+            }
+        } else {
+            // Add selection
+            window.selectedBookingSlots.push({ date: dateStr, val: slotVal });
+            if(card && box) {
+                card.className = "p-4 border-2 border-indigo-600 bg-indigo-50 shadow-md transform scale-[1.02] rounded-xl cursor-pointer transition-all duration-200 flex justify-between items-center group";
+                card.querySelector('.font-black.text-lg').className = "font-black text-indigo-900 text-lg transition-colors";
+                card.querySelector('.text-xs.font-bold').className = "text-xs text-indigo-600 font-bold uppercase tracking-widest mt-1 transition-colors";
+                box.className = "w-6 h-6 rounded-md border-2 border-indigo-600 bg-indigo-600 flex items-center justify-center transition-colors shrink-0";
+                box.innerHTML = '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>';
+            }
         }
         
-        selectedBookingSlot = slotVal;
-        document.getElementById('btn-confirm-booking').disabled = false;
+        const btn = document.getElementById('btn-confirm-booking');
+        if (window.selectedBookingSlots.length > 0) {
+            btn.disabled = false;
+            btn.textContent = `Confirm ${window.selectedBookingSlots.length} Booking${window.selectedBookingSlots.length > 1 ? 's' : ''}`;
+        } else {
+            btn.disabled = true;
+            btn.textContent = "Confirm Booking";
+        }
     };
 
     window.confirmBooking = async function() {
-        if (!selectedBookingSlot) return;
+        if (!window.selectedBookingSlots || window.selectedBookingSlots.length === 0) return;
         
-        const dateStr = document.getElementById('book-date').value;
         const cid = document.getElementById('student-class-select').value;
         const cls = CLASSES.find(c => c.id === cid);
         
@@ -13861,30 +13879,37 @@ window.initFirebaseSystem = async function() {
         const btn = document.getElementById('btn-confirm-booking');
         btn.textContent = "Booking..."; btn.disabled = true;
 
-        const time12 = formatTime12(selectedBookingSlot);
-
-        const newSched = { 
-            id: 'sch_'+Date.now(), 
-            className: cls.name, 
-            date: dateStr, 
-            time: time12, 
-            topic: `Booking: ${currentUser.user}`, 
-            assignedTests: [], 
-            attendingStudents: [currentUser.user], 
-            dateAdded: new Date().toLocaleDateString(),
-            isNewBooking: true // ✨ NEW: Trigger Teacher Notification
-        };
-        
-        SCHEDULES.push(newSched);
         try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), newSched.id), newSched);
+            // Process all selected slots
+            for (let i = 0; i < window.selectedBookingSlots.length; i++) {
+                const slot = window.selectedBookingSlots[i];
+                const time12 = formatTime12(slot.val);
+                
+                const newSched = { 
+                    id: 'sch_'+Date.now() + Math.random().toString(36).substring(2,8), 
+                    className: cls.name, 
+                    date: slot.date, 
+                    time: time12, 
+                    topic: `Booking: ${currentUser.user}`, 
+                    assignedTests: [], 
+                    attendingStudents: [currentUser.user], 
+                    dateAdded: new Date().toLocaleDateString(),
+                    isNewBooking: true // Trigger Teacher Notification
+                };
+                
+                SCHEDULES.push(newSched);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), newSched.id), newSched);
+            }
+            
             document.getElementById('student-booking-modal').classList.add('hidden');
             window.renderCalendar('student');
             
-            showModalMsg("Booking Confirmed! 🎉", `Your class is scheduled for ${new Date(dateStr).toLocaleDateString()} at ${time12}. Check your timetable.`);
+            showModalMsg("Bookings Confirmed! 🎉", `You have successfully booked ${window.selectedBookingSlots.length} slot(s). Check your timetable.`);
+            window.selectedBookingSlots = []; // Reset after successful booking
+            
         } catch(e) {
             console.error(e);
-            showModalMsg("Error", "Could not save booking.");
+            showModalMsg("Error", "Could not save all bookings. Please check your connection.");
         }
         
         btn.textContent = "Confirm Booking"; btn.disabled = false;
