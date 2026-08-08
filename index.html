@@ -6784,18 +6784,13 @@ window.initFirebaseSystem = async function() {
                 tr.querySelector('.row-expl')
             ];
 
-            // ✨ SMART OFFSET: If the user only copies 1 or 2 columns, assume they skipped the Type dropdown and dump it safely into the Question Text box!
-            let colOffset = 0;
-            if (pasteCols.length === 2) colOffset = 2; // Assume Text and Answer
-            if (pasteCols.length === 1) colOffset = 2; // Assume just Text
-
+            // STRIPPED THE BUGGY OFFSET. Maps 1-to-1 based on exact Excel columns!
             pasteCols.forEach((pasteVal, j) => {
-                const targetIdx = j + colOffset;
-                if (targetIdx < inputs.length) {
-                    const input = inputs[targetIdx];
+                if (j < inputs.length) {
+                    const input = inputs[j];
                     const val = pasteVal.trim();
                     
-                    if (targetIdx === 0) {
+                    if (j === 0) {
                         const rawType = val.toLowerCase();
                         let type = 'multiple_choice';
                         
@@ -6809,6 +6804,7 @@ window.initFirebaseSystem = async function() {
                         else if (rawType.includes('hotspot') || (rawType.includes('map') && !rawType.includes('grid'))) type = 'map_labelling_hotspots';
                         else if (rawType.includes('map') && rawType.includes('grid')) type = 'map_labelling_grid';
                         else if (rawType.includes('essay') || rawType.includes('writing')) type = 'essay';
+                        else if (rawType.includes('multi') || rawType.includes('mcq') || rawType.includes('choice')) type = 'multiple_choice';
                         
                         input.value = type;
                         
