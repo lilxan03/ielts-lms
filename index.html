@@ -40,9 +40,6 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- NEW: Use the Official, Free Jitsi API (No Tokens, No Popups) -->
-  <script src="https://meet.jit.si/external_api.js"></script>
 
   <style>
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -800,6 +797,97 @@
       <div class="p-4 border-t border-slate-200 bg-white rounded-b-xl flex justify-end gap-3 shrink-0">
         <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold">Cancel</button>
         <button onclick="processBulkImport()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow">Import Questions</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✨ NEW: TEXT-TO-TEST (MARKDOWN) COMPILER MODAL -->
+  <div id="markup-import-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[400] flex items-center justify-center backdrop-blur-md md:p-6">
+    <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-7xl h-full md:h-[95vh] animate-scale-up overflow-hidden border border-slate-200">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-900 text-white shrink-0">
+        <h2 class="text-xl font-black flex items-center gap-2">⚡ Text-to-Test Compiler <span class="text-[10px] font-bold bg-white/20 px-2 py-1 rounded tracking-widest uppercase text-blue-200">IELTS Markdown</span></h2>
+        <button onclick="document.getElementById('markup-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-white font-bold text-2xl">&times;</button>
+      </div>
+      
+      <div class="flex-1 flex flex-col lg:flex-row overflow-hidden bg-slate-50">
+          
+          <!-- Cheatsheet Left Panel -->
+          <div class="w-full lg:w-1/3 border-r border-slate-200 bg-white p-6 overflow-y-auto shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 custom-scrollbar">
+              <p class="text-sm text-slate-500 font-medium mb-6 leading-relaxed">Type an <b>Explicit Tag</b> on its own line, then paste your raw text below it. The system will perfectly construct that exact question type.</p>
+              
+              <div class="space-y-6">
+                  <div>
+                      <h4 class="font-black text-blue-800 text-sm border-b border-blue-200 pb-2 mb-2 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded">Explicit Tags (Matches Dropdown)</h4>
+                      <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] font-bold text-slate-600 font-mono">
+                          <span>[Multiple Choice]</span>
+                          <span>[Gap Fill]</span>
+                          <span>[Drag Drop]</span>
+                          <span>[TFNG]</span>
+                          <span>[YNNG]</span>
+                          <span>[Matching Headings]</span>
+                          <span>[Matching Info]</span>
+                          <span>[Map Hotspots]</span>
+                          <span>[Map Grid]</span>
+                          <span>[Writing]</span>
+                          <span>[Speaking]</span>
+                      </div>
+                  </div>
+                  
+                  <div>
+                      <h4 class="font-black text-slate-800 text-sm border-b border-slate-100 pb-2 mb-2 uppercase tracking-widest flex items-center gap-2"><span class="text-lg">1</span> Multiple Choice</h4>
+                      <p class="text-[11px] text-slate-500 mb-2">Mark the correct option(s) with an asterisk (*).</p>
+                      <div class="bg-slate-800 text-blue-300 font-mono text-[11px] p-3 rounded-lg leading-relaxed shadow-inner">
+                          <span class="text-rose-400">[Multiple Choice]</span><br>
+                          What is the capital of France?<br>
+                          A) London<br>
+                          *B) Paris
+                      </div>
+                  </div>
+                  
+                  <div>
+                      <h4 class="font-black text-slate-800 text-sm border-b border-slate-100 pb-2 mb-2 uppercase tracking-widest flex items-center gap-2"><span class="text-lg">2</span> Gaps & Drag-Drop</h4>
+                      <p class="text-[11px] text-slate-500 mb-2">Wrap answers in brackets <code>[ ]</code>. The tag dictates the behavior.</p>
+                      <div class="bg-slate-800 text-blue-300 font-mono text-[11px] p-3 rounded-lg leading-relaxed shadow-inner">
+                          <span class="text-rose-400">[Gap Fill]</span> OR <span class="text-rose-400">[Drag Drop]</span><br>
+                          **Advantages:**<br>
+                          - The quick brown [fox]<br>
+                          - Jumps over the [dog]
+                      </div>
+                  </div>
+
+                  <div>
+                      <h4 class="font-black text-slate-800 text-sm border-b border-slate-100 pb-2 mb-2 uppercase tracking-widest flex items-center gap-2"><span class="text-lg">3</span> TFNG & Matching</h4>
+                      <p class="text-[11px] text-slate-500 mb-2">Use arrow <code>-&gt;</code> to separate the statement from the answer.</p>
+                      <div class="bg-slate-800 text-blue-300 font-mono text-[11px] p-3 rounded-lg leading-relaxed shadow-inner">
+                          <span class="text-rose-400">[TFNG]</span><br>
+                          Water is wet -> TRUE<br><br>
+                          <span class="text-rose-400">[Matching Headings]</span><br>
+                          Paragraph A -> iv. The role of government
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <!-- Code Editor Right Panel -->
+          <div class="flex-1 p-6 flex flex-col relative">
+              <div class="flex justify-between items-end mb-2">
+                  <label class="block text-xs font-black text-slate-400 uppercase tracking-widest">Input Text</label>
+                  <div class="flex gap-3 items-center">
+                      <div class="flex gap-1 bg-slate-100 px-2 py-1.5 rounded-lg border border-slate-200 shadow-sm">
+                          <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold')" class="px-2.5 py-0.5 bg-white border border-slate-200 rounded text-[11px] font-bold shadow-sm hover:bg-slate-50 text-slate-700 transition">B</button>
+                          <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic')" class="px-2.5 py-0.5 bg-white border border-slate-200 rounded text-[11px] italic shadow-sm hover:bg-slate-50 text-slate-700 transition">I</button>
+                          <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline')" class="px-2.5 py-0.5 bg-white border border-slate-200 rounded text-[11px] underline shadow-sm hover:bg-slate-50 text-slate-700 transition">U</button>
+                      </div>
+                      <button onclick="document.getElementById('iml-editor').innerHTML=''" class="text-rose-500 hover:text-white transition font-bold border border-rose-200 bg-rose-50 px-3 py-1.5 rounded-lg hover:bg-rose-500 text-xs shadow-sm">Clear All</button>
+                  </div>
+              </div>
+              <div id="iml-editor" contenteditable="true" spellcheck="false" class="rich-editor flex-1 w-full border-2 border-slate-200 rounded-xl p-5 text-[15px] font-sans text-slate-800 bg-white outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition shadow-sm overflow-y-auto leading-relaxed"></div>
+          </div>
+      </div>
+
+      <div class="p-4 border-t border-slate-200 bg-white flex justify-end gap-3 shrink-0">
+        <button onclick="document.getElementById('markup-import-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
+        <button onclick="window.compileIML()" class="px-8 py-2.5 bg-slate-900 hover:bg-black text-white rounded-lg font-black shadow-md transition flex items-center gap-2 hover:-translate-y-0.5"><span class="text-amber-400">⚡</span> Compile & Add to Test</button>
       </div>
     </div>
   </div>
@@ -1950,19 +2038,12 @@
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Disc (%)</label><input type="number" id="bill-disc-course" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 20"></div>
                </div>
                
-               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 border-t border-slate-100 pt-6">
-                   <div>
-                      <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Custom Receiving QR Code</label>
-                      <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                          <input type="file" id="bill-custom-qr" accept="image/*" onchange="window.handleCustomQR(event)" class="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer transition w-full">
-                          <img id="bill-custom-qr-preview" src="" class="h-10 rounded shadow-sm hidden object-contain bg-white border border-slate-200">
-                          <button id="bill-custom-qr-clear" onclick="window.clearCustomQR()" class="hidden text-[10px] text-rose-500 bg-rose-50 px-2 py-1.5 rounded-lg font-bold hover:bg-rose-100 transition shadow-sm whitespace-nowrap">Remove</button>
-                      </div>
-                   </div>
-                   <div>
-                      <label class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-2 block">🎥 JaaS Video API Token (JWT)</label>
-                      <input type="text" id="bill-jwt" class="w-full border-2 border-slate-200 bg-slate-50 p-3 rounded-xl font-mono text-xs text-slate-500 outline-none focus:border-indigo-500 transition shadow-inner" placeholder="Paste your generated 8x8.vc JWT here...">
-                      <p class="text-[9px] text-slate-400 mt-1.5 font-medium">Fixes <span class="text-rose-400">"Authentication Failed"</span> in video calls.</p>
+               <div class="mb-8 border-t border-slate-100 pt-6">
+                   <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Custom Receiving QR Code</label>
+                   <div class="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                       <input type="file" id="bill-custom-qr" accept="image/*" onchange="window.handleCustomQR(event)" class="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer transition w-full">
+                       <img id="bill-custom-qr-preview" src="" class="h-10 rounded shadow-sm hidden object-contain bg-white border border-slate-200">
+                       <button id="bill-custom-qr-clear" onclick="window.clearCustomQR()" class="hidden text-[10px] text-rose-500 bg-rose-50 px-2 py-1.5 rounded-lg font-bold hover:bg-rose-100 transition shadow-sm whitespace-nowrap">Remove</button>
                    </div>
                </div>
 
@@ -2245,7 +2326,8 @@
             </div>
             <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add</button>
             <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
-            <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5">📥 Bulk Import</button>
+            <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5" title="Grid/Excel Paste">📥 Grid Import</button>
+            <button onclick="window.openMarkupImport()" class="bg-slate-800 text-white px-4 py-2.5 rounded-lg font-black shadow hover:bg-black text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:-translate-y-0.5" title="Compile from Plain Text">⚡ Text-to-Test</button>
           </div>
           
           <div id="editor-questions-list" class="space-y-6 pb-32"></div>
@@ -2401,44 +2483,6 @@
       </div>
       <div id="panel-fc-container" class="flex-1 overflow-y-auto p-4 md:p-10 bg-[#f8fafc] relative flex flex-col w-full custom-scrollbar"></div>
     </div>
-  </div>
-
-  <!-- ✨ NEW: CLASSIN-STYLE VIRTUAL CLASSROOM -->
-  <div id="live-classroom-ui" class="hidden fixed inset-0 bg-slate-900 z-[1000] flex flex-col font-sans animate-fade-in">
-      <!-- Header -->
-      <header class="bg-slate-950 border-b border-slate-800 p-3 flex justify-between items-center shrink-0 shadow-md z-20 relative">
-          <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg text-white font-black text-xl border border-indigo-400/30">🎥</div>
-              <div>
-                  <h2 id="live-class-title" class="font-black text-white text-lg leading-none">Interactive Live Class</h2>
-                  <p class="text-xs text-slate-400 font-medium mt-1"><span class="w-2 h-2 rounded-full bg-rose-500 inline-block animate-pulse mr-1 shadow-[0_0_8px_rgba(244,63,94,0.8)]"></span> Real-time Sync Active</p>
-              </div>
-          </div>
-          <div class="flex items-center gap-2 sm:gap-3">
-              <button onclick="window.toggleLiveWhiteboard()" id="btn-toggle-board" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-lg font-bold transition flex items-center gap-2 border border-slate-600 shadow-sm text-sm">
-                  🖍️ <span class="hidden sm:inline">Toggle Blackboard</span>
-              </button>
-              <button onclick="window.toggleForumPanel()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition flex items-center gap-2 shadow-sm text-sm">
-                  🗂️ <span class="hidden sm:inline">Course Forum</span>
-              </button>
-              <div class="w-px h-6 bg-slate-700 mx-1"></div>
-              <button onclick="window.leaveLiveClass()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold transition shadow-sm text-sm flex items-center gap-2">
-                  👋 <span class="hidden sm:inline">Leave</span>
-              </button>
-          </div>
-      </header>
-      
-      <!-- Main Stage (Split View) -->
-      <div class="flex-1 flex flex-col md:flex-row overflow-hidden relative bg-slate-800">
-          <!-- Left: Jitsi Video Matrix -->
-          <div id="jitsi-container" class="flex-1 w-full h-1/2 md:h-full transition-all duration-300 relative z-10 shadow-2xl"></div>
-          
-          <!-- Right: Collaborative Whiteboard -->
-          <div id="whiteboard-container" class="hidden w-full md:w-1/2 h-1/2 md:h-full border-t md:border-t-0 md:border-l border-slate-700 bg-white relative transition-all duration-300 z-10">
-              <div class="absolute top-3 left-3 z-20 bg-amber-100 text-amber-900 text-[10px] font-black uppercase px-2 py-1 rounded shadow-md border border-amber-300 pointer-events-none tracking-widest">Collaborative Blackboard</div>
-              <iframe id="whiteboard-iframe" class="w-full h-full border-none" src=""></iframe>
-          </div>
-      </div>
   </div>
 
   <!-- FIREBASE INITIALIZATION -->
@@ -4690,11 +4734,14 @@ window.initFirebaseSystem = async function() {
         const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center justify-end w-full gap-3">
                     <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none">
+                        <label class="text-[10px] font-black text-rose-500 uppercase tracking-widest whitespace-nowrap">Meet Link:</label>
+                        <input type="text" onchange="window.updateClassMeetLink('${cls.id}', this.value)" value="${cls.meetLink || ''}" placeholder="https://meet.google.com/..." class="w-full md:w-36 text-sm text-slate-600 font-bold outline-none bg-transparent border-none p-0 focus:ring-0">
+                    </div>
+                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none">
                         <label class="text-[10px] font-black text-blue-500 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
                         <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000}" class="w-full md:w-24 text-sm text-emerald-600 font-black outline-none text-right bg-transparent border-none p-0 focus:ring-0">
                     </div>
-                    <button onclick="window.toggleClassLearningPath('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${isPathEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Enable sequential material locking">${isPathEnabled ? 'Learning Path: On' : 'Learning Path: Off'}</button>
-                    <button onclick="window.toggleClassBooking('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${cls.allowBooking ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Allow students to manually book lessons from your availability schedule">${cls.allowBooking ? 'Booking: Allowed' : 'Booking: Off'}</button>
+                    <button onclick="window.toggleClassLearningPath('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${isPathEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Enable sequential material locking">${isPathEnabled ? 'Learning Path: On' : 'Learning Path: Off'}</button>                    <button onclick="window.toggleClassBooking('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${cls.allowBooking ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Allow students to manually book lessons from your availability schedule">${cls.allowBooking ? 'Booking: Allowed' : 'Booking: Off'}</button>
                     <button onclick="deleteClass('${cls.id}')" class="flex-1 md:flex-none text-rose-500 hover:text-white bg-white hover:bg-rose-500 border border-slate-200 hover:border-rose-500 rounded-xl font-bold text-xs px-4 py-2.5 transition shadow-sm shrink-0 uppercase tracking-widest">Delete</button>
                 </div>
         ` : '';
@@ -4904,6 +4951,7 @@ window.initFirebaseSystem = async function() {
           assignedTests:[],
           enrolledStudents:[],
           feePerLesson: BILLING_SETTINGS.feePerLesson || 100000,
+          meetLink: '',
           learningPathEnabled: false,
           allowBooking: false,
           owner: currentUser.user,
@@ -6317,6 +6365,61 @@ window.initFirebaseSystem = async function() {
       renderEditorQuestions();
     }
 
+    // ✨ NEW: Smart Range Parsers
+    window.parseIdsString = function(str) {
+        let ids = [];
+        str.split(',').forEach(part => {
+            if (part.includes('-')) {
+                const [start, end] = part.split('-').map(n => Number(n.trim()));
+                if (!isNaN(start) && !isNaN(end) && start <= end) {
+                    for (let j = start; j <= end; j++) ids.push(j);
+                }
+            } else {
+                const n = Number(part.trim());
+                if (!isNaN(n)) ids.push(n);
+            }
+        });
+        return [...new Set(ids)].sort((a,b)=>a-b);
+    };
+
+    window.formatIdsString = function(ids) {
+        if (!ids || ids.length === 0) return '';
+        let sorted = [...new Set(ids)].sort((a,b) => a - b);
+        let ranges = [];
+        let start = sorted[0];
+        let prev = sorted[0];
+
+        for (let i = 1; i <= sorted.length; i++) {
+            if (sorted[i] === prev + 1) {
+                prev = sorted[i];
+            } else {
+                if (start === prev) ranges.push(start);
+                else if (start + 1 === prev) ranges.push(`${start}, ${prev}`);
+                else ranges.push(`${start}-${prev}`);
+                start = sorted[i];
+                prev = sorted[i];
+            }
+        }
+        return ranges.join(', ');
+    };
+
+    window.expandOptionsArray = function(arr) {
+        if (!arr || arr.length === 0) return [];
+        if (arr.length === 1) {
+            const match = arr[0].match(/^([A-Za-z])\s*-\s*([A-Za-z])$/);
+            if (match) {
+                const start = match[1].toUpperCase().charCodeAt(0);
+                const end = match[2].toUpperCase().charCodeAt(0);
+                if (start <= end) {
+                    let expanded = [];
+                    for(let c = start; c <= end; c++) expanded.push(String.fromCharCode(c));
+                    return expanded;
+                }
+            }
+        }
+        return arr;
+    };
+
     function renderEditorQuestions() {
       const list = document.getElementById('editor-questions-list'); list.innerHTML = '';
       APP_DATA.parts[currentEditorPartIdx].questions.forEach((q, i) => {
@@ -6390,9 +6493,12 @@ window.initFirebaseSystem = async function() {
         const baseInputClass = "border-2 border-slate-200 p-2.5 rounded-lg text-sm font-medium text-slate-800 outline-none focus:border-blue-500 transition-colors w-full";
         const answerInputClass = "border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-lg text-sm font-bold text-emerald-900 outline-none focus:border-emerald-500 transition-colors w-full shadow-inner";
 
+        // ✨ FIX: Points are auto-locked to the number of IDs for all types except Essays/Speaking
+        const isAutoPoints = !['essay', 'audio_record', 'vocab_game', 'pair_roleplay', 'group_debate'].includes(q.type);
+
         html += `<div class="grid grid-cols-2 gap-4 mb-2">
-                    <div>${mkLbl('IDs (csv)')}<input type="text" class="q-ids ${baseInputClass} font-mono ${isHotspot ? 'bg-slate-100 text-slate-500' : ''}" value="${q.ids.join(',')}" ${isHotspot ? 'readonly title="Auto-generated from map hotspots"' : ''}></div>
-                    <div>${mkLbl('Points')}<input type="number" class="q-points ${baseInputClass}" value="${q.points||1}"></div>
+                    <div>${mkLbl('IDs (csv/range)')}<input type="text" class="q-ids ${baseInputClass} font-mono ${isHotspot ? 'bg-slate-100 text-slate-500' : ''}" value="${window.formatIdsString(q.ids)}" ${isHotspot ? 'readonly title="Auto-generated from map hotspots"' : ''} placeholder="e.g. 1-5"></div>
+                    <div>${mkLbl('Points')}<input type="number" class="q-points ${baseInputClass} ${isAutoPoints ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : ''}" value="${q.points||1}" ${isAutoPoints ? 'readonly title="Auto-calculated based on number of Question IDs"' : ''}></div>
                  </div>`;
                  
         html += `<div>${mkLbl('Instruction')}${mkStandardToolbar()}<div class="q-inst rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[70px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.instruction||''}</div></div>`;
@@ -6839,8 +6945,11 @@ window.initFirebaseSystem = async function() {
         // Find highest existing ID to prevent question number conflicts
         let currentMaxId = 0;
         if (!window.isRapidTestImport) {
-            APP_DATA.parts[currentEditorPartIdx].questions.forEach(q => {
-                (q.ids || []).forEach(id => { if (id > currentMaxId) currentMaxId = id; });
+            // ✨ FIX: Scan ALL parts of the test, not just the current part, for global chronological order
+            APP_DATA.parts.forEach(p => {
+                (p.questions || []).forEach(q => {
+                    (q.ids || []).forEach(id => { if (id > currentMaxId) currentMaxId = id; });
+                });
             });
         } else {
             const rapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
@@ -6848,7 +6957,7 @@ window.initFirebaseSystem = async function() {
                 const tid = document.getElementById('rapid-existing-test').value;
                 const test = TEST_BANK.find(t => t.id === tid);
                 if (test) {
-                    test.parts.forEach(p => p.questions.forEach(q => (q.ids||[]).forEach(id => { if (id > currentMaxId) currentMaxId = id; })));
+                    test.parts.forEach(p => (p.questions || []).forEach(q => (q.ids||[]).forEach(id => { if (id > currentMaxId) currentMaxId = id; })));
                 }
             }
         }
@@ -7025,14 +7134,18 @@ window.initFirebaseSystem = async function() {
         let idsArr = old.ids;
         const idsInput = b.querySelector('.q-ids');
         if (idsInput && !idsInput.readOnly) {
-            idsArr = idsInput.value.split(',').map(n=>Number(n.trim())).filter(n=>!isNaN(n));
+            idsArr = window.parseIdsString(idsInput.value);
             if(idsArr.length === 0) idsArr = old.ids;
         }
+
+        // ✨ FIX: Auto-calculate points based on array length
+        const isAutoPoints = !['essay', 'audio_record', 'vocab_game', 'pair_roleplay', 'group_debate'].includes(old.type);
+        const calcPoints = isAutoPoints ? Math.max(1, idsArr.length) : (Number(b.querySelector('.q-points').value) || 1);
 
         const getVal = (el) => el ? (el.isContentEditable ? el.innerHTML : el.value) : '';
         const res = { 
             blockId: old.blockId, type: old.type, ids: idsArr, 
-            points: Number(b.querySelector('.q-points').value)||1, 
+            points: calcPoints, 
             instruction: getVal(b.querySelector('.q-inst')), 
             hint: getVal(b.querySelector('.q-hint')),
             explanation: getVal(b.querySelector('.q-expl')) 
@@ -7047,7 +7160,10 @@ window.initFirebaseSystem = async function() {
             else res.text = qTextEl.value;
         }
         
-        if(b.querySelector('.q-opts')) res.options = b.querySelector('.q-opts').value.split('\n').filter(Boolean);
+        if(b.querySelector('.q-opts')) {
+            const rawOpts = b.querySelector('.q-opts').value.split('\n').map(s=>s.trim()).filter(Boolean);
+            res.options = window.expandOptionsArray(rawOpts); // Expands A-E into columns automatically
+        }
         if(b.querySelector('.q-reus')) res.reusable = b.querySelector('.q-reus').checked;
         if(b.querySelector('.q-multi')) res.multi = b.querySelector('.q-multi').checked;
         
@@ -7057,7 +7173,12 @@ window.initFirebaseSystem = async function() {
           if(old.type==='tfng' || old.type==='ynng' || (old.type==='multiple_choice' && !res.multi)) {
              res.correctAnswers[res.ids[0]] = c.value.trim();
           } else {
-             c.value.split('\n').forEach(l => { const m = l.match(/(\d+):(.*)/); if(m) res.correctAnswers[Number(m[1])] = m[2].trim(); });
+             // Retain old answers if ID range is expanded
+             const parsedAns = {};
+             c.value.split('\n').forEach(l => { const m = l.match(/(\d+):(.*)/); if(m) parsedAns[Number(m[1])] = m[2].trim(); });
+             res.ids.forEach(id => {
+                 res.correctAnswers[id] = parsedAns[id] !== undefined ? parsedAns[id] : (old.correctAnswers[id] || '');
+             });
           }
         }
         return res;
@@ -12041,7 +12162,6 @@ window.initFirebaseSystem = async function() {
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
         document.getElementById('bill-disc-course').value = BILLING_SETTINGS.discCourse || 20;
-        document.getElementById('bill-jwt').value = BILLING_SETTINGS.jaasJwt || '';
 
         if (BILLING_SETTINGS.customQR) {
             tempCustomQRBase64 = BILLING_SETTINGS.customQR;
@@ -12545,8 +12665,7 @@ window.initFirebaseSystem = async function() {
             lessonsPerMonth: Number(document.getElementById('bill-lpm').value) || 12,
             discCombo: Number(document.getElementById('bill-disc-combo').value) || 0,
             discCourse: Number(document.getElementById('bill-disc-course').value) || 0,
-            customQR: tempCustomQRBase64,
-            jaasJwt: document.getElementById('bill-jwt').value.trim()
+            customQR: tempCustomQRBase64
         };
 
         try {
@@ -14980,31 +15099,37 @@ window.initFirebaseSystem = async function() {
     };
 
 
-    // --- LIVE VIDEO CLASS LOGIC (NEW TAB METHOD) ---
+    // --- LIVE VIDEO CLASS LOGIC (GOOGLE MEET) ---
     window.joinLiveClass = function(scheduleId, topic) {
-        // Clean schedule ID to ensure a valid unique room name
-        const cleanId = scheduleId.replace(/[^a-zA-Z0-9]/g, '');
+        const sched = SCHEDULES.find(s => s.id === scheduleId);
+        if (!sched) return;
         
-        // Use the official meet.jit.si server.
-        // By opening in a standard new tab ('_blank'), we completely bypass BOTH the popup blockers AND the 5-minute iframe limit!
-        const displayName = encodeURIComponent(currentUser ? currentUser.user : 'Guest Student');
-        const roomUrl = `https://meet.jit.si/IELTS_LMS_LiveClass_${cleanId}#userInfo.displayName="${displayName}"`;
+        const cls = CLASSES.find(c => c.name === sched.className);
+        if (!cls || !cls.meetLink) {
+            showModalMsg("No Meeting Link", "Your teacher hasn't set a Google Meet link for this class yet.");
+            return;
+        }
         
-        // Open safely as a standard new browser tab
+        let roomUrl = cls.meetLink.trim();
+        if (!roomUrl.startsWith('http')) roomUrl = 'https://' + roomUrl;
+        
         const newWindow = window.open(roomUrl, '_blank');
         
-        // Bulletproof Fallback: Just in case they are on a hyper-strict mobile browser (like inside Facebook/Zalo app)
         if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
             showModalMsg("Browser Blocked the Tab", `Your browser blocked the video class from opening. Please click the link below to join manually:<br><br><a href="${roomUrl}" target="_blank" class="text-blue-600 font-bold underline break-all">${roomUrl}</a>`);
         } else {
-            // Automatically close the student's pop-up modal so the dashboard is clean when they switch back to this tab
             const dayModal = document.getElementById('student-day-modal');
             if (dayModal) dayModal.classList.add('hidden');
         }
     };
 
-    window.leaveLiveClass = function() {
-        // No longer needed! Users simply close the browser tab when they are done.
+    window.updateClassMeetLink = async function(cid, link) {
+        const cls = CLASSES.find(c => c.id === cid);
+        if(cls) {
+            cls.meetLink = link.trim();
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            if (typeof window.showToast === 'function') window.showToast("Saved", "Google Meet link updated.");
+        }
     };
 
    // ==========================================
@@ -15199,6 +15324,498 @@ window.initFirebaseSystem = async function() {
         };
 
         fileInput.click();
+    };
+
+    // ==========================================
+    // ✨ TEXT-TO-TEST (IELTS MARKDOWN) COMPILER
+    // ==========================================
+    
+    window.openMarkupImport = function() {
+        const el = document.getElementById('iml-editor');
+        if (el.tagName === 'TEXTAREA') el.value = ''; else el.innerHTML = '';
+        document.getElementById('markup-import-modal').classList.remove('hidden');
+    };
+
+    // ✨ Custom Markdown Formatter (Converts plaintext styling into perfect LMS HTML)
+    window.formatIELTSMarkdown = function(text) {
+        if (!text) return '';
+        let lines = text.split('\n');
+        let out = [];
+        let inUl = false;
+        let inOl = false;
+
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            
+            if (!line) {
+                if (inUl) { out.push('</ul>'); inUl = false; }
+                if (inOl) { out.push('</ol>'); inOl = false; }
+                out.push('<p><br></p>');
+                continue;
+            }
+
+            // Inline formatting (bold, italic, underline) - Safely ignores existing HTML tags
+            line = line.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); 
+            line = line.replace(/__(.*?)__/g, '<u>$1</u>');     
+            line = line.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<i>$1</i>'); 
+
+            // List detection
+            const ulMatch = line.match(/^[\-\•]\s+(.*)/);
+            const olMatch = line.match(/^(\d+)[\.\)]\s+(.*)/);
+
+            if (ulMatch) {
+                if (inOl) { out.push('</ol>'); inOl = false; }
+                if (!inUl) { out.push('<ul>'); inUl = true; }
+                out.push(`<li>${ulMatch[1]}</li>`);
+            } else if (olMatch) {
+                if (inUl) { out.push('</ul>'); inUl = false; }
+                if (!inOl) { out.push('<ol>'); inOl = true; }
+                out.push(`<li>${olMatch[2]}</li>`);
+            } else {
+                if (inUl) { out.push('</ul>'); inUl = false; }
+                if (inOl) { out.push('</ol>'); inOl = false; }
+                out.push(`<p>${line}</p>`);
+            }
+        }
+        
+        if (inUl) out.push('</ul>');
+        if (inOl) out.push('</ol>');
+
+        return out.join('').replace(/<p><\/p>/g, '<p><br></p>');
+    };
+
+    window.compileIML = function() {
+        const editorEl = document.getElementById('iml-editor');
+        let rawHtml = editorEl.innerHTML || editorEl.value || '';
+        
+        // ✨ HTML PRE-PROCESSOR: Converts pasted Rich Text blocks safely back to parsable lines
+        let parseText = rawHtml
+            .replace(/<div><br><\/div>/gi, '\n')
+            .replace(/<br\s*[\/]?>/gi, '\n')
+            .replace(/<\/p>/gi, '\n')
+            .replace(/<\/div>/gi, '\n')
+            .replace(/<\/li>/gi, '\n')
+            .replace(/<li>/gi, '- ') // Preserve list items for the Markdown formatter
+            .replace(/&nbsp;/gi, ' ');
+            
+        // Strip all tags EXCEPT formatting (b, i, u, strong, em) so they pass safely into the UI
+        parseText = parseText.replace(/<(?!\/?(b|i|u|strong|em)(>|\s))[^>]+>/gi, '');
+        
+        // Decode HTML entities (like &gt; back to > for TFNG arrows)
+        const txtHelper = document.createElement("textarea");
+        txtHelper.innerHTML = parseText;
+        rawText = txtHelper.value;
+
+        if (!rawText.trim()) {
+            showModalMsg("Empty", "Please paste or type some text to compile.");
+            return;
+        }
+
+        const lines = rawText.split('\n');
+        let newQuestions = [];
+        let currentQ = null;
+        
+        let gapBuffer = []; 
+        let gapType = null; 
+        let pairBuffer = [];
+        let textBuffer = [];
+        
+        let activeExplicitMode = null; 
+
+        let maxId = 0;
+        APP_DATA.parts.forEach(p => {
+            (p.questions || []).forEach(q => {
+                (q.ids || []).forEach(id => { if (id > maxId) maxId = id; });
+            });
+        });
+
+        // --- CLOSURE HELPERS TO SEAL BUFFERS INTO BLOCKS ---
+        const pushGapBuffer = () => {
+            if (gapBuffer.length > 0) {
+                const combinedText = gapBuffer.map(g => g.rawText).join('\n');
+                let processedText = window.formatIELTSMarkdown(combinedText);
+                
+                const isDrop = activeExplicitMode === 'dragdrop' || (activeExplicitMode !== 'gapfill' && gapType === 'drag');
+                const type = isDrop ? 'dnd_list' : 'fill_blanks';
+                
+                let ids = [];
+                let correctAnswers = {};
+                let options = [];
+
+                if (activeExplicitMode === 'dragdrop') {
+                    processedText = processedText.replace(/\[([^\[\]]+)\]/g, '{$1}');
+                } else if (activeExplicitMode === 'gapfill') {
+                    processedText = processedText.replace(/\{([^{}]+)\}/g, '[$1]');
+                }
+
+                let matchDrop;
+                const regexDrop = /\{([^{}]+)\}/g;
+                while ((matchDrop = regexDrop.exec(processedText)) !== null) {
+                    maxId++;
+                    const ans = matchDrop[1].trim();
+                    ids.push(maxId);
+                    correctAnswers[maxId] = ans;
+                    processedText = processedText.replace(matchDrop[0], `{drop:${maxId}}`);
+                    options.push(ans);
+                }
+
+                let matchBlank;
+                const regexBlank = /\[([^\[\]]+)\]/g;
+                while ((matchBlank = regexBlank.exec(processedText)) !== null) {
+                    const inner = matchBlank[1].trim().toLowerCase();
+                    if (['writing','essay','speaking','headings','matching','map hotspots','map grid','end','gap fill','drag drop','multiple choice','tfng','ynng','matching headings','matching info'].includes(inner)) continue;
+                    
+                    maxId++;
+                    const ans = matchBlank[1].trim();
+                    ids.push(maxId);
+                    correctAnswers[maxId] = ans;
+                    processedText = processedText.replace(matchBlank[0], `{blank:${maxId}}`);
+                    if (type === 'dnd_list') options.push(ans); 
+                }
+
+                if (ids.length > 0) {
+                    newQuestions.push({
+                        blockId: 'b_' + Date.now() + Math.random().toString(36).substr(2,5),
+                        type: type,
+                        ids: ids,
+                        points: ids.length,
+                        instruction: type === 'dnd_list' ? "Complete the sentences below. Choose the correct word from the box." : "Fill in the blanks.",
+                        text: processedText,
+                        options: type === 'dnd_list' ? [...new Set(options)].sort(() => Math.random() - 0.5) : [],
+                        correctAnswers: correctAnswers,
+                        reusable: false
+                    });
+                }
+                gapBuffer = [];
+                gapType = null;
+            }
+        };
+
+        const pushPairBuffer = () => {
+            if (pairBuffer.length > 0) {
+                let type = 'matching_info';
+                let instruction = "Match the information.";
+                let isReusable = true;
+
+                if (activeExplicitMode === 'headings' || activeExplicitMode === 'matching_headings') { type = 'matching_headings'; instruction = "Choose the correct heading for each paragraph."; isReusable = false; }
+                else if (activeExplicitMode === 'hotspots' || activeExplicitMode === 'map_labelling_hotspots') { type = 'map_labelling_hotspots'; instruction = "Label the map below."; }
+                else if (activeExplicitMode === 'grid' || activeExplicitMode === 'map_labelling_grid') { type = 'map_labelling_grid'; instruction = "Match the places to the correct letters on the map."; }
+                else if (activeExplicitMode === 'matching' || activeExplicitMode === 'matching_info') { type = 'matching_info'; }
+                else if (activeExplicitMode === 'tfng' || activeExplicitMode === 'ynng') {
+                    pairBuffer.forEach(m => {
+                        maxId++;
+                        // Auto-strip leading letters for TFNG/YNNG just in case
+                        let cleanRight = m.right.replace(/^(?:[A-Za-z]{1,5}|[0-9]{1,2}|[\-\*\•])[\.\)\:]?\s+/, '').trim();
+                        let ansRaw = cleanRight.toUpperCase();
+                        if(ansRaw === 'T') ansRaw = 'True'; if(ansRaw === 'F') ansRaw = 'False'; if(ansRaw === 'NG') ansRaw = 'Not Given';
+                        if(ansRaw === 'Y') ansRaw = 'Yes'; if(ansRaw === 'N') ansRaw = 'No';
+                        newQuestions.push({
+                            blockId: 'b_' + Date.now() + Math.random().toString(36).substr(2,5),
+                            type: activeExplicitMode,
+                            ids: [maxId],
+                            points: 1,
+                            instruction: activeExplicitMode === 'ynng' ? "Do the statements agree with the claims?" : "Do the statements agree with the information?",
+                            text: window.formatIELTSMarkdown(m.left),
+                            options: activeExplicitMode === 'ynng' ? ["Yes", "No", "Not Given"] : ["True", "False", "Not Given"],
+                            correctAnswers: { [maxId]: ansRaw }
+                        });
+                    });
+                    pairBuffer = [];
+                    return;
+                }
+                else {
+                    const isRoman = pairBuffer.every(m => {
+                        let r = m.right.trim();
+                        const match = r.match(/^(?:[A-Za-z]{1,5}|[0-9]{1,2}|[\-\*\•])[\.\)\:]?\s+(.+)$/);
+                        if (match) r = match[1].trim();
+                        return /^[ivxlcdm]+$/i.test(r);
+                    });
+                    if (isRoman) { type = 'matching_headings'; instruction = "Choose the correct heading."; isReusable = false; }
+                }
+
+                let ids = [];
+                let correctAnswers = {};
+                let textLines = [];
+                let options = [];
+
+                pairBuffer.forEach(m => {
+                    maxId++;
+                    ids.push(maxId);
+                    if (type !== 'map_labelling_hotspots') textLines.push(m.left);
+                    
+                    let cleanRight = m.right.trim();
+                    
+                    // ✨ FIX: Auto-strip leading "A) ", "B. ", "- ", "i.", "iv " from options, EXCEPT for Matching Info!
+                    if (type !== 'matching_info') {
+                        const prefixRegex = /^(?:[A-Za-z]{1,5}|[0-9]{1,2}|[\-\*\•])[\.\)\:]?\s+(.+)$/;
+                        const match = cleanRight.match(prefixRegex);
+                        if (match) {
+                            cleanRight = match[1].trim();
+                        }
+                    }
+                    
+                    correctAnswers[maxId] = cleanRight;
+                    options.push(cleanRight);
+                });
+
+                newQuestions.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).substr(2,5),
+                    type: type,
+                    ids: ids,
+                    points: ids.length,
+                    instruction: instruction,
+                    // ✨ FIX: Matching Info and Grids use Textareas. They need Raw Newlines (\n), NOT <br> tags!
+                    text: ['matching_info', 'map_labelling_grid', 'map_labelling_hotspots'].includes(type) ? textLines.join('\n') : window.formatIELTSMarkdown(textLines.join('\n')),
+                    options: [...new Set(options)].sort(), 
+                    correctAnswers: correctAnswers,
+                    reusable: isReusable,
+                    image: (type.includes('map')) ? '' : undefined
+                });
+                pairBuffer = [];
+            }
+        };
+
+        const pushTextBuffer = () => {
+            if (textBuffer.length > 0) {
+                maxId++;
+                const isSpeaking = activeExplicitMode === 'speaking';
+                const formattedText = window.formatIELTSMarkdown(textBuffer.join('\n'));
+                newQuestions.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).substr(2,5),
+                    type: isSpeaking ? 'audio_record' : 'essay',
+                    ids: [maxId],
+                    points: 1,
+                    instruction: isSpeaking ? "Record your answer." : "You should spend about 40 minutes on this task.",
+                    text: formattedText,
+                    options: [],
+                    correctAnswers: {}
+                });
+                textBuffer = [];
+            }
+        };
+
+        const pushCurrentQ = () => {
+            if (currentQ) { 
+                currentQ.text = window.formatIELTSMarkdown(currentQ.text);
+                newQuestions.push(currentQ); 
+                currentQ = null; 
+            }
+        };
+
+        const pushAllBuffers = () => {
+            pushGapBuffer();
+            pushPairBuffer();
+            pushTextBuffer();
+            pushCurrentQ();
+        };
+
+        // --- MAIN PARSER LOOP ---
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            
+            if (!line) {
+                if (textBuffer.length > 0) textBuffer.push(""); 
+                else if (gapBuffer.length > 0) gapBuffer.push({ rawText: "" }); 
+                continue;
+            }
+
+            // 1. Detect Explicit Mode Switching Tags (Matches Dropdown Names)
+            const modeMatch = line.match(/^\[(Multiple Choice|Gap Fill|Drag Drop|TFNG|YNNG|Matching Headings|Matching Info|Map Hotspots|Map Grid|Writing|Essay|Speaking|End)\]$/i);
+            if (modeMatch) {
+                pushAllBuffers(); 
+                const m = modeMatch[1].toLowerCase();
+                
+                if (m === 'end') { activeExplicitMode = null; }
+                else if (m === 'multiple choice') activeExplicitMode = 'mcq';
+                else if (m === 'gap fill') activeExplicitMode = 'gapfill';
+                else if (m === 'drag drop') activeExplicitMode = 'dragdrop';
+                else if (m === 'tfng') activeExplicitMode = 'tfng';
+                else if (m === 'ynng') activeExplicitMode = 'ynng';
+                else if (m === 'matching headings') activeExplicitMode = 'matching_headings';
+                else if (m === 'matching info') activeExplicitMode = 'matching_info';
+                else if (m === 'map hotspots') activeExplicitMode = 'map_labelling_hotspots';
+                else if (m === 'map grid') activeExplicitMode = 'map_labelling_grid';
+                else if (m === 'writing' || m === 'essay') activeExplicitMode = 'essay';
+                else if (m === 'speaking') activeExplicitMode = 'speaking';
+                
+                continue;
+            }
+
+            // End explicit mode
+            if (line.match(/^\[End\]$/i)) {
+                pushAllBuffers();
+                activeExplicitMode = null;
+                continue;
+            }
+
+            // 2. Absorb lines based on explicit context
+            if (activeExplicitMode === 'essay' || activeExplicitMode === 'speaking') {
+                textBuffer.push(line);
+                continue;
+            }
+            if (activeExplicitMode === 'gapfill') {
+                gapType = 'typing';
+                gapBuffer.push({ rawText: line });
+                continue;
+            }
+            if (activeExplicitMode === 'dragdrop') {
+                gapType = 'drag';
+                gapBuffer.push({ rawText: line });
+                continue;
+            }
+            if (['headings', 'matching', 'hotspots', 'grid'].includes(activeExplicitMode)) {
+                const pairMatch = line.match(/^(?:(?:\d+)[\.\)]\s*)?(.*?)\s*->\s*(.+)$/);
+                if (pairMatch) {
+                    pairBuffer.push({ left: pairMatch[1].trim(), right: pairMatch[2].trim() });
+                }
+                continue;
+            }
+
+            // 3. AUTO-DETECT MODE 
+            const tfngMatch = line.match(/^(?:(?:\d+)[\.\)]\s*)?(.*?)->\s*(?:(?:[A-Za-z]{1,5}|[0-9]{1,2}|[\-\*\•])[\.\)\:]?\s+)?(TRUE|FALSE|NOT GIVEN|YES|NO|T|F|NG|Y|N)$/i);
+            const matchInfoMatch = line.match(/^(?:(?:\d+)[\.\)]\s*)?(.*?)\s*->\s*(.+)$/);
+            const qStartMatch = line.match(/^(\d+)[\.\)]\s+(.*)/);
+            
+            // Allow auto-detect MCQ even if explicitMode isn't set, OR force it if explicitMode IS mcq
+            const optRegex1 = /^(\*?)(?:[A-Za-z]{1,5}|[0-9]{1,2})[\.\)\:]\s+(.*)/;
+            const optRegex2 = /^(\*?)[\-\*\•]\s+(.*)/;
+            const isOpt = (currentQ?.type === 'multiple_choice' || activeExplicitMode === 'mcq') ? (optRegex1.exec(line) || optRegex2.exec(line)) : null;
+
+            // Detect Gap Type for this specific line
+            let lineGapType = null;
+            if (line.includes('{') && line.includes('}')) lineGapType = 'drag';
+            else if (line.includes('[') && line.includes(']')) lineGapType = 'typing';
+
+            if (activeExplicitMode === 'mcq') {
+                if (isOpt) {
+                    const isCorrect = isOpt[1] === '*';
+                    let optText = isOpt[2].trim();
+                    if (!currentQ) {
+                        maxId++;
+                        currentQ = { blockId: 'b_' + Date.now() + Math.random(), type: 'multiple_choice', ids: [maxId], points: 1, instruction: "Choose the correct answer.", text: "", options: [], correctAnswers: {}, multi: false };
+                    }
+                    currentQ.options.push(optText);
+                    
+                    if (isCorrect) {
+                        if (Object.keys(currentQ.correctAnswers).length > 0 && currentQ.correctAnswers[currentQ.ids[0]]) {
+                            currentQ.multi = true;
+                            maxId++;
+                            currentQ.ids.push(maxId); 
+                            currentQ.correctAnswers[maxId] = optText;
+                        } else {
+                            currentQ.correctAnswers[currentQ.ids[0]] = optText;
+                        }
+                    }
+                } else {
+                    if (currentQ && currentQ.options.length > 0) pushCurrentQ(); // End previous question
+                    if (!currentQ) {
+                        maxId++;
+                        currentQ = { blockId: 'b_' + Date.now() + Math.random(), type: 'multiple_choice', ids: [maxId], points: 1, instruction: "Choose the correct answer.", text: line, options: [], correctAnswers: {}, multi: false };
+                    } else {
+                        currentQ.text += '\n' + line;
+                    }
+                }
+                continue;
+            }
+
+            if (lineGapType) {
+                if (gapBuffer.length > 0 && gapType !== null && gapType !== lineGapType) {
+                    pushGapBuffer(); // Separates drag blocks from gapfill blocks!
+                }
+                gapType = lineGapType;
+                pushPairBuffer(); pushTextBuffer(); pushCurrentQ(); 
+                gapBuffer.push({ rawText: line });
+                continue;
+            }
+
+            if (isOpt) {
+                const isCorrect = isOpt[1] === '*';
+                let optText = isOpt[2].trim();
+                currentQ.options.push(optText);
+                
+                if (isCorrect) {
+                    if (Object.keys(currentQ.correctAnswers).length > 0 && currentQ.correctAnswers[currentQ.ids[0]]) {
+                        currentQ.multi = true;
+                        maxId++;
+                        currentQ.ids.push(maxId); 
+                        currentQ.correctAnswers[maxId] = optText;
+                    } else {
+                        currentQ.correctAnswers[currentQ.ids[0]] = optText;
+                    }
+                }
+                continue;
+            }
+
+            if (tfngMatch) {
+                pushAllBuffers();
+                maxId++;
+                const stmt = tfngMatch[1].trim();
+                let ansRaw = tfngMatch[2].toUpperCase();
+                
+                if(ansRaw === 'T') ansRaw = 'True';
+                if(ansRaw === 'F') ansRaw = 'False';
+                if(ansRaw === 'NG') ansRaw = 'Not Given';
+                if(ansRaw === 'Y') ansRaw = 'Yes';
+                if(ansRaw === 'N') ansRaw = 'No';
+
+                const isYnng = ['YES', 'NO', 'Y', 'N'].includes(ansRaw.toUpperCase());
+
+                newQuestions.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).substr(2,5),
+                    type: isYnng ? 'ynng' : 'tfng',
+                    ids: [maxId],
+                    points: 1,
+                    instruction: isYnng ? "Do the statements agree with the claims?" : "Do the statements agree with the information?",
+                    text: window.formatIELTSMarkdown(stmt),
+                    options: isYnng ? ["Yes", "No", "Not Given"] : ["True", "False", "Not Given"],
+                    correctAnswers: { [maxId]: ansRaw }
+                });
+                continue;
+            }
+
+            if (matchInfoMatch && !tfngMatch) {
+                pushGapBuffer(); pushTextBuffer(); pushCurrentQ(); 
+                pairBuffer.push({ left: matchInfoMatch[1].trim(), right: matchInfoMatch[2].trim() });
+                continue;
+            }
+
+            if (qStartMatch) {
+                pushAllBuffers();
+                maxId++;
+                currentQ = {
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).substr(2,5),
+                    type: 'multiple_choice',
+                    ids: [maxId],
+                    points: 1,
+                    instruction: "Choose the correct answer.",
+                    text: qStartMatch[2],
+                    options: [],
+                    correctAnswers: {},
+                    multi: false
+                };
+                continue;
+            }
+
+            if (currentQ && currentQ.options.length === 0) {
+                currentQ.text += '\n' + line;
+            } else if (gapBuffer.length > 0) {
+                gapBuffer.push({ rawText: line });
+            }
+        }
+
+        // Flush end of script
+        pushAllBuffers();
+
+        if (newQuestions.length === 0) {
+            showModalMsg("No Output", "Could not detect any valid questions. Please check the Cheatsheet format.");
+            return;
+        }
+
+        APP_DATA.parts[currentEditorPartIdx].questions.push(...newQuestions);
+        document.getElementById('markup-import-modal').classList.add('hidden');
+        renderEditorQuestions();
+        triggerEditorAutosave();
+        showModalMsg("Compiled! ⚡", `Successfully compiled and injected ${newQuestions.length} blocks!`);
     };
   </script>
 <!-- SECURITY: Anti-Inspect and View Source Protection -->
