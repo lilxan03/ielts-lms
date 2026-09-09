@@ -63,6 +63,9 @@
     }
     .rich-editor p { margin-bottom: 0.5rem; }
     .rich-editor:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
+        .karaoke-line { transition: background-color 120ms ease, color 120ms ease, transform 120ms ease; }
+        .karaoke-line.is-active { background: #fef08a; color: #172554; transform: translateX(4px); border-radius: 0.35rem; box-shadow: 0 3px 12px rgba(234, 179, 8, 0.18); }
+        .karaoke-studio-line.is-recording { border-color: #2563eb; background: #eff6ff; }
     .rich-editor table { max-width: 100%; border-collapse: collapse; margin-bottom: 1rem; background-color: white; }
     .rich-editor th, .rich-editor td { padding: 0.5rem; text-align: left; min-width: 3rem; }
     .rich-editor table.no-border th, .rich-editor table.no-border td { border: 1px dashed #cbd5e1; }
@@ -2273,6 +2276,9 @@
             <div id="audio-field-container">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Audio URL (Optional)</label>
               <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="https://...">
+                            <button type="button" onclick="window.openKaraokeStudio()" class="w-full mb-5 px-4 py-3 rounded-lg bg-amber-50 border border-amber-300 text-amber-800 font-black hover:bg-amber-100 transition flex items-center justify-center gap-2 shadow-sm">
+                                <span class="text-lg">🎙️</span> Open Karaoke Studio
+                            </button>
             </div>
             <div id="image-field-container" class="hidden">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Part Image (Task 1 Chart, etc.)</label>
@@ -2485,7 +2491,31 @@
     </div>
   </div>
 
-  <!-- FIREBASE INITIALIZATION -->
+    <!-- KARAOKE STUDIO -->
+    <div id="karaoke-studio-modal" class="hidden fixed inset-0 bg-slate-950/70 z-[500] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden">
+            <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div>
+                    <h2 class="text-xl font-black">🎙️ Karaoke Studio</h2>
+                    <p class="text-xs text-slate-300 mt-1">Play the audio, then press Space or tap Record to mark each sentence.</p>
+                </div>
+                <button type="button" onclick="window.closeKaraokeStudio()" class="text-slate-300 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div class="p-5 border-b border-slate-200 bg-slate-50 shrink-0">
+                <audio id="karaoke-studio-audio" controls class="w-full"></audio>
+                <div class="flex flex-wrap items-center gap-3 mt-4">
+                    <button id="karaoke-record-btn" type="button" onclick="window.toggleKaraokeRecording()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-black shadow">Start Recording</button>
+                    <button type="button" onclick="window.resetKaraokeCues()" class="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-bold hover:bg-slate-100">Reset Cues</button>
+                    <button type="button" onclick="window.saveKaraokeCues()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black shadow">Save Timestamps</button>
+                    <span id="karaoke-studio-status" class="text-sm font-bold text-slate-500 ml-auto">Ready</span>
+                </div>
+            </div>
+            <div id="karaoke-studio-lines" class="p-5 overflow-y-auto space-y-2"></div>
+            <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 shrink-0">Tip: click a sentence to select it, then use the audio position and “Set Selected” for corrections.</div>
+        </div>
+    </div>
+
+    <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -2677,6 +2707,199 @@ window.initFirebaseSystem = async function() {
     let isNotesPanelOpen = false;
     let editorAutosaveTimer = null;
     let activeTableCell = null;
+
+    let karaokeStudioPart = null;
+    let karaokeStudioCues = [];
+    let karaokeStudioSelected = 0;
+    let karaokeStudioRecording = false;
+    let karaokeAnimationFrame = null;
+
+    function splitKaraokeSentences(text) {
+        const holder = document.createElement('div');
+        holder.innerHTML = text || '';
+        const plainText = (holder.textContent || holder.innerText || '').replace(/\s+/g, ' ').trim();
+        if (!plainText) return [];
+        return (plainText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map(sentence => sentence.trim()).filter(Boolean);
+    }
+
+    function escapeKaraokeText(text) {
+        return String(text || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
+    }
+
+    function getKaraokeCues(part) {
+        const sentences = splitKaraokeSentences(part.text || '');
+        const saved = Array.isArray(part.karaoke) ? part.karaoke : [];
+        return sentences.map((text, index) => ({
+            text,
+            start: Number.isFinite(Number(saved[index]?.start)) ? Number(saved[index].start) : null,
+            end: Number.isFinite(Number(saved[index]?.end)) ? Number(saved[index].end) : null
+        }));
+    }
+
+    function renderKaraokeTranscript(part) {
+        const cues = getKaraokeCues(part);
+        if (!cues.length) return '';
+        
+        return `<div class="karaoke-transcript space-y-2" data-karaoke-root>${cues.map((cue, index) => {
+            let lineText = escapeKaraokeText(cue.text);
+            
+            // ✨ FIX: Re-inject the Flashcard Vocab Highlights into the Karaoke sentences!
+            if (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
+                APP_DATA.vocab.forEach((v, vIdx) => {
+                    const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                    if (!cleanTerm) return;
+                    const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                    lineText = lineText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
+                });
+            }
+            
+            return `<span class="karaoke-line block px-2 py-1" data-karaoke-index="${index}">${lineText}</span>`;
+        }).join('')}</div>`;
+    }
+
+    function updateKaraokeHighlight(audio, root) {
+        if (!audio || !root) return;
+        const cues = getKaraokeCues(APP_DATA.parts[currentPartIdx] || {});
+        const time = audio.currentTime || 0;
+        let activeIndex = -1;
+        cues.forEach((cue, index) => {
+            const active = cue.start !== null && time >= cue.start && (cue.end === null || time < cue.end);
+            const line = root.querySelector(`[data-karaoke-index="${index}"]`);
+            if (line) line.classList.toggle('is-active', active);
+            if (active) activeIndex = index;
+        });
+        if (activeIndex >= 0) {
+            const line = root.querySelector(`[data-karaoke-index="${activeIndex}"]`);
+            if (line && line.dataset.karaokeScrolled !== 'true') {
+                line.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                line.dataset.karaokeScrolled = 'true';
+            }
+        }
+    }
+
+    function wireKaraokeAudio(audio, root) {
+        if (!audio || !root) return;
+        if (audio._karaokeCleanup) audio._karaokeCleanup();
+        const tick = () => {
+            updateKaraokeHighlight(audio, root);
+            if (!audio.paused && !audio.ended) karaokeAnimationFrame = requestAnimationFrame(tick);
+        };
+        const start = () => {
+            if (karaokeAnimationFrame) cancelAnimationFrame(karaokeAnimationFrame);
+            karaokeAnimationFrame = requestAnimationFrame(tick);
+        };
+        const stop = () => {
+            if (karaokeAnimationFrame) cancelAnimationFrame(karaokeAnimationFrame);
+            karaokeAnimationFrame = null;
+            updateKaraokeHighlight(audio, root);
+        };
+        audio.addEventListener('play', start);
+        audio.addEventListener('pause', stop);
+        audio.addEventListener('ended', stop);
+        audio._karaokeCleanup = () => {
+            audio.removeEventListener('play', start);
+            audio.removeEventListener('pause', stop);
+            audio.removeEventListener('ended', stop);
+        };
+        updateKaraokeHighlight(audio, root);
+    }
+
+    function renderKaraokeStudioLines() {
+        const container = document.getElementById('karaoke-studio-lines');
+        if (!container) return;
+        container.innerHTML = karaokeStudioCues.length ? karaokeStudioCues.map((cue, index) => `
+          <div class="karaoke-studio-line flex items-center gap-3 border-2 border-slate-200 rounded-xl p-3 ${index === karaokeStudioSelected ? 'is-recording' : ''}">
+            <button type="button" onclick="window.selectKaraokeLine(${index})" class="flex-1 text-left font-bold text-slate-700 leading-relaxed">${index + 1}. ${escapeKaraokeText(cue.text)}</button>
+            <span class="text-xs font-mono text-slate-500 w-24 text-right">${cue.start === null ? '--.--' : cue.start.toFixed(2)}s</span>
+            <button type="button" onclick="window.setSelectedKaraokeCue()" class="px-2 py-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">Set Selected</button>
+          </div>`).join('') : '<p class="text-slate-500 italic text-center py-10">Add transcript text to this part before opening the studio.</p>';
+    }
+
+    window.openKaraokeStudio = function() {
+        saveCurrentEditorPart();
+        const part = APP_DATA.parts[currentEditorPartIdx];
+        if (!part || APP_DATA.module !== 'listening') {
+            showModalMsg('Listening Part Required', 'Open the Karaoke Studio from a listening test part.');
+            return;
+        }
+        karaokeStudioPart = part;
+        karaokeStudioCues = getKaraokeCues(part);
+        karaokeStudioSelected = karaokeStudioCues.findIndex(cue => cue.start === null);
+        if (karaokeStudioSelected < 0) karaokeStudioSelected = 0;
+        const audio = document.getElementById('karaoke-studio-audio');
+        audio.src = part.audioUrl || '';
+        audio.load();
+        karaokeStudioRecording = false;
+        document.getElementById('karaoke-record-btn').textContent = 'Start Recording';
+        document.getElementById('karaoke-studio-status').textContent = 'Ready';
+        renderKaraokeStudioLines();
+        document.getElementById('karaoke-studio-modal').classList.remove('hidden');
+    };
+
+    window.closeKaraokeStudio = function() {
+        document.getElementById('karaoke-studio-audio')?.pause();
+        document.getElementById('karaoke-studio-modal')?.classList.add('hidden');
+        karaokeStudioRecording = false;
+    };
+
+    window.selectKaraokeLine = function(index) {
+        karaokeStudioSelected = index;
+        renderKaraokeStudioLines();
+    };
+
+    window.setSelectedKaraokeCue = function() {
+        const audio = document.getElementById('karaoke-studio-audio');
+        const cue = karaokeStudioCues[karaokeStudioSelected];
+        if (!audio || !cue) return;
+        const timestamp = audio.currentTime || 0;
+        cue.start = timestamp;
+        if (karaokeStudioSelected > 0) karaokeStudioCues[karaokeStudioSelected - 1].end = timestamp;
+        renderKaraokeStudioLines();
+        document.getElementById('karaoke-studio-status').textContent = `Marked sentence ${karaokeStudioSelected + 1} at ${timestamp.toFixed(2)}s`;
+    };
+
+    window.toggleKaraokeRecording = function() {
+        const audio = document.getElementById('karaoke-studio-audio');
+        if (!audio || !karaokeStudioCues.length) return;
+        if (!karaokeStudioRecording) {
+            karaokeStudioRecording = true;
+            document.getElementById('karaoke-record-btn').textContent = 'Tap / Space: Mark Sentence';
+            audio.play().catch(() => {});
+            document.getElementById('karaoke-studio-status').textContent = 'Recording timestamps...';
+        } else {
+            window.setSelectedKaraokeCue();
+            if (karaokeStudioSelected < karaokeStudioCues.length - 1) karaokeStudioSelected++;
+            else karaokeStudioRecording = false;
+            renderKaraokeStudioLines();
+        }
+    };
+
+    window.resetKaraokeCues = function() {
+        karaokeStudioCues.forEach(cue => { cue.start = null; cue.end = null; });
+        karaokeStudioSelected = 0;
+        karaokeStudioRecording = false;
+        document.getElementById('karaoke-studio-audio')?.pause();
+        renderKaraokeStudioLines();
+        document.getElementById('karaoke-studio-status').textContent = 'Cues reset';
+    };
+
+    window.saveKaraokeCues = function() {
+        if (!karaokeStudioPart) return;
+        const audio = document.getElementById('karaoke-studio-audio');
+        if (audio && Number.isFinite(audio.duration) && karaokeStudioCues.length) {
+            karaokeStudioCues[karaokeStudioCues.length - 1].end = audio.duration;
+        }
+        karaokeStudioPart.karaoke = karaokeStudioCues.filter(cue => cue.start !== null).map(cue => ({ ...cue }));
+        triggerEditorAutosave();
+        document.getElementById('karaoke-studio-status').textContent = 'Saved to this listening part';
+    };
+
+    document.addEventListener('keydown', event => {
+        const modal = document.getElementById('karaoke-studio-modal');
+        if (!modal || modal.classList.contains('hidden') || event.code !== 'Space' || event.target.matches('input, textarea, select')) return;
+        event.preventDefault();
+        window.toggleKaraokeRecording();
+    });
 
     // --- IELTS BAND DESCRIPTORS (Writing Task 2) ---
     const IELTS_DESCRIPTORS = {
@@ -9172,13 +9395,18 @@ window.initFirebaseSystem = async function() {
                 }
             }
 
+            const vocab = sourceTests
+                .flatMap(test => Array.isArray(test.vocab) ? test.vocab : [])
+                .filter(word => word && word.term)
+                .filter((word, index, words) => words.findIndex(item => item.term.toLowerCase() === word.term.toLowerCase()) === index);
+
             return {
                 id: 'mock_' + moduleName + '_' + Date.now(),
                 title: `Full Mock Exam - ${moduleName.charAt(0).toUpperCase() + moduleName.slice(1)}`,
                 module: moduleName,
                 topics: ['Generated Mock Exam'],
                 parts: selectedParts,
-                vocab: []
+                vocab
             };
         };
 
@@ -9474,6 +9702,7 @@ window.initFirebaseSystem = async function() {
       const resizer = document.getElementById('resizer');
       const listeningOverlay = document.getElementById('listening-exam-overlay');
       const examAudio = document.getElementById('exam-listening-audio');
+    const karaokeHtml = renderKaraokeTranscript(p);
 
       window.listeningMediaInjection = '';
 
@@ -9504,7 +9733,8 @@ window.initFirebaseSystem = async function() {
           }
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${htmlText}</div>`;
+          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${karaokeHtml || htmlText}</div>`;
+          wireKaraokeAudio(examAudio, passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
@@ -9629,6 +9859,7 @@ window.initFirebaseSystem = async function() {
           if (mediaDiv.dataset.audioUrl !== APP_DATA.parts[currentPartIdx].audioUrl) {
               mediaDiv.innerHTML = window.listeningMediaInjection;
               mediaDiv.dataset.audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
+              wireKaraokeAudio(mediaDiv.querySelector('audio'), document.getElementById('passage-container'));
           }
       } else {
           if (mediaDiv.innerHTML !== '') {
@@ -11657,7 +11888,8 @@ window.initFirebaseSystem = async function() {
 
         // 1. Populate dropdown lists if empty
         const lists = Object.keys(FLASHCARDS);
-        if (lists.length === 0) {
+        const hasTeacherDeck = Array.from(select.options).some(option => option.value.startsWith('tv_'));
+        if (lists.length === 0 && !hasTeacherDeck) {
             select.innerHTML = '<option value="">No Flashcard Decks Found</option>';
             container.innerHTML = '<div class="text-center text-slate-400 mt-10 text-sm">Highlight any word during practice to create a flashcard deck!</div>';
             return;
@@ -13092,6 +13324,7 @@ window.initFirebaseSystem = async function() {
                         </div>`;
                     };
                     const lessonTests = (s.assignedTests || []).map(tid => renderTestItem(tid)).join('');
+                    const homeworkTests = (s.homeworkTests || []).map(tid => renderTestItem(tid)).join('');
                     
                     return `
                     <div class="p-5 bg-indigo-50 border border-indigo-100 rounded-xl shadow-sm mb-4">
@@ -13099,7 +13332,14 @@ window.initFirebaseSystem = async function() {
                         <p class="text-sm font-bold text-slate-500 flex items-center gap-2 mb-4"><span class="w-2 h-2 rounded-full bg-indigo-400"></span> ${s.topic || 'General Practice'}</p>
                         
                         <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md mb-4 flex items-center justify-center gap-2 animate-pulse hover:animate-none">🎥 Join Live Video Class</button>
-                            ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No specific tests assigned to this lesson.</p>'}
+                            <div class="mb-4">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-indigo-600 mb-2">For the lesson</p>
+                                ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No specific tests assigned to this lesson.</p>'}
+                            </div>
+                            <div class="border-t border-indigo-100 pt-4">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-2">After the lesson: Homework</p>
+                                ${homeworkTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No homework assigned.</p>'}
+                            </div>
                         </div>
                     </div>`;
                 }).join('');
@@ -13138,15 +13378,19 @@ window.initFirebaseSystem = async function() {
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Materials:</label>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">For the lesson:</label>
                     <div id="sched-tests-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-slate-50 text-sm text-slate-500 italic space-y-1 shadow-inner">Select class...</div>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Expected Students:</label>
-                    <div id="sched-students-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-slate-50 text-sm text-slate-500 italic space-y-1 shadow-inner">Select class...</div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">After the lesson (Homework):</label>
+                    <div id="sched-homework-tests-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-amber-50 text-sm text-slate-500 italic space-y-1 shadow-inner">Select class...</div>
                 </div>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Expected Students:</label>
+                <div id="sched-students-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-slate-50 text-sm text-slate-500 italic space-y-1 shadow-inner">Select class...</div>
             </div>
         `;
         document.getElementById('modal-input').classList.add('hidden');
@@ -13163,15 +13407,23 @@ window.initFirebaseSystem = async function() {
             
             // Load Tests
             const testCont = document.getElementById('sched-tests-container');
+            const homeworkTestCont = document.getElementById('sched-homework-tests-container');
             if(!cls || !cls.assignedTests || cls.assignedTests.length === 0) {
                 testCont.innerHTML = "No tests assigned.";
                 testCont.classList.add('italic', 'text-slate-500');
+                homeworkTestCont.innerHTML = "No tests assigned.";
+                homeworkTestCont.classList.add('italic', 'text-slate-500');
             } else {
                 testCont.innerHTML = cls.assignedTests.map(tid => {
                     const t = TEST_BANK.find(x => x.id === tid);
                     return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-200 p-1 rounded transition"><input type="checkbox" class="sched-test-cb w-3.5 h-3.5 text-blue-600 rounded" value="${t.id}"> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
                 }).join('');
                 testCont.classList.remove('italic', 'text-slate-500');
+                homeworkTestCont.innerHTML = cls.assignedTests.map(tid => {
+                    const t = TEST_BANK.find(x => x.id === tid);
+                    return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-amber-100 p-1 rounded transition"><input type="checkbox" class="sched-homework-test-cb w-3.5 h-3.5 text-amber-600 rounded" value="${t.id}"> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
+                }).join('');
+                homeworkTestCont.classList.remove('italic', 'text-slate-500');
             }
 
             // Load Students
@@ -13199,6 +13451,7 @@ window.initFirebaseSystem = async function() {
             const timeRaw = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
             const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
+            const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
 
             if(cls && date && timeRaw) {
@@ -13209,7 +13462,8 @@ window.initFirebaseSystem = async function() {
                     id: 'sch_'+Date.now(), 
                     className: cls, 
                     date, time, topic, 
-                    assignedTests: selectedTests, 
+                    assignedTests: selectedTests,
+                    homeworkTests: selectedHomeworkTests,
                     attendingStudents: selectedStudents, 
                     dateAdded: new Date().toLocaleDateString() 
                 };
@@ -13259,15 +13513,19 @@ window.initFirebaseSystem = async function() {
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Materials:</label>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">For the lesson:</label>
                     <div id="sched-tests-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-slate-50 text-sm text-slate-500 italic space-y-1 shadow-inner"></div>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-700 mb-1">Expected Students:</label>
-                    <div id="sched-students-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-slate-50 text-sm text-slate-500 italic space-y-1 shadow-inner"></div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">After the lesson (Homework):</label>
+                    <div id="sched-homework-tests-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-amber-50 text-sm text-slate-500 italic space-y-1 shadow-inner"></div>
                 </div>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-1">Expected Students:</label>
+                <div id="sched-students-container" class="max-h-32 overflow-y-auto border-2 border-slate-200 p-2 rounded-md bg-slate-50 text-sm text-slate-500 italic space-y-1 shadow-inner"></div>
             </div>
         `;
         document.getElementById('modal-input').classList.add('hidden');
@@ -13283,9 +13541,12 @@ window.initFirebaseSystem = async function() {
             
             // Tests
             const testCont = document.getElementById('sched-tests-container');
+            const homeworkTestCont = document.getElementById('sched-homework-tests-container');
             if(!cls || !cls.assignedTests || cls.assignedTests.length === 0) {
                 testCont.innerHTML = "No tests assigned.";
                 testCont.classList.add('italic', 'text-slate-500');
+                homeworkTestCont.innerHTML = "No tests assigned.";
+                homeworkTestCont.classList.add('italic', 'text-slate-500');
             } else {
                 testCont.innerHTML = cls.assignedTests.map(tid => {
                     const t = TEST_BANK.find(x => x.id === tid);
@@ -13293,6 +13554,12 @@ window.initFirebaseSystem = async function() {
                     return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-200 p-1 rounded transition"><input type="checkbox" class="sched-test-cb w-3.5 h-3.5 text-blue-600 rounded" value="${t.id}" ${isChecked}> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
                 }).join('');
                 testCont.classList.remove('italic', 'text-slate-500');
+                homeworkTestCont.innerHTML = cls.assignedTests.map(tid => {
+                    const t = TEST_BANK.find(x => x.id === tid);
+                    const isChecked = (sched.homeworkTests || []).includes(tid) ? 'checked' : '';
+                    return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-amber-100 p-1 rounded transition"><input type="checkbox" class="sched-homework-test-cb w-3.5 h-3.5 text-amber-600 rounded" value="${t.id}" ${isChecked}> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
+                }).join('');
+                homeworkTestCont.classList.remove('italic', 'text-slate-500');
             }
 
             // Students
@@ -13325,6 +13592,7 @@ window.initFirebaseSystem = async function() {
             const time = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
             const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
+            const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
 
             if(cls && date && time) {
@@ -13333,6 +13601,7 @@ window.initFirebaseSystem = async function() {
                 sched.time = time;
                 sched.topic = topic;
                 sched.assignedTests = selectedTests;
+                sched.homeworkTests = selectedHomeworkTests;
                 sched.attendingStudents = selectedStudents;
                 
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), sched.id), sched);
