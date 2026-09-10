@@ -63,9 +63,8 @@
     }
     .rich-editor p { margin-bottom: 0.5rem; }
     .rich-editor:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
-        .karaoke-line { transition: background-color 120ms ease, color 120ms ease, transform 120ms ease; }
-        .karaoke-line.is-active { background: #fef08a; color: #172554; transform: translateX(4px); border-radius: 0.35rem; box-shadow: 0 3px 12px rgba(234, 179, 8, 0.18); }
-        .karaoke-studio-line.is-recording { border-color: #2563eb; background: #eff6ff; }
+        .speech-word { transition: background-color 100ms ease, color 100ms ease; border-radius: 0.2rem; }
+        .speech-word.is-speaking { background: #fde68a; color: #172554; box-shadow: 0 1px 5px rgba(234, 179, 8, 0.25); }
     .rich-editor table { max-width: 100%; border-collapse: collapse; margin-bottom: 1rem; background-color: white; }
     .rich-editor th, .rich-editor td { padding: 0.5rem; text-align: left; min-width: 3rem; }
     .rich-editor table.no-border th, .rich-editor table.no-border td { border: 1px dashed #cbd5e1; }
@@ -2290,10 +2289,16 @@
           <div id="builder-media-fields" class="mt-3">
             <div id="audio-field-container">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Audio URL (Optional)</label>
-              <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="https://...">
-                            <button type="button" onclick="window.openKaraokeStudio()" class="w-full mb-5 px-4 py-3 rounded-lg bg-amber-50 border border-amber-300 text-amber-800 font-black hover:bg-amber-100 transition flex items-center justify-center gap-2 shadow-sm">
-                                <span class="text-lg">🎙️</span> Open Karaoke Studio
-                            </button>
+              <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="https://..." onchange="window.updateListeningEditorAudio(this.value)">
+                            <div class="mt-3 mb-5 p-3 rounded-lg border border-blue-200 bg-blue-50">
+                                <label class="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Highlight starts at</label>
+                                <audio id="edit-listening-audio" controls class="w-full h-9 mb-2"></audio>
+                                <div class="flex items-center gap-2">
+                                    <input id="edit-listening-start" type="number" min="0" step="0.1" value="0" class="w-24 border border-blue-200 rounded px-2 py-1.5 text-sm font-mono text-blue-800" onchange="window.setListeningHighlightStart(this.value)">
+                                    <span class="text-xs text-blue-700">seconds</span>
+                                    <button type="button" onclick="window.setListeningHighlightStartFromAudio()" class="ml-auto px-2.5 py-1.5 text-xs font-bold text-blue-800 bg-white border border-blue-300 rounded hover:bg-blue-100">Start from current time</button>
+                                </div>
+                            </div>
             </div>
             <div id="image-field-container" class="hidden">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Part Image (Task 1 Chart, etc.)</label>
@@ -2506,30 +2511,6 @@
     </div>
   </div>
 
-    <!-- KARAOKE STUDIO -->
-    <div id="karaoke-studio-modal" class="hidden fixed inset-0 bg-slate-950/70 z-[500] flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden">
-            <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
-                <div>
-                    <h2 class="text-xl font-black">🎙️ Karaoke Studio</h2>
-                    <p class="text-xs text-slate-300 mt-1">Play the audio, then press Space or tap Record to mark each sentence.</p>
-                </div>
-                <button type="button" onclick="window.closeKaraokeStudio()" class="text-slate-300 hover:text-white text-3xl leading-none">&times;</button>
-            </div>
-            <div class="p-5 border-b border-slate-200 bg-slate-50 shrink-0">
-                <audio id="karaoke-studio-audio" controls class="w-full"></audio>
-                <div class="flex flex-wrap items-center gap-3 mt-4">
-                    <button id="karaoke-record-btn" type="button" onclick="window.toggleKaraokeRecording()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-black shadow">Start Recording</button>
-                    <button type="button" onclick="window.resetKaraokeCues()" class="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 rounded-lg font-bold hover:bg-slate-100">Reset Cues</button>
-                    <button type="button" onclick="window.saveKaraokeCues()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-black shadow">Save Timestamps</button>
-                    <span id="karaoke-studio-status" class="text-sm font-bold text-slate-500 ml-auto">Ready</span>
-                </div>
-            </div>
-            <div id="karaoke-studio-lines" class="p-5 overflow-y-auto space-y-2"></div>
-            <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-500 shrink-0">Tip: click a sentence to select it, then use the audio position and “Set Selected” for corrections.</div>
-        </div>
-    </div>
-
     <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -2723,13 +2704,9 @@ window.initFirebaseSystem = async function() {
     let editorAutosaveTimer = null;
     let activeTableCell = null;
 
-    let karaokeStudioPart = null;
-    let karaokeStudioCues = [];
-    let karaokeStudioSelected = 0;
-    let karaokeStudioRecording = false;
-    let karaokeAnimationFrame = null;
+    let listeningAnimationFrame = null;
 
-    function splitKaraokeSentences(text) {
+    function splitListeningSentences(text) {
         const holder = document.createElement('div');
         holder.innerHTML = text || '';
         const plainText = (holder.textContent || holder.innerText || '').replace(/\s+/g, ' ').trim();
@@ -2737,28 +2714,121 @@ window.initFirebaseSystem = async function() {
         return (plainText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || []).map(sentence => sentence.trim()).filter(Boolean);
     }
 
-    function escapeKaraokeText(text) {
+    function escapeListeningText(text) {
         return String(text || '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
     }
 
-    function getKaraokeCues(part) {
-        const sentences = splitKaraokeSentences(part.text || '');
-        const saved = Array.isArray(part.karaoke) ? part.karaoke : [];
-        return sentences.map((text, index) => ({
-            text,
-            start: Number.isFinite(Number(saved[index]?.start)) ? Number(saved[index].start) : null,
-            end: Number.isFinite(Number(saved[index]?.end)) ? Number(saved[index].end) : null
-        }));
+    function countListeningSyllables(word) {
+        const cleaned = String(word || '').toLowerCase().replace(/[^a-záàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ]/gi, '');
+        if (!cleaned) return 0;
+        if (/[áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ]/i.test(cleaned)) {
+            return Math.max(1, (cleaned.match(/[aeiouyáàảãạăâéèẻẽẹêíìỉĩịóòỏõọôơóúùủũụưứừửữựýỳỷỹỵ]+/gi) || []).length);
+        }
+        const vowelGroups = (cleaned.match(/[aeiouy]+/g) || []).length;
+        const withoutSilentE = cleaned.replace(/e$/i, '');
+        return Math.max(1, Math.min(8, (withoutSilentE.match(/[aeiouy]+/g) || []).length || vowelGroups));
     }
 
-    function renderKaraokeTranscript(part) {
-        const cues = getKaraokeCues(part);
+    function countListeningTextSyllables(text) {
+        return (String(text || '').match(/\S+/g) || []).reduce((sum, word) => sum + countListeningSyllables(word), 0) || 1;
+    }
+
+    function ensureListeningWaveform(audio) {
+        if (!audio || audio._listeningAnalyser) return;
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextClass) return;
+            if (!audio.captureStream) return;
+            const context = new AudioContextClass();
+            const stream = audio.captureStream();
+            const source = context.createMediaStreamSource(stream);
+            const analyser = context.createAnalyser();
+            analyser.fftSize = 1024;
+            source.connect(analyser);
+            audio._listeningAnalyser = { context, analyser, data: new Uint8Array(analyser.fftSize), hasSignal: false, emptyFrames: 0 };
+        } catch (error) {
+            audio._listeningAnalyser = null;
+        }
+    }
+
+    function isListeningSpeechActive(audio) {
+        const state = audio?._listeningAnalyser;
+        if (!state) return true;
+        state.analyser.getByteTimeDomainData(state.data);
+        let sum = 0;
+        state.data.forEach(value => {
+            const amplitude = (value - 128) / 128;
+            sum += amplitude * amplitude;
+        });
+        const rms = Math.sqrt(sum / state.data.length);
+        if (rms > 0.012) state.hasSignal = true;
+        if (!state.hasSignal && rms < 0.0001) state.emptyFrames++;
+        if (!state.hasSignal && state.emptyFrames > 60) return true;
+        return rms > 0.012;
+    }
+
+    function getListeningCues(part, audioDuration) {
+        const sentences = splitListeningSentences(part.text || '');
+        const startOffset = Math.max(0, Number(part.listeningHighlightStart) || 0);
+        const cues = sentences.map(text => ({
+            text,
+            start: null,
+            end: null
+        }));
+        if (Number.isFinite(audioDuration) && audioDuration > startOffset && cues.length) {
+            const totalSyllables = cues.reduce((sum, cue) => sum + countListeningTextSyllables(cue.text), 0);
+            let elapsed = startOffset;
+            cues.forEach(cue => {
+                const duration = (audioDuration - startOffset) * countListeningTextSyllables(cue.text) / totalSyllables;
+                cue.start = elapsed;
+                cue.end = elapsed + duration;
+                elapsed += duration;
+            });
+        }
+        return cues;
+    }
+
+    function wrapListeningWords(lineHtml) {
+        const holder = document.createElement('span');
+        holder.innerHTML = lineHtml;
+        let wordIndex = 0;
+        const walker = document.createTreeWalker(holder, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) textNodes.push(node);
+        textNodes.forEach(textNode => {
+            if (textNode.parentElement?.closest('.vocab-word')) return;
+            const fragment = document.createDocumentFragment();
+            textNode.nodeValue.split(/(\s+)/).forEach(part => {
+                if (/\s+/.test(part)) fragment.appendChild(document.createTextNode(part));
+                else if (part) {
+                    const word = document.createElement('span');
+                    word.className = 'speech-word';
+                    word.textContent = part;
+                    fragment.appendChild(word);
+                }
+            });
+            textNode.parentNode.replaceChild(fragment, textNode);
+        });
+        holder.querySelectorAll('.vocab-word').forEach(word => {
+            if (!word.classList.contains('speech-word')) {
+                word.classList.add('speech-word');
+            }
+        });
+        holder.querySelectorAll('.speech-word').forEach(word => {
+            word.dataset.listeningWord = String(wordIndex++);
+        });
+        return holder.innerHTML;
+    }
+
+    function renderListeningTranscript(part) {
+        const cues = getListeningCues(part);
         if (!cues.length) return '';
         
-        return `<div class="karaoke-transcript space-y-2" data-karaoke-root>${cues.map((cue, index) => {
-            let lineText = escapeKaraokeText(cue.text);
+        return `<div class="listening-transcript space-y-2" data-listening-root>${cues.map((cue, index) => {
+            let lineText = escapeListeningText(cue.text);
             
-            // ✨ FIX: Re-inject the Flashcard Vocab Highlights into the Karaoke sentences!
+            // Keep vocabulary terms clickable inside the listening transcript.
             if (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
                 APP_DATA.vocab.forEach((v, vIdx) => {
                     const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
@@ -2768,157 +2838,81 @@ window.initFirebaseSystem = async function() {
                 });
             }
             
-            return `<span class="karaoke-line block px-2 py-1" data-karaoke-index="${index}">${lineText}</span>`;
+            return `<span class="listening-line block px-2 py-1" data-listening-index="${index}">${wrapListeningWords(lineText)}</span>`;
         }).join('')}</div>`;
     }
 
-    function updateKaraokeHighlight(audio, root) {
+    function updateListeningHighlight(audio, root) {
         if (!audio || !root) return;
-        const cues = getKaraokeCues(APP_DATA.parts[currentPartIdx] || {});
+        const cues = getListeningCues(APP_DATA.parts[currentPartIdx] || {}, audio.duration);
         const time = audio.currentTime || 0;
         let activeIndex = -1;
         cues.forEach((cue, index) => {
             const active = cue.start !== null && time >= cue.start && (cue.end === null || time < cue.end);
-            const line = root.querySelector(`[data-karaoke-index="${index}"]`);
-            if (line) line.classList.toggle('is-active', active);
+            const line = root.querySelector(`[data-listening-index="${index}"]`);
+            if (line) {
+                line.classList.toggle('is-active', active);
+                if (active && isListeningSpeechActive(audio)) {
+                    line.querySelectorAll('.speech-word').forEach(word => word.classList.remove('is-speaking'));
+                    const words = line.querySelectorAll('.speech-word');
+                    const cueEnd = cue.end === null ? audio.duration : cue.end;
+                    const cueDuration = Math.max(0.01, cueEnd - cue.start);
+                    const progress = Math.min(0.999, Math.max(0, (time - cue.start) / cueDuration));
+                    const weights = Array.from(words).map(word => countListeningSyllables(word.textContent));
+                    const totalWeight = weights.reduce((sum, weight) => sum + weight, 0) || 1;
+                    let targetWeight = progress * totalWeight;
+                    let wordIndex = 0;
+                    for (let word = 0; word < weights.length; word++) {
+                        targetWeight -= weights[word];
+                        if (targetWeight < 0) {
+                            wordIndex = word;
+                            break;
+                        }
+                    }
+                    if (words[wordIndex]) words[wordIndex].classList.add('is-speaking');
+                }
+            }
             if (active) activeIndex = index;
         });
         if (activeIndex >= 0) {
-            const line = root.querySelector(`[data-karaoke-index="${activeIndex}"]`);
-            if (line && line.dataset.karaokeScrolled !== 'true') {
+            const line = root.querySelector(`[data-listening-index="${activeIndex}"]`);
+            if (line && line.dataset.listeningScrolled !== 'true') {
                 line.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                line.dataset.karaokeScrolled = 'true';
+                line.dataset.listeningScrolled = 'true';
             }
         }
     }
 
-    function wireKaraokeAudio(audio, root) {
+    function wireListeningAudio(audio, root) {
         if (!audio || !root) return;
-        if (audio._karaokeCleanup) audio._karaokeCleanup();
+        if (audio._listeningCleanup) audio._listeningCleanup();
         const tick = () => {
-            updateKaraokeHighlight(audio, root);
-            if (!audio.paused && !audio.ended) karaokeAnimationFrame = requestAnimationFrame(tick);
+            updateListeningHighlight(audio, root);
+            if (!audio.paused && !audio.ended) listeningAnimationFrame = requestAnimationFrame(tick);
         };
         const start = () => {
-            if (karaokeAnimationFrame) cancelAnimationFrame(karaokeAnimationFrame);
-            karaokeAnimationFrame = requestAnimationFrame(tick);
+            ensureListeningWaveform(audio);
+            if (audio._listeningAnalyser?.context.state === 'suspended') audio._listeningAnalyser.context.resume().catch(() => {});
+            if (listeningAnimationFrame) cancelAnimationFrame(listeningAnimationFrame);
+            listeningAnimationFrame = requestAnimationFrame(tick);
         };
         const stop = () => {
-            if (karaokeAnimationFrame) cancelAnimationFrame(karaokeAnimationFrame);
-            karaokeAnimationFrame = null;
-            updateKaraokeHighlight(audio, root);
+            if (listeningAnimationFrame) cancelAnimationFrame(listeningAnimationFrame);
+            listeningAnimationFrame = null;
+            updateListeningHighlight(audio, root);
         };
         audio.addEventListener('play', start);
         audio.addEventListener('pause', stop);
         audio.addEventListener('ended', stop);
-        audio._karaokeCleanup = () => {
+        audio.addEventListener('loadedmetadata', stop);
+        audio._listeningCleanup = () => {
             audio.removeEventListener('play', start);
             audio.removeEventListener('pause', stop);
             audio.removeEventListener('ended', stop);
+            audio.removeEventListener('loadedmetadata', stop);
         };
-        updateKaraokeHighlight(audio, root);
+        updateListeningHighlight(audio, root);
     }
-
-    function renderKaraokeStudioLines() {
-        const container = document.getElementById('karaoke-studio-lines');
-        if (!container) return;
-        container.innerHTML = karaokeStudioCues.length ? karaokeStudioCues.map((cue, index) => `
-          <div class="karaoke-studio-line flex items-center gap-3 border-2 border-slate-200 rounded-xl p-3 ${index === karaokeStudioSelected ? 'is-recording' : ''}">
-            <button type="button" onclick="window.selectKaraokeLine(${index})" class="flex-1 text-left font-bold text-slate-700 leading-relaxed">${index + 1}. ${escapeKaraokeText(cue.text)}</button>
-            <span class="text-xs font-mono text-slate-500 w-24 text-right">${cue.start === null ? '--.--' : cue.start.toFixed(2)}s</span>
-            <button type="button" onclick="window.setSelectedKaraokeCue()" class="px-2 py-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100">Set Selected</button>
-          </div>`).join('') : '<p class="text-slate-500 italic text-center py-10">Add transcript text to this part before opening the studio.</p>';
-    }
-
-    window.openKaraokeStudio = function() {
-        if (!isTimeFree) {
-            showModalMsg('Practice Mode Only', 'The timestamp feature is available only in Time-Free Practice mode.');
-            return;
-        }
-        saveCurrentEditorPart();
-        const part = APP_DATA.parts[currentEditorPartIdx];
-        if (!part || APP_DATA.module !== 'listening') {
-            showModalMsg('Listening Part Required', 'Open the Karaoke Studio from a listening test part.');
-            return;
-        }
-        karaokeStudioPart = part;
-        karaokeStudioCues = getKaraokeCues(part);
-        karaokeStudioSelected = karaokeStudioCues.findIndex(cue => cue.start === null);
-        if (karaokeStudioSelected < 0) karaokeStudioSelected = 0;
-        const audio = document.getElementById('karaoke-studio-audio');
-        audio.src = part.audioUrl || '';
-        audio.load();
-        karaokeStudioRecording = false;
-        document.getElementById('karaoke-record-btn').textContent = 'Start Recording';
-        document.getElementById('karaoke-studio-status').textContent = 'Ready';
-        renderKaraokeStudioLines();
-        document.getElementById('karaoke-studio-modal').classList.remove('hidden');
-    };
-
-    window.closeKaraokeStudio = function() {
-        document.getElementById('karaoke-studio-audio')?.pause();
-        document.getElementById('karaoke-studio-modal')?.classList.add('hidden');
-        karaokeStudioRecording = false;
-    };
-
-    window.selectKaraokeLine = function(index) {
-        karaokeStudioSelected = index;
-        renderKaraokeStudioLines();
-    };
-
-    window.setSelectedKaraokeCue = function() {
-        const audio = document.getElementById('karaoke-studio-audio');
-        const cue = karaokeStudioCues[karaokeStudioSelected];
-        if (!audio || !cue) return;
-        const timestamp = audio.currentTime || 0;
-        cue.start = timestamp;
-        if (karaokeStudioSelected > 0) karaokeStudioCues[karaokeStudioSelected - 1].end = timestamp;
-        renderKaraokeStudioLines();
-        document.getElementById('karaoke-studio-status').textContent = `Marked sentence ${karaokeStudioSelected + 1} at ${timestamp.toFixed(2)}s`;
-    };
-
-    window.toggleKaraokeRecording = function() {
-        const audio = document.getElementById('karaoke-studio-audio');
-        if (!audio || !karaokeStudioCues.length) return;
-        if (!karaokeStudioRecording) {
-            karaokeStudioRecording = true;
-            document.getElementById('karaoke-record-btn').textContent = 'Tap / Space: Mark Sentence';
-            audio.play().catch(() => {});
-            document.getElementById('karaoke-studio-status').textContent = 'Recording timestamps...';
-        } else {
-            window.setSelectedKaraokeCue();
-            if (karaokeStudioSelected < karaokeStudioCues.length - 1) karaokeStudioSelected++;
-            else karaokeStudioRecording = false;
-            renderKaraokeStudioLines();
-        }
-    };
-
-    window.resetKaraokeCues = function() {
-        karaokeStudioCues.forEach(cue => { cue.start = null; cue.end = null; });
-        karaokeStudioSelected = 0;
-        karaokeStudioRecording = false;
-        document.getElementById('karaoke-studio-audio')?.pause();
-        renderKaraokeStudioLines();
-        document.getElementById('karaoke-studio-status').textContent = 'Cues reset';
-    };
-
-    window.saveKaraokeCues = function() {
-        if (!karaokeStudioPart) return;
-        const audio = document.getElementById('karaoke-studio-audio');
-        if (audio && Number.isFinite(audio.duration) && karaokeStudioCues.length) {
-            karaokeStudioCues[karaokeStudioCues.length - 1].end = audio.duration;
-        }
-        karaokeStudioPart.karaoke = karaokeStudioCues.filter(cue => cue.start !== null).map(cue => ({ ...cue }));
-        triggerEditorAutosave();
-        document.getElementById('karaoke-studio-status').textContent = 'Saved to this listening part';
-    };
-
-    document.addEventListener('keydown', event => {
-        const modal = document.getElementById('karaoke-studio-modal');
-        if (!modal || modal.classList.contains('hidden') || event.code !== 'Space' || event.target.matches('input, textarea, select')) return;
-        event.preventDefault();
-        window.toggleKaraokeRecording();
-    });
 
     // --- IELTS BAND DESCRIPTORS (Writing Task 2) ---
     const IELTS_DESCRIPTORS = {
@@ -6594,6 +6588,13 @@ window.initFirebaseSystem = async function() {
       else titleEl.innerHTML = p.title||'';
       
       document.getElementById('edit-audio-url').value = p.audioUrl||'';
+      const editorAudio = document.getElementById('edit-listening-audio');
+      if (editorAudio) {
+          editorAudio.src = p.audioUrl || '';
+          editorAudio.load();
+      }
+      const startInput = document.getElementById('edit-listening-start');
+      if (startInput) startInput.value = String(Math.max(0, Number(p.listeningHighlightStart) || 0));
       
       const imgContainer = document.getElementById('part-image-preview-container');
       if (p.image) {
@@ -7360,11 +7361,35 @@ window.initFirebaseSystem = async function() {
       }
     }
 
+    window.updateListeningEditorAudio = function(url) {
+            const audio = document.getElementById('edit-listening-audio');
+            if (audio) {
+                    audio.src = url || '';
+                    audio.load();
+            }
+            window.triggerEditorAutosave();
+        };
+
+        window.setListeningHighlightStart = function(value) {
+            const start = Math.max(0, Number(value) || 0);
+            const input = document.getElementById('edit-listening-start');
+            if (input) input.value = String(start);
+            if (APP_DATA.parts[currentEditorPartIdx]) APP_DATA.parts[currentEditorPartIdx].listeningHighlightStart = start;
+            window.triggerEditorAutosave();
+        };
+
+        window.setListeningHighlightStartFromAudio = function() {
+            const audio = document.getElementById('edit-listening-audio');
+            if (audio) window.setListeningHighlightStart(audio.currentTime || 0);
+        };
+
     function saveCurrentEditorPart() {
       const p = APP_DATA.parts[currentEditorPartIdx];
       const titleEl = document.getElementById('edit-passage-title');
       p.title = titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA' ? titleEl.value : titleEl.innerHTML;
       p.audioUrl = document.getElementById('edit-audio-url').value;
+    const startInput = document.getElementById('edit-listening-start');
+    p.listeningHighlightStart = startInput ? Math.max(0, Number(startInput.value) || 0) : 0;
       
       const passTxt = document.getElementById('edit-passage-text');
       p.text = passTxt.tagName === 'TEXTAREA' ? passTxt.value : passTxt.innerHTML;
@@ -9658,6 +9683,8 @@ window.initFirebaseSystem = async function() {
     function startListeningAudio() {
         const audio = document.getElementById('exam-listening-audio');
         if (audio) {
+            audio.muted = false;
+            audio.volume = 1;
             audio.play().catch(e => console.error("Audio playback error:", e));
         }
         document.getElementById('listening-exam-overlay').classList.add('hidden');
@@ -9669,6 +9696,120 @@ window.initFirebaseSystem = async function() {
         if (!content) return;
         const nowHidden = content.classList.toggle('hidden');
         if (label) label.textContent = nowHidden ? 'Show Sample Answer' : 'Hide Sample Answer';
+        if (nowHidden && window.speechSynthesis) {
+            sampleSpeechRunId++;
+            window.speechSynthesis.cancel();
+            const speechButton = document.getElementById('sample-answer-speech-button');
+            if (speechButton) speechButton.textContent = '🔊 Listen to Sample Answer';
+            clearSpeechWordHighlight(content);
+        }
+    };
+    let sampleSpeechRunId = 0;
+    function isVietnameseSpeech(text) {
+        if (/[ăâđêôơưĂÂĐÊÔƠƯ]/.test(text)) return true;
+        const vietnameseMarkers = /\b(xin chào|cảm ơn|tôi|bạn|mình|là|và|không|những|được|có|này|cho|một|người|thích|quê|nhà)\b/i;
+        return vietnameseMarkers.test(text);
+    }
+    function getSpeechVoice(language) {
+        const voices = window.speechSynthesis.getVoices();
+        const matchingVoices = voices.filter(voice => voice.lang.toLowerCase().startsWith(language));
+        if (language === 'vi') return matchingVoices[0];
+        return matchingVoices.find(voice => voice.lang.toLowerCase() === 'en-gb') || matchingVoices[0];
+    }
+    function prepareSpeechWordMarkup(content) {
+        if (content.querySelector('.speech-word')) return;
+        const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) textNodes.push(node);
+        textNodes.forEach(textNode => {
+            const fragment = document.createDocumentFragment();
+            textNode.nodeValue.split(/(\s+)/).forEach(part => {
+                if (/\s+/.test(part)) {
+                    fragment.appendChild(document.createTextNode(part));
+                } else if (part) {
+                    const word = document.createElement('span');
+                    word.className = 'speech-word';
+                    word.textContent = part;
+                    fragment.appendChild(word);
+                }
+            });
+            textNode.parentNode.replaceChild(fragment, textNode);
+        });
+    }
+    function clearSpeechWordHighlight(content) {
+        content.querySelectorAll('.speech-word.is-speaking').forEach(word => word.classList.remove('is-speaking'));
+    }
+    window.toggleSampleAnswerSpeech = function() {
+        const content = document.getElementById('sample-answer-content');
+        const button = document.getElementById('sample-answer-speech-button');
+        if (!content || !button) return;
+        if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+            button.textContent = 'Speech unavailable';
+            button.disabled = true;
+            return;
+        }
+
+        if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+            sampleSpeechRunId++;
+            window.speechSynthesis.cancel();
+            button.textContent = '🔊 Listen to Sample Answer';
+            clearSpeechWordHighlight(content);
+            return;
+        }
+
+        const text = content.textContent.trim();
+        if (!text) return;
+        prepareSpeechWordMarkup(content);
+        const wordElements = Array.from(content.querySelectorAll('.speech-word'));
+        const segments = text.match(/[^.!?。！？]+[.!?。！？]+|[^.!?。！？]+$/g) || [text];
+        const runId = ++sampleSpeechRunId;
+        let segmentIndex = 0;
+        let segmentWordStart = 0;
+        const highlightWord = wordIndex => {
+            clearSpeechWordHighlight(content);
+            const word = wordElements[wordIndex];
+            if (word) {
+                word.classList.add('is-speaking');
+                word.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+            }
+        };
+        const speakNextSegment = () => {
+            if (runId !== sampleSpeechRunId || segmentIndex >= segments.length) {
+                if (runId === sampleSpeechRunId) {
+                    clearSpeechWordHighlight(content);
+                    button.textContent = '🔊 Listen to Sample Answer';
+                }
+                return;
+            }
+
+            const segment = segments[segmentIndex++].trim();
+            if (!segment) return speakNextSegment();
+            const currentSegmentWordStart = segmentWordStart;
+            segmentWordStart += (segment.match(/\S+/g) || []).length;
+            const language = isVietnameseSpeech(segment) ? 'vi' : 'en';
+            const utterance = new SpeechSynthesisUtterance(segment);
+            utterance.lang = language === 'vi' ? 'vi-VN' : 'en-GB';
+            utterance.voice = getSpeechVoice(language);
+            utterance.rate = 0.9;
+            utterance.onstart = () => {
+                button.textContent = '⏹️ Stop Listening';
+                highlightWord(currentSegmentWordStart);
+            };
+            utterance.onboundary = event => {
+                const spokenWordCount = (segment.slice(0, event.charIndex).match(/\S+/g) || []).length;
+                highlightWord(currentSegmentWordStart + spokenWordCount);
+            };
+            utterance.onend = speakNextSegment;
+            utterance.onerror = () => {
+                if (runId === sampleSpeechRunId) {
+                    clearSpeechWordHighlight(content);
+                    button.textContent = '🔊 Listen to Sample Answer';
+                }
+            };
+            window.speechSynthesis.speak(utterance);
+        };
+        speakNextSegment();
     };
     window.calculateIELTSBand = function(correct, total) {
         if (total === 0) return 0;
@@ -9930,7 +10071,7 @@ window.initFirebaseSystem = async function() {
       const resizer = document.getElementById('resizer');
       const listeningOverlay = document.getElementById('listening-exam-overlay');
       const examAudio = document.getElementById('exam-listening-audio');
-    const karaokeHtml = renderKaraokeTranscript(p);
+    const listeningTranscriptHtml = renderListeningTranscript(p);
 
       window.listeningMediaInjection = '';
 
@@ -9961,8 +10102,8 @@ window.initFirebaseSystem = async function() {
           }
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${karaokeHtml || htmlText}</div>`;
-          wireKaraokeAudio(examAudio, passageContainer);
+          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
+          wireListeningAudio(examAudio, passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
@@ -9989,11 +10130,17 @@ window.initFirebaseSystem = async function() {
               const sampleText = (p.text || '').trim();
               let sampleAnswerBlock = '';
               if (sampleText && sampleText !== '<br>' && sampleText !== '<p><br></p>') {
+                  const speechButton = APP_DATA.module === 'speaking' ? `
+                      <button type="button" id="sample-answer-speech-button" onclick="window.toggleSampleAnswerSpeech()" class="text-xs font-bold bg-amber-500 text-white border border-amber-600 px-4 py-2.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-2" aria-label="Listen to sample answer">
+                          🔊 Listen to Sample Answer
+                      </button>` : '';
                   sampleAnswerBlock = `
                   <div class="mt-8 pt-6 border-t border-slate-200 w-full">
-                      <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
                           👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
-                      </button>
+                        </button>${speechButton}
+                      </div>
                       <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
                   </div>`;
               }
@@ -10094,7 +10241,7 @@ window.initFirebaseSystem = async function() {
           if (mediaDiv.dataset.audioUrl !== APP_DATA.parts[currentPartIdx].audioUrl) {
               mediaDiv.innerHTML = window.listeningMediaInjection;
               mediaDiv.dataset.audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
-              wireKaraokeAudio(mediaDiv.querySelector('audio'), document.getElementById('passage-container'));
+              wireListeningAudio(mediaDiv.querySelector('audio'), document.getElementById('passage-container'));
           }
       } else {
           if (mediaDiv.innerHTML !== '') {
