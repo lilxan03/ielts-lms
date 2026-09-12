@@ -40,6 +40,7 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <style>
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -64,6 +65,10 @@
     .rich-editor p { margin-bottom: 0.5rem; }
     .rich-editor:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
         .speech-word { transition: background-color 100ms ease, color 100ms ease; border-radius: 0.2rem; }
+        .karaoke-line { transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
+        .karaoke-line.is-active { background: rgba(59, 130, 246, 0.14); color: #1d4ed8; box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.12); }
+        .karaoke-waveform { display: block; width: 100%; height: 58px; margin: 0.25rem 0 0.75rem; border-radius: 0.5rem; background: rgba(219, 234, 254, 0.55); cursor: pointer; overflow: hidden; }
+        .karaoke-waveform-fallback { display: block; width: 100%; height: 58px; }
         .speech-word.is-speaking { background: #fde68a; color: #172554; box-shadow: 0 1px 5px rgba(234, 179, 8, 0.25); }
     .rich-editor table { max-width: 100%; border-collapse: collapse; margin-bottom: 1rem; background-color: white; }
     .rich-editor th, .rich-editor td { padding: 0.5rem; text-align: left; min-width: 3rem; }
@@ -2298,6 +2303,18 @@
                                     <span class="text-xs text-blue-700">seconds</span>
                                     <button type="button" onclick="window.setListeningHighlightStartFromAudio()" class="ml-auto px-2.5 py-1.5 text-xs font-bold text-blue-800 bg-white border border-blue-300 rounded hover:bg-blue-100">Start from current time</button>
                                 </div>
+                                <div class="mt-4 pt-4 border-t border-blue-200">
+                                    <div class="flex items-center justify-between gap-2 mb-2">
+                                        <label class="block text-[10px] font-black text-blue-800 uppercase tracking-widest">Karaoke Cue Editor</label>
+                                        <span id="karaoke-editor-time" class="text-[11px] font-mono font-bold text-blue-700">00:00.00</span>
+                                    </div>
+                                    <p class="text-[11px] text-blue-700 mb-2">Chọn câu, phát audio, nhấn <b>Space</b> một lần để bắt đầu và lần nữa để chốt câu.</p>
+                                    <div id="karaoke-editor-cues" class="max-h-48 overflow-y-auto space-y-1 bg-white border border-blue-200 rounded p-1"></div>
+                                    <div class="flex gap-2 mt-2">
+                                        <button type="button" onclick="window.markKaraokeStart()" class="px-3 py-1.5 text-xs font-bold text-blue-800 bg-blue-100 rounded hover:bg-blue-200">Set Start</button>
+                                        <button type="button" onclick="window.markKaraokeEnd()" class="px-3 py-1.5 text-xs font-bold text-white bg-blue-700 rounded hover:bg-blue-800">Set End / Next</button>
+                                    </div>
+                                </div>
                             </div>
             </div>
             <div id="image-field-container" class="hidden">
@@ -2354,7 +2371,12 @@
             <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
             <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5" title="Grid/Excel Paste">📥 Grid Import</button>
             <button onclick="window.openMarkupImport()" class="bg-slate-800 text-white px-4 py-2.5 rounded-lg font-black shadow hover:bg-black text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:-translate-y-0.5" title="Compile from Plain Text">⚡ Text-to-Test</button>
+                     <label class="bg-amber-500 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-amber-600 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5 cursor-pointer" title="Auto-create a test from a text PDF">
+                         📄 PDF Auto Test
+                         <input id="test-pdf-import" type="file" accept="application/pdf" class="hidden" onchange="window.handleTestPdfImport(event)">
+                     </label>
           </div>
+                    <div id="test-pdf-import-status" class="hidden mb-6 rounded-xl border px-4 py-3 text-sm font-medium"></div>
           
           <div id="editor-questions-list" class="space-y-6 pb-32"></div>
         </div>
@@ -2664,6 +2686,7 @@ window.initFirebaseSystem = async function() {
     let FLASHCARDS = {};
     let ALL_NOTES = {};
     let SUBMISSIONS = [];
+    window.aiDraftOverallByQuestion = {};
     let SCHEDULES = [];
     let ATTENDANCE = [];
     let PACKAGES = []; 
@@ -2738,16 +2761,17 @@ window.initFirebaseSystem = async function() {
         try {
             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
             if (!AudioContextClass) return;
+            // Never route remote preview audio through a Web Audio source: browsers can mute it when CORS is absent.
             if (!audio.captureStream) return;
             const context = new AudioContextClass();
-            const stream = audio.captureStream();
-            const source = context.createMediaStreamSource(stream);
             const analyser = context.createAnalyser();
             analyser.fftSize = 1024;
+            const source = context.createMediaStreamSource(audio.captureStream());
             source.connect(analyser);
-            audio._listeningAnalyser = { context, analyser, data: new Uint8Array(analyser.fftSize), hasSignal: false, emptyFrames: 0 };
+            audio._listeningAnalyser = { context, analyser, data: new Uint8Array(analyser.fftSize), hasSignal: false, emptyFrames: 0, maxRms: 0 };
         } catch (error) {
             audio._listeningAnalyser = null;
+            console.warn('Audio waveform analyser unavailable', error);
         }
     }
 
@@ -2786,6 +2810,430 @@ window.initFirebaseSystem = async function() {
             });
         }
         return cues;
+    }
+
+    function splitKaraokeSentences(text) {
+        return splitListeningSentences(text);
+    }
+
+    function escapeKaraokeText(text) {
+        return escapeListeningText(text);
+    }
+
+    let karaokeEditorCueIndex = 0;
+
+    function getKaraokeEditorAudio() {
+        return document.getElementById('edit-listening-audio');
+    }
+
+    function formatKaraokeEditorTime(value) {
+        const seconds = Math.max(0, Number(value) || 0);
+        const minutes = Math.floor(seconds / 60);
+        return `${String(minutes).padStart(2, '0')}:${(seconds % 60).toFixed(2).padStart(5, '0')}`;
+    }
+
+    function renderKaraokeEditorCues() {
+        const list = document.getElementById('karaoke-editor-cues');
+        const part = APP_DATA?.parts?.[currentEditorPartIdx];
+        if (!list || !part) return;
+        const sentences = splitKaraokeSentences(part.text || '');
+        if (!Array.isArray(part.karaoke)) part.karaoke = [];
+        if (!sentences.length) {
+            list.innerHTML = '<div class="text-[11px] text-slate-400 p-2">Add transcript text above first.</div>';
+            return;
+        }
+        list.innerHTML = sentences.map((sentence, index) => {
+            const cue = part.karaoke[index] || {};
+            const selected = index === karaokeEditorCueIndex;
+            const timing = cue.start !== undefined && cue.start !== null
+                ? `${formatKaraokeEditorTime(cue.start)} - ${cue.end == null ? '--:--.--' : formatKaraokeEditorTime(cue.end)}`
+                : 'Not marked';
+            return `<button type="button" onclick="window.selectKaraokeEditorCue(${index})" class="w-full text-left px-2 py-1.5 rounded text-[11px] ${selected ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-slate-50 border-transparent text-slate-700'} border flex items-center gap-2"><span class="font-black w-5">${index + 1}</span><span class="flex-1 truncate">${escapeKaraokeText(sentence)}</span><span class="font-mono shrink-0">${timing}</span></button>`;
+        }).join('');
+    }
+
+    window.selectKaraokeEditorCue = function(index) {
+        karaokeEditorCueIndex = Math.max(0, Number(index) || 0);
+        renderKaraokeEditorCues();
+    };
+
+    window.markKaraokeStart = function() {
+        const part = APP_DATA?.parts?.[currentEditorPartIdx];
+        const audio = getKaraokeEditorAudio();
+        if (!part || !audio) return;
+        if (!Array.isArray(part.karaoke)) part.karaoke = [];
+        const cue = part.karaoke[karaokeEditorCueIndex] || {};
+        cue.text = splitKaraokeSentences(part.text || '')[karaokeEditorCueIndex] || '';
+        cue.start = Number(audio.currentTime) || 0;
+        cue.end = null;
+        part.karaoke[karaokeEditorCueIndex] = cue;
+        renderKaraokeEditorCues();
+        triggerEditorAutosave();
+    };
+
+    window.markKaraokeEnd = function() {
+        const part = APP_DATA?.parts?.[currentEditorPartIdx];
+        const audio = getKaraokeEditorAudio();
+        if (!part || !audio) return;
+        const cue = part.karaoke?.[karaokeEditorCueIndex];
+        const now = Number(audio.currentTime) || 0;
+        if (!cue || cue.start == null) {
+            window.markKaraokeStart();
+            return;
+        }
+        if (now <= Number(cue.start)) return;
+        cue.end = now;
+        karaokeEditorCueIndex = Math.min(karaokeEditorCueIndex + 1, splitKaraokeSentences(part.text || '').length - 1);
+        renderKaraokeEditorCues();
+        triggerEditorAutosave();
+    };
+
+    document.addEventListener('keydown', event => {
+        const editor = document.getElementById('editor-ui');
+        const audio = getKaraokeEditorAudio();
+        const target = event.target;
+        if (!editor || editor.classList.contains('hidden') || !audio || audio.closest('.hidden')) return;
+        if (event.code !== 'Space' || ['INPUT', 'TEXTAREA', 'BUTTON', 'SELECT'].includes(target.tagName) || target.isContentEditable) return;
+        event.preventDefault();
+        const cue = APP_DATA?.parts?.[currentEditorPartIdx]?.karaoke?.[karaokeEditorCueIndex];
+        if (cue?.start != null && cue.end == null) window.markKaraokeEnd();
+        else window.markKaraokeStart();
+    });
+
+    function getKaraokeCues(part) {
+        const sentences = splitKaraokeSentences(part.text || '');
+        const saved = Array.isArray(part.karaoke) ? part.karaoke : [];
+        return sentences.map((text, index) => ({
+            text,
+            start: Number.isFinite(Number(saved[index]?.start)) ? Number(saved[index].start) : null,
+            end: Number.isFinite(Number(saved[index]?.end)) ? Number(saved[index].end) : null
+        }));
+    }
+
+    function getKaraokeAudioContext() {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        return AudioContextClass ? new AudioContextClass() : null;
+    }
+
+    function buildSpeechSegments(audioBuffer, startOffset) {
+        const channel = audioBuffer.getChannelData(0);
+        const frameSize = 2048;
+        const frameDuration = frameSize / audioBuffer.sampleRate;
+        const rms = [];
+        let maxRms = 0;
+        for (let offset = 0; offset < channel.length; offset += frameSize) {
+            let sum = 0;
+            const end = Math.min(channel.length, offset + frameSize);
+            for (let index = offset; index < end; index++) sum += channel[index] * channel[index];
+            const value = Math.sqrt(sum / Math.max(1, end - offset));
+            rms.push(value);
+            maxRms = Math.max(maxRms, value);
+        }
+        const threshold = Math.max(0.012, maxRms * 0.16);
+        const segments = [];
+        let activeStart = null;
+        rms.forEach((value, index) => {
+            const time = index * frameDuration;
+            const active = time >= startOffset && value >= threshold;
+            if (active && activeStart === null) activeStart = time;
+            const isEnd = !active && activeStart !== null;
+            if (isEnd) {
+                const end = time;
+                if (end - activeStart >= 0.12) segments.push({ start: activeStart, end });
+                activeStart = null;
+            }
+        });
+        if (activeStart !== null) segments.push({ start: activeStart, end: audioBuffer.duration });
+        if (!segments.length) segments.push({ start: startOffset, end: audioBuffer.duration });
+
+        // Merge very short pauses so one sentence is not split into dozens of fragments.
+        return segments.reduce((merged, segment) => {
+            const previous = merged[merged.length - 1];
+            if (previous && segment.start - previous.end < 0.38) previous.end = segment.end;
+            else merged.push({ ...segment });
+            return merged;
+        }, []);
+    }
+
+    function assignKaraokeCuesFromSpeech(part, audioBuffer) {
+        const sentences = splitKaraokeSentences(part.text || '');
+        if (!sentences.length) return [];
+        const startOffset = Math.max(0, Number(part.listeningHighlightStart) || 0);
+        const segments = buildSpeechSegments(audioBuffer, startOffset);
+        const weights = sentences.map(sentence => Math.max(1, countListeningTextSyllables(sentence)));
+        const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+        const timelineStart = segments[0].start;
+        const timelineEnd = segments[segments.length - 1].end;
+        const pauseBoundaries = segments.slice(0, -1).map((segment, index) => (segment.end + segments[index + 1].start) / 2);
+        const cues = [];
+        let cumulativeWeight = 0;
+        let previousBoundary = timelineStart;
+        sentences.forEach((text, index) => {
+            cumulativeWeight += weights[index];
+            const start = previousBoundary;
+            if (index === sentences.length - 1) {
+                cues.push({ text, start, end: timelineEnd });
+                return;
+            }
+            const expectedBoundary = timelineStart + (timelineEnd - timelineStart) * cumulativeWeight / totalWeight;
+            const availableBoundaries = pauseBoundaries.filter(boundary => boundary > start + 0.08 && boundary < timelineEnd - 0.08);
+            const end = availableBoundaries.length
+                ? availableBoundaries.reduce((nearest, boundary) => Math.abs(boundary - expectedBoundary) < Math.abs(nearest - expectedBoundary) ? boundary : nearest, availableBoundaries[0])
+                : expectedBoundary;
+            previousBoundary = Math.max(start + 0.08, end);
+            cues.push({ text, start, end: previousBoundary });
+        });
+        return cues;
+    }
+
+    function drawKaraokeWaveform(audio, root, audioBuffer) {
+        const canvas = root.querySelector('.karaoke-waveform-fallback');
+        if (!canvas || !audioBuffer) return;
+        const width = Math.max(320, Math.floor(canvas.clientWidth || 640));
+        const height = 58;
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+        const context = canvas.getContext('2d');
+        context.scale(ratio, ratio);
+        const data = audioBuffer.getChannelData(0);
+        const step = Math.max(1, Math.floor(data.length / width));
+        context.clearRect(0, 0, width, height);
+        context.fillStyle = '#bfdbfe';
+        for (let x = 0; x < width; x++) {
+            let peak = 0;
+            const start = x * step;
+            const end = Math.min(data.length, start + step);
+            for (let index = start; index < end; index++) peak = Math.max(peak, Math.abs(data[index]));
+            const barHeight = Math.max(2, peak * height * 0.9);
+            context.fillRect(x, (height - barHeight) / 2, 1, barHeight);
+        }
+        const drawProgress = () => {
+            const progress = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.currentTime / audio.duration : 0;
+            context.fillStyle = 'rgba(37, 99, 235, 0.72)';
+            context.fillRect(0, 0, width * Math.max(0, Math.min(1, progress)), height);
+            if (!audio.paused && !audio.ended) canvas._waveformFrame = requestAnimationFrame(drawProgress);
+        };
+        if (canvas._waveformFrame) cancelAnimationFrame(canvas._waveformFrame);
+        audio.addEventListener('play', drawProgress);
+        canvas.onclick = event => {
+            const rect = canvas.getBoundingClientRect();
+            const position = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+            window.seekKaraokeAudio(position * audio.duration);
+        };
+        drawProgress();
+    }
+
+    function initKaraokeWaveformPlugin(audio, root) {
+        const container = root?.querySelector('[data-waveform-root]');
+        if (!container || !audio || !window.WaveSurfer || container._waveSurfer) return;
+        try {
+            const waveSurfer = window.WaveSurfer.create({
+                container,
+                media: audio,
+                height: 58,
+                waveColor: '#60a5fa',
+                progressColor: '#1d4ed8',
+                cursorColor: '#0f172a',
+                cursorWidth: 2,
+                normalize: true,
+                interact: true
+            });
+            container._waveSurfer = waveSurfer;
+            waveSurfer.on('error', error => console.warn('Waveform plugin could not render audio', error));
+        } catch (error) {
+            console.warn('Waveform plugin unavailable; using native fallback.', error);
+        }
+    }
+
+    function updateRealtimeKaraoke(audio, root) {
+        const state = audio?._listeningAnalyser;
+        if (!state || !root) return false;
+        state.analyser.getByteTimeDomainData(state.data);
+        let sum = 0;
+        state.data.forEach(value => {
+            const amplitude = (value - 128) / 128;
+            sum += amplitude * amplitude;
+        });
+        const rms = Math.sqrt(sum / state.data.length);
+        const now = audio.currentTime || 0;
+        const part = APP_DATA.parts[currentPartIdx] || {};
+        const cues = getKaraokeCues(part, audio.duration);
+        if (!cues.length) return false;
+        const key = `${currentPartIdx}|${String(part.text || '').length}`;
+        if (audio._karaokeLiveKey !== key || audio._karaokeLiveIndex == null || now < (audio._karaokeLiveLastTime || 0)) {
+            audio._karaokeLiveKey = key;
+            audio._karaokeLiveIndex = Math.max(0, cues.findIndex(cue => cue.start !== null && now >= cue.start && now < (cue.end || Infinity)));
+            if (audio._karaokeLiveIndex < 0) audio._karaokeLiveIndex = 0;
+            audio._karaokeLiveStartedAt = now;
+            audio._karaokeLiveLastVoiceAt = now;
+        }
+        const isVoice = rms >= Math.max(0.012, state.maxRms || 0.018);
+        if (isVoice) {
+            state.maxRms = Math.max(state.maxRms || 0, rms);
+            audio._karaokeLiveLastVoiceAt = now;
+        } else {
+            const silenceDuration = now - (audio._karaokeLiveLastVoiceAt || now);
+            const sentence = cues[audio._karaokeLiveIndex];
+            const minimumSentenceTime = Math.max(0.18, countListeningTextSyllables(sentence?.text || '') * 0.025);
+            if (silenceDuration >= 0.12 && now - audio._karaokeLiveStartedAt >= minimumSentenceTime && audio._karaokeLiveIndex < cues.length - 1) {
+                audio._karaokeLiveIndex += 1;
+                audio._karaokeLiveStartedAt = now;
+                audio._karaokeLiveLastVoiceAt = now;
+            }
+        }
+        root.querySelectorAll('[data-karaoke-index]').forEach((line, index) => line.classList.toggle('is-active', index === audio._karaokeLiveIndex));
+        const activeLine = root.querySelector(`[data-karaoke-index="${audio._karaokeLiveIndex}"]`);
+        if (activeLine && root._lastScrolledIndex !== audio._karaokeLiveIndex) {
+            activeLine.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            root._lastScrolledIndex = audio._karaokeLiveIndex;
+        }
+        audio._karaokeLiveLastTime = now;
+        return true;
+    }
+
+    async function prepareKaraokeAudio(audio, root) {
+        if (!audio || !root || !audio.currentSrc || !window.fetch) return;
+        const part = APP_DATA.parts[currentPartIdx];
+        if (!part) return;
+        initKaraokeWaveform(audio, root);
+        const analysisKey = `${currentPartIdx}|${audio.currentSrc}|${String(part.text || '').length}|${Number(part.listeningHighlightStart) || 0}`;
+        if (audio._karaokePreparedFor === analysisKey) return;
+        audio._karaokePreparedFor = analysisKey;
+        try {
+            const context = getKaraokeAudioContext();
+            if (!context) return;
+            const response = await fetch(audio.currentSrc);
+            if (!response.ok) throw new Error('Audio fetch failed');
+            const buffer = await context.decodeAudioData(await response.arrayBuffer());
+            const hasPauseTiming = Array.isArray(part.karaoke) && part.karaoke.length && part.karaokeTimingMode === 'pause-v2';
+            if (!hasPauseTiming) {
+                const cues = assignKaraokeCuesFromSpeech(part, buffer);
+                if (cues.length) {
+                    part.karaoke = cues;
+                    part.karaokeTimingMode = 'pause-v2';
+                    if (editingTestId && typeof triggerEditorAutosave === 'function') triggerEditorAutosave();
+                }
+            }
+            drawKaraokeWaveform(audio, root, buffer);
+            if (part.karaoke && part.karaoke.length) {
+                updateKaraokeHighlight(audio, root);
+            }
+            context.close();
+        } catch (error) {
+            console.warn('Automatic karaoke analysis unavailable; using duration fallback.', error);
+        }
+    }
+
+    window.seekKaraokeAudio = function(time) {
+        const examAudio = document.getElementById('exam-listening-audio');
+        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
+        const audio = (examAudio && examAudio.src) ? examAudio : practiceAudio;
+        const seekTime = Number(time);
+        if (audio && Number.isFinite(seekTime)) {
+            audio.currentTime = Math.max(0, seekTime);
+            audio.play().catch(error => console.log('Auto-play prevented', error));
+        }
+    };
+
+    window.seekKaraokeSentence = function(index, event) {
+        if (event) event.stopPropagation();
+        const examAudio = document.getElementById('exam-listening-audio');
+        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
+        const audio = (examAudio && examAudio.src) ? examAudio : practiceAudio;
+        const cues = getKaraokeCues(APP_DATA.parts[currentPartIdx] || {});
+        const cue = cues[Number(index)];
+        if (!audio || !cue || cue.start === null || !Number.isFinite(Number(cue.start))) return;
+        audio._karaokeLiveIndex = Number(index);
+        audio._karaokeLiveKey = `${currentPartIdx}|${String(APP_DATA.parts[currentPartIdx]?.text || '').length}`;
+        audio._karaokeLiveLastTime = Number(cue.start);
+        audio.currentTime = Math.max(0, Number(cue.start));
+        const root = document.querySelector('[data-karaoke-root]');
+        if (root) {
+            root.querySelectorAll('[data-karaoke-index]').forEach((line, lineIndex) => line.classList.toggle('is-active', lineIndex === Number(index)));
+            root._lastScrolledIndex = Number(index);
+        }
+        audio.play().catch(error => console.log('Auto-play prevented', error));
+    };
+
+    function renderKaraokeTranscript(part) {
+        const cues = getKaraokeCues(part);
+        if (!cues.length) return '';
+        return `<div class="karaoke-transcript space-y-2 leading-loose" data-karaoke-root>${cues.map((cue, index) => {
+            let lineText = escapeKaraokeText(cue.text);
+            if (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA?.vocab?.length) {
+                APP_DATA.vocab.forEach((v, vIdx) => {
+                    const cleanTerm = String(v.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                    if (!cleanTerm) return;
+                    const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                    lineText = lineText.replace(regex, `<span class="vocab-word" onclick="event.stopPropagation(); showVocabPop(event, ${vIdx})">$1</span>`);
+                });
+            }
+            const hasTime = cue.start !== null;
+            const clickAttr = hasTime ? `onclick="window.seekKaraokeSentence(${index}, event)"` : '';
+            const styleClass = hasTime ? 'cursor-pointer hover:bg-blue-50' : '';
+            return `<span class="karaoke-line inline-block px-1.5 py-0.5 rounded transition-all duration-200 ${styleClass}" data-karaoke-index="${index}" ${clickAttr}>${lineText}</span>`;
+        }).join(' ')}</div>`;
+    }
+
+    window.seekKaraokeAudioByIndex = function(index) {
+        const examAudio = document.getElementById('exam-listening-audio');
+        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
+        const audio = (examAudio && examAudio.src) ? examAudio : practiceAudio;
+        if (!audio) return;
+        const cues = getKaraokeCues(APP_DATA.parts[currentPartIdx] || {});
+        const cue = cues[Number(index)];
+        if (cue && cue.start !== null) window.seekKaraokeAudio(cue.start);
+    };
+
+    function updateKaraokeHighlight(audio, root) {
+        if (!audio || !root) return;
+        const cues = getKaraokeCues(APP_DATA.parts[currentPartIdx] || {});
+        const time = audio.currentTime || 0;
+        let activeIndex = -1;
+        cues.forEach((cue, index) => {
+            const isLastOrNoEnd = cue.end === null || cue.end === 0;
+            const active = cue.start !== null && (isLastOrNoEnd ? time >= cue.start : time >= cue.start && time < cue.end);
+            const line = root.querySelector(`[data-karaoke-index="${index}"]`);
+            if (line) line.classList.toggle('is-active', active);
+            if (active) activeIndex = index;
+        });
+        if (activeIndex >= 0 && root._lastScrolledIndex !== activeIndex) {
+            const line = root.querySelector(`[data-karaoke-index="${activeIndex}"]`);
+            if (line) {
+                line.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                root._lastScrolledIndex = activeIndex;
+            }
+        }
+    }
+
+    function wireKaraokeAudio(audio, root) {
+        if (!audio || !root) return;
+        if (audio._karaokeCleanup) audio._karaokeCleanup();
+        const tick = () => {
+            updateKaraokeHighlight(audio, root);
+            if (!audio.paused && !audio.ended) audio._karaokeFrame = requestAnimationFrame(tick);
+        };
+        const start = () => {
+            if (audio._karaokeFrame) cancelAnimationFrame(audio._karaokeFrame);
+            audio._karaokeFrame = requestAnimationFrame(tick);
+        };
+        const stop = () => {
+            if (audio._karaokeFrame) cancelAnimationFrame(audio._karaokeFrame);
+            audio._karaokeFrame = null;
+            updateKaraokeHighlight(audio, root);
+        };
+        audio.addEventListener('play', start);
+        audio.addEventListener('pause', stop);
+        audio.addEventListener('ended', stop);
+        audio.addEventListener('loadedmetadata', stop);
+        audio._karaokeCleanup = () => {
+            audio.removeEventListener('play', start);
+            audio.removeEventListener('pause', stop);
+            audio.removeEventListener('ended', stop);
+            audio.removeEventListener('loadedmetadata', stop);
+        };
+        updateKaraokeHighlight(audio, root);
     }
 
     function wrapListeningWords(lineHtml) {
@@ -6595,6 +7043,15 @@ window.initFirebaseSystem = async function() {
       }
       const startInput = document.getElementById('edit-listening-start');
       if (startInput) startInput.value = String(Math.max(0, Number(p.listeningHighlightStart) || 0));
+      karaokeEditorCueIndex = 0;
+      const karaokeEditorAudio = document.getElementById('edit-listening-audio');
+      if (karaokeEditorAudio) {
+          karaokeEditorAudio.ontimeupdate = () => {
+              const timeLabel = document.getElementById('karaoke-editor-time');
+              if (timeLabel) timeLabel.textContent = formatKaraokeEditorTime(karaokeEditorAudio.currentTime);
+          };
+      }
+      renderKaraokeEditorCues();
       
       const imgContainer = document.getElementById('part-image-preview-container');
       if (p.image) {
@@ -6607,6 +7064,212 @@ window.initFirebaseSystem = async function() {
       if(passTxt.tagName === 'TEXTAREA') passTxt.value = p.text||''; else passTxt.innerHTML = p.text||'';
       renderEditorQuestions();
     }
+
+        function setTestPdfImportStatus(message, tone = 'info') {
+            const el = document.getElementById('test-pdf-import-status');
+            if (!el) return;
+            const tones = {
+                info: 'bg-blue-50 border-blue-200 text-blue-800',
+                success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
+                error: 'bg-rose-50 border-rose-200 text-rose-800'
+            };
+            el.className = `mb-6 rounded-xl border px-4 py-3 text-sm font-medium ${tones[tone] || tones.info}`;
+            el.textContent = message;
+            el.classList.remove('hidden');
+        }
+
+        function detectPdfTestModule(text, fileName) {
+            const source = `${fileName} ${text}`.toLowerCase();
+            if (/listening|section\s*[1-4].*listen/.test(source)) return 'listening';
+            if (/writing task|write at least|academic writing|general training writing/.test(source)) return 'writing';
+            if (/speaking part|cue card|you will have to talk/.test(source)) return 'speaking';
+            return 'reading';
+        }
+
+        function parsePdfAnswerKey(lines) {
+            const answers = {};
+            let inKey = false;
+            lines.forEach(line => {
+                if (/^(answer\s*key|answers?|key)\b/i.test(line)) {
+                    inKey = true;
+                    return;
+                }
+                if (!inKey) return;
+                const matches = [...line.matchAll(/(?:^|\s)(\d{1,3})\s*[.)\-:]?\s*([A-Za-z][A-Za-z ]{0,24}?)(?=\s+\d{1,3}\s*[.)\-:]?|$)/g)];
+                matches.forEach(match => {
+                    const answer = match[2].trim().replace(/[.,;]+$/, '');
+                    if (answer) answers[Number(match[1])] = answer;
+                });
+            });
+            return answers;
+        }
+
+        function detectPdfQuestionType(questionText, options, context) {
+            const source = `${context} ${questionText}`.toLowerCase();
+            if (/true\s*\/\s*false\s*\/\s*not given|true,?\s*false,?\s*not given/.test(source)) return 'tfng';
+            if (/yes\s*\/\s*no\s*\/\s*not given|yes,?\s*no,?\s*not given/.test(source)) return 'ynng';
+            if (/matching headings|heading for each paragraph/.test(source)) return 'matching_headings';
+            if (/no more than|complete the notes|complete the summary|fill in the blank|gap/.test(source)) return 'fill_blanks';
+            if (options.length >= 2) return 'multiple_choice';
+            return 'fill_blanks';
+        }
+
+        function normalizePdfLines(pdfText) {
+            // Some PDF files expose the whole page as one text row. Split embedded question starts first.
+            const separatedText = pdfText.replace(/\s+(?=(?:question\s*)?\d{1,3}\s*[.)\-:]\s)/gi, '\n');
+            const rawLines = separatedText.split(/\r?\n/).map(line => line.replace(/[\u00a0\u200b]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+            const lines = [];
+            for (let index = 0; index < rawLines.length; index++) {
+                const line = rawLines[index];
+                // PDF.js can place a question number and its text in separate text rows.
+                if (/^(?:question\s*)?\d{1,3}$/.test(line.toLowerCase()) && rawLines[index + 1]) {
+                    lines.push(`${line}. ${rawLines[++index]}`);
+                } else {
+                    lines.push(line);
+                }
+            }
+            return lines;
+        }
+
+        function getPdfQuestionMatch(line) {
+            const match = line.match(/^(?:question\s*|q\s*)?(\d{1,3})\s*(?:[.)\-:]\s*|\s+)(.+)$/i);
+            if (!match) return null;
+            const id = Number(match[1]);
+            const text = match[2].trim();
+            if (!text || id < 1 || id > 200) return null;
+            return { id, text };
+        }
+
+        function parsePdfIntoTest(pdfText, fileName) {
+            const lines = normalizePdfLines(pdfText);
+            const answerKey = parsePdfAnswerKey(lines);
+            const module = detectPdfTestModule(pdfText, fileName);
+            const partRegex = /^(?:ielts\s+)?(?:part|section|test)\s*(\d+)(?:\s*[-:.)]\s*|\s+)(.*)$/i;
+            const parts = [];
+            let current = null;
+            let pendingContext = '';
+            let questionCount = 0;
+            let maxQuestionId = 0;
+            const ensurePart = () => {
+                if (!current) {
+                    current = { title: module === 'reading' ? 'Reading Passage 1' : 'Part 1', text: '', questions: [] };
+                    parts.push(current);
+                }
+            };
+
+            lines.forEach(line => {
+                if (/^(answer\s*key|answers?|key)\b/i.test(line)) return;
+                const partMatch = line.match(partRegex);
+                if (partMatch) {
+                    current = { title: `${partMatch[1] ? 'Part ' + partMatch[1] : 'Part'}${partMatch[2] ? ': ' + partMatch[2] : ''}`, text: '', questions: [] };
+                    parts.push(current);
+                    pendingContext = '';
+                    return;
+                }
+
+                const questionMatch = getPdfQuestionMatch(line);
+                if (questionMatch) {
+                    ensurePart();
+                    const id = questionMatch.id;
+                    const questionText = questionMatch.text;
+                    const options = [];
+                    const type = detectPdfQuestionType(questionText, options, pendingContext);
+                    const q = {
+                        blockId: 'pdf_' + Date.now() + '_' + id + '_' + questionCount++,
+                        type,
+                        ids: [id],
+                        points: 1,
+                        instruction: pendingContext || 'Answer the question below.',
+                        text: type === 'fill_blanks' ? `${questionText} {blank:${id}}` : questionText,
+                        options,
+                        correctAnswers: {}
+                    };
+                    if (answerKey[id]) q.correctAnswers[id] = answerKey[id];
+                    current.questions.push(q);
+                    maxQuestionId = Math.max(maxQuestionId, id);
+                    pendingContext = '';
+                    return;
+                }
+
+                const optionMatch = line.match(/^([A-D]|[ivxlcdm]+)[.)]\s*(.+)$/i);
+                if (optionMatch && current && current.questions.length) {
+                    const q = current.questions[current.questions.length - 1];
+                    q.options.push(`${optionMatch[1].toUpperCase()}. ${optionMatch[2]}`);
+                    if (q.type === 'fill_blanks' && q.options.length >= 2) q.type = 'multiple_choice';
+                    return;
+                }
+
+                if (/^(instructions?|choose|complete|do the following|write|you should spend|questions?\s+\d+)/i.test(line)) {
+                    pendingContext = pendingContext ? `${pendingContext}<br>${line}` : line;
+                } else if (current && !/page\s+\d+/i.test(line)) {
+                    current.text += `${current.text ? '<br>' : ''}${line}`;
+                }
+            });
+
+            const usableParts = parts.filter(part => part.questions.length || part.text);
+            if (!usableParts.some(part => part.questions.length)) throw new Error('Không tìm thấy câu hỏi có đánh số trong text của PDF.');
+            usableParts.forEach((part, index) => {
+                if (!part.title || /^Part\s*1$/i.test(part.title)) part.title = `Part ${index + 1}`;
+                part.questions.forEach(q => {
+                    if (!q.correctAnswers[q.ids[0]]) q.correctAnswers[q.ids[0]] = '';
+                    if (q.type === 'tfng') q.options = ['True', 'False', 'Not Given'];
+                    if (q.type === 'ynng') q.options = ['Yes', 'No', 'Not Given'];
+                });
+            });
+            return { module, parts: usableParts, questionCount, maxQuestionId };
+        }
+
+        window.handleTestPdfImport = async function(event) {
+            const file = event.target.files && event.target.files[0];
+            event.target.value = '';
+            if (!file) return;
+            if (!window.pdfjsLib) {
+                setTestPdfImportStatus('Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại.', 'error');
+                return;
+            }
+            setTestPdfImportStatus(`Đang đọc ${file.name}...`, 'info');
+            try {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                const pageTexts = [];
+                for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
+                    const page = await pdf.getPage(pageNo);
+                    const content = await page.getTextContent();
+                    const rows = [];
+                    content.items.forEach(item => {
+                        const y = Math.round(item.transform[5]);
+                        let row = rows.find(candidate => Math.abs(candidate.y - y) <= 2);
+                        if (!row) {
+                            row = { y, items: [] };
+                            rows.push(row);
+                        }
+                        row.items.push(item);
+                    });
+                    pageTexts.push(rows.sort((a, b) => b.y - a.y).map(row => row.items.sort((a, b) => a.transform[4] - b.transform[4]).map(item => item.str).join(' ')).join('\n'));
+                }
+                const extractedText = pageTexts.join('\n').trim();
+                if (extractedText.length < 30) {
+                    throw new Error('PDF này không có text layer hoặc là bản scan ảnh. Hãy dùng PDF có thể bôi đen/copy chữ; bản scan cần OCR trước khi import.');
+                }
+                const result = parsePdfIntoTest(extractedText, file.name);
+                const imported = {
+                    ...APP_DATA,
+                    title: file.name.replace(/\.pdf$/i, '') || APP_DATA.title,
+                    module: result.module,
+                    parts: result.parts,
+                    importedFromPdf: { name: file.name, pages: pdf.numPages, importedAt: Date.now() }
+                };
+                const testIndex = TEST_BANK.findIndex(test => test.id === editingTestId);
+                if (testIndex < 0) throw new Error('Không xác định được test đang mở.');
+                TEST_BANK[testIndex] = imported;
+                APP_DATA = JSON.parse(JSON.stringify(imported));
+                editTest(editingTestId);
+                setTestPdfImportStatus(`Đã tạo ${result.questionCount} câu trong ${result.parts.length} part. Module nhận diện: ${result.module}. Hãy kiểm tra đáp án và format trước khi lưu.`, 'success');
+            } catch (error) {
+                console.error('PDF test import failed', error);
+                setTestPdfImportStatus(error.message || 'Không thể phân tích PDF.', 'error');
+            }
+        };
 
     // ✨ NEW: Smart Range Parsers
     window.parseIdsString = function(str) {
@@ -10071,7 +10734,7 @@ window.initFirebaseSystem = async function() {
       const resizer = document.getElementById('resizer');
       const listeningOverlay = document.getElementById('listening-exam-overlay');
       const examAudio = document.getElementById('exam-listening-audio');
-    const listeningTranscriptHtml = renderListeningTranscript(p);
+            const listeningTranscriptHtml = renderKaraokeTranscript(p) || renderListeningTranscript(p);
 
       window.listeningMediaInjection = '';
 
@@ -10103,7 +10766,7 @@ window.initFirebaseSystem = async function() {
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
           passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
-          wireListeningAudio(examAudio, passageContainer);
+          wireKaraokeAudio(examAudio, passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
@@ -10241,7 +10904,7 @@ window.initFirebaseSystem = async function() {
           if (mediaDiv.dataset.audioUrl !== APP_DATA.parts[currentPartIdx].audioUrl) {
               mediaDiv.innerHTML = window.listeningMediaInjection;
               mediaDiv.dataset.audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
-              wireListeningAudio(mediaDiv.querySelector('audio'), document.getElementById('passage-container'));
+              wireKaraokeAudio(mediaDiv.querySelector('audio'), document.getElementById('passage-container'));
           }
       } else {
           if (mediaDiv.innerHTML !== '') {
@@ -11896,9 +12559,15 @@ window.initFirebaseSystem = async function() {
               const a = answers[q.ids[0]];
               content = a ? `<audio controls src="${a}" class="w-full mt-4"></audio>` : `<p class="italic text-slate-500 mt-4">No recording submitted.</p>`;
               if (isGrading) {
-                  content += `<textarea id="fb-${q.ids[0]}" class="w-full mt-4 border-2 border-indigo-200 bg-white rounded-xl p-4 text-sm font-medium text-slate-700 outline-none focus:border-indigo-500 shadow-inner min-h-[120px]" placeholder="Leave audio feedback notes...">${feedbackObj[q.ids[0]]||''}</textarea>`;
+                  let speakingFeedback = { fluency_coherence: '', lexical_resource: '', grammar: '', pronunciation: '', comment: '' };
+                  try { if (feedbackObj[q.ids[0]]) speakingFeedback = JSON.parse(feedbackObj[q.ids[0]]); } catch (e) { speakingFeedback.comment = feedbackObj[q.ids[0]] || ''; }
+                  const speakingBandOpts = [9, 8.5, 8, 7.5, 7, 6.5, 6, 5.5, 5, 4.5, 4].map(b => `<option value="${b}">${b}</option>`).join('');
+                  const speakingField = (key, label) => `<label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">${label}<select id="${key}-${q.ids[0]}" class="w-full mt-1 border-2 border-indigo-200 rounded-lg p-2 font-black text-indigo-900"><option value="">--</option>${speakingBandOpts.replace(`value="${speakingFeedback[key]}"`, `value="${speakingFeedback[key]}" selected`)}</select></label>`;
+                  content += `<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">${speakingField('fluency_coherence', 'Fluency & Coherence')}${speakingField('lexical_resource', 'Lexical Resource')}${speakingField('grammar', 'Grammar Range & Accuracy')}${speakingField('pronunciation', 'Pronunciation')}<textarea id="fb-${q.ids[0]}" class="sm:col-span-2 border-2 border-indigo-200 bg-white rounded-xl p-3 text-sm min-h-[100px]" placeholder="Leave speaking feedback notes...">${speakingFeedback.comment || ''}</textarea></div>`;
               } else if (feedbackObj[q.ids[0]]) {
-                  content += `<div class="mt-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-5 text-emerald-900 shadow-sm"><b class="block text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-2">Teacher Feedback:</b><div class="text-sm leading-relaxed">${feedbackObj[q.ids[0]]}</div></div>`;
+                  let speakingFeedback = { comment: feedbackObj[q.ids[0]] };
+                  try { speakingFeedback = JSON.parse(feedbackObj[q.ids[0]]); } catch (e) {}
+                  content += `<div class="mt-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl p-5 text-emerald-900 shadow-sm"><b class="block text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-2">Teacher Feedback:</b><div class="text-sm leading-relaxed">${speakingFeedback.comment || ''}</div></div>`;
               }
           }
 
@@ -11924,7 +12593,7 @@ window.initFirebaseSystem = async function() {
         });
       });
       
-      if(isGrading) rHtml += `<button onclick="saveFeedback(${subId})" id="btn-save-feed" class="w-full mt-4 bg-indigo-600 text-white font-black py-4 rounded-xl shadow-md hover:bg-indigo-700 transition hover:-translate-y-0.5">Save Grades & Feedback</button>`;
+    if(isGrading) rHtml += `<div class="flex flex-col sm:flex-row gap-3 mt-4"><button onclick="window.requestAIGrade(${subId})" id="btn-ai-grade" class="flex-1 bg-amber-500 text-white font-black py-4 rounded-xl shadow-md hover:bg-amber-600 transition">AI Grade Draft</button><button onclick="saveFeedback(${subId})" id="btn-save-feed" class="flex-1 bg-indigo-600 text-white font-black py-4 rounded-xl shadow-md hover:bg-indigo-700 transition hover:-translate-y-0.5">Save Grades & Feedback</button></div><p class="text-[10px] text-slate-500 mt-2 text-center">AI grading is a draft. Review and edit all scores before saving.</p>`;
       r.innerHTML = rHtml;
       setTimeout(restoreHighlights, 50);
     }
@@ -11938,7 +12607,7 @@ window.initFirebaseSystem = async function() {
       let totalWritingScore = 0;
       let hasWritingScore = false;
 
-      APP_DATA.parts.forEach(p => p.questions.forEach(q => {
+    APP_DATA.parts.forEach(p => p.questions.forEach(q => {
          if (q.type === 'essay') {
              // Gather all the new grading data
              const annotatedContent = document.getElementById(`essay-content-${q.ids[0]}`)?.innerHTML || '';
@@ -11962,10 +12631,21 @@ window.initFirebaseSystem = async function() {
                  tr: tr, cc: cc, lr: lr, gra: gra,
                  comment: comment
              });
-         } else {
+         } else if (q.type === 'audio_record' || APP_DATA.module === 'speaking') {
              // Keep logic for other types (like Audio feedback)
-             const el = document.getElementById(`fb-${q.ids[0]}`); 
-             if(el && el.value.trim()) sub.teacherFeedback[q.ids[0]] = el.value.trim();
+             const feedback = {
+                 fluency_coherence: document.getElementById(`fluency_coherence-${q.ids[0]}`)?.value || '',
+                 lexical_resource: document.getElementById(`lexical_resource-${q.ids[0]}`)?.value || '',
+                 grammar: document.getElementById(`grammar-${q.ids[0]}`)?.value || '',
+                 pronunciation: document.getElementById(`pronunciation-${q.ids[0]}`)?.value || '',
+                 comment: document.getElementById(`fb-${q.ids[0]}`)?.value || ''
+             };
+             if (Object.values(feedback).some(value => String(value).trim())) sub.teacherFeedback[q.ids[0]] = JSON.stringify(feedback);
+             const speakingScores = [feedback.fluency_coherence, feedback.lexical_resource, feedback.grammar, feedback.pronunciation].map(Number).filter(Number.isFinite).filter(value => value > 0);
+             if (speakingScores.length) {
+                 const average = speakingScores.reduce((sum, value) => sum + value, 0) / speakingScores.length;
+                 sub.score = `Band ${(window.aiDraftOverallByQuestion[q.ids[0]] || Math.round(average * 2) / 2).toFixed(1)}`;
+             }
          }
       }));
 
@@ -11980,6 +12660,52 @@ window.initFirebaseSystem = async function() {
       renderSubmissions(); 
       btn.textContent="Save Grades & Feedback"; btn.disabled=false;
     }
+
+        window.requestAIGrade = async function(subId) {
+            const sub = SUBMISSIONS.find(item => item.id === subId);
+            if (!sub || !window.auth?.currentUser) return;
+            const button = document.getElementById('btn-ai-grade');
+            if (button) { button.disabled = true; button.textContent = 'AI grading...'; }
+            try {
+                const test = sub.syntheticData || TEST_BANK.find(item => item.id === sub.testId);
+                const module = test?.module || getSubmissionModule(sub);
+                const questions = test?.parts?.flatMap(part => part.questions || []) || [];
+                const responseQuestion = questions.find(question => question.type === 'essay' || question.type === 'audio_record');
+                const response = sub.answers?.[responseQuestion?.ids?.[0]] || '';
+                const prompt = test?.parts?.map(part => `${part.title}: ${part.text || ''}`).join('\n\n') || '';
+                const token = await window.auth.currentUser.getIdToken();
+                const payload = { module, prompt, responseText: module === 'writing' ? response : '', audioUrl: module === 'speaking' ? response : '' };
+                const result = await fetch('https://us-central1-khanh-ielts.cloudfunctions.net/gradeIELTSSubmission', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(payload)
+                });
+                const data = await result.json();
+                if (!result.ok) throw new Error(data.error || 'AI grading failed');
+                const criteria = data.scores || {};
+                if (module === 'writing') {
+                    ['task_response', 'coherence_cohesion', 'lexical_resource', 'grammar'].forEach((key, index) => {
+                        const id = ['tr', 'cc', 'lr', 'gra'][index];
+                        const field = document.getElementById(`${id}-${responseQuestion.ids[0]}`);
+                        if (field) field.value = criteria[key] || '';
+                    });
+                } else {
+                    ['fluency_coherence', 'lexical_resource', 'grammar', 'pronunciation'].forEach(key => {
+                        const field = document.getElementById(`${key}-${responseQuestion.ids[0]}`);
+                        if (field) field.value = criteria[key] || '';
+                    });
+                }
+                const feedback = document.getElementById(`fb-${responseQuestion.ids[0]}`);
+                if (feedback) feedback.value = `${data.feedback || ''}\n\nAI draft overall band: ${data.overall || '-'}\n${data.limitations || ''}`;
+                window.aiDraftOverallByQuestion[responseQuestion.ids[0]] = Number(data.overall) || 0;
+                if (typeof window.showToast === 'function') window.showToast('AI Draft Ready', 'Review the rubric scores and save when satisfied.');
+            } catch (error) {
+                console.error(error);
+                showModalMsg('AI Grading Error', error.message || 'Could not grade this submission.');
+            } finally {
+                if (button) { button.disabled = false; button.textContent = 'AI Grade Draft'; }
+            }
+        };
 
     window.submitStudentReply = async function(subId) {
         const text = document.getElementById('student-reply-text').value.trim();
