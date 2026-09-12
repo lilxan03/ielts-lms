@@ -1188,6 +1188,21 @@
                   </div>
               </div>
 
+              <!-- ✨ NEW: Deadline Settings -->
+              <div class="border-t border-slate-200 pt-6 mb-6">
+                  <h3 class="text-base font-medium text-slate-800 mb-4">Deadline (Optional)</h3>
+                  <div class="flex gap-4">
+                      <div class="flex-1">
+                          <label class="text-sm text-slate-700 block mb-1">Due Date</label>
+                          <input type="date" id="assign-due-date" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white shadow-sm">
+                      </div>
+                      <div class="flex-1">
+                          <label class="text-sm text-slate-700 block mb-1">Due Time</label>
+                          <input type="time" id="assign-due-time" class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500 bg-white shadow-sm">
+                      </div>
+                  </div>
+              </div>
+
               <!-- Enhanced test security -->
               <div class="border-t border-slate-200 pt-6">
                   <h3 class="text-base font-medium text-slate-800 mb-4">Enhanced test security</h3>
@@ -2344,9 +2359,21 @@
                   <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">• List</button>
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">1. List</button>
-                  <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
-                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('blank')" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition" title="Insert Gap Fill Blank">{_} Blank</button>
-                  <button type="button" onmousedown="event.preventDefault(); window.insertGap('drop')" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
+                  <div id="toolbar-sep-list" class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
+                  <button id="btn-insert-blank" type="button" onmousedown="event.preventDefault(); window.insertGap('blank')" class="px-2.5 py-1 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded shadow-sm transition" title="Insert Gap Fill Blank">{_} Blank</button>
+                  <button id="btn-insert-drop" type="button" onmousedown="event.preventDefault(); window.insertGap('drop')" class="px-2.5 py-1 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded shadow-sm transition" title="Insert Drag & Drop Gap">[↓] Drop</button>
+                  
+                  <!-- ✨ NEW: Criteria Highlighter (Writing/Speaking Only) -->
+                  <div class="w-px h-5 bg-slate-300 mx-1 self-center hidden" id="toolbar-sep-crit"></div>
+                  <div id="criteria-toolbar" class="hidden items-center gap-1">
+                      <button type="button" onmousedown="event.preventDefault(); window.highlightCriteria('tr')" class="px-2 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 text-[11px] font-bold rounded shadow-sm transition" title="Highlight Task Response">TR</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.highlightCriteria('cc')" class="px-2 py-1 bg-purple-100 text-purple-800 hover:bg-purple-200 text-[11px] font-bold rounded shadow-sm transition" title="Highlight Coherence & Cohesion">CC</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.highlightCriteria('lr')" class="px-2 py-1 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 text-[11px] font-bold rounded shadow-sm transition" title="Highlight Lexical Resource">LR</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.highlightCriteria('gra')" class="px-2 py-1 bg-amber-100 text-amber-800 hover:bg-amber-200 text-[11px] font-bold rounded shadow-sm transition" title="Highlight Grammatical Range">GRA</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.removeCriteriaHighlight()" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 text-[11px] font-bold rounded shadow-sm transition" title="Remove Highlight">✕ Clear</button>
+                      <div class="w-px h-4 bg-slate-300 mx-0.5"></div>
+                      <button type="button" onmousedown="event.preventDefault(); window.openBulkAnnotateModal()" class="px-2 py-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 text-[11px] font-bold rounded shadow-sm transition flex items-center gap-1" title="Bulk Import Highlights via CSV">📥 CSV</button>
+                  </div>
               </div>
           </div>
           <div id="edit-text-hint" class="hidden text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 mb-2 -mt-1">📖 Only shown to students in Practice Mode, behind a Show/Hide button. Completely hidden during Full Mock / timed exams.</div>
@@ -2670,6 +2697,7 @@ window.initFirebaseSystem = async function() {
         // ✨ NEW: Start the Background Reminder Engine (Checks every 30 seconds)
         setInterval(() => {
             if(typeof window.checkUpcomingClasses === 'function') window.checkUpcomingClasses();
+            if(typeof window.checkHomeworkDeadlines === 'function') window.checkHomeworkDeadlines();
         }, 30000);
     });
   </script>
@@ -2728,6 +2756,15 @@ window.initFirebaseSystem = async function() {
     let activeTableCell = null;
 
     let listeningAnimationFrame = null;
+
+    window.linkifyText = function(text) {
+        if (!text) return '';
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        // Escape HTML first, then linkify, then convert newlines to <br>
+        return text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(urlRegex, function(url) {
+            return `<a href="${url}" target="_blank" class="text-blue-600 hover:underline font-bold">${url}</a>`;
+        }).replace(/\n/g, '<br>');
+    };
 
     function splitListeningSentences(text) {
         const holder = document.createElement('div');
@@ -3552,6 +3589,113 @@ window.initFirebaseSystem = async function() {
         if (nMenu && !nMenu.classList.contains('hidden') && nContainer && !nContainer.contains(e.target)) nMenu.classList.add('hidden');
     });
 
+    window.openBulkAnnotateModal = function() {
+        document.getElementById('modal-title').innerHTML = '📥 Bulk Highlight (Excel Paste)';
+        document.getElementById('modal-message').innerHTML = `
+            <p class="text-sm text-slate-500 mb-3">Copy columns from your spreadsheet and paste them below. The system will automatically scan the essay and highlight the text.<br><br><b>Format Order:</b> <span class="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded text-xs">Phrase &rarr; Criterion (TR/CC/LR/GRA) &rarr; Comment</span></p>
+            <textarea id="bulk-annotate-input" class="w-full border-2 border-slate-200 p-3 rounded-xl outline-none focus:border-indigo-500 font-mono text-sm h-48 whitespace-pre text-slate-700 shadow-inner" placeholder="On the one hand&#9;CC&#9;Great cohesive device&#10;surpassed&#9;LR&#9;Good advanced vocabulary"></textarea>
+        `;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        const modalDiv = document.querySelector('#custom-modal > div');
+        if (modalDiv) {
+            modalDiv.classList.remove('w-96', 'w-[400px]', 'w-[500px]');
+            modalDiv.classList.add('w-[600px]');
+        }
+
+        document.getElementById('modal-cancel').onclick = () => {
+            document.getElementById('custom-modal').classList.add('hidden');
+            if (modalDiv) { modalDiv.classList.remove('w-[600px]'); modalDiv.classList.add('w-96'); }
+        };
+        
+        document.getElementById('modal-confirm').onclick = () => {
+            const data = document.getElementById('bulk-annotate-input').value;
+            if (data) window.processBulkAnnotations(data);
+            document.getElementById('custom-modal').classList.add('hidden');
+            if (modalDiv) { modalDiv.classList.remove('w-[600px]'); modalDiv.classList.add('w-96'); }
+        };
+    };
+
+    window.processBulkAnnotations = function(tsvData) {
+        if (!tsvData || !tsvData.trim()) return;
+        const rows = tsvData.split('\n');
+        
+        let editor = document.getElementById('edit-passage-text');
+        if (!editor || editor.closest('.hidden')) {
+             editor = document.querySelector('.rich-editor:focus') || document.getElementById('edit-passage-text');
+        }
+        if (!editor) return;
+
+        let matchCount = 0;
+        const colors = {
+            tr: 'bg-blue-100 text-blue-900 border-b-2 border-blue-500',
+            cc: 'bg-purple-100 text-purple-900 border-b-2 border-purple-500',
+            lr: 'bg-emerald-100 text-emerald-900 border-b-2 border-emerald-500',
+            gra: 'bg-amber-100 text-amber-900 border-b-2 border-amber-500'
+        };
+        const labels = { tr: 'Task Response', cc: 'Coherence / Cohesion', lr: 'Lexical Resource', gra: 'Grammatical Range' };
+
+        rows.forEach(row => {
+            const parts = row.split('\t'); 
+            if (parts.length >= 3) {
+                const phrase = parts[0].trim();
+                const crit = parts[1].trim().toLowerCase();
+                const note = parts[2].trim();
+
+                if (phrase && colors[crit] && note) {
+                    const cleanNote = note.replace(/\n/g, '<br>').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const cleanPhrase = phrase.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    
+                    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+                    let node;
+                    const nodesToReplace = [];
+                    
+                    while (node = walker.nextNode()) {
+                        if (node.nodeValue.includes(phrase) && !node.parentNode.closest('.criteria-highlight')) {
+                            nodesToReplace.push(node);
+                        }
+                    }
+
+                    nodesToReplace.forEach(textNode => {
+                        if (!textNode.parentNode) return;
+                        
+                        const text = textNode.nodeValue;
+                        const splitParts = text.split(phrase);
+                        
+                        if (splitParts.length > 1) {
+                            const frag = document.createDocumentFragment();
+                            for (let i = 0; i < splitParts.length; i++) {
+                                frag.appendChild(document.createTextNode(splitParts[i]));
+                                if (i < splitParts.length - 1) {
+                                    const span = document.createElement('span');
+                                    span.className = `${colors[crit]} px-1.5 py-0.5 rounded inline-block cursor-pointer font-medium shadow-sm transition hover:brightness-95 mx-0.5 criteria-highlight`;
+                                    span.setAttribute('onclick', `event.stopPropagation(); if(typeof window.showToast === 'function') window.showToast('${labels[crit]}', '${cleanNote}', 'info')`);
+                                    span.innerHTML = `<span class="text-[9px] font-black uppercase tracking-widest opacity-70 mr-1 select-none pointer-events-none">[${crit.toUpperCase()}]</span>${cleanPhrase}`;
+                                    
+                                    frag.appendChild(span);
+                                    matchCount++;
+                                }
+                            }
+                            textNode.parentNode.replaceChild(frag, textNode);
+                        }
+                    });
+                }
+            }
+        });
+
+        if (window.triggerEditorAutosave) window.triggerEditorAutosave();
+        
+        if (typeof window.showToast === 'function') {
+            if (matchCount > 0) {
+                window.showToast("Annotations Applied", `Successfully matched and applied ${matchCount} highlights.`);
+            } else {
+                window.showToast("Notice", "No matching phrases found in the text.", "error");
+            }
+        }
+    };
+
     window.updateFeedbackText = function(qId, criteria, bandScore) {
         if (!bandScore || !IELTS_DESCRIPTORS[criteria] || !IELTS_DESCRIPTORS[criteria][bandScore]) return;
         const textarea = document.getElementById(`fb-${qId}`);
@@ -3559,6 +3703,166 @@ window.initFirebaseSystem = async function() {
             const newText = IELTS_DESCRIPTORS[criteria][bandScore];
             textarea.value = textarea.value ? textarea.value + '\\n\\n' + newText : newText;
             textarea.focus();
+        }
+    };
+
+    window.highlightCriteria = function(type) {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) {
+            if (typeof window.showToast === 'function') window.showToast("Notice", "Please select text in the Sample Answer first.");
+            return;
+        }
+        
+        // Save the exact range before the modal steals focus
+        const range = selection.getRangeAt(0).cloneRange();
+        const text = range.toString().trim();
+        
+        if (!text) {
+            if (typeof window.showToast === 'function') window.showToast("Notice", "Please select text in the Sample Answer first.");
+            return;
+        }
+        
+        showInputPrompt(`Add Note for ${type.toUpperCase()}`, "Explain why this text is a good example of this criterion:", (note) => {
+            if (!note) return;
+            
+            const colors = {
+                tr: 'bg-blue-100 text-blue-900 border-b-2 border-blue-500',
+                cc: 'bg-purple-100 text-purple-900 border-b-2 border-purple-500',
+                lr: 'bg-emerald-100 text-emerald-900 border-b-2 border-emerald-500',
+                gra: 'bg-amber-100 text-amber-900 border-b-2 border-amber-500'
+            };
+            const labels = { tr: 'Task Response', cc: 'Coherence / Cohesion', lr: 'Lexical Resource', gra: 'Grammatical Range' };
+            
+            const cleanNote = note.replace(/\n/g, '<br>').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            
+            // Create the wrapper securely via DOM
+            const wrapper = document.createElement('span');
+            wrapper.className = `${colors[type]} px-1.5 py-0.5 rounded inline-block cursor-pointer font-medium shadow-sm transition hover:brightness-95 mx-0.5 criteria-highlight`;
+            wrapper.setAttribute('onclick', `event.stopPropagation(); if(typeof window.showToast === 'function') window.showToast('${labels[type]}', '${cleanNote}', 'info')`);
+            
+            const tag = document.createElement('span');
+            tag.className = 'text-[9px] font-black uppercase tracking-widest opacity-70 mr-1 select-none pointer-events-none';
+            tag.textContent = `[${type.toUpperCase()}]`;
+            
+            wrapper.appendChild(tag);
+            wrapper.appendChild(document.createTextNode(text));
+
+            // Extract the old text and inject our newly built interactive node
+            range.deleteContents();
+            range.insertNode(wrapper);
+
+            // Clean up the browser's selection highlight
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            
+            if (window.triggerEditorAutosave) window.triggerEditorAutosave();
+        });
+    };
+
+    window.removeCriteriaHighlight = function() {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) {
+            if (typeof window.showToast === 'function') window.showToast("Notice", "Place cursor inside a highlighted criterion to clear it.");
+            return;
+        }
+        
+        let node = selection.getRangeAt(0).commonAncestorContainer;
+        if (node.nodeType === Node.TEXT_NODE) node = node.parentNode;
+        
+        const span = node.closest('span.criteria-highlight') || node.closest('span[onclick*="showToast"]');
+        
+        if (span) {
+            const label = span.querySelector('span');
+            if (label) label.remove();
+            
+            const textNode = document.createTextNode(span.textContent);
+            span.parentNode.replaceChild(textNode, span);
+            
+            if (window.triggerEditorAutosave) window.triggerEditorAutosave();
+            if (typeof window.showToast === 'function') window.showToast("Removed", "Highlight removed successfully.");
+        } else {
+            if (typeof window.showToast === 'function') window.showToast("Notice", "Place your cursor inside a highlighted block first to clear it.");
+        }
+    };
+
+    window.processBulkAnnotations = function(tsvData) {
+        if (!tsvData.trim()) return;
+        const rows = tsvData.split('\n');
+        
+        // Target the active sample answer editor
+        let editor = document.getElementById('edit-passage-text');
+        if (!editor || editor.closest('.hidden')) {
+             editor = document.querySelector('.rich-editor:focus') || document.getElementById('edit-passage-text');
+        }
+        if (!editor) return;
+
+        let matchCount = 0;
+        const colors = {
+            tr: 'bg-blue-100 text-blue-900 border-b-2 border-blue-500',
+            cc: 'bg-purple-100 text-purple-900 border-b-2 border-purple-500',
+            lr: 'bg-emerald-100 text-emerald-900 border-b-2 border-emerald-500',
+            gra: 'bg-amber-100 text-amber-900 border-b-2 border-amber-500'
+        };
+        const labels = { tr: 'Task Response', cc: 'Coherence / Cohesion', lr: 'Lexical Resource', gra: 'Grammatical Range' };
+
+        rows.forEach(row => {
+            const parts = row.split('\t'); // Split by Tab (Excel standard)
+            if (parts.length >= 3) {
+                const phrase = parts[0].trim();
+                const crit = parts[1].trim().toLowerCase();
+                const note = parts[2].trim();
+
+                if (phrase && colors[crit] && note) {
+                    const cleanNote = note.replace(/\n/g, '<br>').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const cleanPhrase = phrase.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    
+                    // DOM Tree Walker to safely replace text WITHOUT corrupting HTML tags
+                    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+                    let node;
+                    const nodesToReplace = [];
+                    
+                    while (node = walker.nextNode()) {
+                        // Avoid double-wrapping existing highlights
+                        if (node.nodeValue.includes(phrase) && !node.parentNode.closest('.criteria-highlight')) {
+                            nodesToReplace.push(node);
+                        }
+                    }
+
+                    nodesToReplace.forEach(textNode => {
+                        if (!textNode.parentNode) return;
+                        
+                        const text = textNode.nodeValue;
+                        const splitParts = text.split(phrase);
+                        
+                        if (splitParts.length > 1) {
+                            const frag = document.createDocumentFragment();
+                            for (let i = 0; i < splitParts.length; i++) {
+                                frag.appendChild(document.createTextNode(splitParts[i]));
+                                if (i < splitParts.length - 1) {
+                                    const span = document.createElement('span');
+                                    span.className = `${colors[crit]} px-1.5 py-0.5 rounded inline-block cursor-pointer font-medium shadow-sm transition hover:brightness-95 mx-0.5 criteria-highlight`;
+                                    span.setAttribute('onclick', `event.stopPropagation(); if(typeof window.showToast === 'function') window.showToast('${labels[crit]}', '${cleanNote}', 'info')`);
+                                    span.innerHTML = `<span class="text-[9px] font-black uppercase tracking-widest opacity-70 mr-1 select-none pointer-events-none">[${crit.toUpperCase()}]</span>${cleanPhrase}`;
+                                    
+                                    frag.appendChild(span);
+                                    matchCount++;
+                                }
+                            }
+                            textNode.parentNode.replaceChild(frag, textNode);
+                        }
+                    });
+                }
+            }
+        });
+
+        if (window.triggerEditorAutosave) window.triggerEditorAutosave();
+        
+        if (typeof window.showToast === 'function') {
+            if (matchCount > 0) {
+                window.showToast("Annotations Applied", `Successfully matched and applied ${matchCount} highlights.`);
+            } else {
+                window.showToast("Notice", "No matching phrases found in the text.", "error");
+            }
         }
     };
 
@@ -5005,6 +5309,8 @@ window.initFirebaseSystem = async function() {
         passInput.classList.add('hidden');
         document.getElementById('assign-secure-mode').checked = false;
         document.getElementById('assign-tts').checked = false;
+        document.getElementById('assign-due-date').value = '';
+        document.getElementById('assign-due-time').value = '';
 
         document.getElementById('assign-settings-modal').classList.remove('hidden');
     };
@@ -5039,6 +5345,8 @@ window.initFirebaseSystem = async function() {
             password: document.getElementById('assign-password-input').value.trim(),
             secureMode: document.getElementById('assign-secure-mode').checked,
             tts: document.getElementById('assign-tts').checked,
+            dueDate: document.getElementById('assign-due-date').value,
+            dueTime: document.getElementById('assign-due-time').value,
             assignedAt: Date.now()
         };
 
@@ -6748,14 +7056,33 @@ window.initFirebaseSystem = async function() {
       const titleHint = document.getElementById('edit-title-hint');
       const textHint = document.getElementById('edit-text-hint');
       const textLabelSpan = document.getElementById('edit-text-label-text');
+      
+      const ct = document.getElementById('criteria-toolbar');
+      const sepCrit = document.getElementById('toolbar-sep-crit');
+      const btnBlank = document.getElementById('btn-insert-blank');
+      const btnDrop = document.getElementById('btn-insert-drop');
+      const sepList = document.getElementById('toolbar-sep-list');
+
       if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           titleHint.classList.remove('hidden');
           textHint.classList.remove('hidden');
           textLabelSpan.textContent = 'Sample Answer (Practice Mode Only)';
+          
+          if(ct) { ct.classList.remove('hidden'); ct.classList.add('flex'); }
+          if(sepCrit) sepCrit.classList.remove('hidden');
+          if(btnBlank) btnBlank.classList.add('hidden');
+          if(btnDrop) btnDrop.classList.add('hidden');
+          if(sepList) sepList.classList.add('hidden');
       } else {
           titleHint.classList.add('hidden');
           textHint.classList.add('hidden');
           textLabelSpan.textContent = 'Prompt / Passage Text';
+          
+          if(ct) { ct.classList.add('hidden'); ct.classList.remove('flex'); }
+          if(sepCrit) sepCrit.classList.add('hidden');
+          if(btnBlank) btnBlank.classList.remove('hidden');
+          if(btnDrop) btnDrop.classList.remove('hidden');
+          if(sepList) sepList.classList.remove('hidden');
       }
       
       const qSel = document.getElementById('new-q-type'); qSel.innerHTML = '';
@@ -9413,6 +9740,13 @@ window.initFirebaseSystem = async function() {
         const myBand = module ? skillBands[module] || 0 : 0;
         const targetIPlusOne = myBand > 0 ? myBand + 0.5 : null;
         const testDiff = t ? parseFloat(t.difficulty) : null;
+        
+        const settings = cls && cls.testSettings ? cls.testSettings[item.testId] : null;
+        let deadlineHtml = '';
+        if (settings && settings.dueDate && !isCompleted) {
+            deadlineHtml = `<div class="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded shadow-sm mt-1 inline-block">Due: ${settings.dueDate} ${settings.dueTime || ''}</div>`;
+        }
+        
         const isIPlusOne = testDiff && targetIPlusOne && (testDiff === targetIPlusOne || testDiff === targetIPlusOne + 0.5);
         const isStarterRec = myBand === 0 && testDiff && testDiff <= 5.0;
         const isRecommended = !isCompleted && !isLocked && (isIPlusOne || isStarterRec);
@@ -9433,7 +9767,7 @@ window.initFirebaseSystem = async function() {
             <div class="roadmap-step-content rounded-2xl border ${isLocked ? 'border-amber-200 bg-amber-50/80' : isCompleted ? 'border-emerald-200 bg-emerald-50/80' : 'border-slate-200 bg-white'} p-4 shadow-sm">
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div class="space-y-1 min-w-0">
-                        <div class="roadmap-step-title text-sm sm:text-base leading-snug">${title}</div>
+                        <div class="roadmap-step-title text-sm sm:text-base leading-snug">${title}</div>${deadlineHtml}
                         <div class="text-xs text-slate-500">${module ? module.charAt(0).toUpperCase() + module.slice(1) : 'Study Material'}${testDiff ? ` · Band ${testDiff.toFixed(1)}` : ''}</div>
                     </div>
                     <span class="roadmap-step-meta ${statusMeta}">${statusLabel}</span>
@@ -14400,6 +14734,7 @@ window.initFirebaseSystem = async function() {
                             </div>
                         </div>
                         <div class="text-sm font-medium text-slate-600 mb-2 mt-1">Topic: <span class="font-bold">${s.topic || 'General Practice'}</span></div>
+                        ${s.prepText ? `<div class="text-[11px] text-sky-700 font-medium mb-3 bg-sky-50 p-2 rounded border border-sky-100"><span class="font-bold uppercase tracking-widest text-[9px] block mb-1">Before Lesson</span>${s.prepText.substring(0, 60)}${s.prepText.length > 60 ? '...' : ''}</div>` : ''}
                         ${s.assignedTests && s.assignedTests.length ? `<div class="text-[10px] text-slate-500 uppercase font-bold mb-3 border-t pt-2 border-slate-100">📎 ${s.assignedTests.length} Material(s) Attached</div>` : ''}
                         
                         <button onclick="window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 text-indigo-600 border border-indigo-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-2 flex justify-center items-center gap-1">🎥 Join Live Video Class</button>
@@ -14433,6 +14768,7 @@ window.initFirebaseSystem = async function() {
                     };
                     const lessonTests = (s.assignedTests || []).map(tid => renderTestItem(tid)).join('');
                     const homeworkTests = (s.homeworkTests || []).map(tid => renderTestItem(tid)).join('');
+                    const prepHtml = s.prepText ? `<div class="p-3 bg-white rounded border border-slate-200 shadow-sm text-sm text-slate-700 mb-4 whitespace-pre-wrap leading-relaxed">${window.linkifyText(s.prepText)}</div>` : '';
                     
                     return `
                     <div class="p-5 bg-indigo-50 border border-indigo-100 rounded-xl shadow-sm mb-4">
@@ -14440,7 +14776,13 @@ window.initFirebaseSystem = async function() {
                         <p class="text-sm font-bold text-slate-500 flex items-center gap-2 mb-4"><span class="w-2 h-2 rounded-full bg-indigo-400"></span> ${s.topic || 'General Practice'}</p>
                         
                         <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-lg text-sm transition shadow-md mb-4 flex items-center justify-center gap-2 animate-pulse hover:animate-none">🎥 Join Live Video Class</button>
+                            
                             <div class="mb-4">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-sky-600 mb-2">Before the lesson: Preparation</p>
+                                ${prepHtml || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm mb-4">No specific preparation required.</p>'}
+                            </div>
+
+                            <div class="mb-4 border-t border-indigo-100 pt-4">
                                 <p class="text-[10px] font-black uppercase tracking-wider text-indigo-600 mb-2">For the lesson</p>
                                 ${lessonTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No specific tests assigned to this lesson.</p>'}
                             </div>
@@ -14448,6 +14790,15 @@ window.initFirebaseSystem = async function() {
                                 <p class="text-[10px] font-black uppercase tracking-wider text-amber-600 mb-2">After the lesson: Homework</p>
                                 ${homeworkTests || '<p class="text-xs text-slate-500 italic p-3 bg-white rounded border border-slate-200 shadow-sm">No homework assigned.</p>'}
                             </div>
+                            ${s.recordingLink ? `
+                            <div class="border-t border-indigo-100 pt-4 mt-4">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-emerald-600 mb-2">Class Recording & Feedback</p>
+                                <a href="${s.recordingLink}" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-3 flex justify-center items-center gap-1">▶️ Watch Recording</a>
+                                
+                                <textarea id="feedback-${s.id}" class="w-full border border-indigo-200 rounded p-2 text-xs outline-none focus:border-indigo-400 mb-2 resize-none" rows="2" placeholder="What did you learn today? Any feedback?">${(s.studentFeedback && s.studentFeedback[currentUser.user]) || ''}</textarea>
+                                <button onclick="window.submitClassFeedback('${s.id}')" class="w-full bg-slate-800 hover:bg-black text-white font-bold py-1.5 rounded-md text-xs shadow transition">Submit Feedback</button>
+                            </div>
+                            ` : ''}
                         </div>
                     </div>`;
                 }).join('');
@@ -14486,6 +14837,17 @@ window.initFirebaseSystem = async function() {
                 </div>
             </div>
             
+            <div class="flex gap-3 mb-4">
+                <div class="w-1/2">
+                    <label class="block text-sm font-bold text-slate-700 mb-1 mt-2">Before the lesson (Preparation)</label>
+                    <textarea id="sched-prep" placeholder="Type instructions or paste links..." class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-medium text-slate-700 focus:border-blue-500 min-h-[60px] resize-y"></textarea>
+                </div>
+                <div class="w-1/2">
+                    <label class="block text-sm font-bold text-slate-700 mb-1 mt-2">Recording Link (Optional)</label>
+                    <input type="text" id="sched-recording" placeholder="https://..." class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-medium text-slate-700 focus:border-blue-500">
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">For the lesson:</label>
@@ -14558,6 +14920,8 @@ window.initFirebaseSystem = async function() {
             const date = document.getElementById('sched-date').value;
             const timeRaw = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
+            const prepText = document.getElementById('sched-prep').value.trim();
+            const recordingLink = document.getElementById('sched-recording').value.trim();
             const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
             const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
@@ -14570,9 +14934,12 @@ window.initFirebaseSystem = async function() {
                     id: 'sch_'+Date.now(), 
                     className: cls, 
                     date, time, topic, 
+                    prepText,
                     assignedTests: selectedTests,
                     homeworkTests: selectedHomeworkTests,
                     attendingStudents: selectedStudents, 
+                    recordingLink: recordingLink,
+                    studentFeedback: {},
                     dateAdded: new Date().toLocaleDateString() 
                 };
                 
@@ -14621,6 +14988,17 @@ window.initFirebaseSystem = async function() {
                 </div>
             </div>
             
+            <div class="flex gap-3 mb-4">
+                <div class="w-1/2">
+                    <label class="block text-sm font-bold text-slate-700 mb-1 mt-2">Before the lesson (Preparation)</label>
+                    <textarea id="sched-prep" placeholder="Type instructions or paste links..." class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-medium text-slate-700 focus:border-blue-500 min-h-[60px] resize-y">${sched.prepText || ''}</textarea>
+                </div>
+                <div class="w-1/2">
+                    <label class="block text-sm font-bold text-slate-700 mb-1 mt-2">Recording Link (Optional)</label>
+                    <input type="text" id="sched-recording" value="${sched.recordingLink || ''}" placeholder="https://..." class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-medium text-slate-700 focus:border-blue-500">
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">For the lesson:</label>
@@ -14699,6 +15077,8 @@ window.initFirebaseSystem = async function() {
             const date = document.getElementById('sched-date').value;
             const time = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
+            const prepText = document.getElementById('sched-prep').value.trim();
+            const recordingLink = document.getElementById('sched-recording').value.trim();
             const selectedTests = Array.from(document.querySelectorAll('.sched-test-cb:checked')).map(cb => cb.value);
             const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
@@ -14708,6 +15088,8 @@ window.initFirebaseSystem = async function() {
                 sched.date = date;
                 sched.time = time;
                 sched.topic = topic;
+                sched.prepText = prepText;
+                sched.recordingLink = recordingLink;
                 sched.assignedTests = selectedTests;
                 sched.homeworkTests = selectedHomeworkTests;
                 sched.attendingStudents = selectedStudents;
@@ -16473,6 +16855,69 @@ window.initFirebaseSystem = async function() {
                 window.notifiedClasses.delete(s.id);
             }
         });
+    };
+
+    window.notifiedDeadlines = new Set();
+    window.checkHomeworkDeadlines = function() {
+        if (!currentUser || currentUser.role !== 'student' || !CLASSES) return;
+        const now = new Date();
+        const cid = document.getElementById('student-class-select')?.value;
+        if(!cid) return;
+        const cls = CLASSES.find(c => c.id === cid);
+        if(!cls || !cls.testSettings) return;
+
+        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+        const completedTestIds = mySubs.map(s => s.testId);
+
+        Object.keys(cls.testSettings).forEach(tid => {
+            if (completedTestIds.includes(tid)) return; // Already done
+            const settings = cls.testSettings[tid];
+            if (!settings.dueDate) return;
+
+            const dueStr = settings.dueDate + (settings.dueTime ? 'T' + settings.dueTime : 'T23:59');
+            const dueDate = new Date(dueStr);
+            if (isNaN(dueDate)) return;
+
+            const diffMs = dueDate - now;
+            const diffHours = diffMs / (1000 * 60 * 60);
+
+            // Notify if due within 24 hours and not yet notified
+            if (diffHours > 0 && diffHours <= 24) {
+                const notifKey = `${tid}_${settings.dueDate}`;
+                if (!window.notifiedDeadlines.has(notifKey)) {
+                    window.notifiedDeadlines.add(notifKey);
+                    const t = TEST_BANK.find(x => x.id === tid);
+                    const title = t ? t.title : 'Homework';
+                    if (typeof window.showToast === 'function') {
+                        window.showToast(
+                            `⏰ Homework Due Soon!`, 
+                            `${title} is due in ${Math.round(diffHours)} hours.`, 
+                            'info'
+                        );
+                    }
+                    if (typeof window.fireLocalOSNotification === 'function') {
+                        window.fireLocalOSNotification(`⏰ Homework Due Soon!`, `${title} is due in ${Math.round(diffHours)} hours.`);
+                    }
+                }
+            }
+        });
+    };
+
+    window.submitClassFeedback = async function(schedId) {
+        const text = document.getElementById(`feedback-${schedId}`).value.trim();
+        const sched = SCHEDULES.find(s => s.id === schedId);
+        if (!sched) return;
+        
+        if (!sched.studentFeedback) sched.studentFeedback = {};
+        sched.studentFeedback[currentUser.user] = text;
+        
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), sched.id), sched);
+            if (typeof window.showToast === 'function') window.showToast("Saved", "Thank you for your feedback!");
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not save feedback.");
+        }
     };
 
 
