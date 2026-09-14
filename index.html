@@ -101,9 +101,11 @@
     .reading-mode-controls button:hover { background: #dbeafe; }
     .reading-mode-controls label { font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; }
     .reading-mode-controls input { border: 1px solid #cbd5e1; background: white; border-radius: 0.5rem; padding: 0.45rem 0.7rem; font-size: 0.8rem; font-weight: 700; color: #0f172a; outline: none; width: 90px; }
-    .reading-word, .vocab-word { display: inline-block; opacity: 1; transform: none; filter: none; transition: opacity 0.22s ease, transform 0.22s ease, filter 0.22s ease, visibility 0.22s ease; position: relative; }
-    .reading-word.is-current, .vocab-word.is-current { background: rgba(59, 130, 246, 0.14); color: #1d4ed8; border-radius: 0.28rem; padding: 0 0.1em; box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.08); }
-    .reading-word.is-read, .vocab-word.is-read { opacity: 0; transform: translateY(-3px); filter: blur(2px); visibility: visible; max-width: none; overflow: visible; margin-right: 0; }
+    .reading-word { display: inline-block; opacity: 1; transform: none; filter: none; transition: opacity 0.22s ease, transform 0.22s ease, filter 0.22s ease, visibility 0.22s ease; position: relative; }
+    .reading-word.is-current { background: rgba(59, 130, 246, 0.14); color: #1d4ed8; border-radius: 0.28rem; padding: 0 0.1em; box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.08); }
+    /* Match the green highlight if the current reading word is inside a grammar tag */
+    .grammar-word .reading-word.is-current { background: rgba(16, 185, 129, 0.14); color: #047857; box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.08); }
+    .reading-word.is-read { opacity: 0; transform: translateY(-3px); filter: blur(2px); visibility: visible; max-width: none; overflow: visible; margin-right: 0; }
 
     .col-resizer { display: none !important; }
     .rich-editor .col-resizer { display: block !important; }
@@ -275,6 +277,15 @@
 
     .vocab-word { border-bottom: 2px dotted #2563eb; cursor: pointer; color: #1d4ed8; font-weight: 600; transition: all 0.2s; }
     .vocab-word:hover { background-color: #dbeafe; border-bottom-color: #1e40af; }
+
+    .grammar-word { border-bottom: 2px dotted #10b981; cursor: pointer; color: #047857; font-weight: 600; transition: all 0.2s; }
+    .grammar-word:hover { background-color: #d1fae5; border-bottom-color: #059669; }
+
+    .hide-vocab .vocab-word { border-bottom-color: transparent !important; color: inherit !important; font-weight: inherit !important; background: transparent !important; cursor: text !important; pointer-events: none; }
+    .hide-grammar .grammar-word { border-bottom-color: transparent !important; color: inherit !important; font-weight: inherit !important; background: transparent !important; cursor: text !important; pointer-events: none; }
+
+    /* Speed Reading / Skimming fixes to prevent floating borders over hidden words */
+    .vocab-word:has(.reading-word.is-read), .grammar-word:has(.reading-word.is-read) { border-color: transparent !important; background: transparent !important; }
 
     .highlighted-text {
         color: #0f172a !important; /* Force high-contrast dark text in all themes */
@@ -638,6 +649,47 @@
     </div>
   </div>
 
+  <!-- TEACHER GRAMMAR MODAL -->
+  <div id="teacher-grammar-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center backdrop-blur-sm md:p-6">
+    <div class="bg-white md:rounded-[2rem] w-full max-w-4xl h-full md:h-[80vh] flex flex-col shadow-2xl animate-scale-up overflow-hidden border border-slate-200">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+        <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">🪄 Test Grammar Bank</h2>
+        <button onclick="closeTeacherGrammarModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
+      </div>
+      <div class="p-5 overflow-y-auto flex-1 bg-slate-100">
+        <div class="bg-white p-4 rounded border border-slate-300 shadow-sm mb-5">
+          <div class="flex justify-between items-center border-b pb-2 mb-3">
+            <h3 class="font-bold text-sm text-slate-600 uppercase">Add New Grammar Highlight</h3>
+            <button onclick="toggleGrammarBulk()" id="tg-bulk-toggle-btn" class="text-xs text-emerald-600 font-bold hover:underline flex items-center gap-1">📥 Bulk Paste from Excel</button>
+          </div>
+          
+          <!-- Bulk Import Area -->
+          <div id="tg-bulk-area" class="hidden mb-3 animate-fade-in-up">
+            <label class="block text-[11px] font-bold text-slate-500 mb-2 leading-relaxed">Paste columns from Excel/Sheets (Order is important): <br><span class="font-mono text-emerald-600">Phrase / Clause ➔ Grammar Type ➔ Explanation / Usage Notes</span></label>
+            <textarea id="tg-bulk-input" class="w-full border border-slate-300 p-3 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none h-28 mb-3 bg-slate-50 whitespace-pre" placeholder="Having finished the test&#9;Reduced Relative Clause&#9;Explain how and why this grammatical structure is used..."></textarea>
+            <button onclick="processGrammarBulk()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded shadow hover:bg-emerald-700 transition">Import Grammar Rows</button>
+          </div>
+
+          <div id="tg-single-area">
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Phrase / Clause *</label><input type="text" id="tg-term" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-bold text-emerald-800" placeholder="e.g. Having finished the test"></div>
+              <div><label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Grammar Type</label><input type="text" id="tg-type" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none font-medium" placeholder="e.g. Reduced Relative Clause"></div>
+            </div>
+            <div class="mb-4">
+              <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-wider">Explanation / Usage Notes</label><textarea id="tg-expl" class="w-full border border-slate-300 p-2 rounded text-sm focus:ring-2 focus:ring-emerald-500 outline-none h-20 resize-none font-medium text-slate-700" placeholder="Explain how and why this grammatical structure is used..."></textarea>
+            </div>
+            <button onclick="addTeacherGrammar()" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded shadow hover:bg-emerald-700 transition">Save Highlight to Test</button>
+          </div>
+        </div>
+        <h3 class="font-bold text-sm text-slate-600 uppercase mb-2">Current Grammar Highlights</h3>
+        <div id="tg-list" class="space-y-2"></div>
+      </div>
+      <div class="p-4 border-t border-slate-200 bg-white rounded-b-lg flex justify-end">
+        <button onclick="closeTeacherGrammarModal()" class="px-5 py-2 bg-slate-800 text-white font-bold rounded hover:bg-slate-900 shadow">Done</button>
+      </div>
+    </div>
+  </div>
+
   <!-- RANDOM SPIN MODAL -->
   <div id="random-spin-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[400] flex items-center justify-center backdrop-blur-md animate-fade-in md:p-6">
       <div class="bg-white md:rounded-[3rem] shadow-2xl flex flex-col w-full max-w-3xl p-6 md:p-16 h-full md:h-auto items-center justify-center text-center relative overflow-hidden animate-scale-up border border-slate-200">
@@ -986,6 +1038,11 @@
 
   <!-- TEACHER EDITOR TEXT SELECTION (Quick Add Vocab) -->
   <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+    <button onmousedown="quickAddTeacherGrammar(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-amber-400 transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+      <span class="text-[10px] font-bold">Grammar</span>
+    </button>
+    <div class="w-px h-6 bg-slate-600 mx-1"></div>
     <button onmousedown="quickAddTeacherVocab(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-emerald-400 transition">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
       <span class="text-[10px] font-bold">Vocab</span>
@@ -1035,6 +1092,20 @@
     <div id="vp-vi" class="text-sm text-slate-500 mb-3 leading-snug"></div>
     <div id="vp-extras" class="hidden text-xs text-slate-600 space-y-1.5 pt-2 border-t border-slate-100 bg-slate-50 p-2 rounded-lg"></div>
     <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-blue-200 rotate-45 arrow"></div>
+  </div>
+
+  <!-- GRAMMAR POPOVER (Practice Mode) -->
+  <div id="grammar-popover" class="hidden absolute z-[170] bg-white border border-emerald-200 shadow-2xl rounded-xl p-5 w-[340px] max-w-[90vw] -translate-y-full mt-[-10px] animate-pop">
+    <div class="mb-3 border-b border-slate-100 pb-3">
+        <div class="mb-2">
+            <span id="gp-type" class="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded shadow-sm uppercase tracking-widest inline-block"></span>
+        </div>
+        <h3 class="font-bold text-[15px] text-emerald-900 leading-relaxed border-l-2 border-emerald-400 pl-3 italic">
+            "<span id="gp-term"></span>"
+        </h3>
+    </div>
+    <div id="gp-expl" class="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-wrap"></div>
+    <div class="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b border-r border-emerald-200 rotate-45 arrow"></div>
   </div>
   
   <!-- RESULTS MODAL -->
@@ -1759,6 +1830,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
             </button>
 
+            <button onclick="openTeacherGrammarModal()" class="shrink-0 w-9 h-9 flex items-center justify-center text-lg text-amber-300 hover:text-amber-100 bg-amber-500/20 rounded-xl border border-amber-400/30 transition shadow-sm" title="Grammar Bank">🪄</button>
             <button onclick="openTeacherVocabModal()" class="shrink-0 w-9 h-9 flex items-center justify-center text-lg text-emerald-300 hover:text-emerald-100 bg-emerald-500/20 rounded-xl border border-emerald-400/30 transition shadow-sm" title="Vocab Bank">🗂️</button>
             
             <!-- NEW: Delete Part Button -->
@@ -2726,7 +2798,7 @@ window.initFirebaseSystem = async function() {
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
 
-    let APP_DATA = { module: 'reading', parts: [], vocab: [] };
+    let APP_DATA = { module: 'reading', parts: [], vocab: [], grammar: [] };
     let editingTestId = null;
     let currentEditorPartIdx = 0;
 
@@ -3198,13 +3270,23 @@ window.initFirebaseSystem = async function() {
         if (!cues.length) return '';
         return `<div class="karaoke-transcript space-y-2 leading-loose" data-karaoke-root>${cues.map((cue, index) => {
             let lineText = escapeKaraokeText(cue.text);
-            if (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA?.vocab?.length) {
-                APP_DATA.vocab.forEach((v, vIdx) => {
-                    const cleanTerm = String(v.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
-                    if (!cleanTerm) return;
-                    const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-                    lineText = lineText.replace(regex, `<span class="vocab-word" onclick="event.stopPropagation(); showVocabPop(event, ${vIdx})">$1</span>`);
-                });
+            if (typeof isTimeFree !== 'undefined' && isTimeFree) {
+                if (APP_DATA?.grammar?.length) {
+                    APP_DATA.grammar.forEach((g, gIdx) => {
+                        const cleanTerm = String(g.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                        if (!cleanTerm) return;
+                        const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                        lineText = lineText.replace(regex, `<span class="grammar-word" onclick="event.stopPropagation(); showGrammarPop(event, ${gIdx})">$1</span>`);
+                    });
+                }
+                if (APP_DATA?.vocab?.length) {
+                    APP_DATA.vocab.forEach((v, vIdx) => {
+                        const cleanTerm = String(v.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                        if (!cleanTerm) return;
+                        const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                        lineText = lineText.replace(regex, `<span class="vocab-word" onclick="event.stopPropagation(); showVocabPop(event, ${vIdx})">$1</span>`);
+                    });
+                }
             }
             const hasTime = cue.start !== null;
             const clickAttr = hasTime ? `onclick="window.seekKaraokeSentence(${index}, event)"` : '';
@@ -3295,7 +3377,7 @@ window.initFirebaseSystem = async function() {
             });
             textNode.parentNode.replaceChild(fragment, textNode);
         });
-        holder.querySelectorAll('.vocab-word').forEach(word => {
+        holder.querySelectorAll('.vocab-word, .grammar-word').forEach(word => {
             if (!word.classList.contains('speech-word')) {
                 word.classList.add('speech-word');
             }
@@ -3314,13 +3396,23 @@ window.initFirebaseSystem = async function() {
             let lineText = escapeListeningText(cue.text);
             
             // Keep vocabulary terms clickable inside the listening transcript.
-            if (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
-                APP_DATA.vocab.forEach((v, vIdx) => {
-                    const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
-                    if (!cleanTerm) return;
-                    const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-                    lineText = lineText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
-                });
+            if (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA) {
+                if (APP_DATA.grammar && APP_DATA.grammar.length > 0) {
+                    APP_DATA.grammar.forEach((g, gIdx) => {
+                        const cleanTerm = g.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                        if (!cleanTerm) return;
+                        const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                        lineText = lineText.replace(regex, `<span class="grammar-word" onclick="showGrammarPop(event, ${gIdx})">$1</span>`);
+                    });
+                }
+                if (APP_DATA.vocab && APP_DATA.vocab.length > 0) {
+                    APP_DATA.vocab.forEach((v, vIdx) => {
+                        const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                        if (!cleanTerm) return;
+                        const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                        lineText = lineText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
+                    });
+                }
             }
             
             return `<span class="listening-line block px-2 py-1" data-listening-index="${index}">${wrapListeningWords(lineText)}</span>`;
@@ -4106,6 +4198,169 @@ window.initFirebaseSystem = async function() {
         };
     };
 
+    // --- SPEED READING / SKIMMING ENGINE ---
+    window.skimmingState = { timer: null, index: 0, words: [], isPlaying: false };
+
+    window.initSkimmingWords = function() {
+        const container = document.getElementById('passage-text-content');
+        if (!container) return false;
+
+        // If we already initialized words, just gather them and return
+        let words = Array.from(container.querySelectorAll('.reading-word'));
+        if (words.length > 0 && container.dataset.skimmingInit === 'true') {
+            window.skimmingState.words = words;
+            return true;
+        }
+
+        // TreeWalker to safely wrap all text nodes without destroying existing HTML
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+        const nodes = [];
+        let node;
+        while (node = walker.nextNode()) nodes.push(node);
+
+        nodes.forEach(n => {
+            // Only skip if already a reading-word. This ALLOWS wrapping inside vocab/grammar tags!
+            if (n.parentNode.closest('.reading-word')) return;
+            
+            const text = n.nodeValue;
+            if (!text.trim()) return;
+            
+            const frag = document.createDocumentFragment();
+            text.split(/(\s+)/).forEach(part => {
+                if (/\s+/.test(part)) {
+                    frag.appendChild(document.createTextNode(part));
+                } else if (part) {
+                    const span = document.createElement('span');
+                    span.className = 'reading-word';
+                    span.textContent = part;
+                    frag.appendChild(span);
+                }
+            });
+            n.parentNode.replaceChild(frag, n);
+        });
+
+        container.dataset.skimmingInit = 'true';
+        
+        // Select ONLY reading-word so individual words fade, not entire phrases
+        window.skimmingState.words = Array.from(container.querySelectorAll('.reading-word'));
+        return true;
+    };
+
+    window.startSkimming = function() {
+        if (!window.initSkimmingWords()) return;
+        if (window.skimmingState.index >= window.skimmingState.words.length) window.restartSkimming();
+        
+        document.getElementById('btn-skimming-play').style.display = 'none';
+        document.getElementById('btn-skimming-pause').style.display = 'inline-flex';
+        
+        window.skimmingState.isPlaying = true;
+        window.updateSkimmingSpeed();
+    };
+
+    window.pauseSkimming = function() {
+        window.skimmingState.isPlaying = false;
+        if (window.skimmingState.timer) clearTimeout(window.skimmingState.timer);
+        
+        document.getElementById('btn-skimming-pause').style.display = 'none';
+        document.getElementById('btn-skimming-play').style.display = 'inline-flex';
+    };
+
+    window.restartSkimming = function() {
+        window.pauseSkimming();
+        window.skimmingState.words.forEach(w => w.classList.remove('is-read', 'is-current'));
+        window.skimmingState.index = 0;
+    };
+
+    window.updateSkimmingSpeed = function() {
+        if (!window.skimmingState.isPlaying) return;
+        if (window.skimmingState.timer) clearTimeout(window.skimmingState.timer);
+        
+        const wpm = parseInt(document.getElementById('reading-speed-input').value) || 220;
+        const msPerWord = 60000 / wpm;
+        window.skimmingStep(msPerWord);
+    };
+
+    window.skimmingStep = function(msPerWord) {
+        if (!window.skimmingState.isPlaying) return;
+        const words = window.skimmingState.words;
+        const idx = window.skimmingState.index;
+
+        if (idx >= words.length) {
+            window.pauseSkimming();
+            return;
+        }
+
+        if (idx > 0) {
+            words[idx-1].classList.remove('is-current');
+            words[idx-1].classList.add('is-read');
+        }
+
+        words[idx].classList.add('is-current');
+
+        // Smart Scrolling: Keeps the word centered in the view
+        if (idx % 8 === 0 || words[idx].getBoundingClientRect().bottom > window.innerHeight - 100) {
+            words[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        window.skimmingState.index++;
+
+        // Natural reading dynamics: Pause slightly longer on punctuation
+        let delay = msPerWord;
+        const text = words[idx].textContent;
+        if (/[.?!]$/.test(text)) delay *= 2;
+        else if (/[,;]$/.test(text)) delay *= 1.5;
+
+        window.skimmingState.timer = setTimeout(() => window.skimmingStep(msPerWord), delay);
+    };
+
+    window.skipSkimmingParagraph = function(direction) {
+        if (!window.initSkimmingWords()) return;
+        const words = window.skimmingState.words;
+        if (!words.length) return;
+        
+        let currentIdx = window.skimmingState.index;
+
+        if (direction === 1) { // Next
+            let currentP = words[Math.min(currentIdx, words.length-1)].closest('p, div, td, li');
+            let targetIdx = currentIdx;
+            while (targetIdx < words.length && words[targetIdx].closest('p, div, td, li') === currentP) {
+                targetIdx++;
+            }
+            if (targetIdx < words.length) {
+                for(let i=currentIdx; i<targetIdx; i++) {
+                    words[i].classList.remove('is-current');
+                    words[i].classList.add('is-read');
+                }
+                if(currentIdx > 0 && currentIdx < words.length) words[currentIdx-1].classList.remove('is-current');
+                
+                window.skimmingState.index = targetIdx;
+                words[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        } else { // Prev
+            if (currentIdx === 0) return;
+            let startP = words[Math.max(0, currentIdx-1)].closest('p, div, td, li');
+            let targetIdx = Math.max(0, currentIdx - 1);
+            
+            while (targetIdx > 0 && words[targetIdx-1].closest('p, div, td, li') === startP) targetIdx--;
+            
+            if (targetIdx === currentIdx || targetIdx === currentIdx - 1) {
+                if (targetIdx > 0) {
+                    let prevP = words[targetIdx-1].closest('p, div, td, li');
+                    while (targetIdx > 0 && words[targetIdx-1].closest('p, div, td, li') === prevP) targetIdx--;
+                }
+            }
+            
+            for(let i=targetIdx; i<=currentIdx && i<words.length; i++) {
+                words[i].classList.remove('is-read', 'is-current');
+            }
+            if(currentIdx>0 && currentIdx<=words.length) words[currentIdx-1].classList.remove('is-current');
+            
+            window.skimmingState.index = targetIdx;
+            words[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    };
+
+
     // --- FULLY REAL-TIME CLOUD SYNC SYSTEM ---
     window.triggerUIRefresh = () => {
         if(window.refreshTimeout) clearTimeout(window.refreshTimeout);
@@ -4396,7 +4651,7 @@ window.initFirebaseSystem = async function() {
         for(let u of USERS) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u.user), u);
         
         TEST_BANK = [
-          { id: "t_read_1", title: "Week 1 Reading: Bicycle Evolution", module: "reading", topics: ["History"], vocab: [{term: "magnificent", eng: "Extremely beautiful or impressive", vi: "Tráng lệ, tuyệt vời"}], parts: [{ title: "The Evolution", text: "The bicycle is a magnificent invention.\n\nIn the early 19th century, the 'dandy horse' lacked pedals. {drop:1}\n\nJohn Kemp Starley invented the Rover Safety Bicycle in 1885.", questions: [{ blockId: "b1", type: "tfng", ids: [2], instruction: "Agree?", text: "The dandy horse had pedals.", correctAnswers: {2: "False"}, explanation: "It lacked pedals." }, { blockId: "b2", type: "matching_headings", ids: [1], instruction: "Match heading", options: ["i. First concepts", "ii. The danger"], correctAnswers: {1: "i. First concepts"} }] }] },
+          { id: "t_read_1", title: "Week 1 Reading: Bicycle Evolution", module: "reading", topics: ["History"], vocab: [{term: "magnificent", eng: "Extremely beautiful or impressive", vi: "Tráng lệ, tuyệt vời"}], grammar: [{term: "lacked pedals", type: "Simple Past", expl: "Used to describe a state in the past."}], parts: [{ title: "The Evolution", text: "The bicycle is a magnificent invention.\n\nIn the early 19th century, the 'dandy horse' lacked pedals. {drop:1}\n\nJohn Kemp Starley invented the Rover Safety Bicycle in 1885.", questions: [{ blockId: "b1", type: "tfng", ids: [2], instruction: "Agree?", text: "The dandy horse had pedals.", correctAnswers: {2: "False"}, explanation: "It lacked pedals." }, { blockId: "b2", type: "matching_headings", ids: [1], instruction: "Match heading", options: ["i. First concepts", "ii. The danger"], correctAnswers: {1: "i. First concepts"} }] }] },
           { id: "t_read_2", title: "Week 2 Reading: Renewable Energy", module: "reading", topics: ["Science"], parts: [{ title: "Renewable Energy", text: "Renewable energy sources such as solar, wind, and hydro power are increasingly important.\n\nThey provide a cleaner alternative to fossil fuels and help reduce greenhouse gas emissions.", questions: [{ blockId: "b3", type: "tfng", ids: [1], instruction: "Agree?", text: "Solar energy is a non-renewable source.", correctAnswers: {1: "False"}, explanation: "Solar is renewable." }] }] },
           { id: "t_write_1", title: "Writing Task 2: Work Future", module: "writing", topics: ["Work", "Society"], parts: [{ title: "Task 2", text: "The world of work is changing rapidly. Employees cannot depend on the same job for life.\n\nDiscuss the causes and suggest preparations.\n\nWrite at least 250 words.", questions: [{ blockId: "w1", type: "essay", ids: [1], instruction: "Write your essay below.", points: 9 }] }] },
           { id: "t_speak_1", title: "Speaking: Hometown", module: "speaking", topics: ["Personal"], parts: [{ title: "Part 1: Introduction", text: "Let's talk about your hometown.\n1. Where is your hometown?\n2. What do you like about it?", questions: [{ blockId: "s1", type: "audio_record", ids: [1], instruction: "Record your answer for Part 1" }] }] }
@@ -5459,7 +5714,7 @@ window.initFirebaseSystem = async function() {
     async function createNewTest(mod) {
       showTestMetaModal(`New ${mod.charAt(0).toUpperCase()+mod.slice(1)} Test`, "", "", "", async (title, topics, diff) => {
         const smartParts = getSmartIeltsStructure(mod);
-        const newTest = { id: 't_'+Date.now(), title, module: mod, topics, difficulty: diff, parts: smartParts, vocab: [] };
+        const newTest = { id: 't_'+Date.now(), title, module: mod, topics, difficulty: diff, parts: smartParts, vocab: [], grammar: [] };
         TEST_BANK.unshift(newTest); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), newTest.id), newTest);
         editTest(newTest.id);
@@ -6172,6 +6427,95 @@ window.initFirebaseSystem = async function() {
       renderTeacherVocab();
       triggerEditorAutosave();
     }
+
+    window.openTeacherGrammarModal = function() {
+      if(!APP_DATA.grammar) APP_DATA.grammar = [];
+      document.getElementById('teacher-grammar-modal').classList.remove('hidden');
+      renderTeacherGrammar();
+    }
+
+    window.closeTeacherGrammarModal = function() { 
+      document.getElementById('teacher-grammar-modal').classList.add('hidden'); 
+    }
+
+    function renderTeacherGrammar() {
+      const list = document.getElementById('tg-list');
+      list.innerHTML = APP_DATA.grammar.length ? APP_DATA.grammar.map((g, i) => `
+        <div class="bg-white p-3 rounded border border-slate-200 flex justify-between items-start">
+          <div class="flex-1 pr-2">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                  <strong class="text-emerald-700">${g.term}</strong> 
+                  <span class="bg-emerald-100 text-emerald-800 text-[9px] px-1.5 py-0.5 rounded font-bold">${g.type || 'Grammar'}</span>
+              </div>
+              <div class="text-xs text-slate-600 font-medium leading-snug whitespace-pre-wrap">${g.expl||''}</div>
+          </div>
+          <button onclick="APP_DATA.grammar.splice(${i},1); renderTeacherGrammar(); triggerEditorAutosave();" class="text-rose-500 text-xs font-bold px-2 py-1 hover:bg-rose-50 rounded shrink-0">Delete</button>
+        </div>`).join('') : '<div class="text-xs text-slate-400 italic">No grammar points added yet.</div>';
+    }
+
+    window.addTeacherGrammar = function() {
+      const term = document.getElementById('tg-term').value.trim();
+      if(!term) return;
+      APP_DATA.grammar.push({ 
+          term, 
+          type: document.getElementById('tg-type').value.trim(), 
+          expl: document.getElementById('tg-expl').value.trim()
+      });
+      ['tg-term','tg-type','tg-expl'].forEach(id => document.getElementById(id).value = '');
+      renderTeacherGrammar();
+      triggerEditorAutosave();
+    }
+
+    window.quickAddTeacherGrammar = function(e) {
+      e.preventDefault(); e.stopPropagation(); document.getElementById('editor-selection-tooltip').classList.add('hidden');
+      const term = window.getSelection().toString().trim();
+      if(term) { openTeacherGrammarModal(); document.getElementById('tg-term').value = term; }
+    }
+
+    window.toggleGrammarBulk = function() {
+      const single = document.getElementById('tg-single-area');
+      const bulk = document.getElementById('tg-bulk-area');
+      const btn = document.getElementById('tg-bulk-toggle-btn');
+      
+      if (single.classList.contains('hidden')) {
+        single.classList.remove('hidden');
+        bulk.classList.add('hidden');
+        btn.innerHTML = '📥 Bulk Paste from Excel';
+      } else {
+        single.classList.add('hidden');
+        bulk.classList.remove('hidden');
+        btn.innerHTML = '✍️ Single Manual Entry';
+      }
+    };
+
+    window.processGrammarBulk = function() {
+      const text = document.getElementById('tg-bulk-input').value.trim();
+      if(!text) {
+        showModalMsg("Empty", "Please paste some data from Excel first.");
+        return;
+      }
+      
+      const lines = text.split('\n');
+      let count = 0;
+      
+      lines.forEach(line => {
+        const parts = line.split('\t'); // Reads the Excel columns based on standard 'tab' spacing
+        if(parts[0] && parts[0].trim()) {
+          APP_DATA.grammar.push({
+            term: parts[0].trim(),
+            type: (parts[1] || '').trim(),
+            expl: (parts[2] || '').trim()
+          });
+          count++;
+        }
+      });
+      
+      document.getElementById('tg-bulk-input').value = '';
+      toggleGrammarBulk(); // Swap back to standard view
+      renderTeacherGrammar();
+      triggerEditorAutosave();
+      showModalMsg("Success", `Imported ${count} grammar points!`);
+    };
     
     window.toggleVocabBulk = function() {
       const single = document.getElementById('tv-single-area');
@@ -11046,13 +11390,50 @@ window.initFirebaseSystem = async function() {
       });
 
       let htmlText = pText.split('\n\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
-      if (isTimeFree && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
-        APP_DATA.vocab.forEach((v, vIdx) => {
-          const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
-          if (!cleanTerm) return;
-          const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
-          htmlText = htmlText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
-        });
+      readingControls = (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA.module === 'reading') ? `
+        <div class="reading-mode-controls">
+            <button id="btn-skimming-play" onclick="window.startSkimming()" style="display:inline-flex; align-items:center; gap:4px;">▶ Play</button>
+            <button id="btn-skimming-pause" onclick="window.pauseSkimming()" style="display:none; align-items:center; gap:4px; background-color:#fef3c7; color:#92400e; border-color:#fcd34d;">⏸ Pause</button>
+            <button onclick="window.restartSkimming()" style="background-color:#f1f5f9; color:#475569; border-color:#cbd5e1;">🔄 Restart</button>
+            <div style="width:1px; height:20px; background-color:#bfdbfe; margin:0 4px;"></div>
+            <button onclick="window.skipSkimmingParagraph(-1)" title="Previous Paragraph" style="background-color:#ffffff; color:#475569; border-color:#cbd5e1;">⏪ Prev</button>
+            <button onclick="window.skipSkimmingParagraph(1)" title="Next Paragraph" style="background-color:#ffffff; color:#475569; border-color:#cbd5e1;">Next ⏩</button>
+            <div style="width:1px; height:20px; background-color:#bfdbfe; margin:0 4px;"></div>
+            <label>WPM</label>
+            <input type="number" id="reading-speed-input" value="220" min="50" max="1000" onchange="window.updateSkimmingSpeed()">
+        </div>` : '';
+
+      let studyToggles = '';
+      
+      if (isTimeFree) {
+          if (APP_DATA.grammar && APP_DATA.grammar.length > 0) {
+              APP_DATA.grammar.forEach((g, gIdx) => {
+                  const cleanTerm = g.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                  if (!cleanTerm) return;
+                  const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                  htmlText = htmlText.replace(regex, `<span class="grammar-word" onclick="showGrammarPop(event, ${gIdx})">$1</span>`);
+              });
+          }
+          if (APP_DATA.vocab && APP_DATA.vocab.length > 0) {
+              APP_DATA.vocab.forEach((v, vIdx) => {
+                  const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                  if (!cleanTerm) return;
+                  const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
+                  htmlText = htmlText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
+              });
+          }
+          
+          if ((APP_DATA.vocab && APP_DATA.vocab.length > 0) || (APP_DATA.grammar && APP_DATA.grammar.length > 0)) {
+              studyToggles = `
+              <div class="flex flex-wrap gap-4 mb-6 p-4 bg-white border border-slate-200 rounded-xl shadow-sm justify-start md:justify-center w-full">
+                  <label class="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none hover:text-blue-600 transition">
+                      <input type="checkbox" checked onchange="document.getElementById('passage-container').classList.toggle('hide-vocab', !this.checked)" class="w-4 h-4 text-blue-600 rounded"> 💡 Show Vocab Highlights
+                  </label>
+                  <label class="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none hover:text-emerald-600 transition">
+                      <input type="checkbox" checked onchange="document.getElementById('passage-container').classList.toggle('hide-grammar', !this.checked)" class="w-4 h-4 text-emerald-600 rounded"> 🪄 Show Grammar Highlights
+                  </label>
+              </div>`;
+          }
       }
 
       let media = '';
@@ -11099,7 +11480,7 @@ window.initFirebaseSystem = async function() {
           }
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
+          passageContainer.innerHTML = `${studyToggles}<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
           wireKaraokeAudio(examAudio, passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
@@ -11157,8 +11538,22 @@ window.initFirebaseSystem = async function() {
           const readingControls = showReadingControls ? renderReadingControls() : '';
 
           // Shows Title, Image/Chart (if provided), and the main Passage Text/Prompt. 
-          // We removed the duplicate "leftHtml" question container completely to prevent the empty grey boxes (Pic 2).
-          passageContainer.innerHTML = `${readingControls}<div class="passage-text font-bold mb-6">${p.title}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
+          
+          // Overriding any legacy reading controls with our new advanced speed-reading panel
+          let advancedReadingControls = (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA.module === 'reading') ? `
+            <div class="reading-mode-controls">
+                <button id="btn-skimming-play" onclick="window.startSkimming()" style="display:inline-flex; align-items:center; gap:4px;">▶ Play</button>
+                <button id="btn-skimming-pause" onclick="window.pauseSkimming()" style="display:none; align-items:center; gap:4px; background-color:#fef3c7; color:#92400e; border-color:#fcd34d;">⏸ Pause</button>
+                <button onclick="window.restartSkimming()" style="background-color:#f1f5f9; color:#475569; border-color:#cbd5e1;">🔄 Restart</button>
+                <div style="width:1px; height:20px; background-color:#bfdbfe; margin:0 4px;"></div>
+                <button onclick="window.skipSkimmingParagraph(-1)" title="Previous Paragraph" style="background-color:#ffffff; color:#475569; border-color:#cbd5e1;">⏪ Prev</button>
+                <button onclick="window.skipSkimmingParagraph(1)" title="Next Paragraph" style="background-color:#ffffff; color:#475569; border-color:#cbd5e1;">Next ⏩</button>
+                <div style="width:1px; height:20px; background-color:#bfdbfe; margin:0 4px;"></div>
+                <label>WPM</label>
+                <input type="number" id="reading-speed-input" value="220" min="50" max="1000" onchange="window.updateSkimmingSpeed()">
+            </div>` : '';
+
+          passageContainer.innerHTML = `${advancedReadingControls}${studyToggles}<div class="passage-text font-bold mb-6">${p.title}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           const speedInput = document.getElementById('reading-speed-input');
           if (speedInput) {
               speedInput.value = String(Math.round(window.readingSpeed || 220));
@@ -11218,8 +11613,38 @@ window.initFirebaseSystem = async function() {
          arrow.style.left = `calc(50% + ${relativeOffset}px)`;
       }
     }
+
+    function showGrammarPop(e, idx) {
+      e.stopPropagation(); const g = APP_DATA.grammar[idx]; if(!g) return;
+      document.getElementById('gp-term').textContent = g.term;
+      document.getElementById('gp-type').textContent = g.type || 'Grammar Point';
+      document.getElementById('gp-expl').innerHTML = g.expl || '';
+      
+      const pop = document.getElementById('grammar-popover'); 
+      pop.classList.remove('hidden');
+      
+      const rect = e.target.getBoundingClientRect();
+      const popWidth = pop.offsetWidth || 340; 
+      
+      let popLeft = rect.left + (rect.width / 2);
+      if (popLeft - (popWidth / 2) < 10) popLeft = (popWidth / 2) + 10;
+      if (popLeft + (popWidth / 2) > window.innerWidth - 10) popLeft = window.innerWidth - (popWidth / 2) - 10;
+      
+      pop.style.left = `${popLeft}px`; 
+      pop.style.top = `${rect.top}px`;
+      
+      const arrow = pop.querySelector('.arrow');
+      if (arrow) {
+         const wordCenter = rect.left + (rect.width / 2);
+         const relativeOffset = wordCenter - popLeft;
+         arrow.style.left = `calc(50% + ${relativeOffset}px)`;
+      }
+    }
     
-    document.addEventListener('mouseup', e => { if(!e.target.closest('#vocab-popover') && !e.target.classList.contains('vocab-word')) document.getElementById('vocab-popover').classList.add('hidden'); });
+    document.addEventListener('mouseup', e => { 
+        if(!e.target.closest('#vocab-popover') && !e.target.classList.contains('vocab-word')) document.getElementById('vocab-popover').classList.add('hidden'); 
+        if(!e.target.closest('#grammar-popover') && !e.target.classList.contains('grammar-word')) document.getElementById('grammar-popover').classList.add('hidden'); 
+    });
 
     function renderQuestions() {
       const c = document.getElementById('questions-container'); 
