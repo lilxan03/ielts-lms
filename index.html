@@ -2528,7 +2528,7 @@
          <div class="flex items-center gap-2">
             <span id="autosave-status" class="text-xs font-bold text-emerald-500 opacity-0 transition-opacity mr-1">✓ Saved</span>
 
-            <button id="exam-flashcard-btn" onclick="window.toggleStudentFlashcardPanel()" class="hidden w-10 h-10 rounded-full border border-slate-200 bg-slate-50 items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Flashcards">
+            <button id="exam-flashcard-btn" onclick="window.startTestVocabStudy()" class="hidden w-10 h-10 rounded-full border border-slate-200 bg-slate-50 items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Study Test Vocab">
               🗂️
             </button>       
             <button onclick="window.exportTestPDF()" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Print to PDF">
@@ -3616,6 +3616,66 @@ window.initFirebaseSystem = async function() {
         return card;
     };
 
+    window.startTestVocabStudy = function() {
+        if (!APP_DATA || !APP_DATA.vocab || APP_DATA.vocab.length === 0) {
+            if (typeof window.showToast === 'function') window.showToast("Notice", "No vocabulary provided by the teacher for this test.", "info");
+            return;
+        }
+        
+        // Map APP_DATA.vocab to a temporary flashcard deck
+        const tempDeck = APP_DATA.vocab.map((v, i) => ({
+            id: 'temp_test_' + i,
+            term: v.term || 'Word',
+            def: (v.eng ? v.eng + (v.vi ? ' / ' + v.vi : '') : v.vi) || 'Definition',
+            repetition: 0,
+            interval: 1,
+            efactor: 2.5,
+            nextReviewDate: 0
+        }));
+        
+        // Save directly to the script-scoped FLASHCARDS variable
+        FLASHCARDS['temp_test_deck'] = tempDeck;
+        
+        // Broadcast the active list ID to all likely global state variables
+        window.activeListId = 'temp_test_deck';
+        window.currentListId = 'temp_test_deck';
+        window.currentStudyDeckId = 'temp_test_deck';
+        window.activeStudyListId = 'temp_test_deck';
+        try { activeListId = 'temp_test_deck'; } catch(e){}
+        
+        // ✨ THE CRITICAL FIX: Trigger the change event so the hidden JS engine registers the new active list
+        const selectEl = document.getElementById('panel-fc-list-select');
+        if (selectEl) {
+            let opt = selectEl.querySelector('option[value="temp_test_deck"]');
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = 'temp_test_deck';
+                opt.textContent = 'Test Vocabulary';
+                opt.style.display = 'none'; 
+                selectEl.appendChild(opt);
+            }
+            selectEl.value = 'temp_test_deck';
+            
+            // Dispatch the change event to force the Active Recall engine to update its internal state!
+            selectEl.dispatchEvent(new Event('change'));
+        }
+        
+        const deckNameEl = document.getElementById('study-mode-deck-name');
+        if (deckNameEl) deckNameEl.textContent = (APP_DATA.title || 'Test') + " (Vocab Bank)";
+        
+        // If there's an explicit openStudyMode function natively tied to the engine, use it
+        if (typeof window.openStudyMode === 'function') {
+            window.openStudyMode('temp_test_deck');
+            return;
+        }
+        
+        document.getElementById('study-mode-modal').classList.remove('hidden');
+        
+        if (typeof window.switchStudyMode === 'function') {
+            window.switchStudyMode('flashcards');
+        }
+    };
+
     window.submitFlashcardReview = async function(listId, cardId, quality) {
         const deck = FLASHCARDS[listId];
         if (!deck) return;
@@ -3625,24 +3685,122 @@ window.initFirebaseSystem = async function() {
         
         deck[cardIndex] = window.calculateSM2(deck[cardIndex], quality);
         
+        // ✨ FIX: Prevent cloud sync for temporary test decks! (Allows studying without polluting personal lists)
+        if (listId === 'temp_test_deck') {
+            if (document.getElementById('study-mode-modal') && !document.getElementById('study-mode-modal').classList.contains('hidden')) {
+                if (typeof window.renderStudyFlashcard === 'function') window.renderStudyFlashcard();
+            }
+            return; 
+        }
+        
         try {
             const docId = `${currentUser.user}_${listId}`;
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: deck });
             window.showToast("Progress Saved", `Next review in ${deck[cardIndex].interval} day(s).`);
             
             // This triggers your UI to move to the next card
-            // ✨ FIX: Trigger the correct UI refresh depending on which screen is open
-            if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
-                // Refresh the Side Panel
-                window.renderFlashcardPanel();
+            if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('hidden') && !document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
+                if(typeof window.renderFlashcardPanel === 'function') window.renderFlashcardPanel();
             } 
             else if (document.getElementById('study-mode-modal') && !document.getElementById('study-mode-modal').classList.contains('hidden')) {
-                // Refresh the Full Screen Active Recall mode
-                window.renderStudyFlashcard();
+                if(typeof window.renderStudyFlashcard === 'function') window.renderStudyFlashcard();
             } 
         } catch (err) {
             console.error("SRS Sync Error:", err);
             window.showModalMsg("Error", "Could not sync progress to cloud.");
+        }
+    };
+
+    // ✨ NEW: Robust Handlers for Custom Student Flashcard Creation
+    window.openStudentFlashcardCreator = function(event) {
+        if (event) { event.preventDefault(); event.stopPropagation(); }
+        
+        const tooltip = document.getElementById('exam-selection-tooltip');
+        if (tooltip) tooltip.classList.add('hidden');
+        
+        const selection = window.getSelection();
+        let term = '';
+        if (selection && selection.rangeCount > 0) term = selection.toString().trim();
+        
+        document.getElementById('fc-term-input').value = term;
+        document.getElementById('fc-def-input').value = '';
+        
+        const selectEl = document.getElementById('fc-list-select');
+        selectEl.innerHTML = '';
+        
+        // Filter out the temporary deck
+        const listIds = Object.keys(FLASHCARDS || {}).filter(id => id !== 'temp_test_deck');
+        if (listIds.length === 0) {
+            selectEl.innerHTML = '<option value="">-- No Lists Available --</option>';
+        } else {
+            listIds.forEach(id => {
+                const opt = document.createElement('option');
+                opt.value = id;
+                opt.textContent = id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Clean formatting
+                selectEl.appendChild(opt);
+            });
+        }
+        document.getElementById('student-fc-modal').classList.remove('hidden');
+    };
+
+    window.closeStudentFlashcardCreator = function() {
+        document.getElementById('student-fc-modal').classList.add('hidden');
+    };
+
+    window.promptCreateFcList = function() {
+        showInputPrompt("New Flashcard List", "Enter a name for your new set:", (name) => {
+            const listId = name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            if (!listId) return;
+            
+            if (!FLASHCARDS[listId]) {
+                FLASHCARDS[listId] = [];
+                const selectEl = document.getElementById('fc-list-select');
+                if (selectEl.options.length === 1 && selectEl.options[0].value === "") selectEl.innerHTML = '';
+                
+                const opt = document.createElement('option');
+                opt.value = listId;
+                opt.textContent = name;
+                opt.selected = true;
+                selectEl.appendChild(opt);
+                
+                if (typeof window.showToast === 'function') window.showToast("List Created", `Set '${name}' is ready.`);
+            }
+        });
+    };
+
+    window.saveStudentFlashcard = async function() {
+        const term = document.getElementById('fc-term-input').value.trim();
+        const def = document.getElementById('fc-def-input').value.trim();
+        const listId = document.getElementById('fc-list-select').value;
+        
+        if (!term || !def) {
+            if (typeof window.showToast === 'function') window.showToast("Error", "Term and Definition are required.", "error");
+            return;
+        }
+        if (!listId) {
+            if (typeof window.showToast === 'function') window.showToast("Error", "Please create or select a list first.", "error");
+            return;
+        }
+        
+        if (!FLASHCARDS[listId]) FLASHCARDS[listId] = [];
+        FLASHCARDS[listId].push({
+            id: 'card_' + Date.now(),
+            term: term,
+            def: def,
+            repetition: 0,
+            interval: 1,
+            efactor: 2.5,
+            nextReviewDate: 0
+        });
+        
+        try {
+            const docId = `${currentUser.user}_${listId}`;
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: FLASHCARDS[listId] });
+            if (typeof window.showToast === 'function') window.showToast("Saved", `Added '${term}' to your set.`);
+            window.closeStudentFlashcardCreator();
+        } catch(e) {
+            console.error(e);
+            showModalMsg("Error", "Could not save card to cloud.");
         }
     };
 
@@ -4554,7 +4712,7 @@ window.initFirebaseSystem = async function() {
             }));
 
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('hidden')) { window.renderFlashcardPanel(); } resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { const temp = FLASHCARDS['temp_test_deck']; FLASHCARDS = {}; if(temp) FLASHCARDS['temp_test_deck'] = temp; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('hidden')) { window.renderFlashcardPanel(); } resolve(); }); }));
         } else if (currentUser.role === 'collaborator') {
             promises.push(new Promise(resolve => { 
                 window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
@@ -4636,7 +4794,7 @@ window.initFirebaseSystem = async function() {
             }
             
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data; }); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { FLASHCARDS = {}; snap.docs.forEach(d => { if (d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) { window.renderFlashcardPanel(); } resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { const temp = FLASHCARDS['temp_test_deck']; FLASHCARDS = {}; if(temp) FLASHCARDS['temp_test_deck'] = temp; snap.docs.forEach(d => { if (d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) { window.renderFlashcardPanel(); } resolve(); }); }));
         }
 
         await Promise.all(promises);
