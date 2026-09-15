@@ -6,13 +6,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1e293b">
-  <title>IELTS LMS - Cloud Connected</title>
+  <title>Khanh LMS - Cloud Connected</title>
   
   <!-- PWA App Manifest Injection -->
   <link rel="manifest" id="pwa-manifest">
   <script>
     const manifestJSON = {
-      "name": "IELTS LMS",
+      "name": "Khanh LMS",
       "short_name": "IELTS App",
       "start_url": window.location.href.split('?')[0],
       "display": "standalone",
@@ -414,7 +414,7 @@
       <div class="absolute inset-0 bg-blue-500 blur-[30px] opacity-30 rounded-full"></div>
       <div id="loader-spinner" class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white shadow-[0_0_15px_rgba(255,255,255,0.5)]"></div>
     </div>
-    <h1 class="text-3xl font-extrabold text-white mb-3 tracking-wide drop-shadow-md">IELTS LMS</h1>
+    <h1 class="text-3xl font-extrabold text-white mb-3 tracking-wide drop-shadow-md">Khanh LMS</h1>
     <h2 class="text-lg font-medium text-blue-200 mb-2 tracking-wide">Connecting to Cloud...</h2>
     <div id="cloud-loader-text" class="text-blue-100/70 font-mono text-sm max-w-xl text-center px-4">Initializing secure database connection</div>
   </div>
@@ -483,7 +483,10 @@
     <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 9s;"></div>
     
     <div class="bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[400px] relative z-10 animate-fade-in-up border border-white/20">
-      <h1 class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700 mb-2">IELTS LMS</h1>
+      <div id="app-logo-auth-container" class="flex justify-center mb-2 min-h-[40px]">
+          <h1 id="app-logo-auth-text" class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">Khanh LMS</h1>
+          <img id="app-logo-auth-img" src="" class="h-16 object-contain hidden">
+      </div>
       <p class="text-center text-slate-500 mb-8 font-medium" id="auth-subtitle">Login to your account</p>
       
       <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
@@ -1535,7 +1538,7 @@
         <!-- LEFT SIDE: Logo, Title & Streak -->
         <div class="flex items-center gap-6">
             <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3 drop-shadow-sm">
-               <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🎓</div>
+               <div id="app-logo-student" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm overflow-hidden shrink-0">🎓</div>
                Student Portal
             </h1>
             
@@ -1787,7 +1790,7 @@
         <!-- Default State: Logo & Tabs -->
         <div id="editor-default-header" class="flex items-center gap-8 w-full">
             <h1 class="text-2xl font-black tracking-tight text-white flex items-center gap-2 drop-shadow-sm">
-                <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🛠</div>
+                <div id="app-logo-teacher" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm overflow-hidden shrink-0">🛠</div>
                 LMS <span class="font-light text-blue-200 text-lg">| Teacher</span>
             </h1>
             <div class="flex bg-blue-950/40 rounded-2xl p-1.5 shadow-inner space-x-1 border border-blue-400/20" id="editor-main-tabs">
@@ -2240,7 +2243,22 @@
             </div>
 
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-50 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pb-6 border-b border-slate-100">
+                    <!-- Webapp Logo -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Webapp Logo</label>
+                        <div class="flex items-center gap-4">
+                            <div class="w-20 h-20 rounded-xl bg-slate-100 border-2 border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative">
+                                <img id="pp-logo-preview" src="" class="max-w-full max-h-full object-contain hidden z-10">
+                                <span id="pp-logo-placeholder" class="text-[10px] text-slate-400 font-bold absolute uppercase">No Logo</span>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <input type="file" id="pp-logo-upload" accept="image/*" class="text-sm text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer transition" onchange="window.handlePPLogo(event)">
+                                <button onclick="window.clearPPLogo()" class="text-[10px] text-rose-500 bg-rose-50 hover:bg-rose-100 font-bold px-3 py-1.5 rounded-lg transition w-max uppercase tracking-wider">Remove Logo</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Hero Image -->
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Storefront Hero Image</label>
@@ -2496,11 +2514,11 @@
         <!-- NEW: Back Button (Only visible in Free Mode) -->
         <button id="exam-back-btn" onclick="window.exitTestWithoutSaving()" class="hidden px-4 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 rounded-xl font-bold text-sm transition items-center gap-2 border border-slate-200 shadow-sm" title="Leave without saving">&larr; Back</button>
 
-        <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow text-white font-black text-xl">
-           I
+        <div id="app-logo-exam" class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow text-white font-black text-xl overflow-hidden shrink-0">
+           K
         </div>
         <div class="flex flex-col">
-          <span id="exam-module-title" class="font-black text-slate-800 text-lg leading-none mb-1">IELTS Exam Simulator</span>
+          <span id="exam-module-title" class="font-black text-slate-800 text-lg leading-none mb-1">Khanh LMS Exam Simulator</span>
           <div class="flex items-center gap-2">
              <span id="part-indicator" class="text-[10px] uppercase font-bold tracking-wider text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200 shadow-sm">Part 1</span>
              <span id="exam-preview-badge" class="hidden bg-purple-100 text-purple-700 border border-purple-200 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full animate-pulse shadow-sm">Preview</span>
@@ -2986,13 +3004,29 @@ window.initFirebaseSystem = async function() {
         if (!part || !audio) return;
         const cue = part.karaoke?.[karaokeEditorCueIndex];
         const now = Number(audio.currentTime) || 0;
+        
         if (!cue || cue.start == null) {
             window.markKaraokeStart();
             return;
         }
         if (now <= Number(cue.start)) return;
+        
+        // 1. Lock in the end time for the current sentence
         cue.end = now;
-        karaokeEditorCueIndex = Math.min(karaokeEditorCueIndex + 1, splitKaraokeSentences(part.text || '').length - 1);
+        
+        // 2. Automatically prepare the NEXT sentence and chain its start time
+        const sentences = splitKaraokeSentences(part.text || '');
+        const nextIndex = Math.min(karaokeEditorCueIndex + 1, sentences.length - 1);
+        
+        if (nextIndex > karaokeEditorCueIndex) {
+            if (!part.karaoke[nextIndex]) part.karaoke[nextIndex] = {};
+            part.karaoke[nextIndex].text = sentences[nextIndex] || '';
+            part.karaoke[nextIndex].start = now; // This chains the timestamps perfectly!
+        }
+        
+        // 3. Move the editor focus to the next cue
+        karaokeEditorCueIndex = nextIndex;
+        
         renderKaraokeEditorCues();
         triggerEditorAutosave();
     };
@@ -4277,6 +4311,63 @@ window.initFirebaseSystem = async function() {
         window.triggerEditorAutosave();
     };
 
+    // --- GLOBAL BRANDING / LOGO SYSTEM ---
+    window.applyGlobalLogo = function() {
+        const logoUrl = PUBLIC_PROFILE.appLogo;
+        
+        const stuLogo = document.getElementById('app-logo-student');
+        if (stuLogo) stuLogo.innerHTML = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : '🎓';
+        
+        const teacherLogo = document.getElementById('app-logo-teacher');
+        if (teacherLogo) teacherLogo.innerHTML = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : '🛠';
+        
+        const examLogo = document.getElementById('app-logo-exam');
+        if (examLogo) examLogo.innerHTML = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : 'I';
+        
+        const authText = document.getElementById('app-logo-auth-text');
+        const authImg = document.getElementById('app-logo-auth-img');
+        if (authText && authImg) {
+            if (logoUrl) {
+                authImg.src = logoUrl;
+                authImg.classList.remove('hidden');
+                authText.classList.add('hidden');
+            } else {
+                authImg.classList.add('hidden');
+                authText.classList.remove('hidden');
+            }
+        }
+        
+        // Also update the Public Storefront editor preview safely
+        const preview = document.getElementById('pp-logo-preview');
+        const placeholder = document.getElementById('pp-logo-placeholder');
+        if (preview && placeholder) {
+            if (logoUrl) {
+                preview.src = logoUrl;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+            } else {
+                preview.src = '';
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+            }
+        }
+    };
+
+    window.handlePPLogo = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        window.processImageFile(file, (base64) => {
+            PUBLIC_PROFILE.appLogo = base64;
+            window.applyGlobalLogo();
+        });
+        e.target.value = '';
+    };
+
+    window.clearPPLogo = function() {
+        PUBLIC_PROFILE.appLogo = null;
+        window.applyGlobalLogo();
+    };
+
     // --- PUSH NOTIFICATION SYSTEM ---
     window.requestPushNotifications = async function() {
         if (!window.firebaseApp || !window.FCM_VAPID_KEY) {
@@ -4614,7 +4705,7 @@ window.initFirebaseSystem = async function() {
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => { if (snap.exists()) BILLING_SETTINGS = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => { if (snap.exists()) AVAILABILITY = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => { PACKAGES = snap.docs.map(d => d.data()); if(currentUser?.role === 'teacher') renderStudentsList(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => { if (snap.exists()) PUBLIC_PROFILE = snap.data(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => { if (snap.exists()) PUBLIC_PROFILE = snap.data(); if(typeof window.applyGlobalLogo === 'function') window.applyGlobalLogo(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => { HOF_STUDENTS = snap.docs.map(d => d.data()); if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => { if (snap.exists()) TEACHER_TEMPLATES = snap.data().items || []; resolve(); }); })
             ]);
