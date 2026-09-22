@@ -3325,7 +3325,7 @@ window.initFirebaseSystem = async function() {
             const hasTime = cue.start !== null;
             const clickAttr = hasTime ? `onclick="window.seekKaraokeSentence(${index}, event)"` : '';
             const styleClass = hasTime ? 'cursor-pointer hover:bg-blue-50' : '';
-            return `<span class="karaoke-line inline-block px-1.5 py-0.5 rounded transition-all duration-200 ${styleClass}" data-karaoke-index="${index}" ${clickAttr}>${lineText}</span>`;
+            return `<span class="karaoke-line block px-1.5 py-0.5 rounded transition-all duration-200 ${styleClass}" data-karaoke-index="${index}" ${clickAttr}>${lineText}</span>`;
         }).join(' ')}</div>`;
     }
 
