@@ -1524,6 +1524,38 @@
       </div>
   </div>
 
+  <!-- GLOBAL TEST LEADERBOARD MODAL -->
+  <div id="test-leaderboard-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[500] flex items-center justify-center backdrop-blur-md md:p-6 animate-fade-in">
+      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-4xl h-full md:h-[85vh] overflow-hidden border border-slate-200 animate-scale-up">
+          <div class="bg-gradient-to-r from-amber-500 to-orange-500 p-6 flex justify-between items-center shrink-0 z-20 shadow-md">
+              <h2 class="font-black text-2xl text-white flex items-center gap-3 tracking-tight">
+                  <span class="bg-white/20 p-2 rounded-xl shadow-inner leading-none">🏆</span> Top Scores & Leaderboard
+              </h2>
+              <button onclick="document.getElementById('test-leaderboard-modal').classList.add('hidden')" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+          </div>
+          <div class="p-6 bg-slate-50 border-b border-slate-200 shrink-0 shadow-sm z-10 flex gap-4 items-center">
+              <label class="font-bold text-slate-600 text-sm uppercase tracking-widest">Select Test:</label>
+              <select id="leaderboard-test-select" onchange="window.renderLeaderboardTable()" class="flex-1 border-2 border-slate-300 p-3 rounded-xl font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 outline-none cursor-pointer bg-white shadow-sm"></select>
+          </div>
+          <div class="flex-1 overflow-y-auto p-0 bg-white relative w-full">
+              <table class="w-full text-left border-collapse">
+                  <thead class="bg-slate-50 sticky top-0 shadow-sm z-10">
+                      <tr class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-200">
+                          <th class="p-4 w-16 text-center">Rank</th>
+                          <th class="p-4">Student</th>
+                          <th class="p-4 text-center">Mode</th>
+                          <th class="p-4 text-center">Score</th>
+                          <th class="p-4 text-right pr-8">Time</th>
+                      </tr>
+                  </thead>
+                  <tbody id="leaderboard-table-body" class="divide-y divide-slate-100">
+                      <!-- JS Injected Rows -->
+                  </tbody>
+              </table>
+          </div>
+      </div>
+  </div>
+
   <!-- START SCREEN (STUDENT DASHBOARD) -->
   <div id="start-screen" class="hidden h-screen w-full relative bg-[#f4f7fb] overflow-y-auto font-sans animate-fade-in">
     
@@ -2398,8 +2430,11 @@
           
           <div id="builder-media-fields" class="mt-3">
             <div id="audio-field-container">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Audio URL (Optional)</label>
-              <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="https://..." onchange="window.updateListeningEditorAudio(this.value)">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex justify-between items-center">
+                  <span>Audio URL (Optional)</span>
+                  <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200">Google Drive Supported</span>
+              </label>
+              <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Paste standard link or Google Drive share link here..." onchange="window.updateListeningEditorAudio(this.value)" oninput="window.updateListeningEditorAudio(this.value)" onpaste="setTimeout(() => window.updateListeningEditorAudio(document.getElementById('edit-audio-url').value), 50)">
                             <div class="mt-3 mb-5 p-3 rounded-lg border border-blue-200 bg-blue-50">
                                 <label class="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Highlight starts at</label>
                                 <audio id="edit-listening-audio" controls class="w-full h-9 mb-2"></audio>
@@ -2548,7 +2583,10 @@
 
             <button id="exam-flashcard-btn" onclick="window.startTestVocabStudy()" class="hidden w-10 h-10 rounded-full border border-slate-200 bg-slate-50 items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Study Test Vocab">
               🗂️
-            </button>       
+            </button> 
+            <button id="exam-grammar-btn" onclick="window.startTestGrammarStudy()" class="hidden w-10 h-10 rounded-full border border-slate-200 bg-slate-50 items-center justify-center text-slate-500 hover:bg-white hover:border-emerald-300 hover:text-emerald-600 hover:shadow-sm transition-all" title="Study Test Grammar">
+              🪄
+            </button>      
             <button onclick="window.exportTestPDF()" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Print to PDF">
               🖨️
             </button>
@@ -2975,7 +3013,7 @@ window.initFirebaseSystem = async function() {
             const timing = cue.start !== undefined && cue.start !== null
                 ? `${formatKaraokeEditorTime(cue.start)} - ${cue.end == null ? '--:--.--' : formatKaraokeEditorTime(cue.end)}`
                 : 'Not marked';
-            return `<button type="button" onclick="window.selectKaraokeEditorCue(${index})" class="w-full text-left px-2 py-1.5 rounded text-[11px] ${selected ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-slate-50 border-transparent text-slate-700'} border flex items-center gap-2"><span class="font-black w-5">${index + 1}</span><span class="flex-1 truncate">${escapeKaraokeText(sentence)}</span><span class="font-mono shrink-0">${timing}</span></button>`;
+            return `<button type="button" onclick="window.selectKaraokeEditorCue(${index})" class="w-full text-left px-2 py-1.5 rounded text-[11px] ${selected ? 'bg-blue-100 border-blue-300 text-blue-900' : 'bg-slate-50 border-transparent text-slate-700'} border flex items-start gap-2"><span class="font-black w-5 shrink-0">${index + 1}</span><span class="flex-1 min-w-0 whitespace-normal break-words">${escapeKaraokeText(sentence)}</span><span class="font-mono shrink-0">${timing}</span></button>`;
         }).join('');
     }
 
@@ -3268,6 +3306,38 @@ window.initFirebaseSystem = async function() {
         }
     }
 
+    // ✨ NEW: Smart Audio Link Converter (Supports Google Drive)
+    window.updateListeningEditorAudio = function(rawUrl) {
+        let url = (rawUrl || '').trim();
+        
+        // Auto-convert Google Drive viewer links to direct streaming links
+        if (url.includes('drive.google.com')) {
+            const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                url = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
+                
+                const inputEl = document.getElementById('edit-audio-url');
+                if (inputEl && inputEl.value !== url) {
+                    inputEl.value = url;
+                }
+                if (typeof window.showToast === 'function') window.showToast("Link Converted", "Google Drive URL converted to direct audio stream.");
+            }
+        }
+        
+        // Safely assign to data model
+        if (APP_DATA && APP_DATA.parts && APP_DATA.parts[currentEditorPartIdx]) {
+            APP_DATA.parts[currentEditorPartIdx].audio = url;
+        }
+        
+        const audioEl = document.getElementById('edit-listening-audio');
+        if (audioEl && audioEl.src !== url) {
+            audioEl.src = url;
+            audioEl.load(); // Force the audio player to refresh immediately
+        }
+        
+        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    };
+
     window.seekKaraokeAudio = function(time) {
         const examAudio = document.getElementById('exam-listening-audio');
         const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
@@ -3325,7 +3395,7 @@ window.initFirebaseSystem = async function() {
             const hasTime = cue.start !== null;
             const clickAttr = hasTime ? `onclick="window.seekKaraokeSentence(${index}, event)"` : '';
             const styleClass = hasTime ? 'cursor-pointer hover:bg-blue-50' : '';
-            return `<span class="karaoke-line block px-1.5 py-0.5 rounded transition-all duration-200 ${styleClass}" data-karaoke-index="${index}" ${clickAttr}>${lineText}</span>`;
+            return `<span class="karaoke-line inline-block px-1.5 py-0.5 rounded transition-all duration-200 ${styleClass}" data-karaoke-index="${index}" ${clickAttr}>${lineText}</span>`;
         }).join(' ')}</div>`;
     }
 
@@ -3622,6 +3692,303 @@ window.initFirebaseSystem = async function() {
         
         document.execCommand('insertHTML', false, html);
         if(window.triggerEditorAutosave) window.triggerEditorAutosave();
+    };
+
+    // --- 1. GRAMMAR FLASHCARDS ENGINE ---
+    window.startTestGrammarStudy = function() {
+        if (!window.APP_DATA || !window.APP_DATA.grammar || window.APP_DATA.grammar.length === 0) {
+            if (typeof window.showToast === 'function') window.showToast("Notice", "No grammar highlights provided by the teacher for this test.", "info");
+            return;
+        }
+        
+        // Map grammar array to our temporary flashcard deck
+        const tempDeck = window.APP_DATA.grammar.map((g, i) => ({
+            id: 'temp_grammar_' + i,
+            term: g.term || 'Phrase',
+            def: (g.type ? `[${g.type}] ` : '') + (g.expl || 'Explanation'),
+            repetition: 0, interval: 1, efactor: 2.5, nextReviewDate: 0
+        }));
+        
+        FLASHCARDS['temp_test_deck'] = tempDeck;
+        window.activeListId = 'temp_test_deck';
+        window.currentListId = 'temp_test_deck';
+        window.currentStudyDeckId = 'temp_test_deck';
+        
+        const selectEl = document.getElementById('panel-fc-list-select');
+        if (selectEl) {
+            let opt = selectEl.querySelector('option[value="temp_test_deck"]');
+            if (!opt) {
+                opt = document.createElement('option');
+                opt.value = 'temp_test_deck';
+                opt.style.display = 'none'; 
+                selectEl.appendChild(opt);
+            }
+            opt.textContent = 'Test Grammar Highlight';
+            selectEl.value = 'temp_test_deck';
+            selectEl.dispatchEvent(new Event('change'));
+        }
+        
+        const deckNameEl = document.getElementById('study-mode-deck-name');
+        if (deckNameEl) deckNameEl.textContent = (APP_DATA.title || 'Test') + " (Grammar Bank)";
+        
+        document.getElementById('study-mode-modal').classList.remove('hidden');
+        if (typeof window.switchStudyMode === 'function') window.switchStudyMode('flashcards');
+    };
+
+    // --- 2. GLOBAL TEST LEADERBOARD ENGINE ---
+    window.showLeaderboardModal = function() {
+        document.getElementById('test-leaderboard-modal').classList.remove('hidden');
+        
+        const selectEl = document.getElementById('leaderboard-test-select');
+        if (!selectEl) return;
+        
+        // Extract unique tests from submissions
+        const uniqueTests = {};
+        SUBMISSIONS.forEach(s => {
+            if (s.testId && s.testName) uniqueTests[s.testId] = s.testName;
+        });
+
+        let opts = '<option value="">-- Select a Test --</option>';
+        for (let [id, name] of Object.entries(uniqueTests)) {
+            opts += `<option value="${id}">${name}</option>`;
+        }
+        selectEl.innerHTML = opts;
+        
+        // Auto-select if currently viewing a test
+        if (APP_DATA && APP_DATA.id && uniqueTests[APP_DATA.id]) {
+            selectEl.value = APP_DATA.id;
+            window.renderLeaderboardTable();
+        } else {
+            document.getElementById('leaderboard-table-body').innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400 font-medium">Please select a test above.</td></tr>`;
+        }
+    };
+
+    window.renderLeaderboardTable = function() {
+        const testId = document.getElementById('leaderboard-test-select').value;
+        const tbody = document.getElementById('leaderboard-table-body');
+        if (!testId) return;
+
+        let subs = SUBMISSIONS.filter(s => s.testId === testId);
+        
+        // Sort by Accuracy (Score), then Speed (TimeTaken)
+        subs.sort((a, b) => {
+            const scoreA = parseFloat(String(a.score).split('/')[0]) || 0;
+            const scoreB = parseFloat(String(b.score).split('/')[0]) || 0;
+            if (scoreA !== scoreB) return scoreB - scoreA; // Highest score first
+            
+            const timeA = a.timeSpent || 999999;
+            const timeB = b.timeSpent || 999999;
+            return timeA - timeB; // Lowest time first
+        });
+
+        if (subs.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-slate-400 font-medium">No attempts recorded yet.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = subs.map((s, index) => {
+            let rankBadge = `<span class="font-black text-slate-500">${index + 1}</span>`;
+            if (index === 0) rankBadge = `<span class="text-2xl drop-shadow-sm">🥇</span>`;
+            if (index === 1) rankBadge = `<span class="text-2xl drop-shadow-sm">🥈</span>`;
+            if (index === 2) rankBadge = `<span class="text-2xl drop-shadow-sm">🥉</span>`;
+
+            // Formatting Time Spent safely
+            let formattedTime = "--:--";
+            if (s.timeSpent) {
+                const min = Math.floor(s.timeSpent / 60);
+                const sec = s.timeSpent % 60;
+                formattedTime = `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+            }
+
+            const modeBadge = (s.isTimeFree || !s.timeSpent) 
+                ? `<span class="bg-emerald-50 text-emerald-600 border border-emerald-200 px-2 py-0.5 rounded text-[10px] font-black uppercase">Time-Free</span>`
+                : `<span class="bg-rose-50 text-rose-600 border border-rose-200 px-2 py-0.5 rounded text-[10px] font-black uppercase">Restricted</span>`;
+
+            return `
+            <tr class="hover:bg-amber-50/30 transition-colors">
+                <td class="p-4 text-center border-r border-slate-100">${rankBadge}</td>
+                <td class="p-4 font-black text-slate-800 flex items-center gap-2">
+                    <img src="https://ui-avatars.com/api/?name=${s.student}&background=random" class="w-6 h-6 rounded-full shadow-sm">
+                    ${s.student}
+                </td>
+                <td class="p-4 text-center">${modeBadge}</td>
+                <td class="p-4 text-center font-black text-blue-700 text-lg">${s.score}</td>
+                <td class="p-4 text-right pr-8 font-mono text-slate-500 text-sm font-bold">${formattedTime}</td>
+            </tr>`;
+        }).join('');
+    };
+
+    // --- 3. GAMIFIED QUIZLET MATCH ENGINE ---
+    let matchGameState = { activeCard: null, matches: 0, totalPairs: 0, timer: null, seconds: 0, listId: null };
+
+    window.switchStudyMode = function(mode) {
+        // Hide all tabs visually
+        document.querySelectorAll('.study-tab-btn').forEach(b => {
+            b.classList.remove('border-indigo-500', 'text-indigo-700', 'bg-indigo-50');
+            b.classList.add('border-transparent', 'text-slate-500');
+        });
+        const activeTab = document.getElementById('study-tab-' + mode);
+        if (activeTab) {
+            activeTab.classList.remove('border-transparent', 'text-slate-500');
+            activeTab.classList.add('border-indigo-500', 'text-indigo-700', 'bg-indigo-50');
+        }
+
+        const container = document.getElementById('study-mode-content');
+        const listId = window.currentListId || window.currentStudyListId || 'temp_test_deck';
+        const deck = FLASHCARDS[listId] || [];
+
+        if (mode === 'matching') {
+            window.launchMatchGame(deck, listId, container);
+        } else {
+            // Placeholder fallback for other modes until you build them out
+            container.innerHTML = `
+                <div class="text-center p-10 animate-fade-in-up">
+                    <div class="text-6xl mb-4">🚧</div>
+                    <h2 class="text-2xl font-black text-slate-800 mb-2">Mode in Development</h2>
+                    <p class="text-slate-500 font-medium">Please switch to 'Matching' or 'Flashcards' to practice.</p>
+                </div>
+            `;
+        }
+    };
+
+    window.launchMatchGame = function(deck, listId, container) {
+        if (!deck || deck.length < 2) {
+            container.innerHTML = `<div class="text-center p-10 text-slate-500 font-bold">You need at least 2 cards to play Match.</div>`;
+            return;
+        }
+
+        // Shuffle & limit to 6 pairs (12 cards) for a manageable game board
+        let pairs = [...deck].sort(() => 0.5 - Math.random()).slice(0, 6);
+        matchGameState.totalPairs = pairs.length;
+        matchGameState.matches = 0;
+        matchGameState.seconds = 0;
+        matchGameState.activeCard = null;
+        matchGameState.listId = listId;
+
+        clearInterval(matchGameState.timer);
+
+        // Split into terms and definitions
+        let cards = [];
+        pairs.forEach((card, index) => {
+            cards.push({ id: index, type: 'term', text: card.term });
+            cards.push({ id: index, type: 'def', text: card.def });
+        });
+        
+        // Shuffle all cards
+        cards.sort(() => 0.5 - Math.random());
+
+        // Render UI
+        container.innerHTML = `
+            <div class="w-full max-w-4xl mx-auto flex flex-col h-full animate-fade-in">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-black text-slate-800">Match the pairs!</h3>
+                    <div class="bg-white border-2 border-slate-200 px-4 py-2 rounded-xl shadow-sm flex items-center gap-3">
+                        <span class="text-2xl animate-pulse">⏱️</span>
+                        <span id="match-timer" class="font-mono text-2xl font-black text-indigo-700">0.0</span>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="match-game-board">
+                    ${cards.map((c, i) => `
+                        <button onclick="window.handleMatchClick(this, ${c.id}, '${c.type}')" 
+                                class="match-card bg-white hover:bg-indigo-50 border-2 border-slate-200 hover:border-indigo-300 p-6 rounded-2xl shadow-sm transition-all duration-200 flex items-center justify-center text-center font-bold text-slate-700 select-none active:scale-95" 
+                                style="min-height: 120px;" 
+                                data-id="${c.id}" 
+                                data-type="${c.type}">
+                            ${c.text}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // Start High-Resolution Timer
+        const startTime = Date.now();
+        matchGameState.timer = setInterval(() => {
+            matchGameState.seconds = ((Date.now() - startTime) / 1000).toFixed(1);
+            document.getElementById('match-timer').textContent = matchGameState.seconds;
+        }, 100);
+    };
+
+    window.handleMatchClick = function(btn, id, type) {
+        if (btn.classList.contains('opacity-0')) return; // Already matched
+        if (btn === matchGameState.activeCard) return; // Prevent double clicking same card
+
+        // Select first card
+        if (!matchGameState.activeCard) {
+            matchGameState.activeCard = btn;
+            btn.classList.add('border-indigo-500', 'bg-indigo-100', 'text-indigo-900', 'shadow-md');
+            btn.classList.remove('border-slate-200', 'bg-white');
+            return;
+        }
+
+        const firstCard = matchGameState.activeCard;
+        const firstId = firstCard.dataset.id;
+        const firstType = firstCard.dataset.type;
+
+        // Check for match
+        if (id == firstId && type !== firstType) {
+            // MATCH!
+            btn.classList.add('border-emerald-500', 'bg-emerald-100', 'text-emerald-900');
+            firstCard.classList.remove('border-indigo-500', 'bg-indigo-100', 'text-indigo-900');
+            firstCard.classList.add('border-emerald-500', 'bg-emerald-100', 'text-emerald-900');
+            
+            setTimeout(() => {
+                btn.classList.add('opacity-0', 'pointer-events-none', 'scale-90');
+                firstCard.classList.add('opacity-0', 'pointer-events-none', 'scale-90');
+            }, 300);
+
+            matchGameState.matches++;
+            matchGameState.activeCard = null;
+
+            // Check Win Condition
+            if (matchGameState.matches === matchGameState.totalPairs) {
+                clearInterval(matchGameState.timer);
+                window.finishMatchGame();
+            }
+        } else {
+            // MISMATCH!
+            btn.classList.add('border-rose-500', 'bg-rose-100', 'text-rose-900', 'shake');
+            firstCard.classList.remove('border-indigo-500', 'bg-indigo-100', 'text-indigo-900');
+            firstCard.classList.add('border-rose-500', 'bg-rose-100', 'text-rose-900', 'shake');
+
+            matchGameState.activeCard = null;
+
+            setTimeout(() => {
+                btn.classList.remove('border-rose-500', 'bg-rose-100', 'text-rose-900', 'shake');
+                firstCard.classList.remove('border-rose-500', 'bg-rose-100', 'text-rose-900', 'shake');
+                
+                btn.classList.add('border-slate-200', 'bg-white');
+                firstCard.classList.add('border-slate-200', 'bg-white');
+            }, 600);
+        }
+    };
+
+    window.finishMatchGame = async function() {
+        const finalTime = matchGameState.seconds;
+        const container = document.getElementById('study-mode-content');
+        
+        container.innerHTML = `
+            <div class="text-center p-10 animate-scale-up">
+                <div class="text-8xl mb-6">🎉</div>
+                <h2 class="text-4xl font-black text-slate-800 mb-4 tracking-tight">You finished in <span class="text-indigo-600">${finalTime}</span> seconds!</h2>
+                <button onclick="window.switchStudyMode('matching')" class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-xl shadow-lg transition-all hover:-translate-y-1 mt-6">Play Again</button>
+            </div>
+        `;
+
+        if (window.currentUser && matchGameState.listId !== 'temp_test_deck') {
+            const record = {
+                id: 'game_' + Date.now(),
+                student: window.currentUser.user,
+                listId: matchGameState.listId,
+                time: parseFloat(finalTime),
+                date: Date.now()
+            };
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('game_leaderboards'), record.id), record);
+                if (typeof window.showToast === 'function') window.showToast("Score Saved", "Your time has been added to the leaderboard!");
+            } catch (e) { console.error("Could not save game score", e); }
+        }
     };
 
     // --- SPACED REPETITION SYSTEM (SM-2) ---
@@ -4609,6 +4976,311 @@ window.initFirebaseSystem = async function() {
         }
     };
 
+
+    // --- SCHEDULED LESSONS / MATERIALS ENGINE ---
+    
+    // ✨ Overhauled Add Schedule Modal (Includes Native Lesson Attacher)
+    window.promptCreateSchedule = function(dateStr) {
+        let defaultDate = dateStr || window.currentSelectedDate;
+        if (!defaultDate) {
+            const d = new Date();
+            defaultDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+        
+        let materialOptions = '<option value="">-- No Lesson Attached --</option>';
+        TEST_BANK.forEach(t => {
+            const icon = t.module === 'reading' ? '📖' : t.module === 'listening' ? '🎧' : t.module === 'writing' ? '✍️' : '🗣️';
+            materialOptions += `<option value="${t.id}">${icon} ${t.title}</option>`;
+        });
+
+        let classOptions = '';
+        CLASSES.forEach(c => {
+            classOptions += `<option value="${c.name}">${c.name}</option>`;
+        });
+
+        if (!classOptions) {
+            if(typeof window.showToast === 'function') window.showToast("Notice", "Please create a Class first.", "info");
+            return;
+        }
+
+        const html = `
+            <div class="space-y-3 text-left">
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Date</label><input type="date" id="sched-date" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 bg-slate-50" value="${defaultDate}"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Class Name</label><select id="sched-class" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold text-blue-900 bg-white shadow-sm cursor-pointer">${classOptions}</select></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Time</label><input type="time" id="sched-time" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 bg-white shadow-sm"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Topic</label><input type="text" id="sched-topic" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 bg-white shadow-sm" placeholder="e.g. Reading Practice"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Live Video Link (Optional)</label><input type="text" id="sched-link" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 text-blue-600 bg-white shadow-sm font-mono text-sm" placeholder="https://zoom.us/..."></div>
+                <div class="pt-3 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-emerald-600 mb-1 uppercase tracking-widest flex items-center gap-1">📚 Assign Lesson Material</label>
+                    <select id="sched-material" class="w-full border border-emerald-200 bg-emerald-50 text-emerald-900 p-2.5 rounded-lg outline-none focus:border-emerald-500 font-bold shadow-sm cursor-pointer">${materialOptions}</select>
+                </div>
+            </div>
+        `;
+        showConfirm("Schedule Class", html, async () => {
+            const date = document.getElementById('sched-date').value;
+            const className = document.getElementById('sched-class').value;
+            const time = document.getElementById('sched-time').value;
+            const topic = document.getElementById('sched-topic').value.trim();
+            const link = document.getElementById('sched-link').value.trim();
+            const matId = document.getElementById('sched-material').value;
+            
+            if (!date || !className || !time) {
+                if(typeof window.showToast === 'function') window.showToast("Error", "Date, Class, and Time are required.", "error");
+                return;
+            }
+
+            const schedule = {
+                id: 'sched_' + Date.now(),
+                date,
+                className,
+                time,
+                topic,
+                link,
+                materialIds: matId ? [matId] : [],
+                createdAt: Date.now()
+            };
+
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), schedule.id), schedule);
+                window.renderTeacherSelectedDate(date);
+                window.renderCalendar('teacher');
+                if(typeof window.showToast === 'function') window.showToast("Saved", "Class scheduled successfully.");
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    };
+
+    // ✨ Overhauled Edit Schedule Modal (Includes Native Lesson Attacher)
+    window.editSchedule = function(id) {
+        const schedule = SCHEDULES.find(s => s.id === id);
+        if (!schedule) return;
+
+        let materialOptions = '<option value="">-- No Lesson Attached --</option>';
+        TEST_BANK.forEach(t => {
+            const icon = t.module === 'reading' ? '📖' : t.module === 'listening' ? '🎧' : t.module === 'writing' ? '✍️' : '🗣️';
+            const selected = (schedule.materialIds && schedule.materialIds.includes(t.id)) ? 'selected' : '';
+            materialOptions += `<option value="${t.id}" ${selected}>${icon} ${t.title}</option>`;
+        });
+
+        const html = `
+            <div class="space-y-3 text-left">
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Class Name</label><input type="text" id="sched-class" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold text-blue-900 bg-white shadow-sm" value="${schedule.className || ''}"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Time</label><input type="time" id="sched-time" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 bg-white shadow-sm" value="${schedule.time || ''}"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Topic</label><input type="text" id="sched-topic" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 bg-white shadow-sm" value="${schedule.topic || ''}"></div>
+                <div><label class="block text-xs font-bold text-slate-500 mb-1">Live Video Link</label><input type="text" id="sched-link" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 text-blue-600 bg-white shadow-sm font-mono text-sm" value="${schedule.link || ''}"></div>
+                <div class="pt-3 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-emerald-600 mb-1 uppercase tracking-widest flex items-center gap-1">📚 Assign Lesson Material</label>
+                    <select id="sched-material" class="w-full border border-emerald-200 bg-emerald-50 text-emerald-900 p-2.5 rounded-lg outline-none focus:border-emerald-500 font-bold shadow-sm cursor-pointer">${materialOptions}</select>
+                </div>
+            </div>
+        `;
+        showConfirm("Edit Schedule", html, async () => {
+            schedule.className = document.getElementById('sched-class').value.trim();
+            schedule.time = document.getElementById('sched-time').value;
+            schedule.topic = document.getElementById('sched-topic').value.trim();
+            schedule.link = document.getElementById('sched-link').value.trim();
+            
+            const matId = document.getElementById('sched-material').value;
+            schedule.materialIds = matId ? [matId] : []; // Overwrite existing with single selection
+
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), schedule.id), schedule);
+                window.renderTeacherSelectedDate(schedule.date);
+                window.renderCalendar('teacher');
+                if(typeof window.showToast === 'function') window.showToast("Saved", "Schedule updated successfully.");
+            } catch (e) {
+                console.error(e);
+            }
+        });
+    };
+
+    window.promptAttachTestToSchedule = function(scheduleId) {
+        // Fallback specifically for the "+ Attach" text button on the card, reusing the edit UI.
+        window.editSchedule(scheduleId);
+    };
+
+    window.removeMaterialFromSchedule = async function(scheduleId, testId, event) {
+        if (event) event.stopPropagation();
+        const schedule = SCHEDULES.find(s => s.id === scheduleId);
+        if (schedule && schedule.materialIds) {
+            schedule.materialIds = schedule.materialIds.filter(id => id !== testId);
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), schedule.id), schedule);
+                if(typeof window.showToast === 'function') window.showToast("Removed", "Material unlinked from schedule.");
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
+
+    window.launchScheduledTest = function(testId) {
+        const test = TEST_BANK.find(t => t.id === testId);
+        if (!test) {
+            if(typeof window.showToast === 'function') window.showToast("Error", "Test not found or deleted.", "error");
+            return;
+        }
+
+        if (currentUser.role === 'teacher') {
+            // Close modal if open, send teacher to builder
+            const m = document.getElementById('student-day-modal');
+            if (m) m.classList.add('hidden');
+            
+            window.editTest(testId); 
+            window.toggleDashboardView('tests');
+        } else {
+            // Student Launch Sequence
+            const m = document.getElementById('student-day-modal');
+            if (m) m.classList.add('hidden');
+            
+            window.APP_DATA = JSON.parse(JSON.stringify(test));
+            
+            const metaModal = document.getElementById('test-mode-modal');
+            if (metaModal) {
+                const container = document.getElementById('part-checkboxes');
+                if (container) {
+                    container.innerHTML = APP_DATA.parts.map((p, i) => 
+                        `<label class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50 transition">
+                            <input type="checkbox" value="${i}" class="part-select-checkbox w-4 h-4 text-blue-600" checked>
+                            <span class="text-sm font-bold text-slate-700">${p.title || 'Part ' + (i+1)}</span>
+                        </label>`
+                    ).join('');
+                    document.getElementById('part-selection-container').classList.remove('hidden');
+                }
+                metaModal.classList.remove('hidden');
+            } else {
+                window.isTimeFree = true;
+                if(typeof window.startTestSession === 'function') window.startTestSession();
+            }
+        }
+    };
+
+    // ✨ OVERRIDE: Teacher Schedule Rendering
+    window.renderTeacherSelectedDate = function(dateStr) {
+        window.currentSelectedDate = dateStr;
+        const list = document.getElementById('timetable-list');
+        const label = document.getElementById('teacher-selected-date-label');
+        if (!list || !label) return;
+
+        const dParts = dateStr.split('-');
+        const dateObj = new Date(dParts[0], dParts[1] - 1, dParts[2]);
+        const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        label.textContent = `${dayNames[dateObj.getDay()]}, ${dateObj.getDate()} tháng ${dateObj.getMonth() + 1}, ${dateObj.getFullYear()}`;
+
+        let html = `<button onclick="window.promptCreateSchedule('${dateStr}')" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold py-3 rounded-xl mb-4 transition shadow-sm">+ Add Lesson on this Day</button>`;
+
+        const daySchedules = SCHEDULES.filter(s => s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+
+        if (daySchedules.length === 0) {
+            html += `<div class="text-center text-slate-400 text-sm italic mt-8">No classes scheduled.</div>`;
+        } else {
+            daySchedules.forEach(s => {
+                
+                // ✨ 1. Build the direct Enter buttons (No "Materials Attached" text!)
+                let lessonButtons = '';
+                if (s.materialIds && s.materialIds.length > 0) {
+                    lessonButtons = s.materialIds.map(tId => {
+                        const test = TEST_BANK.find(t => t.id === tId);
+                        if (!test) return '';
+                        const icon = test.module === 'reading' ? '📖' : test.module === 'listening' ? '🎧' : test.module === 'writing' ? '✍️' : '🗣️';
+                        
+                        return `
+                        <div class="flex items-center gap-1.5 w-full mb-2">
+                            <button onclick="window.launchScheduledTest('${tId}')" class="flex-1 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 font-bold py-2.5 px-4 rounded-lg text-sm transition shadow-sm flex items-center justify-between group">
+                                <span class="flex items-center gap-2 truncate"><span>${icon}</span> <span class="truncate">${test.title}</span></span>
+                                <span class="shrink-0 group-hover:translate-x-1 transition-transform">Enter &rarr;</span>
+                            </button>
+                            <button onclick="window.removeMaterialFromSchedule('${s.id}', '${tId}', event)" class="w-10 h-10 shrink-0 flex items-center justify-center bg-rose-50 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg transition border border-rose-100" title="Unlink Lesson">&times;</button>
+                        </div>`;
+                    }).join('');
+                } else {
+                    // Empty state button
+                    lessonButtons = `<button onclick="window.editSchedule('${s.id}')" class="w-full mb-2 bg-slate-50 hover:bg-white border border-dashed border-slate-300 hover:border-blue-400 text-slate-500 hover:text-blue-600 font-bold py-2.5 rounded-lg text-center text-sm transition shadow-sm">+ Attach Lesson</button>`;
+                }
+
+                // ✨ 2. Inject the buttons directly above the Video/Attendance actions
+                html += `
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-black text-blue-900 text-lg">${s.className}</h4>
+                        <div class="flex gap-1">
+                            <button onclick="window.editSchedule('${s.id}')" class="bg-slate-50 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold transition">Edit</button>
+                            <button onclick="window.deleteSchedule('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded text-xs font-bold transition">Del</button>
+                        </div>
+                    </div>
+                    <div class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-bold mb-3">${s.time}</div>
+                    ${s.topic ? `<div class="text-sm font-medium text-slate-700 mb-3">Topic: ${s.topic}</div>` : ''}
+                    
+                    <div class="flex flex-col">
+                        ${lessonButtons}
+                        ${s.link ? `<a href="${s.link}" target="_blank" class="w-full mb-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2.5 rounded-lg text-center text-sm transition border border-indigo-100 flex items-center justify-center gap-2">🎥 Join Live Video Class</a>` : ''}
+                        <button onclick="window.openAttendanceModal('${s.id}', '${s.className}', '${s.date}')" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-lg text-center text-sm transition border border-slate-200">Mark Attendance</button>
+                    </div>
+                </div>`;
+            });
+        }
+        list.innerHTML = html;
+    };
+
+    // ✨ OVERRIDE: Student Schedule Rendering
+    window.openStudentDayModal = function(dateStr) {
+        const modal = document.getElementById('student-day-modal');
+        const content = document.getElementById('day-modal-content');
+        const title = document.getElementById('day-modal-title');
+        if (!modal || !content || !title) return;
+
+        const dParts = dateStr.split('-');
+        const dateObj = new Date(dParts[0], dParts[1] - 1, dParts[2]);
+        const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        title.textContent = `${dayNames[dateObj.getDay()]}, ${dateObj.getDate()} tháng ${dateObj.getMonth() + 1}, ${dateObj.getFullYear()}`;
+
+        const daySchedules = SCHEDULES.filter(s => s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+
+        let html = '';
+        if (daySchedules.length === 0) {
+            html = `<div class="text-center text-slate-400 text-sm italic mt-4">You have no classes scheduled for this day.</div>`;
+        } else {
+            daySchedules.forEach(s => {
+                let materialHtml = '';
+                if (s.materialIds && s.materialIds.length > 0) {
+                    const materialButtons = s.materialIds.map(tId => {
+                        const test = TEST_BANK.find(t => t.id === tId);
+                        if (!test) return '';
+                        const icon = test.module === 'reading' ? '📖' : test.module === 'listening' ? '🎧' : test.module === 'writing' ? '✍️' : '🗣️';
+                        return `
+                        <button onclick="window.launchScheduledTest('${tId}')" class="w-full mt-1.5 flex justify-between items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition shadow-sm hover:-translate-y-0.5">
+                            <span class="flex items-center gap-2"><span>${icon}</span> <span class="truncate">${test.title}</span></span>
+                            <span>Enter &rarr;</span>
+                        </button>`;
+                    }).join('');
+                    
+                    if (materialButtons) {
+                        materialHtml = `
+                        <div class="mt-4 pt-3 border-t border-slate-100">
+                            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">📚 Assigned Lessons</div>
+                            ${materialButtons}
+                        </div>`;
+                    }
+                }
+
+                html += `
+                <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3">
+                    <h4 class="font-black text-indigo-900 text-lg mb-1">${s.className}</h4>
+                    <div class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-bold mb-3">${s.time}</div>
+                    ${s.topic ? `<div class="text-sm font-medium text-slate-700 mb-2">Topic: ${s.topic}</div>` : ''}
+                    
+                    ${materialHtml}
+
+                    <div class="mt-4 flex flex-col gap-2">
+                        ${s.link ? `<a href="${s.link}" target="_blank" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-2.5 rounded-lg text-center text-sm transition border border-indigo-100 flex items-center justify-center gap-2">🎥 Join Live Video Class</a>` : ''}
+                        ${s.recordingLink ? `<a href="${s.recordingLink}" target="_blank" class="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold py-2 rounded-lg text-center text-xs transition border border-slate-200">📼 Watch Recording</a>` : ''}
+                    </div>
+                </div>`;
+            });
+        }
+        content.innerHTML = html;
+        modal.classList.remove('hidden');
+    };
 
     // --- FULLY REAL-TIME CLOUD SYNC SYSTEM ---
     window.triggerUIRefresh = () => {
@@ -11158,6 +11830,12 @@ window.initFirebaseSystem = async function() {
               backBtn.classList.remove('flex');
               if(fcBtn) { fcBtn.classList.add('hidden'); fcBtn.classList.remove('flex'); }
           }
+      }
+
+      const grammarBtn = document.getElementById('exam-grammar-btn');
+      if (grammarBtn) {
+          grammarBtn.classList.remove('hidden');
+          grammarBtn.classList.add('flex');
       }
 
       const modColors = { reading:'bg-blue-700', listening:'bg-cyan-700', writing:'bg-emerald-700', speaking:'bg-amber-600' };
