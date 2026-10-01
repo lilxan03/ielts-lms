@@ -2431,12 +2431,12 @@
           <div id="builder-media-fields" class="mt-3">
             <div id="audio-field-container">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex justify-between items-center">
-                                    <span>Listening Audio: Web Link or YouTube Embed</span>
+                                    <span>Listening Audio URL</span>
               </label>
-                            <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-2 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Paste a normal audio URL or YouTube embed link/code..." onchange="window.updateListeningEditorAudio(this.value)" oninput="window.updateListeningEditorAudio(this.value)" onpaste="setTimeout(() => window.updateListeningEditorAudio(document.getElementById('edit-audio-url').value), 50)">
+                            <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-2 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Paste a direct audio URL or YouTube link..." onchange="window.updateListeningEditorAudio(this.value)" oninput="window.updateListeningEditorAudio(this.value)" onpaste="setTimeout(() => window.updateListeningEditorAudio(document.getElementById('edit-audio-url').value), 50)">
                             <p id="edit-audio-preview-status" class="text-xs text-slate-500 mb-3" aria-live="polite"></p>
                             <div class="mt-3 mb-5 p-3 rounded-lg border border-blue-200 bg-blue-50">
-                                <div id="edit-listening-youtube-player" class="hidden w-full max-w-[320px] aspect-video mx-auto mb-2"></div>
+                                <div id="edit-listening-youtube-player" class="hidden w-full aspect-video mb-2"></div>
                                 <audio id="edit-listening-audio" controls class="w-full h-9 mb-2"></audio>
                                 <label id="edit-listening-highlight-label" class="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Highlight starts at</label>
                                 <div id="edit-listening-highlight-controls" class="flex items-center gap-2">
@@ -2622,7 +2622,7 @@
                 <span id="listening-exam-button-label">Play</span>
          </button>
       </div>
-    <div id="exam-listening-youtube-player" class="hidden absolute top-4 right-4 z-10 w-[320px] max-w-[calc(100%-2rem)] aspect-video bg-black rounded-lg shadow-xl overflow-hidden"></div>
+    <div id="exam-listening-youtube-player" class="hidden absolute inset-0 z-10 bg-black"></div>
     <audio id="exam-listening-audio" class="hidden"></audio>
 
       <div class="border-r border-slate-300 overflow-y-auto p-8 pb-32 shadow-inner theme-bg-main relative" id="passage-container" style="width: 50%;"></div>
@@ -3315,8 +3315,6 @@ window.initFirebaseSystem = async function() {
     window.getListeningYoutubeVideoId = function(rawUrl) {
         try {
             let value = (rawUrl || '').trim();
-            const iframeSrc = value.match(/<iframe\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/i);
-            if (iframeSrc) value = iframeSrc[2].trim();
             if (value && !/^[a-z][a-z\d+.-]*:/i.test(value)) value = `https://${value}`;
             const parsedUrl = new URL(value);
             const host = parsedUrl.hostname.replace(/^www\./, '').toLowerCase();
@@ -12589,7 +12587,7 @@ window.initFirebaseSystem = async function() {
           
           if (listeningAudioUrl) {
               if (listeningYoutubeVideoId) {
-                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex flex-wrap items-center gap-3"><div id="practice-youtube-player" class="w-full max-w-[280px] aspect-video shrink-0"></div>${isTimeFree ? '<button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button>' : ''}</div>`;
+                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex items-center gap-3"><div id="practice-youtube-player" class="w-full aspect-video flex-1 min-w-0"></div>${isTimeFree ? '<button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button>' : ''}</div>`;
                   window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
                   if (listeningOverlay) {
                       listeningOverlay.classList.remove('hidden');
