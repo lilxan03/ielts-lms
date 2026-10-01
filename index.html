@@ -2431,19 +2431,20 @@
           <div id="builder-media-fields" class="mt-3">
             <div id="audio-field-container">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex justify-between items-center">
-                  <span>Audio URL (Optional)</span>
-                  <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200">Google Drive Supported</span>
+                                    <span>Listening Audio: Web Link or YouTube Embed</span>
               </label>
-              <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-5 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Paste standard link or Google Drive share link here..." onchange="window.updateListeningEditorAudio(this.value)" oninput="window.updateListeningEditorAudio(this.value)" onpaste="setTimeout(() => window.updateListeningEditorAudio(document.getElementById('edit-audio-url').value), 50)">
+                            <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-2 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Paste a normal audio URL or YouTube embed link/code..." onchange="window.updateListeningEditorAudio(this.value)" oninput="window.updateListeningEditorAudio(this.value)" onpaste="setTimeout(() => window.updateListeningEditorAudio(document.getElementById('edit-audio-url').value), 50)">
+                            <p id="edit-audio-preview-status" class="text-xs text-slate-500 mb-3" aria-live="polite"></p>
                             <div class="mt-3 mb-5 p-3 rounded-lg border border-blue-200 bg-blue-50">
-                                <label class="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Highlight starts at</label>
+                                <div id="edit-listening-youtube-player" class="hidden w-full max-w-[320px] aspect-video mx-auto mb-2"></div>
                                 <audio id="edit-listening-audio" controls class="w-full h-9 mb-2"></audio>
-                                <div class="flex items-center gap-2">
+                                <label id="edit-listening-highlight-label" class="block text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2">Highlight starts at</label>
+                                <div id="edit-listening-highlight-controls" class="flex items-center gap-2">
                                     <input id="edit-listening-start" type="number" min="0" step="0.1" value="0" class="w-24 border border-blue-200 rounded px-2 py-1.5 text-sm font-mono text-blue-800" onchange="window.setListeningHighlightStart(this.value)">
                                     <span class="text-xs text-blue-700">seconds</span>
                                     <button type="button" onclick="window.setListeningHighlightStartFromAudio()" class="ml-auto px-2.5 py-1.5 text-xs font-bold text-blue-800 bg-white border border-blue-300 rounded hover:bg-blue-100">Start from current time</button>
                                 </div>
-                                <div class="mt-4 pt-4 border-t border-blue-200">
+                                <div id="edit-listening-karaoke-controls" class="mt-4 pt-4 border-t border-blue-200">
                                     <div class="flex items-center justify-between gap-2 mb-2">
                                         <label class="block text-[10px] font-black text-blue-800 uppercase tracking-widest">Karaoke Cue Editor</label>
                                         <span id="karaoke-editor-time" class="text-[11px] font-mono font-bold text-blue-700">00:00.00</span>
@@ -2614,14 +2615,15 @@
       <!-- Listening Exam Mode Overlay -->
       <div id="listening-exam-overlay" class="hidden absolute inset-0 bg-[#404040] z-[100] flex-col items-center justify-center text-white p-8 text-center">
          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-6"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
-         <p class="text-lg mb-6 max-w-2xl leading-relaxed font-medium">You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.</p>
-         <p class="mb-8 font-medium">To continue, click Play.</p>
-         <button onclick="startListeningAudio()" class="bg-black hover:bg-slate-900 text-white font-bold py-3 px-10 rounded shadow-lg flex items-center gap-3 transition border border-black hover:border-slate-700">
+            <p id="listening-exam-notice" class="text-lg mb-6 max-w-2xl leading-relaxed font-medium">You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.</p>
+            <p id="listening-exam-instruction" class="mb-8 font-medium">To continue, click Play.</p>
+            <button onclick="startListeningAudio()" class="bg-black hover:bg-slate-900 text-white font-bold py-3 px-10 rounded shadow-lg flex items-center gap-3 transition border border-black hover:border-slate-700">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            Play
+                <span id="listening-exam-button-label">Play</span>
          </button>
       </div>
-      <audio id="exam-listening-audio" class="hidden"></audio>
+    <div id="exam-listening-youtube-player" class="hidden absolute top-4 right-4 z-10 w-[320px] max-w-[calc(100%-2rem)] aspect-video bg-black rounded-lg shadow-xl overflow-hidden"></div>
+    <audio id="exam-listening-audio" class="hidden"></audio>
 
       <div class="border-r border-slate-300 overflow-y-auto p-8 pb-32 shadow-inner theme-bg-main relative" id="passage-container" style="width: 50%;"></div>
       <div id="resizer" class="w-2 bg-slate-200 hover:bg-blue-400 cursor-col-resize shrink-0 flex items-center justify-center z-30"><div class="h-8 w-0.5 bg-slate-500 rounded"></div></div>
@@ -2757,7 +2759,7 @@ window.initFirebaseSystem = async function() {
             window.fsOnMessage = onMessage;
 
             // NEW: Global Storage Uploader Helper with Timeout Anti-Hang Protection
-            window.uploadMediaToStorage = async function(fileOrBlob, pathString) {
+            window.uploadMediaToStorage = async function(fileOrBlob, pathString, timeoutMs = 3000) {
                 const storageRef = window.sRef(window.storage, pathString);
                 
                 const uploadTask = async () => {
@@ -2765,9 +2767,11 @@ window.initFirebaseSystem = async function() {
                     return await window.sGetUrl(storageRef);
                 };
                 
-                // ✨ FIX: If Firebase Storage hangs for more than 3 seconds, force an error to trigger the local Base64 fallback!
+                if (!timeoutMs || timeoutMs <= 0) return uploadTask();
+
+                // Keep short timeouts for small media, while allowing callers to opt out for larger uploads.
                 const timeoutTask = new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error("Firebase Storage timeout - falling back to local storage.")), 3000)
+                    setTimeout(() => reject(new Error("Firebase Storage upload timed out.")), timeoutMs)
                 );
                 
                 return Promise.race([uploadTask(), timeoutTask]);
@@ -2857,6 +2861,8 @@ window.initFirebaseSystem = async function() {
     let APP_DATA = { module: 'reading', parts: [], vocab: [], grammar: [] };
     let editingTestId = null;
     let currentEditorPartIdx = 0;
+    const listeningYoutubePlayers = new Map();
+    let listeningYoutubeApiPromise = null;
 
     // Exam State
     let timeLeft = 0; 
@@ -2988,7 +2994,7 @@ window.initFirebaseSystem = async function() {
     let karaokeEditorCueIndex = 0;
 
     function getKaraokeEditorAudio() {
-        return document.getElementById('edit-listening-audio');
+        return getListeningPlayback('edit-listening-audio', 'edit-listening-youtube-player');
     }
 
     function formatKaraokeEditorTime(value) {
@@ -3306,42 +3312,232 @@ window.initFirebaseSystem = async function() {
         }
     }
 
-    // ✨ NEW: Smart Audio Link Converter (Supports Google Drive)
-    window.updateListeningEditorAudio = function(rawUrl) {
-        let url = (rawUrl || '').trim();
-        
-        // Auto-convert Google Drive viewer links to direct streaming links
-        if (url.includes('drive.google.com')) {
-            const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
-            if (fileIdMatch && fileIdMatch[1]) {
-                url = `https://drive.google.com/uc?export=download&id=${fileIdMatch[1]}`;
-                
-                const inputEl = document.getElementById('edit-audio-url');
-                if (inputEl && inputEl.value !== url) {
-                    inputEl.value = url;
-                }
-                if (typeof window.showToast === 'function') window.showToast("Link Converted", "Google Drive URL converted to direct audio stream.");
+    window.getListeningYoutubeVideoId = function(rawUrl) {
+        try {
+            let value = (rawUrl || '').trim();
+            const iframeSrc = value.match(/<iframe\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1/i);
+            if (iframeSrc) value = iframeSrc[2].trim();
+            if (value && !/^[a-z][a-z\d+.-]*:/i.test(value)) value = `https://${value}`;
+            const parsedUrl = new URL(value);
+            const host = parsedUrl.hostname.replace(/^www\./, '').toLowerCase();
+            let id = '';
+            if (host === 'youtu.be') id = parsedUrl.pathname.split('/').filter(Boolean)[0] || '';
+            else if (host === 'youtube.com' || host === 'm.youtube.com' || host === 'youtube-nocookie.com') {
+                id = parsedUrl.searchParams.get('v') || parsedUrl.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1] || '';
             }
+            return /^[A-Za-z0-9_-]{11}$/.test(id) ? id : '';
+        } catch (error) {
+            return '';
         }
+    };
+
+    function loadListeningYoutubeApi() {
+        if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+        if (listeningYoutubeApiPromise) return listeningYoutubeApiPromise;
+        listeningYoutubeApiPromise = new Promise(resolve => {
+            const previousReady = window.onYouTubeIframeAPIReady;
+            window.onYouTubeIframeAPIReady = () => {
+                if (typeof previousReady === 'function') previousReady();
+                resolve(window.YT);
+            };
+            if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+                const script = document.createElement('script');
+                script.src = 'https://www.youtube.com/iframe_api';
+                document.head.appendChild(script);
+            }
+        });
+        return listeningYoutubeApiPromise;
+    };
+
+    function destroyListeningYoutubePlayer(containerId) {
+        const record = listeningYoutubePlayers.get(containerId);
+        if (!record) return;
+        if (record.timeTimer) clearInterval(record.timeTimer);
+        if (record.player && typeof record.player.destroy === 'function') record.player.destroy();
+        listeningYoutubePlayers.delete(containerId);
+        const container = document.getElementById(containerId);
+        if (container) {
+            container.innerHTML = '';
+            delete container.dataset.videoId;
+        }
+    }
+
+    function getListeningPlayback(audioId, youtubeContainerId) {
+        const record = youtubeContainerId && listeningYoutubePlayers.get(youtubeContainerId);
+        return record ? record.facade : document.getElementById(audioId);
+    }
+
+    function getActiveListeningPlayback() {
+        const examYoutube = listeningYoutubePlayers.has('exam-listening-youtube-player');
+        const examAudio = document.getElementById('exam-listening-audio');
+        if (examYoutube || (examAudio && examAudio.getAttribute('src'))) {
+            return getListeningPlayback('exam-listening-audio', 'exam-listening-youtube-player');
+        }
+        return getListeningPlayback('practice-listening-audio', 'practice-youtube-player') || examAudio;
+    }
+
+    window.configureListeningMedia = function(rawUrl, audioId, youtubeContainerId, callbacks = {}) {
+        const url = (rawUrl || '').trim();
+        const videoId = window.getListeningYoutubeVideoId(url);
+        const audio = document.getElementById(audioId);
+        const youtubeContainer = document.getElementById(youtubeContainerId);
+
+        if (videoId && youtubeContainer) {
+            if (audio) {
+                audio.pause();
+                audio.removeAttribute('src');
+                audio.load();
+                audio.classList.add('hidden');
+            }
+            youtubeContainer.classList.remove('hidden');
+            const existing = listeningYoutubePlayers.get(youtubeContainerId);
+            if (existing && existing.videoId === videoId) {
+                existing.callbacks = callbacks;
+                if (existing.ready && callbacks.onReady) callbacks.onReady();
+                return existing.facade;
+            }
+            destroyListeningYoutubePlayer(youtubeContainerId);
+
+            const mountId = `${youtubeContainerId}-mount`;
+            youtubeContainer.innerHTML = `<div id="${mountId}" class="w-full h-full"></div>`;
+            youtubeContainer.dataset.videoId = videoId;
+            const record = { videoId, player: null, state: -1, onStateChange: null, timeTimer: null, callbacks };
+            record.facade = {
+                isYouTube: true,
+                get currentTime() {
+                    try { return record.player ? record.player.getCurrentTime() || 0 : 0; } catch (error) { return 0; }
+                },
+                set currentTime(value) {
+                    const time = Math.max(0, Number(value) || 0);
+                    if (record.player) record.player.seekTo(time, true);
+                },
+                get paused() { return record.state !== 1; },
+                get ended() { return record.state === 0; },
+                play() {
+                    if (record.player) record.player.playVideo();
+                    else record.pendingPlay = true;
+                    return Promise.resolve();
+                },
+                pause() { if (record.player) record.player.pauseVideo(); },
+                setKaraokeStateListener(listener) { record.onStateChange = listener; }
+            };
+            listeningYoutubePlayers.set(youtubeContainerId, record);
+            loadListeningYoutubeApi().then(YT => {
+                if (listeningYoutubePlayers.get(youtubeContainerId) !== record) return;
+                const playerVars = {
+                    controls: callbacks.controls === false ? 0 : 1,
+                    disablekb: callbacks.controls === false ? 1 : 0,
+                    fs: callbacks.controls === false ? 0 : 1,
+                    playsinline: 1,
+                    rel: 0,
+                    enablejsapi: 1
+                };
+                if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+                    playerVars.origin = window.location.origin;
+                }
+                record.player = new YT.Player(mountId, {
+                    videoId,
+                    width: '100%',
+                    height: '100%',
+                    playerVars,
+                    events: {
+                        onReady: () => {
+                            record.ready = true;
+                            if (record.callbacks.onReady) record.callbacks.onReady();
+                            if (record.pendingPlay) record.player.playVideo();
+                        },
+                        onStateChange: event => {
+                            record.state = event.data;
+                            if (record.onStateChange) record.onStateChange(event.data === 1);
+                            if (event.data === 1 && !record.timeTimer) {
+                                record.timeTimer = setInterval(() => {
+                                    if (youtubeContainerId === 'edit-listening-youtube-player') {
+                                        const timeLabel = document.getElementById('karaoke-editor-time');
+                                        if (timeLabel) timeLabel.textContent = formatKaraokeEditorTime(record.facade.currentTime);
+                                    }
+                                }, 100);
+                            } else if (event.data !== 1 && record.timeTimer) {
+                                clearInterval(record.timeTimer);
+                                record.timeTimer = null;
+                            }
+                        },
+                        onError: event => {
+                            const message = event.data === 153
+                                ? 'YouTube requires this page to be opened over HTTP(S), not directly from a file.'
+                                : event.data === 101 || event.data === 150
+                                    ? 'This YouTube video does not allow embedded playback.'
+                                    : `YouTube player error (${event.data}).`;
+                            if (record.callbacks.onError) record.callbacks.onError(message);
+                        }
+                    }
+                });
+            }).catch(error => {
+                if (record.callbacks.onError) record.callbacks.onError('Could not load the YouTube player.');
+                console.error('YouTube player API failed:', error);
+            });
+            return record.facade;
+        }
+
+        destroyListeningYoutubePlayer(youtubeContainerId);
+        if (youtubeContainer) youtubeContainer.classList.add('hidden');
+        if (audio) {
+            audio.classList.remove('hidden');
+            audio.crossOrigin = 'anonymous';
+            audio.src = url;
+            audio.load();
+        }
+        return audio;
+    };
+
+    window.clearListeningMedia = function(audioId, youtubeContainerId) {
+        destroyListeningYoutubePlayer(youtubeContainerId);
+        const audio = document.getElementById(audioId);
+        if (audio) {
+            audio.pause();
+            audio.removeAttribute('src');
+            audio.load();
+        }
+    };
+
+    window.renderListeningEditorPreview = function(rawUrl) {
+        const audioEl = document.getElementById('edit-listening-audio');
+        const status = document.getElementById('edit-audio-preview-status');
+        const youtubeVideoId = window.getListeningYoutubeVideoId(rawUrl);
+        if (youtubeVideoId) {
+            if (status) status.textContent = 'Loading YouTube preview...';
+            window.configureListeningMedia(rawUrl, 'edit-listening-audio', 'edit-listening-youtube-player', {
+                onReady: () => { if (status) status.textContent = `YouTube preview ready for Part ${currentEditorPartIdx + 1}.`; },
+                onError: message => { if (status) status.textContent = message; }
+            });
+            return;
+        }
+        if (audioEl) {
+            audioEl.onerror = () => { if (status) status.textContent = 'Audio could not be loaded. Check the direct audio URL.'; };
+            audioEl.onloadedmetadata = () => {
+                if (status) status.textContent = `Audio ready for Part ${currentEditorPartIdx + 1}.`;
+            };
+            window.configureListeningMedia(rawUrl, 'edit-listening-audio', 'edit-listening-youtube-player');
+        }
+        if (status) status.textContent = rawUrl ? 'Loading audio preview...' : '';
+    };
+
+    window.updateListeningEditorAudio = function(rawUrl) {
+        const url = (rawUrl || '').trim();
+        const inputEl = document.getElementById('edit-audio-url');
+        if (inputEl && inputEl.value !== url) inputEl.value = url;
         
         // Safely assign to data model
         if (APP_DATA && APP_DATA.parts && APP_DATA.parts[currentEditorPartIdx]) {
-            APP_DATA.parts[currentEditorPartIdx].audio = url;
+            APP_DATA.parts[currentEditorPartIdx].audioUrl = url;
         }
         
-        const audioEl = document.getElementById('edit-listening-audio');
-        if (audioEl && audioEl.src !== url) {
-            audioEl.src = url;
-            audioEl.load(); // Force the audio player to refresh immediately
-        }
+        window.renderListeningEditorPreview(rawUrl);
         
         if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
     };
 
     window.seekKaraokeAudio = function(time) {
-        const examAudio = document.getElementById('exam-listening-audio');
-        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
-        const audio = (examAudio && examAudio.src) ? examAudio : practiceAudio;
+        const audio = getActiveListeningPlayback();
         const seekTime = Number(time);
         if (audio && Number.isFinite(seekTime)) {
             audio.currentTime = Math.max(0, seekTime);
@@ -3351,9 +3547,7 @@ window.initFirebaseSystem = async function() {
 
     window.seekKaraokeSentence = function(index, event) {
         if (event) event.stopPropagation();
-        const examAudio = document.getElementById('exam-listening-audio');
-        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
-        const audio = (examAudio && examAudio.src) ? examAudio : practiceAudio;
+        const audio = getActiveListeningPlayback();
         const cues = getKaraokeCues(APP_DATA.parts[currentPartIdx] || {});
         const cue = cues[Number(index)];
         if (!audio || !cue || cue.start === null || !Number.isFinite(Number(cue.start))) return;
@@ -3400,9 +3594,7 @@ window.initFirebaseSystem = async function() {
     }
 
     window.seekKaraokeAudioByIndex = function(index) {
-        const examAudio = document.getElementById('exam-listening-audio');
-        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
-        const audio = (examAudio && examAudio.src) ? examAudio : practiceAudio;
+        const audio = getActiveListeningPlayback();
         if (!audio) return;
         const cues = getKaraokeCues(APP_DATA.parts[currentPartIdx] || {});
         const cue = cues[Number(index)];
@@ -3446,6 +3638,16 @@ window.initFirebaseSystem = async function() {
             audio._karaokeFrame = null;
             updateKaraokeHighlight(audio, root);
         };
+        if (audio.isYouTube) {
+            audio.setKaraokeStateListener(playing => playing ? start() : stop());
+            audio._karaokeCleanup = () => {
+                audio.setKaraokeStateListener(null);
+                stop();
+            };
+            if (!audio.paused) start();
+            updateKaraokeHighlight(audio, root);
+            return;
+        }
         audio.addEventListener('play', start);
         audio.addEventListener('pause', stop);
         audio.addEventListener('ended', stop);
@@ -8627,12 +8829,10 @@ window.initFirebaseSystem = async function() {
       if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = p.title||'';
       else titleEl.innerHTML = p.title||'';
       
-      document.getElementById('edit-audio-url').value = p.audioUrl||'';
+      const editorAudioUrl = p.audioUrl || '';
+      document.getElementById('edit-audio-url').value = editorAudioUrl;
+      window.renderListeningEditorPreview(editorAudioUrl);
       const editorAudio = document.getElementById('edit-listening-audio');
-      if (editorAudio) {
-          editorAudio.src = p.audioUrl || '';
-          editorAudio.load();
-      }
       const startInput = document.getElementById('edit-listening-start');
       if (startInput) startInput.value = String(Math.max(0, Number(p.listeningHighlightStart) || 0));
       karaokeEditorCueIndex = 0;
@@ -9616,15 +9816,6 @@ window.initFirebaseSystem = async function() {
       }
     }
 
-    window.updateListeningEditorAudio = function(url) {
-            const audio = document.getElementById('edit-listening-audio');
-            if (audio) {
-                    audio.src = url || '';
-                    audio.load();
-            }
-            window.triggerEditorAutosave();
-        };
-
         window.setListeningHighlightStart = function(value) {
             const start = Math.max(0, Number(value) || 0);
             const input = document.getElementById('edit-listening-start');
@@ -9634,7 +9825,7 @@ window.initFirebaseSystem = async function() {
         };
 
         window.setListeningHighlightStartFromAudio = function() {
-            const audio = document.getElementById('edit-listening-audio');
+            const audio = getKaraokeEditorAudio();
             if (audio) window.setListeningHighlightStart(audio.currentTime || 0);
         };
 
@@ -11949,10 +12140,12 @@ window.initFirebaseSystem = async function() {
     }
 
     function startListeningAudio() {
-        const audio = document.getElementById('exam-listening-audio');
+        const audio = getActiveListeningPlayback();
         if (audio) {
-            audio.muted = false;
-            audio.volume = 1;
+            if (!audio.isYouTube) {
+                audio.muted = false;
+                audio.volume = 1;
+            }
             audio.play().catch(e => console.error("Audio playback error:", e));
         }
         document.getElementById('listening-exam-overlay').classList.add('hidden');
@@ -12381,15 +12574,31 @@ window.initFirebaseSystem = async function() {
       window.listeningMediaInjection = '';
 
       if (APP_DATA.module === 'listening') {
+        const listeningAudioUrl = (p.audioUrl || '').trim();
+                    const listeningYoutubeVideoId = window.getListeningYoutubeVideoId(p.audioUrl || '');
+          const notice = document.getElementById('listening-exam-notice');
+          const instruction = document.getElementById('listening-exam-instruction');
+          const buttonLabel = document.getElementById('listening-exam-button-label');
+                    if (notice) notice.textContent = listeningYoutubeVideoId
+                            ? 'You will watch and listen to this YouTube clip. Playback is synchronized with the transcript.'
+                            : 'You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.';
+          if (instruction) instruction.textContent = 'To continue, click Play.';
+          if (buttonLabel) buttonLabel.textContent = 'Play';
           passageContainer.classList.add('hidden');
           resizer.classList.add('hidden');
           
-          if (p.audioUrl) {
-              if (!isTimeFree) {
-                  if (examAudio.getAttribute('src') !== p.audioUrl) {
-                      if (examAudio.src) examAudio.pause();
-                      examAudio.src = p.audioUrl;
-                      examAudio.load(); // ✨ FIX: Force browser to buffer the audio to prevent blocked playback!
+          if (listeningAudioUrl) {
+              if (listeningYoutubeVideoId) {
+                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex flex-wrap items-center gap-3"><div id="practice-youtube-player" class="w-full max-w-[280px] aspect-video shrink-0"></div>${isTimeFree ? '<button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button>' : ''}</div>`;
+                  window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
+                  if (listeningOverlay) {
+                      listeningOverlay.classList.remove('hidden');
+                      listeningOverlay.classList.add('flex');
+                  }
+              } else if (!isTimeFree) {
+                  if (examAudio.dataset.audioUrl !== listeningAudioUrl) {
+                      window.configureListeningMedia(listeningAudioUrl, 'exam-listening-audio', 'exam-listening-youtube-player');
+                      examAudio.dataset.audioUrl = listeningAudioUrl;
                       if (listeningOverlay) {
                           listeningOverlay.classList.remove('hidden');
                           listeningOverlay.classList.add('flex');
@@ -12397,18 +12606,18 @@ window.initFirebaseSystem = async function() {
                   }
               } else {
                   // ✨ NEW: Compact single-row layout. No header text, reduced padding, side-by-side elements.
-                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex items-center gap-3"><audio controls src="${p.audioUrl}" class="w-full flex-1 h-9 outline-none"></audio><button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button></div>`;
+                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex items-center gap-3"><audio id="practice-listening-audio" controls crossorigin="anonymous" src="${listeningAudioUrl}" class="w-full flex-1 h-9 outline-none"></audio><button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button></div>`;
                   if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
                   if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
               }
           } else {
-              if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
+              window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
               if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
           }
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
           passageContainer.innerHTML = `${studyToggles}<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
-          wireKaraokeAudio(examAudio, passageContainer);
+          wireKaraokeAudio(getActiveListeningPlayback(), passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
@@ -12587,15 +12796,19 @@ window.initFirebaseSystem = async function() {
       }
       
       if (window.listeningMediaInjection) {
-          if (mediaDiv.dataset.audioUrl !== APP_DATA.parts[currentPartIdx].audioUrl) {
+          const audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
+          if (mediaDiv.dataset.audioUrl !== audioUrl) {
+              window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
               mediaDiv.innerHTML = window.listeningMediaInjection;
-              mediaDiv.dataset.audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
-              wireKaraokeAudio(mediaDiv.querySelector('audio'), document.getElementById('passage-container'));
+              mediaDiv.dataset.audioUrl = audioUrl;
+              if (window.getListeningYoutubeVideoId(audioUrl)) {
+                  window.configureListeningMedia(audioUrl, 'practice-listening-audio', 'practice-youtube-player', { controls: isTimeFree });
+              }
+              wireKaraokeAudio(getListeningPlayback('practice-listening-audio', 'practice-youtube-player'), document.getElementById('passage-container'));
           }
       } else {
           if (mediaDiv.innerHTML !== '') {
-              const audioEl = mediaDiv.querySelector('audio');
-              if (audioEl) audioEl.pause();
+              window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
               mediaDiv.innerHTML = '';
           }
           mediaDiv.dataset.audioUrl = '';
@@ -13401,9 +13614,8 @@ window.initFirebaseSystem = async function() {
         document.getElementById('exam-ui').classList.add('hidden');
         
         const examAudio = document.getElementById('exam-listening-audio');
-        if (examAudio) { examAudio.pause(); examAudio.src = ''; }
-        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
-        if (practiceAudio) { practiceAudio.pause(); }
+        window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
+        window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
         
         if (isPreviewMode) {
            isPreviewMode = false;
@@ -13422,9 +13634,8 @@ window.initFirebaseSystem = async function() {
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
         
         const examAudio = document.getElementById('exam-listening-audio');
-        if (examAudio) { examAudio.pause(); examAudio.src = ''; }
-        const practiceAudio = document.querySelector('#practice-audio-wrapper audio');
-        if (practiceAudio) { practiceAudio.pause(); }
+        window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
+        window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
         
         let total = 0, correct = 0;
         let bandScoreText = 'Pending Grade';
