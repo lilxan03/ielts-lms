@@ -107,6 +107,11 @@
     .grammar-word .reading-word.is-current { background: rgba(16, 185, 129, 0.14); color: #047857; box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.08); }
     .reading-word.is-read { opacity: 0; transform: translateY(-3px); filter: blur(2px); visibility: visible; max-width: none; overflow: visible; margin-right: 0; }
 
+    .interactive-chart-frame { position: relative; width: 100%; height: 320px; max-height: 320px; min-width: 0; }
+    @media (max-width: 768px) {
+        .interactive-chart-frame { height: 260px; max-height: 260px; }
+    }
+
     .col-resizer { display: none !important; }
     .rich-editor .col-resizer { display: block !important; }
     .rich-editor table, #questions-container table, #review-right-pane table, #review-left-pane table {
@@ -2022,6 +2027,22 @@
               </select>
             </div>
             
+            <!-- Bảng điều khiển Bulk Actions (Mặc định ẩn, sẽ hiện khi có test được chọn) -->
+<div id="bulk-action-bar" class="hidden flex-col sm:flex-row justify-between items-center bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-6 shadow-sm transition-all animate-fade-in-up">
+    <div class="flex items-center gap-3 mb-3 sm:mb-0">
+        <input type="checkbox" id="select-all-tests" onchange="window.toggleSelectAllTests(this)" class="w-5 h-5 accent-indigo-600 cursor-pointer rounded shadow-inner">
+        <span class="font-black text-indigo-900 tracking-wide"><span id="selected-test-count" class="text-lg">0</span> bài được chọn</span>
+    </div>
+    <div class="flex flex-wrap gap-3">
+        <button onclick="window.bulkChangeStatus()" class="px-4 py-2 bg-white text-indigo-700 font-bold rounded-xl border border-indigo-200 hover:bg-indigo-100 shadow-sm transition-colors flex items-center gap-2 text-sm">
+            <span class="text-base">🏷️</span> Đổi Trạng Thái
+        </button>
+        <button onclick="window.bulkDeleteTests()" class="px-4 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl border border-rose-200 hover:bg-rose-500 hover:text-white shadow-sm transition-colors flex items-center gap-2 text-sm">
+            <span class="text-base">🗑️</span> Xóa Hàng Loạt
+        </button>
+    </div>
+</div>
+
             <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 stagger-fade-in"></div>
             
             <!-- ✨ NEW: Pagination Container -->
@@ -2458,7 +2479,20 @@
                                 </div>
                             </div>
             </div>
-            <div id="image-field-container" class="hidden">
+
+            <div id="interactive-charts-wrapper" class="mt-4 p-5 border border-indigo-200 bg-indigo-50/50 rounded-xl shadow-sm">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-xs font-black text-indigo-800 uppercase tracking-widest">
+                        📊 Interactive Charts (Writing Task 1)
+                    </label>
+                    <button type="button" onclick="window.addEditorChart()" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-3 rounded shadow-sm transition flex items-center gap-1">
+                        <span class="text-base leading-none">+</span> Add Chart
+                    </button>
+                </div>
+                <div id="chart-editor-list" class="space-y-4"></div>
+            </div>
+
+            <div id="image-field-container" class="hidden mt-4">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Part Image (Task 1 Chart, etc.)</label>
               
               <!-- ✨ FIX: Added URL input fallback for Part Image -->
@@ -2810,6 +2844,129 @@ window.initFirebaseSystem = async function() {
             `;
         }
     }
+
+    window.modifyTable = function(action) {
+    // 1. Xác định vị trí con trỏ chuột và ô bảng (cell) đang tương tác
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    
+    let node = selection.getRangeAt(0).startContainer;
+    if (node.nodeType === 3) node = node.parentNode; // Nếu là text node, lấy thẻ bọc ngoài
+    
+    const cell = node.closest('td, th');
+    if (!cell) {
+        if(typeof window.showToast === 'function') window.showToast("Thông báo", "Vui lòng đặt con trỏ chuột vào một ô trong bảng.", "info");
+        return;
+    }
+
+    const row = cell.parentElement;
+    const tbody = row.parentElement;
+    const table = tbody.closest('table');
+
+    try {
+        if (action === 'merge-right') {
+            const nextCell = cell.nextElementSibling;
+            if (!nextCell) throw new Error("Không tìm thấy ô bên phải để gộp.");
+            
+            // Dồn nội dung từ ô bên phải sang ô hiện tại
+            if (nextCell.innerHTML.trim() && nextCell.innerHTML !== '<br>') {
+                cell.innerHTML += '<br>' + nextCell.innerHTML;
+            }
+            
+            // Tăng số lượng cột chiếm chỗ và xóa ô thừa
+            cell.colSpan = (cell.colSpan || 1) + (nextCell.colSpan || 1);
+            nextCell.remove();
+        } 
+        else if (action === 'merge-down') {
+            const rows = Array.from(tbody.rows);
+            const rowIndex = rows.indexOf(row);
+            const nextRow = rows[rowIndex + (cell.rowSpan || 1)];
+            
+            if (!nextRow) throw new Error("Không tìm thấy dòng bên dưới để gộp.");
+
+            // Xác định ô nằm ngay bên dưới dựa trên cellIndex
+            const targetCell = nextRow.cells[cell.cellIndex];
+            if (!targetCell) throw new Error("Cấu trúc cột không đồng nhất, không thể gộp dọc.");
+
+            // Dồn nội dung
+            if (targetCell.innerHTML.trim() && targetCell.innerHTML !== '<br>') {
+                cell.innerHTML += '<br>' + targetCell.innerHTML;
+            }
+            
+            // Tăng số lượng dòng chiếm chỗ và xóa ô thừa
+            cell.rowSpan = (cell.rowSpan || 1) + (targetCell.rowSpan || 1);
+            targetCell.remove();
+        }
+        else if (action === 'row-above') {
+            const newRow = row.cloneNode(true);
+            Array.from(newRow.cells).forEach(c => { c.innerHTML = '<br>'; c.colSpan = 1; c.rowSpan = 1; });
+            tbody.insertBefore(newRow, row);
+        }
+        else if (action === 'row-below') {
+            const newRow = row.cloneNode(true);
+            Array.from(newRow.cells).forEach(c => { c.innerHTML = '<br>'; c.colSpan = 1; c.rowSpan = 1; });
+            if (row.nextElementSibling) tbody.insertBefore(newRow, row.nextElementSibling);
+            else tbody.appendChild(newRow);
+        }
+        else if (action === 'del-row') {
+            row.remove();
+            if (tbody.rows.length === 0) table.remove();
+        }
+        else if (action === 'col-left' || action === 'col-right') {
+            const index = cell.cellIndex;
+            Array.from(tbody.rows).forEach(r => {
+                const target = r.cells[index];
+                if (target) {
+                    const newCell = target.cloneNode(false);
+                    newCell.innerHTML = '<br>';
+                    newCell.colSpan = 1; 
+                    newCell.rowSpan = 1;
+                    if (action === 'col-left') r.insertBefore(newCell, target);
+                    else r.insertBefore(newCell, target.nextElementSibling);
+                }
+            });
+        }
+        else if (action === 'del-col') {
+            const index = cell.cellIndex;
+            Array.from(tbody.rows).forEach(r => {
+                if (r.cells[index]) r.cells[index].remove();
+            });
+            if (tbody.rows[0] && tbody.rows[0].cells.length === 0) table.remove();
+        }
+        else if (action === 'unmerge') {
+            // Logic tách ô cơ bản
+            const cSpan = cell.colSpan || 1;
+            const rSpan = cell.rowSpan || 1;
+            if (cSpan === 1 && rSpan === 1) return;
+            
+            cell.colSpan = 1;
+            cell.rowSpan = 1;
+            
+            // Khôi phục các cột bên phải
+            for (let i = 1; i < cSpan; i++) {
+                const newCell = cell.cloneNode(false);
+                newCell.innerHTML = '<br>';
+                row.insertBefore(newCell, cell.nextElementSibling);
+            }
+        }
+        else if (action === 'toggle-width') {
+            table.style.width = (table.style.width === '100%') ? 'auto' : '100%';
+        }
+        else if (action === 'toggle-border') {
+            table.classList.toggle('no-border');
+        }
+
+        // 3. Kích hoạt lưu tự động của hệ thống
+        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+
+    } catch (err) {
+        // Bắt lỗi nhẹ nhàng bằng giao diện Toast thay vì văng bảng thông báo hệ thống
+        console.error("Lỗi thao tác bảng:", err);
+        if(typeof window.showToast === 'function') {
+            window.showToast("Lỗi Thao Tác", err.message, "error");
+        }
+    }
+};
 
     window.addEventListener('DOMContentLoaded', () => {
         window.initFirebaseSystem();
@@ -6746,56 +6903,79 @@ window.initFirebaseSystem = async function() {
         btn.textContent = "Assign"; btn.disabled = false;
     };
 
-    window.promptMergeTest = function(tid) {
-      const sourceTest = TEST_BANK.find(t => t.id === tid);
-      if (!sourceTest) return;
+    window.promptMergeTest = function(sourceId) {
+    const sourceTest = TEST_BANK.find(t => t.id === sourceId);
+    if (!sourceTest) return;
 
-      const compatibleTests = TEST_BANK.filter(t => t.module === sourceTest.module && t.id !== tid);
-      if (compatibleTests.length === 0) {
-          showModalMsg("Cannot Merge", `There are no other ${sourceTest.module} tests available to merge this into.`);
-          return;
-      }
+    let optionsHtml = '<option value="">-- Select Target Test --</option>';
+    TEST_BANK.forEach(t => {
+        if (t.id !== sourceId) {
+            optionsHtml += `<option value="${t.id}">${t.title}</option>`;
+        }
+    });
 
-      let testOpts = compatibleTests.map(t => `<option value="${t.id}">${t.title}</option>`).join('');
+    const html = `
+        <p class="text-sm text-slate-500 mb-4">Select the target test. All parts, questions, and vocabulary from this test will be appended to the target test.</p>
+        <label class="block text-xs font-bold text-slate-800 mb-1">Merge into Target Test:</label>
+        <select id="merge-target-select" class="w-full border border-slate-300 p-2.5 rounded-lg mb-4 outline-none focus:border-blue-500 font-bold text-blue-900 bg-white shadow-sm cursor-pointer">
+            ${optionsHtml}
+        </select>
+        <div class="flex items-center gap-2 border border-slate-200 p-3 rounded-lg bg-white shadow-sm">
+            <input type="checkbox" id="merge-delete-check" class="w-4 h-4 accent-rose-600 cursor-pointer">
+            <label for="merge-delete-check" class="text-sm font-bold text-rose-700 cursor-pointer select-none">Delete this original test after merging</label>
+        </div>
+    `;
 
-      document.getElementById('modal-title').textContent = `Merge: ${sourceTest.title}`;
-      document.getElementById('modal-message').innerHTML = `
-          <p class="text-sm text-slate-500 mb-4">Select the target test. All parts, questions, and vocabulary from this test will be appended to the target test.</p>
-          <label class="block text-xs font-bold text-slate-700 mb-1">Merge into Target Test:</label>
-          <select id="merge-target-select" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-blue-800 outline-none focus:border-blue-500 bg-slate-50 mb-4 cursor-pointer">
-              ${testOpts}
-          </select>
-          <label class="flex items-center space-x-2 cursor-pointer p-3 rounded-lg hover:bg-rose-50 border border-slate-200 bg-white transition shadow-sm mt-2">
-              <input type="checkbox" id="merge-delete-source" class="w-4 h-4 text-rose-600 rounded cursor-pointer" checked>
-              <span class="font-bold text-sm text-rose-700">Delete this original test after merging</span>
-          </label>
-      `;
-      
-      document.getElementById('modal-input').classList.add('hidden');
-      document.getElementById('modal-cancel').classList.remove('hidden');
-      document.getElementById('custom-modal').classList.remove('hidden');
+    // Gọi Modal Confirm của bạn
+    window.showConfirm("Merge: " + sourceTest.title, html, async () => {
+        const targetId = document.getElementById('merge-target-select').value;
+        const deleteOriginal = document.getElementById('merge-delete-check').checked;
 
-      document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
-      
-      document.getElementById('modal-confirm').onclick = async () => {
-          const btn = document.getElementById('modal-confirm');
-          btn.textContent = "Merging..."; btn.disabled = true;
-          
-          const targetId = document.getElementById('merge-target-select').value;
-          const deleteSource = document.getElementById('merge-delete-source').checked;
-          
-          try {
-              await window.executeMergeTest(tid, targetId, deleteSource);
-              document.getElementById('custom-modal').classList.add('hidden');
-              showModalMsg("Merge Successful! 🎉", "The test contents have been successfully merged. Question numbers were automatically recalculated to prevent conflicts.");
-          } catch (e) {
-              console.error(e);
-              showModalMsg("Error", "Could not complete the merge operation.");
-          }
-          
-          btn.textContent = "OK"; btn.disabled = false;
-      };
-    };
+        if (!targetId) {
+            if (typeof window.showToast === 'function') window.showToast("Lỗi", "Vui lòng chọn bài test đích.", "error");
+            return;
+        }
+
+        try {
+            const targetTest = TEST_BANK.find(t => t.id === targetId);
+            if (!targetTest) throw new Error("Không tìm thấy Target Test.");
+
+            // 🔴 FIX LỖI FIREBASE NẰM Ở ĐÂY: 
+            // Sử dụng JSON.parse(JSON.stringify()) để lọc sạch hoàn toàn các dữ liệu rác/undefined
+            // Nếu không có bước này, lệnh đẩy lên Cloud (fsSetDoc) sẽ bị Firebase từ chối.
+            let mergedTest = JSON.parse(JSON.stringify(targetTest));
+            let srcTest = JSON.parse(JSON.stringify(sourceTest));
+
+            // Khởi tạo mảng dự phòng nếu test chưa có dữ liệu
+            if (!mergedTest.parts) mergedTest.parts = [];
+            if (!mergedTest.vocab) mergedTest.vocab = [];
+            if (!mergedTest.grammar) mergedTest.grammar = [];
+
+            // Tiến hành gộp dữ liệu
+            if (srcTest.parts && Array.isArray(srcTest.parts)) mergedTest.parts.push(...srcTest.parts);
+            if (srcTest.vocab && Array.isArray(srcTest.vocab)) mergedTest.vocab.push(...srcTest.vocab);
+            if (srcTest.grammar && Array.isArray(srcTest.grammar)) mergedTest.grammar.push(...srcTest.grammar);
+
+            // Lưu lên Cloud
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), mergedTest.id), mergedTest);
+
+            // Xóa bản gốc nếu người dùng chọn
+            if (deleteOriginal) {
+                await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('tests'), sourceTest.id));
+            }
+
+            // Tắt Modal và cập nhật giao diện
+            document.getElementById('custom-modal').classList.add('hidden');
+            if (typeof window.showToast === 'function') window.showToast("Thành công", "Đã gộp bài test an toàn!");
+            if (typeof renderTestBank === 'function') renderTestBank(true);
+
+        } catch (err) {
+            console.error("Lỗi Merge Test:", err);
+            // Nâng cấp: Hiển thị nguyên nhân gốc của lỗi ngay trên modal để bạn dễ nhận biết
+            document.getElementById('modal-message').innerHTML = `Could not complete the merge operation.<br><br><span class="text-xs text-rose-500 font-mono">${err.message}</span>`;
+        }
+    });
+};
     
     // ✨ NEW: Smart IELTS Template Generator
     function getSmartIeltsStructure(mod) {
@@ -8853,6 +9033,10 @@ window.initFirebaseSystem = async function() {
       const passTxt = document.getElementById('edit-passage-text');
       if(passTxt.tagName === 'TEXTAREA') passTxt.value = p.text||''; else passTxt.innerHTML = p.text||'';
       renderEditorQuestions();
+
+      if (typeof window.loadChartEditorUI === 'function') {
+          window.loadChartEditorUI();
+      }
     }
 
         function setTestPdfImportStatus(message, tone = 'info') {
@@ -10666,6 +10850,720 @@ window.initFirebaseSystem = async function() {
             </div>
         `).join('');
     };
+
+    function ensurePartInteractiveCharts(part) {
+    if (part.interactiveChart && (!Array.isArray(part.interactiveCharts) || part.interactiveCharts.length === 0)) {
+        part.interactiveCharts = JSON.parse(JSON.stringify([part.interactiveChart]));
+        delete part.interactiveChart;
+        return true;
+    }
+    if (!Array.isArray(part.interactiveCharts)) part.interactiveCharts = [];
+    return false;
+}
+
+window.loadChartEditorUI = function() {
+    const container = document.getElementById('chart-editor-list');
+    if (!container) return;
+
+    document.querySelectorAll('.builder-chart-canvas').forEach(canvas => {
+        const chartStatus = Chart.getChart(canvas);
+        if (chartStatus) chartStatus.destroy();
+    });
+    container.innerHTML = '';
+
+    const part = APP_DATA.parts[currentEditorPartIdx];
+    if (!part) return;
+
+    if (ensurePartInteractiveCharts(part) && typeof window.triggerEditorAutosave === 'function') {
+        window.triggerEditorAutosave();
+    }
+
+    container.innerHTML = part.interactiveCharts.map((chart, index) => `
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative animate-fade-in mb-4">
+            <button type="button" onclick="window.removeEditorChart(${index})" class="absolute top-3 right-3 w-8 h-8 flex justify-center items-center bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg font-bold transition">&times;</button>
+            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-100 pb-2">Biểu đồ #${index + 1}</h4>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 pr-10">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Loại biểu đồ</label>
+                    <select id="edit-chart-type-${index}" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 transition-colors bg-slate-50 cursor-pointer" onchange="window.saveEditorChart(${index})">
+                        <option value="bar" ${chart.type === 'bar' ? 'selected' : ''}>Bar Chart (Cột)</option>
+                        <option value="line" ${chart.type === 'line' ? 'selected' : ''}>Line Graph (Đường)</option>
+                        <option value="pie" ${chart.type === 'pie' ? 'selected' : ''}>Pie Chart (Tròn)</option>
+                        <option value="doughnut" ${chart.type === 'doughnut' ? 'selected' : ''}>Doughnut Chart</option>
+                        <option value="table" ${chart.type === 'table' ? 'selected' : ''}>Table</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Tiêu đề</label>
+                    <input type="text" id="edit-chart-title-${index}" value="${chart.title || ''}" placeholder="e.g. Population..." class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 transition-colors bg-slate-50" oninput="window.saveEditorChart(${index})">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Đơn vị (Trục Y & Tooltip)</label>
+                    <div class="flex gap-2">
+                        <select id="edit-chart-unit-type-${index}" class="w-2/5 border-2 border-slate-200 p-2 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 bg-slate-50 cursor-pointer" onchange="window.saveEditorChart(${index})">
+                            <option value="" ${!chart.unitType ? 'selected' : ''}>Số</option>
+                            <option value="%" ${chart.unitType === '%' ? 'selected' : ''}>%</option>
+                            <option value="custom" ${chart.unitType === 'custom' ? 'selected' : ''}>Khác</option>
+                        </select>
+                        <input type="text" id="edit-chart-unit-custom-${index}" value="${chart.unitCustom || ''}" placeholder="kg, km..." class="w-3/5 border-2 border-slate-200 p-2 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 bg-slate-50 ${chart.unitType === 'custom' ? '' : 'hidden'}" oninput="window.saveEditorChart(${index})">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 uppercase">Mốc thời gian (tùy chọn)</label>
+                    <input type="text" id="edit-chart-time-${index}" value="${chart.time || ''}" placeholder="e.g. 2024" class="w-full border-2 border-slate-200 p-2 rounded-lg text-sm font-bold text-slate-700 outline-none focus:border-indigo-500 bg-slate-50" oninput="window.saveEditorChart(${index})">
+                </div>
+            </div>
+            <label class="text-[10px] font-bold text-slate-500 uppercase flex justify-between items-end mb-1">
+                <span>Dữ liệu (Copy & Paste từ Excel)</span>
+            </label>
+            <textarea id="edit-chart-data-${index}" class="w-full border-2 border-slate-200 p-3 rounded-lg text-sm outline-none focus:border-indigo-500 h-24 font-mono whitespace-pre bg-slate-50 custom-scrollbar mb-3" placeholder="Country&#9;2021&#9;2026&#10;Singapore&#9;4500&#9;7000" oninput="window.saveEditorChart(${index})">${chart.rawTsv || ''}</textarea>
+            <div class="interactive-chart-frame">
+                <canvas id="builder-chart-preview-${index}" class="builder-chart-canvas"></canvas>
+            </div>
+        </div>
+    `).join('');
+
+    setTimeout(() => {
+        if (APP_DATA.parts[currentEditorPartIdx] !== part) return;
+        window.renderEditorChartPreviews(part);
+    }, 0);
+};
+
+window.renderEditorChartPreviews = function(part) {
+    const charts = part.interactiveCharts || [];
+    const pointColorMap = window.getChartPointColorMap(charts);
+    const legendOwnerIndex = window.getChartLegendOwnerIndex(charts);
+    charts.forEach((chart, index) => {
+        if (chart.labels && chart.labels.length > 0) {
+            window.renderCanvasChart(
+                `builder-chart-preview-${index}`,
+                window.getChartConfigInReferenceOrder(charts, index),
+                pointColorMap,
+                undefined,
+                { showLegend: index === legendOwnerIndex }
+            );
+        }
+    });
+};
+
+window.addEditorChart = function() {
+    const part = APP_DATA.parts[currentEditorPartIdx];
+    if (!part) return;
+    ensurePartInteractiveCharts(part);
+    part.interactiveCharts.push({ type: 'bar', title: '', rawTsv: '', labels: [], datasets: [], unitType: '', unitCustom: '', time: '' });
+    window.loadChartEditorUI();
+    if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+};
+
+window.removeEditorChart = function(index) {
+    const part = APP_DATA.parts[currentEditorPartIdx];
+    if (!part || !Array.isArray(part.interactiveCharts)) return;
+    window.showConfirm("Xóa biểu đồ", "Bạn có chắc chắn muốn xóa biểu đồ này khỏi bài test?", () => {
+        part.interactiveCharts.splice(index, 1);
+        window.loadChartEditorUI();
+        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    });
+};
+
+window.saveEditorChart = function(index) {
+    const part = APP_DATA.parts[currentEditorPartIdx];
+    if (!part || !Array.isArray(part.interactiveCharts) || !part.interactiveCharts[index]) return;
+
+    const dataEl = document.getElementById(`edit-chart-data-${index}`);
+    const typeEl = document.getElementById(`edit-chart-type-${index}`);
+    const titleEl = document.getElementById(`edit-chart-title-${index}`);
+    if (!dataEl || !typeEl || !titleEl) return;
+    const unitTypeEl = document.getElementById(`edit-chart-unit-type-${index}`);
+    const unitCustomEl = document.getElementById(`edit-chart-unit-custom-${index}`);
+    const timeEl = document.getElementById(`edit-chart-time-${index}`);
+
+    const chart = part.interactiveCharts[index];
+    const rawData = dataEl.value;
+    const type = typeEl.value;
+    const unitType = unitTypeEl ? unitTypeEl.value : '';
+    const unitCustom = unitCustomEl ? unitCustomEl.value : '';
+    if (unitCustomEl) unitCustomEl.classList.toggle('hidden', unitType !== 'custom');
+
+    chart.rawTsv = rawData;
+    chart.type = type;
+    chart.title = titleEl.value;
+    chart.unitType = unitType;
+    chart.unitCustom = unitCustom;
+    chart.time = timeEl ? timeEl.value.trim() : '';
+
+    if (!rawData.trim()) {
+        chart.labels = [];
+        chart.datasets = [];
+        window.renderEditorChartPreviews(part);
+        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+        return;
+    }
+
+    const rows = rawData.trim().split('\n').map(row => row.split('\t'));
+    if (rows.length < 2) {
+        chart.labels = [];
+        chart.datasets = [];
+        window.renderEditorChartPreviews(part);
+        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+        return;
+    }
+
+    const labels = rows.slice(1).map(row => row[0]);
+    const datasets = [];
+    const bgColors = ['#b2dfdb', '#00897b', '#004d40', '#ffb74d', '#f57c00', '#1976d2'];
+
+    for (let col = 1; col < rows[0].length; col++) {
+        const seriesColor = bgColors[(col - 1) % bgColors.length];
+        const pointColors = ['bar', 'pie', 'doughnut'].includes(type)
+            ? labels.map((_, pointIndex) => bgColors[pointIndex % bgColors.length])
+            : seriesColor;
+        datasets.push({
+            label: rows[0][col] || `Dataset ${col}`,
+            data: rows.slice(1).map(row => parseFloat((row[col] || '0').replace(/,/g, '')) || 0),
+            backgroundColor: pointColors,
+            borderColor: pointColors,
+            borderWidth: 1,
+            borderRadius: type === 'bar' ? 3 : 0,
+            tension: 0.3
+        });
+    }
+
+    chart.labels = labels;
+    chart.datasets = datasets;
+    if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    window.renderEditorChartPreviews(part);
+};
+
+window.getChartConfigInReferenceOrder = function(charts, chartIndex) {
+    const chart = charts && charts[chartIndex];
+    if (!chart || chartIndex === 0 || !Array.isArray(chart.labels)) return chart;
+
+    const referenceLabels = charts[0] && Array.isArray(charts[0].labels)
+        ? charts[0].labels
+        : [];
+    const labelKey = label => String(label).trim().toLocaleLowerCase();
+    const labelIndices = new Map();
+    chart.labels.forEach((label, index) => {
+        const key = labelKey(label);
+        if (!labelIndices.has(key)) labelIndices.set(key, index);
+    });
+
+    const orderedLabels = [];
+    const orderedIndices = [];
+    const addedKeys = new Set();
+
+    referenceLabels.forEach(label => {
+        const key = labelKey(label);
+        const index = labelIndices.get(key);
+        if (index !== undefined && !addedKeys.has(key)) {
+            orderedLabels.push(chart.labels[index]);
+            orderedIndices.push(index);
+            addedKeys.add(key);
+        }
+    });
+    chart.labels.forEach((label, index) => {
+        const key = labelKey(label);
+        if (!addedKeys.has(key)) {
+            orderedLabels.push(label);
+            orderedIndices.push(index);
+            addedKeys.add(key);
+        }
+    });
+
+    return {
+        ...chart,
+        labels: orderedLabels,
+        sourceLabelIndices: orderedIndices,
+        datasets: (chart.datasets || []).map(dataset => ({
+            ...dataset,
+            data: Array.isArray(dataset.data)
+                ? orderedIndices.map(index => dataset.data[index])
+                : dataset.data
+        }))
+    };
+};
+
+window.getChartPointColorMap = function(charts) {
+    const colors = ['#b2dfdb', '#00897b', '#004d40', '#ffb74d', '#f57c00', '#1976d2'];
+    const colorMap = new Map();
+
+    (charts || []).forEach(chart => {
+        (chart.labels || []).forEach(label => {
+            const key = String(label).trim().toLocaleLowerCase();
+            if (key && !colorMap.has(key)) {
+                colorMap.set(key, colors[colorMap.size % colors.length]);
+            }
+        });
+    });
+
+    return colorMap;
+};
+
+window.getChartLegendOwnerIndex = function(charts) {
+    return (charts || []).findIndex(chart =>
+        chart.type !== 'table'
+        && Array.isArray(chart.labels)
+        && chart.labels.length > 0
+        && Array.isArray(chart.datasets)
+        && chart.datasets.length > 0
+    );
+};
+
+window.chartSelectionsByPart = window.chartSelectionsByPart || new WeakMap();
+
+window.getSelectedChartObjects = function(part) {
+    return window.chartSelectionsByPart.get(part) || new Map();
+};
+
+window.getChartObjectKey = function(chartIndex, datasetIndex, label, labelIndex) {
+    return `${chartIndex}|${datasetIndex}|${labelIndex}|${String(label).trim().toLocaleLowerCase()}`;
+};
+
+window.getChartObservationTime = function(chart, dataset) {
+    const label = String(chart.time || '').trim();
+    const yearMatch = label.match(/\b(19\d{2}|20\d{2}|21\d{2})\b/);
+    if (yearMatch) return { label, sortValue: Number(yearMatch[1]) };
+
+    const timestamp = Date.parse(label);
+    return { label, sortValue: Number.isFinite(timestamp) ? timestamp : null };
+};
+
+window.escapeChartHtml = function(value) {
+    return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+};
+
+window.createStudentChartComparisonPanel = function(charts) {
+    return `
+        <section id="student-chart-comparison" class="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
+            <h3 class="font-bold text-indigo-900 mb-1">Chart comparison</h3>
+            <p class="text-xs text-slate-600 mb-3">Click individual bars, points, or slices to select figures. The same category in different charts can be selected separately.</p>
+            <div id="student-chart-selected-objects" class="flex flex-wrap gap-2 mb-3"></div>
+            <div id="student-chart-comparison-results" class="mt-3 text-sm text-slate-700 space-y-3" aria-live="polite">Select figures on the charts to compare them.</div>
+        </section>
+    `;
+};
+
+window.updateStudentChartSelectionVisuals = function(part, charts) {
+    const selected = window.getSelectedChartObjects(part);
+    const pointColors = ['#b2dfdb', '#00897b', '#004d40', '#ffb74d', '#f57c00', '#1976d2'];
+    const pointColorMap = window.getChartPointColorMap(charts);
+
+    charts.forEach((chart, chartIndex) => {
+        const config = window.getChartConfigInReferenceOrder(charts, chartIndex);
+        if (!config || !Array.isArray(config.labels)) return;
+
+        if (config.type === 'table') {
+            const table = document.getElementById(`student-exam-chart-${chartIndex}`);
+            if (!table) return;
+            table.querySelectorAll('[data-chart-dataset][data-chart-label]').forEach(button => {
+                const datasetIndex = Number(button.dataset.chartDataset);
+                const labelIndex = Number(button.dataset.chartLabel);
+                const sourceLabelIndex = config.sourceLabelIndices ? config.sourceLabelIndices[labelIndex] : labelIndex;
+                const key = window.getChartObjectKey(
+                    chartIndex,
+                    datasetIndex,
+                    config.labels[labelIndex],
+                    sourceLabelIndex
+                );
+                const isSelected = selected.has(key);
+                button.setAttribute('aria-pressed', String(isSelected));
+                button.classList.toggle('bg-indigo-100', isSelected);
+                button.classList.toggle('ring-2', isSelected);
+                button.classList.toggle('ring-indigo-600', isSelected);
+                button.classList.toggle('hover:bg-slate-100', !isSelected);
+            });
+            return;
+        }
+
+        const chartInstance = Chart.getChart(`student-exam-chart-${chartIndex}`);
+        if (!chartInstance) return;
+        const usesPointColors = ['bar', 'pie', 'doughnut'].includes(config.type);
+
+        config.datasets.forEach((dataset, datasetIndex) => {
+            const renderedDataset = chartInstance.data.datasets[datasetIndex];
+            if (!renderedDataset) return;
+            const isSelectedAt = config.labels.map((label, labelIndex) => {
+                const sourceLabelIndex = config.sourceLabelIndices ? config.sourceLabelIndices[labelIndex] : labelIndex;
+                return selected.has(window.getChartObjectKey(chartIndex, datasetIndex, label, sourceLabelIndex));
+            });
+
+            if (config.type === 'line') {
+                renderedDataset.pointBorderWidth = isSelectedAt.map(isSelected => isSelected ? 4 : 2);
+                renderedDataset.pointBorderColor = config.labels.map((_, labelIndex) =>
+                    isSelectedAt[labelIndex] ? '#0f172a' : dataset.borderColor
+                );
+            } else if (usesPointColors) {
+                const colors = config.labels.map((label, labelIndex) =>
+                    pointColorMap.get(String(label).trim().toLocaleLowerCase()) || pointColors[labelIndex % pointColors.length]
+                );
+                renderedDataset.backgroundColor = colors;
+                renderedDataset.borderColor = colors.map((color, labelIndex) =>
+                    isSelectedAt[labelIndex] ? '#0f172a' : color
+                );
+                renderedDataset.borderWidth = isSelectedAt.map(isSelected => isSelected ? 3 : 1);
+            }
+        });
+        chartInstance.update('none');
+    });
+};
+
+window.toggleStudentChartObject = function(part, charts, chartIndex, datasetIndex, label, labelIndex) {
+    const selected = new Map(window.getSelectedChartObjects(part));
+    const key = window.getChartObjectKey(chartIndex, datasetIndex, label, labelIndex);
+    if (selected.has(key)) selected.delete(key);
+    else selected.set(key, { key, chartIndex, datasetIndex, labelIndex, label: String(label) });
+    window.chartSelectionsByPart.set(part, selected);
+
+    window.updateStudentChartSelectionVisuals(part, charts);
+    window.updateStudentChartComparison(part, charts);
+};
+
+window.updateStudentChartComparison = function(part, charts) {
+    const selectedContainer = document.getElementById('student-chart-selected-objects');
+    const resultsContainer = document.getElementById('student-chart-comparison-results');
+    if (!selectedContainer || !resultsContainer) return;
+
+    const selected = [...window.getSelectedChartObjects(part).values()];
+    selectedContainer.replaceChildren();
+    selected.forEach(item => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'px-2.5 py-1 rounded-full bg-white border border-indigo-300 text-indigo-800 text-xs font-bold hover:bg-indigo-100';
+        const chart = charts[item.chartIndex];
+        const dataset = chart && chart.datasets && chart.datasets[item.datasetIndex];
+        chip.textContent = `${item.label} (${chart && chart.time || `Chart ${item.chartIndex + 1}`}${dataset && dataset.label ? `, ${dataset.label}` : ''}) ×`;
+        chip.title = 'Remove this selected figure';
+        chip.onclick = () => window.toggleStudentChartObject(part, charts, item.chartIndex, item.datasetIndex, item.label, item.labelIndex);
+        selectedContainer.appendChild(chip);
+    });
+
+    if (selected.length < 2) {
+        resultsContainer.textContent = 'Select at least two figures on the charts to see their comparison.';
+        return;
+    }
+    const numberFormat = value => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(value);
+    const formatUnitValue = figure => {
+        const suffix = figure.unit === '%' ? '%' : figure.unit ? ` ${window.escapeChartHtml(figure.unit)}` : '';
+        return `${numberFormat(figure.value)}${suffix}`;
+    };
+    const figures = selected.map(item => {
+        const chart = charts[item.chartIndex];
+        const dataset = chart.datasets && chart.datasets[item.datasetIndex];
+        const labelIndex = item.labelIndex;
+        const unit = chart.unitType === '%'
+            ? '%'
+            : chart.unitType === 'custom'
+                ? String(chart.unitCustom || '').trim()
+                : '';
+        return {
+            ...item,
+            chart,
+            dataset,
+            time: window.getChartObservationTime(chart, dataset || {}),
+            unit,
+            value: labelIndex >= 0 && dataset ? Number(dataset.data[labelIndex]) : NaN
+        };
+    }).filter(item => Number.isFinite(item.value));
+
+    const pairRows = [];
+    for (let left = 0; left < figures.length; left++) {
+        for (let right = left + 1; right < figures.length; right++) {
+            const a = figures[left];
+            const b = figures[right];
+            const aName = `${window.escapeChartHtml(a.label)} (${window.escapeChartHtml(a.time.label || `Chart ${a.chartIndex + 1}`)}${a.dataset.label ? `, ${window.escapeChartHtml(a.dataset.label)}` : ''})`;
+            const bName = `${window.escapeChartHtml(b.label)} (${window.escapeChartHtml(b.time.label || `Chart ${b.chartIndex + 1}`)}${b.dataset.label ? `, ${window.escapeChartHtml(b.dataset.label)}` : ''})`;
+            const difference = Math.abs(a.value - b.value);
+            const [larger, smaller] = a.value >= b.value ? [a, b] : [b, a];
+            const sameUnit = a.unit === b.unit;
+            const isPercentage = sameUnit && a.unit === '%';
+            const differenceLabel = isPercentage ? 'percentage points' : a.unit ? window.escapeChartHtml(a.unit) : 'units';
+            let grammarExamples;
+            if (a.unit !== b.unit) {
+                grammarExamples = `<p>The units differ (${window.escapeChartHtml(a.unit || 'no unit')} vs ${window.escapeChartHtml(b.unit || 'no unit')}), so direct numeric comparisons may be misleading.</p>`;
+            } else if (a.value === b.value) {
+                grammarExamples = `
+                    <p><b>Equal comparison:</b> ${aName} is equal to ${bName}.</p>
+                    <p><b>Same-as structure:</b> ${aName} is the same as ${bName}.</p>
+                `;
+            } else {
+                const comparative = a.value > b.value
+                    ? `${aName} is ${numberFormat(difference)} ${differenceLabel} higher than ${bName}.`
+                    : `${aName} is ${numberFormat(difference)} ${differenceLabel} lower than ${bName}.`;
+                const relativeDifference = b.value !== 0
+                    ? `<p><b>Relative percentage change:</b> Compared with ${bName}, ${aName} is ${numberFormat((a.value - b.value) / Math.abs(b.value) * 100)}% ${a.value > b.value ? 'higher' : 'lower'}.</p>`
+                    : '';
+                const ratioSentence = smaller.value > 0
+                    ? `<p><b>Multiplicative comparison:</b> ${window.escapeChartHtml(larger.label)} (${window.escapeChartHtml(larger.time.label || `Chart ${larger.chartIndex + 1}`)}) is ${numberFormat(larger.value / smaller.value)} times as high as ${window.escapeChartHtml(smaller.label)} (${window.escapeChartHtml(smaller.time.label || `Chart ${smaller.chartIndex + 1}`)}); conversely, ${window.escapeChartHtml(smaller.label)} is ${numberFormat(smaller.value / larger.value)} times as high as ${window.escapeChartHtml(larger.label)}.</p>`
+                    : '';
+                grammarExamples = `<p><b>Comparative:</b> ${comparative}</p>${relativeDifference}${ratioSentence}`;
+            }
+            const differenceText = sameUnit
+                ? `<p><b>${isPercentage ? 'Percentage-point difference' : 'Absolute difference'}:</b> ${numberFormat(difference)} ${differenceLabel}.</p>`
+                : '';
+            pairRows.push(`<li class="p-4 bg-white rounded-lg border border-indigo-100"><p class="font-bold text-slate-900">${aName}: ${formatUnitValue(a)} &nbsp;|&nbsp; ${bName}: ${formatUnitValue(b)}</p><div class="mt-2 space-y-1">${differenceText}${grammarExamples}</div></li>`);
+        }
+    }
+
+    const trendGroups = new Map();
+    figures.filter(item => item.time.sortValue !== null).forEach(item => {
+        const key = `${item.dataset.label || ''}|${item.label.trim().toLocaleLowerCase()}|${item.unit}`;
+        if (!trendGroups.has(key)) trendGroups.set(key, []);
+        trendGroups.get(key).push(item);
+    });
+    const trendRows = [];
+    trendGroups.forEach(items => {
+        items.sort((a, b) => a.time.sortValue - b.time.sortValue);
+        if (new Set(items.map(item => item.time.sortValue)).size < 2) return;
+        const first = items[0];
+        const last = [...items].reverse().find(item => item.time.sortValue !== first.time.sortValue);
+        if (!last) return;
+        const difference = last.value - first.value;
+        const trend = difference > 0 ? 'increased' : difference < 0 ? 'decreased' : 'remained unchanged';
+        const label = window.escapeChartHtml(first.label);
+        const isPercentage = first.unit === '%' && last.unit === '%';
+        const unit = first.unit === '%' ? '%' : first.unit ? ` ${window.escapeChartHtml(first.unit)}` : '';
+        const changeUnit = isPercentage ? ' percentage points' : unit || ' units';
+        const relativeChange = first.value !== 0
+            ? ` This represents a ${numberFormat(Math.abs(difference / Math.abs(first.value) * 100))}% ${difference > 0 ? 'increase' : difference < 0 ? 'decrease' : 'change'} relative to the starting value.`
+            : '';
+        trendRows.push(`<li class="p-3 bg-white rounded-lg border border-indigo-100"><b>${label}</b> ${trend} from ${numberFormat(first.value)}${unit} in ${window.escapeChartHtml(first.time.label)} to ${numberFormat(last.value)}${unit} in ${window.escapeChartHtml(last.time.label)} (a change of ${numberFormat(Math.abs(difference))}${changeUnit}).${relativeChange}</li>`);
+    });
+
+    resultsContainer.innerHTML = figures.length < 2
+        ? '<p>Select at least two valid numeric figures to compare them.</p>'
+        : `<section class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl"><h4 class="text-base font-black text-indigo-900">Grammar point used: the comparison</h4><p class="text-xs text-slate-600 mt-1 mb-3">Compare figures with comparative adjectives, equal comparisons, and percentage changes.</p><div><h5 class="font-bold text-slate-800 mb-2">Figure comparisons</h5><ul class="space-y-2">${pairRows.join('')}</ul></div>${trendRows.length ? `<div class="mt-4"><h5 class="font-bold text-slate-800 mb-2">Trends over time</h5><ul class="space-y-2">${trendRows.join('')}</ul></div>` : ''}</section>`;
+};
+
+// Hàm Render chung (dùng cho cả Teacher Builder và Student Exam)
+window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionContext, renderOptions = {}) {
+    const chartStatus = Chart.getChart(canvasId);
+    if (chartStatus) chartStatus.destroy();
+
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    if (!config || !config.labels || config.labels.length === 0) return null;
+
+    const cleanCanvas = canvas.cloneNode(false);
+    canvas.replaceWith(cleanCanvas);
+    const unitLabel = config.unitType === '%'
+        ? '%'
+        : config.unitType === 'custom' && config.unitCustom
+            ? ` ${config.unitCustom}`
+            : '';
+    const chartPointColorMap = pointColorMap || window.getChartPointColorMap([config]);
+    const numberFormatForChart = value => new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number(value));
+    if (config.type === 'table') {
+        const tableContainer = document.createElement('div');
+        tableContainer.id = canvasId;
+        tableContainer.className = 'w-full h-full overflow-auto rounded-lg bg-white';
+        const selectedObjects = selectionContext
+            ? window.getSelectedChartObjects(selectionContext.part)
+            : new Map();
+        const tableRows = config.labels.map((label, labelIndex) => {
+            const sourceLabelIndex = config.sourceLabelIndices ? config.sourceLabelIndices[labelIndex] : labelIndex;
+            const objectColor = chartPointColorMap.get(String(label).trim().toLocaleLowerCase()) || '#334155';
+            const values = config.datasets.map((dataset, datasetIndex) => {
+                const value = dataset.data[labelIndex];
+                const key = selectionContext
+                    ? window.getChartObjectKey(selectionContext.chartIndex, datasetIndex, label, sourceLabelIndex)
+                    : '';
+                const isSelected = key && selectedObjects.has(key);
+                const cellContent = `${window.escapeChartHtml(numberFormatForChart(value))}${window.escapeChartHtml(unitLabel)}`;
+                return `<td class="border-b border-slate-100 px-4 py-3 text-right font-semibold text-slate-700"><button type="button" class="rounded px-2 py-1 ${isSelected ? 'bg-indigo-100 ring-2 ring-indigo-600' : 'hover:bg-slate-100'} ${selectionContext ? 'cursor-pointer' : 'cursor-default'}" ${selectionContext ? `data-chart-dataset="${datasetIndex}" data-chart-label="${labelIndex}" aria-label="Select ${window.escapeChartHtml(label)}, ${window.escapeChartHtml(dataset.label || '')}: ${cellContent}" aria-pressed="${Boolean(isSelected)}"` : 'disabled'}>${cellContent}</button></td>`;
+            }).join('');
+            return `<tr class="hover:bg-slate-50"><th scope="row" class="border-b border-slate-100 px-4 py-3 text-left font-bold" style="color:${objectColor}">${window.escapeChartHtml(label)}</th>${values}</tr>`;
+        }).join('');
+        tableContainer.innerHTML = `
+            ${config.title ? `<h3 class="px-4 pt-4 text-base font-bold text-slate-800">${window.escapeChartHtml(config.title)}</h3>` : ''}
+            <table class="w-full min-w-max border-collapse text-sm">
+                <thead><tr class="bg-slate-50"><th scope="col" class="border-b border-slate-200 px-4 py-3 text-left font-black text-slate-600">Category</th>${config.datasets.map(dataset => `<th scope="col" class="border-b border-slate-200 px-4 py-3 text-right font-black text-slate-600">${window.escapeChartHtml(dataset.label || '')}</th>`).join('')}</tr></thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+        `;
+        cleanCanvas.replaceWith(tableContainer);
+        if (selectionContext) {
+            tableContainer.querySelectorAll('[data-chart-dataset]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const labelIndex = Number(button.dataset.chartLabel);
+                    const datasetIndex = Number(button.dataset.chartDataset);
+                    window.toggleStudentChartObject(
+                        selectionContext.part,
+                        selectionContext.charts,
+                        selectionContext.chartIndex,
+                        datasetIndex,
+                        config.labels[labelIndex],
+                        config.sourceLabelIndices ? config.sourceLabelIndices[labelIndex] : labelIndex
+                    );
+                });
+            });
+        }
+        return tableContainer;
+    }
+    const pointColors = ['#b2dfdb', '#00897b', '#004d40', '#ffb74d', '#f57c00', '#1976d2'];
+    const usesPointColors = ['bar', 'pie', 'doughnut'].includes(config.type);
+    const selectedObjects = selectionContext
+        ? window.getSelectedChartObjects(selectionContext.part)
+        : new Set();
+
+    return new Chart(cleanCanvas, {
+        type: config.type,
+        data: {
+            labels: config.labels,
+            datasets: config.datasets.map((dataset, datasetIndex) => {
+                const interactiveDataset = {
+                    ...dataset,
+                    hoverBorderColor: '#0f172a',
+                    hoverBorderWidth: 3,
+                    hoverOffset: 8
+                };
+
+                const selectedIndices = config.labels.map((label, index) =>
+                    selectionContext && selectedObjects.has(
+                        window.getChartObjectKey(
+                            selectionContext.chartIndex,
+                            datasetIndex,
+                            label,
+                            config.sourceLabelIndices ? config.sourceLabelIndices[index] : index
+                        )
+                    ) ? index : -1
+                );
+                if (config.type === 'line') {
+                    interactiveDataset.pointRadius = Math.max(Number(dataset.pointRadius) || 0, 4);
+                    interactiveDataset.pointHoverRadius = Math.max(Number(dataset.pointHoverRadius) || 0, 9);
+                    interactiveDataset.pointHitRadius = Math.max(Number(dataset.pointHitRadius) || 0, 16);
+                    interactiveDataset.pointBorderWidth = config.labels.map((_, index) => selectedIndices[index] >= 0 ? 4 : 2);
+                    interactiveDataset.pointBorderColor = config.labels.map((label, index) => selectedIndices[index] >= 0 ? '#0f172a' : dataset.borderColor);
+                }
+
+                if (!usesPointColors) return interactiveDataset;
+
+                const colors = config.labels.map((label, index) => {
+                    const key = String(label).trim().toLocaleLowerCase();
+                    return chartPointColorMap.get(key) || pointColors[index % pointColors.length];
+                });
+
+                return {
+                    ...interactiveDataset,
+                    backgroundColor: colors,
+                    borderColor: config.labels.map((label, index) => selectedIndices[index] >= 0 ? '#0f172a' : colors[index]),
+                    borderWidth: config.labels.map((_, index) => selectedIndices[index] >= 0 ? 3 : 1)
+                };
+            })
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            onClick: function(event, activeElements) {
+                if (!selectionContext || !activeElements.length) return;
+                const element = activeElements[0];
+                const objectLabel = config.labels[element.index];
+                if (objectLabel !== undefined) {
+                    window.toggleStudentChartObject(
+                        selectionContext.part,
+                        selectionContext.charts,
+                        selectionContext.chartIndex,
+                        element.datasetIndex,
+                        objectLabel,
+                        config.sourceLabelIndices ? config.sourceLabelIndices[element.index] : element.index
+                    );
+                }
+            },
+            onHover: function(event, activeElements, chart) {
+                chart.canvas.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+            },
+            plugins: {
+                title: { 
+                    display: !!config.title, 
+                    text: config.title, 
+                    font: { size: 18, family: 'sans-serif', weight: 'bold' },
+                    color: '#1e293b',
+                    padding: { bottom: 20 }
+                },
+                tooltip: {
+                    mode: 'nearest',
+                    intersect: config.type !== 'line',
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                    titleColor: '#0f172a',
+                    bodyColor: '#334155',
+                    borderColor: '#94a3b8', // Viền trắng xám giống hệt ảnh mẫu
+                    borderWidth: 1,
+                    boxPadding: 4,
+                    padding: 10,
+                    titleFont: { size: 13 },
+                    bodyFont: { size: 14, weight: 'bold' },
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.dataset.label ? `${context.dataset.label}: ` : '';
+                            return context.raw === null || context.raw === undefined
+                                ? label
+                                : `${label}${context.raw}${unitLabel}`;
+                        }
+                    }
+                },
+                legend: {
+                    display: renderOptions.showLegend !== false,
+                    position: 'bottom',
+                    labels: { usePointStyle: true, padding: 20, font: { weight: 'bold' } }
+                }
+            },
+            interaction: {
+                mode: 'nearest',
+                intersect: config.type !== 'line',
+            },
+            scales: config.type !== 'pie' && config.type !== 'doughnut' ? {
+                y: { 
+                    beginAtZero: true, 
+                    grid: { color: '#f1f5f9' },
+                    border: { display: false },
+                    ticks: {
+                        callback: function(value) {
+                            return `${value}${unitLabel}`;
+                        }
+                    }
+                },
+                x: { 
+                    grid: { display: false },
+                    border: { display: false }
+                }
+            } : {}
+        },
+        plugins: [{
+            id: `chart-value-labels-${canvasId}`,
+            afterDatasetsDraw: function(chart) {
+                const context = chart.ctx;
+                context.save();
+                context.font = 'bold 12px sans-serif';
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.data.forEach((element, dataIndex) => {
+                        const value = dataset.data[dataIndex];
+                        if (value === null || value === undefined || !Number.isFinite(Number(value))) return;
+                        const position = element.tooltipPosition();
+                        const x = position.x;
+                        let y = position.y;
+                        if (config.type === 'bar') y = element.y - 10;
+                        else if (config.type === 'line') y = element.y - 12;
+                        const label = `${numberFormatForChart(value)}${unitLabel}`;
+                        context.lineWidth = 3;
+                        context.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+                        context.strokeText(label, x, y);
+                        context.fillStyle = '#0f172a';
+                        context.fillText(label, x, y);
+                    });
+                });
+                context.restore();
+            }
+        }]
+    });
+};
 
     window.renderPublicProfile = function() {
         const c = document.getElementById('public-profile-content');
@@ -12506,6 +13404,8 @@ window.initFirebaseSystem = async function() {
 
         pText = pText.replace(m[0], `<div class="drop-zone ${layoutClasses} border-2 ${cls} font-bold text-sm rounded transition-colors" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="window.handleDropZoneClick(${id}, event)" ${ans ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>${ans}</div>`);
       });
+     
+      
 
       let htmlText = pText.split('\n\n').map(para => para.trim() ? `<p>${para}</p>` : '').join('');
       readingControls = (typeof isTimeFree !== 'undefined' && isTimeFree && APP_DATA.module === 'reading') ? `
@@ -12556,12 +13456,30 @@ window.initFirebaseSystem = async function() {
 
       let media = '';
       if(p.audioUrl && APP_DATA.module !== 'listening') media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4 rounded"></audio>`;
-      if(p.image) media += `<div class="mb-6 bg-slate-50 p-3 border border-slate-200 rounded text-center cursor-zoom-in group relative" onclick="window.openLightbox('${p.image}', event)">
-          <div class="absolute inset-0 bg-blue-900/0 group-hover:bg-blue-900/5 transition-colors rounded flex items-center justify-center pointer-events-none">
-              <span class="bg-slate-900/70 text-white text-[10px] font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">🔍 Click to Enlarge</span>
-          </div>
-          <img src="${p.image}" class="max-w-full inline-block rounded shadow-sm">
-      </div>`;
+      let visualHtml = '';
+      let chartsToRender = [];
+      if (Array.isArray(p.interactiveCharts) && p.interactiveCharts.length > 0) {
+          chartsToRender = p.interactiveCharts;
+      } else if (p.interactiveChart) {
+          chartsToRender = [p.interactiveChart];
+      }
+
+      if (chartsToRender.length > 0) {
+          visualHtml = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">`;
+          chartsToRender.forEach((chart, chartIndex) => {
+              const singleChartClass = chartsToRender.length === 1 ? 'md:col-span-2' : '';
+              visualHtml += `
+                  <div class="interactive-chart-frame ${singleChartClass} bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                      <canvas id="student-exam-chart-${chartIndex}"></canvas>
+                  </div>
+              `;
+          });
+          visualHtml += `</div>`;
+          visualHtml += window.createStudentChartComparisonPanel(chartsToRender);
+      } else if (p.image) {
+          visualHtml = `<img src="${p.image}" class="w-full rounded-xl shadow-sm mb-6 object-contain max-h-[400px] cursor-zoom-in" onclick="openLightbox(this.src)">`;
+      }
+      media += visualHtml;
       
       const passageContainer = document.getElementById('passage-container');
       const resizer = document.getElementById('resizer');
@@ -12695,6 +13613,24 @@ window.initFirebaseSystem = async function() {
           
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
+      }
+
+      if (chartsToRender.length > 0) {
+          setTimeout(() => {
+              if (APP_DATA.parts[currentPartIdx] !== p) return;
+              const pointColorMap = window.getChartPointColorMap(chartsToRender);
+              const legendOwnerIndex = window.getChartLegendOwnerIndex(chartsToRender);
+              chartsToRender.forEach((chart, chartIndex) => {
+                  window.renderCanvasChart(
+                      `student-exam-chart-${chartIndex}`,
+                      window.getChartConfigInReferenceOrder(chartsToRender, chartIndex),
+                      pointColorMap,
+                      { part: p, charts: chartsToRender, chartIndex },
+                      { showLegend: chartIndex === legendOwnerIndex }
+                  );
+              });
+              window.updateStudentChartComparison(p, chartsToRender);
+          }, 0);
       }
       
       renderQuestions(); 
@@ -19229,6 +20165,108 @@ window.initFirebaseSystem = async function() {
           e.preventDefault();
       }
     });
+// Trạng thái lưu trữ các ID bài Test đang được chọn
+window.selectedTestIds = [];
+
+// Hàm chọn/bỏ chọn 1 bài Test
+window.toggleTestSelection = function(testId, isChecked) {
+    if (isChecked) {
+        if (!window.selectedTestIds.includes(testId)) window.selectedTestIds.push(testId);
+    } else {
+        window.selectedTestIds = window.selectedTestIds.filter(id => id !== testId);
+    }
+    window.updateBulkActionBar();
+};
+
+// Hàm "Chọn tất cả" trên trang hiện tại
+window.toggleSelectAllTests = function(checkbox) {
+    const checkboxes = document.querySelectorAll('.test-select-cb');
+    window.selectedTestIds = []; // Xóa danh sách cũ
+    checkboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+        if (checkbox.checked) window.selectedTestIds.push(cb.value);
+    });
+    window.updateBulkActionBar();
+};
+
+// Hàm hiển thị/ẩn thanh Bulk Action dựa vào số lượng thẻ được chọn
+window.updateBulkActionBar = function() {
+    const bar = document.getElementById('bulk-action-bar');
+    const countLabel = document.getElementById('selected-test-count');
+    const selectAllCb = document.getElementById('select-all-tests');
+    
+    if (window.selectedTestIds.length > 0) {
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
+        countLabel.textContent = window.selectedTestIds.length;
+        
+        // Tự động tick "Select All" nếu tất cả checkbox trên màn hình đều đang được tick
+        const totalVisible = document.querySelectorAll('.test-select-cb').length;
+        selectAllCb.checked = (totalVisible > 0 && window.selectedTestIds.length === totalVisible);
+    } else {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+        selectAllCb.checked = false;
+    }
+};
+
+// === CÁC CHỨC NĂNG THỰC THI (BULK ACTIONS) ===
+
+// 1. Xóa hàng loạt
+window.bulkDeleteTests = function() {
+    if (window.selectedTestIds.length === 0) return;
+    
+    window.showConfirm("Xóa Hàng Loạt", `Bạn có chắc chắn muốn xóa vĩnh viễn <b>${window.selectedTestIds.length}</b> bài test đã chọn? Hành động này không thể hoàn tác!`, async () => {
+        try {
+            for (let id of window.selectedTestIds) {
+                await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('tests'), id));
+            }
+            window.selectedTestIds = [];
+            window.updateBulkActionBar();
+            if (typeof window.showToast === 'function') window.showToast("Thành công", "Đã xóa các bài test được chọn.");
+            
+            // Render lại danh sách test
+            if (typeof renderTestBank === 'function') renderTestBank();
+        } catch(e) {
+            console.error(e);
+            if (typeof window.showToast === 'function') window.showToast("Lỗi", "Không thể xóa một số bài test.", "error");
+        }
+    });
+};
+
+// 2. Đổi trạng thái hàng loạt
+window.bulkChangeStatus = function() {
+    if (window.selectedTestIds.length === 0) return;
+    
+    const html = `
+        <label class="block text-sm font-bold text-slate-700 mb-2">Chọn trạng thái mới cho ${window.selectedTestIds.length} bài test:</label>
+        <select id="bulk-status-select" class="w-full border border-slate-300 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold bg-white shadow-sm cursor-pointer">
+            <option value="not_started">🔴 Not Started</option>
+            <option value="in_progress">🟡 In Progress</option>
+            <option value="review_ready">🟣 Ready for Review</option>
+            <option value="approved">🟢 Approved</option>
+        </select>
+    `;
+    
+    window.showConfirm("Cập nhật Trạng thái", html, async () => {
+        const newStatus = document.getElementById('bulk-status-select').value;
+        try {
+            // Dùng { merge: true } để chỉ cập nhật trường status, giữ nguyên các dữ liệu khác
+            for (let id of window.selectedTestIds) {
+                const testRef = window.fsDoc(window.db, window.fPath('tests'), id);
+                await window.fsSetDoc(testRef, { status: newStatus }, { merge: true });
+            }
+            window.selectedTestIds = [];
+            window.updateBulkActionBar();
+            if (typeof window.showToast === 'function') window.showToast("Thành công", "Đã cập nhật trạng thái hàng loạt.");
+            
+            if (typeof renderTestBank === 'function') renderTestBank();
+        } catch(e) {
+            console.error(e);
+            if (typeof window.showToast === 'function') window.showToast("Lỗi", "Không thể cập nhật trạng thái.", "error");
+        }
+    });
+};
   </script>
 </body>
 </html>
