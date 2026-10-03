@@ -106,6 +106,7 @@
     /* Match the green highlight if the current reading word is inside a grammar tag */
     .grammar-word .reading-word.is-current { background: rgba(16, 185, 129, 0.14); color: #047857; box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.08); }
     .reading-word.is-read { opacity: 0; transform: translateY(-3px); filter: blur(2px); visibility: visible; max-width: none; overflow: visible; margin-right: 0; }
+    .locate-match { background: #fef08a !important; box-shadow: 0 0 0 4px #fef08a, 0 0 0 7px rgba(245, 158, 11, 0.35) !important; border-radius: 0.25rem; }
 
     .interactive-chart-frame { position: relative; width: 100%; height: 320px; max-height: 320px; min-width: 0; }
     @media (max-width: 768px) {
@@ -464,7 +465,7 @@
   <div id="hof-full-screen" class="hidden fixed inset-0 bg-slate-50 z-[250] overflow-y-auto animate-fade-in">
       <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 p-4 sm:p-6 flex justify-between items-center shadow-md sticky top-0 z-30 border-b border-amber-300">
           <h1 class="text-xl sm:text-2xl font-black drop-shadow-sm flex items-center gap-2">🏆 Student Hall of Fame</h1>
-          <button onclick="document.getElementById('hof-full-screen').classList.add('hidden')" class="bg-white/20 hover:bg-white/40 border border-white/40 text-amber-950 px-4 py-2 rounded-xl font-black transition text-sm shadow-sm">&larr; Back to Home</button>
+          <button onclick="window.closeHOFScreen()" class="bg-white/20 hover:bg-white/40 border border-white/40 text-amber-950 px-4 py-2 rounded-xl font-black transition text-sm shadow-sm">&larr; Back to Home</button>
       </div>
       <div class="max-w-7xl mx-auto px-4 py-12">
           <div class="text-center mb-16">
@@ -759,7 +760,7 @@
       </div>
 
       <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 mt-auto shrink-0">
-        <button onclick="document.getElementById('test-mode-modal').classList.add('hidden')" class="px-6 py-4 text-slate-500 hover:bg-slate-100 rounded-xl font-bold transition">Cancel</button>
+        <button onclick="window.cancelTestRouteStart()" class="px-6 py-4 text-slate-500 hover:bg-slate-100 rounded-xl font-bold transition">Cancel</button>
         <button onclick="confirmStartTest()" class="px-10 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-black shadow-md transition hover:-translate-y-0.5 text-lg">Start Test 🚀</button>
       </div>
     </div>
@@ -1491,13 +1492,13 @@
       <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] overflow-hidden animate-scale-up border border-slate-200">
           <div class="bg-gradient-to-r from-indigo-700 to-blue-800 p-5 flex justify-between items-center shrink-0">
               <h2 class="text-xl font-black text-white flex items-center gap-2">📜 My History & Activity</h2>
-              <button onclick="document.getElementById('student-history-modal').classList.add('hidden')" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
+              <button onclick="window.closeAppRouteView()" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
           </div>
           <div class="p-6 bg-slate-50 flex-1 overflow-y-auto space-y-6" id="student-history-content">
               <!-- Content injected via JS -->
           </div>
           <div class="p-4 border-t border-slate-200 bg-white flex justify-end">
-              <button onclick="document.getElementById('student-history-modal').classList.add('hidden')" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold transition">Close</button>
+              <button onclick="window.closeAppRouteView()" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold transition">Close</button>
           </div>
       </div>
   </div>
@@ -1536,7 +1537,7 @@
               <h2 class="font-black text-2xl text-white flex items-center gap-3 tracking-tight">
                   <span class="bg-white/20 p-2 rounded-xl shadow-inner leading-none">🏆</span> Top Scores & Leaderboard
               </h2>
-              <button onclick="document.getElementById('test-leaderboard-modal').classList.add('hidden')" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+              <button onclick="window.closeAppRouteView()" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
           </div>
           <div class="p-6 bg-slate-50 border-b border-slate-200 shrink-0 shadow-sm z-10 flex gap-4 items-center">
               <label class="font-bold text-slate-600 text-sm uppercase tracking-widest">Select Test:</label>
@@ -2715,7 +2716,7 @@
     <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] overflow-hidden border border-slate-200 animate-scale-up">
       <div class="p-5 md:p-6 bg-gradient-to-r from-indigo-700 to-blue-800 flex justify-between items-center shrink-0 z-20 shadow-md">
         <h2 class="font-black text-xl md:text-2xl text-white flex items-center gap-3 tracking-tight"><span class="bg-white/20 p-2 rounded-xl shadow-inner leading-none">🗂️</span> Study Cards</h2>
-        <button onclick="window.toggleStudentFlashcardPanel()" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+        <button onclick="window.closeAppRouteView()" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
       </div>
       <div class="p-4 md:p-6 bg-slate-50 border-b border-slate-200 shrink-0 shadow-sm z-10">
         <select id="panel-fc-list-select" onchange="window.renderFlashcardPanel()" class="w-full border-2 border-slate-300 p-3 md:p-4 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none text-base md:text-lg cursor-pointer shadow-sm bg-white"></select>
@@ -3561,6 +3562,9 @@ window.initFirebaseSystem = async function() {
                 isYouTube: true,
                 get currentTime() {
                     try { return record.player ? record.player.getCurrentTime() || 0 : 0; } catch (error) { return 0; }
+                },
+                get duration() {
+                    try { return record.player ? record.player.getDuration() || 0 : 0; } catch (error) { return 0; }
                 },
                 set currentTime(value) {
                     const time = Math.max(0, Number(value) || 0);
@@ -5956,6 +5960,7 @@ window.initFirebaseSystem = async function() {
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('editor-ui').classList.add('hidden');
         document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 text-slate-800 bg-slate-100`; 
+        handleAppRouteNavigation(true);
       } else {
         document.getElementById('auth-ui').classList.add('hidden');
         document.getElementById('public-landing-ui').classList.add('hidden');
@@ -5971,17 +5976,24 @@ window.initFirebaseSystem = async function() {
             if (savedSub && sessionStorage.getItem('lms_grading_mode') === 'student') {
                 const subId = Number(savedSub);
                 if (SUBMISSIONS.find(s => s.id === subId)) {
+                    if (!window.location.hash) window.history.replaceState({ lmsRoute: 'student' }, '', `#/student/review/${subId}`);
                     reviewPastSubmission(subId);
+                    handleAppRouteNavigation(true);
                     return; 
                 }
             }
             initStudentDashboard(); 
             document.getElementById('start-screen').classList.remove('hidden'); 
         }
+        handleAppRouteNavigation(true);
       }
     }
 
     window.showAuthFromLanding = function() {
+        if (routerReady && !appRouterApplying) {
+            window.navigateAppRoute('login');
+            return;
+        }
         document.getElementById('public-landing-ui').classList.add('hidden');
         document.getElementById('auth-ui').classList.remove('hidden');
     };
@@ -6193,7 +6205,10 @@ window.initFirebaseSystem = async function() {
     };
 
     function logout() {
-      sessionStorage.removeItem('ielts_session'); currentUser = null;
+      sessionStorage.removeItem('ielts_session');
+      sessionStorage.removeItem('lms_pending_test_route');
+      currentUser = null;
+      window.history.replaceState({ lmsRoute: 'landing' }, '', '#/landing');
       // Forces a browser refresh to completely purge private memory state arrays
       window.location.reload();
     }
@@ -6529,6 +6544,10 @@ window.initFirebaseSystem = async function() {
           if(btnClasses) btnClasses.className = "px-8 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl shadow-sm transition duration-200 flex items-center gap-2";
           if(btnTests) btnTests.className = "px-8 py-2.5 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition duration-200 flex items-center gap-2";
       }
+      if (routerReady && !appRouterApplying && currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
+          window.navigateAppRoute(`teacher/bank/${view}`);
+          return;
+      }
     };
 
     function openEditor() {
@@ -6595,6 +6614,11 @@ window.initFirebaseSystem = async function() {
 
     function toggleEditorTab(tab) {
       sessionStorage.setItem('lms_teacher_tab', tab);
+      if (routerReady && !appRouterApplying && currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
+          const view = tab === 'bank' ? (sessionStorage.getItem('lms_dash_view') || 'tests') : '';
+          window.navigateAppRoute(`teacher/${tab}${view ? `/${view}` : ''}`);
+          return;
+      }
       ['bank', 'classes', 'builder', 'students', 'payments', 'timetable', 'landing'].forEach(t => {
           const el = document.getElementById(`editor-view-${t}`);
           if (el) el.classList.add('hidden');
@@ -6659,7 +6683,10 @@ window.initFirebaseSystem = async function() {
           
           // ✨ SMART RESTORE: Remember if we were on Tests or Classes sub-tab
           const savedDashView = sessionStorage.getItem('lms_dash_view') || 'tests';
-          window.toggleDashboardView(savedDashView);
+          const wasApplying = appRouterApplying;
+          appRouterApplying = true;
+          try { window.toggleDashboardView(savedDashView); }
+          finally { appRouterApplying = wasApplying; }
       }
       if (tab === 'classes') { 
           const classView = document.getElementById('editor-view-classes');
@@ -8673,6 +8700,10 @@ window.initFirebaseSystem = async function() {
 
     function editTest(id) {
       sessionStorage.setItem('lms_editing_test', id);
+      if (routerReady && !appRouterApplying && currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
+          window.navigateAppRoute(`teacher/builder/${encodeURIComponent(id)}`);
+          return;
+      }
       editingTestId = id; APP_DATA = JSON.parse(JSON.stringify(TEST_BANK.find(t=>t.id===id)));
       if(!APP_DATA.vocab) APP_DATA.vocab = [];
       document.getElementById('builder-test-name').textContent = APP_DATA.title;
@@ -8688,7 +8719,7 @@ window.initFirebaseSystem = async function() {
           media.classList.remove('hidden');
           audioField.classList.remove('hidden');
           imageField.classList.add('hidden');
-      } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'reading') {
+      } else if (APP_DATA.module === 'reading') {
           media.classList.remove('hidden');
           audioField.classList.add('hidden');
           imageField.classList.remove('hidden');
@@ -9024,7 +9055,9 @@ window.initFirebaseSystem = async function() {
       renderKaraokeEditorCues();
       
       const imgContainer = document.getElementById('part-image-preview-container');
-      if (p.image) {
+      if (APP_DATA.module === 'writing') {
+          imgContainer.innerHTML = '';
+      } else if (p.image) {
           imgContainer.innerHTML = `<div class="absolute top-2 right-2 z-20"><button class="bg-rose-500 hover:bg-rose-600 text-white text-xs px-3 py-1.5 rounded-md shadow-md font-bold transition" onclick="event.stopPropagation(); removePartImage()">✕ Clear Image</button></div><img src="${p.image}" class="max-h-[200px] mx-auto block pointer-events-none select-none rounded-lg shadow-sm">`;
       } else {
           imgContainer.innerHTML = `<div class="text-slate-400 font-medium pointer-events-none my-8 flex flex-col items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-300"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Paste or click to upload image</div>`;
@@ -9300,9 +9333,95 @@ window.initFirebaseSystem = async function() {
         return arr;
     };
 
+    function getEditorLocateSegments(part, module) {
+        if (module === 'listening') {
+            return getListeningCues(part).map((cue, index) => ({ index, text: cue.text }));
+        }
+        if (module !== 'reading') return [];
+
+        const passageHtml = (part.text || '').split('\n\n')
+            .map(paragraph => paragraph.trim() ? `<p>${paragraph}</p>` : '')
+            .join('');
+        const holder = document.createElement('div');
+        holder.innerHTML = passageHtml;
+        return Array.from(holder.querySelectorAll('p'))
+            .map(paragraph => paragraph.textContent.trim())
+            .filter(Boolean)
+            .map((text, index) => ({ index, text }));
+    }
+
+    function escapeLocateOption(value) {
+        return String(value || '').replace(/[&<>"']/g, character => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[character]);
+    }
+
+    window.assignLocateSelection = function(questionIndex, event) {
+        if (event) event.stopPropagation();
+        const editor = document.getElementById('edit-passage-text');
+        const selection = window.getSelection();
+        const selectedText = selection ? selection.toString().replace(/\s+/g, ' ').trim() : '';
+        const range = selection && selection.rangeCount ? selection.getRangeAt(0) : null;
+        if (!editor || !range || !selectedText || !editor.contains(range.commonAncestorContainer)) {
+            if (typeof window.showToast === 'function') {
+                window.showToast('Chưa chọn vị trí', 'Hãy bôi đen một đoạn trong passage/script trước.', 'info');
+            }
+            return;
+        }
+
+        saveCurrentEditorPart();
+        const part = APP_DATA.parts[currentEditorPartIdx];
+        const question = part && part.questions[questionIndex];
+        if (!question) return;
+        const normalizedSelection = selectedText.replace(/\s+/g, ' ').toLocaleLowerCase();
+        const segment = getEditorLocateSegments(part, APP_DATA.module).find(item =>
+            item.text.replace(/\s+/g, ' ').toLocaleLowerCase().includes(normalizedSelection)
+        );
+        if (!segment) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(
+                    'Vị trí chưa hợp lệ',
+                    `Hãy chọn đoạn nằm trong một ${APP_DATA.module === 'reading' ? 'paragraph' : 'câu script'} duy nhất.`,
+                    'error'
+                );
+            }
+            return;
+        }
+        question.locateText = selectedText;
+        question.locateIndex = segment.index;
+
+        const status = document.getElementById(`locate-assignment-${questionIndex}`);
+        if (status) {
+            status.textContent = `Đã gán: “${selectedText}”`;
+            status.title = selectedText;
+        }
+        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    };
+
+    window.clearLocateSelection = function(questionIndex, event) {
+        if (event) event.stopPropagation();
+        saveCurrentEditorPart();
+        const question = APP_DATA.parts[currentEditorPartIdx]?.questions?.[questionIndex];
+        if (!question) return;
+        delete question.locateText;
+        delete question.locateIndex;
+        const status = document.getElementById(`locate-assignment-${questionIndex}`);
+        if (status) {
+            status.textContent = 'Chưa gán vị trí (Locate tự động)';
+            status.title = '';
+        }
+        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    };
+
     function renderEditorQuestions() {
       const list = document.getElementById('editor-questions-list'); list.innerHTML = '';
-      APP_DATA.parts[currentEditorPartIdx].questions.forEach((q, i) => {
+      const part = APP_DATA.parts[currentEditorPartIdx];
+      const locateSegments = getEditorLocateSegments(part, APP_DATA.module);
+      part.questions.forEach((q, i) => {
         const div = document.createElement('div'); 
         div.className = 'bg-white rounded-xl border border-slate-200 shadow-sm relative transition-all hover:shadow-md overflow-hidden';
         const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
@@ -9469,6 +9588,20 @@ window.initFirebaseSystem = async function() {
             html += `<div>${mkLbl('Kỹ thuật làm bài / Hint (Optional - Shows as a 💡 Hint button during Practice Mode)')}${mkTemplateToolbar(`hint-editor-${i}`)}<div id="hint-editor-${i}" class="q-hint rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[60px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.hint||''}</div></div>`;
             html += `<div>${mkLbl('Giải thích đáp án (Optional - Only shows in Detailed Review)')}${mkTemplateToolbar(`expl-editor-${i}`)}<div id="expl-editor-${i}" class="q-expl rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[80px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.explanation||''}</div></div>`;
         } 
+        if (['reading', 'listening'].includes(APP_DATA.module)) {
+            const assignedText = q.locateText
+                ? `Đã gán: “${escapeLocateOption(q.locateText)}”`
+                : 'Chưa gán vị trí (Locate tự động)';
+            html += `<div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                ${mkLbl(`Gán vị trí Locate (${APP_DATA.module === 'reading' ? 'passage' : 'script'})`)}
+                <div class="flex flex-wrap items-center gap-2">
+                    <button type="button" onmousedown="event.preventDefault()" onclick="window.assignLocateSelection(${i}, event)" class="px-3 py-2 text-xs font-bold text-white bg-blue-700 hover:bg-blue-800 rounded-lg shadow-sm">Gán đoạn đang bôi đen</button>
+                    <button type="button" onclick="window.clearLocateSelection(${i}, event)" class="px-3 py-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 rounded-lg">Xóa gán</button>
+                    <span id="locate-assignment-${i}" class="text-xs text-slate-700 break-words">${assignedText}</span>
+                </div>
+                <p class="text-xs text-slate-600 mt-2">Bôi đen chính xác phần passage/script ở khung bên trên, sau đó bấm “Gán đoạn đang bôi đen”. Học sinh bấm Locate sẽ tới và thấy phần đã gán.</p>
+            </div>`;
+        }
         div.innerHTML = html; 
         list.appendChild(div);
       });
@@ -10045,6 +10178,11 @@ window.initFirebaseSystem = async function() {
             hint: getVal(b.querySelector('.q-hint')),
             explanation: getVal(b.querySelector('.q-expl')) 
         };
+
+        if (['reading', 'listening'].includes(APP_DATA.module)) {
+            if (old.locateText) res.locateText = old.locateText;
+            if (old.locateIndex !== undefined) res.locateIndex = old.locateIndex;
+        }
         
         if (old.image) res.image = old.image;
         if (old.hotspots) res.hotspots = old.hotspots;
@@ -10365,6 +10503,10 @@ window.initFirebaseSystem = async function() {
     };
 
     window.openStudentHistory = function() {
+        if (routerReady && !appRouterApplying && currentUser?.role === 'student') {
+            window.navigateAppRoute('student/history');
+            return;
+        }
         const modal = document.getElementById('student-history-modal');
         const content = document.getElementById('student-history-content');
         
@@ -10811,8 +10953,20 @@ window.initFirebaseSystem = async function() {
     };
 
     window.openHOFScreen = function() {
+        if (routerReady && !appRouterApplying) {
+            window.navigateAppRoute('hall-of-fame');
+            return;
+        }
         document.getElementById('hof-full-screen').classList.remove('hidden');
         window.renderHOFGrid();
+    };
+
+    window.closeHOFScreen = function() {
+        document.getElementById('hof-full-screen').classList.add('hidden');
+        const homeRoute = currentUser
+            ? (['teacher', 'collaborator'].includes(currentUser.role) ? 'teacher/bank/tests' : 'student/dashboard')
+            : 'landing';
+        window.navigateAppRoute(homeRoute, true);
     };
 
     window.renderHOFGrid = function() {
@@ -10914,9 +11068,16 @@ window.loadChartEditorUI = function() {
                 </div>
             </div>
             <label class="text-[10px] font-bold text-slate-500 uppercase flex justify-between items-end mb-1">
-                <span>Dữ liệu (Copy & Paste từ Excel)</span>
+                <span>Dữ liệu CSV (Category, Series...)</span>
             </label>
-            <textarea id="edit-chart-data-${index}" class="w-full border-2 border-slate-200 p-3 rounded-lg text-sm outline-none focus:border-indigo-500 h-24 font-mono whitespace-pre bg-slate-50 custom-scrollbar mb-3" placeholder="Country&#9;2021&#9;2026&#10;Singapore&#9;4500&#9;7000" oninput="window.saveEditorChart(${index})">${chart.rawTsv || ''}</textarea>
+            <div class="flex flex-wrap gap-2 mb-2">
+                <button type="button" onclick="window.downloadEditorChartCsvTemplate(${index})" class="px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100">Tải mẫu CSV</button>
+                <button type="button" onclick="document.getElementById('edit-chart-csv-file-${index}').click()" class="px-3 py-1.5 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50">Nhập CSV</button>
+                <input id="edit-chart-csv-file-${index}" type="file" accept=".csv,text/csv" class="hidden" onchange="window.importEditorChartCsv(${index}, this)">
+                <span class="self-center text-[11px] text-slate-500">CSV gồm cấu hình biểu đồ (loại, tiêu đề, đơn vị, thời gian) và bảng dữ liệu. Ô số trống được tính là 0.</span>
+            </div>
+            <textarea id="edit-chart-data-${index}" class="w-full border-2 border-slate-200 p-3 rounded-lg text-sm outline-none focus:border-indigo-500 h-24 font-mono whitespace-pre bg-slate-50 custom-scrollbar mb-1" placeholder="# Interactive Chart,1&#10;type,bar&#10;title,Population&#10;unitType,%&#10;unitCustom,&#10;time,2026&#10;Category,2021,2026&#10;Singapore,4500,7000" oninput="window.saveEditorChart(${index}, true)">${chart.rawTsv || ''}</textarea>
+            <p id="edit-chart-data-error-${index}" class="hidden text-xs font-semibold text-rose-600 mb-3" role="alert"></p>
             <div class="interactive-chart-frame">
                 <canvas id="builder-chart-preview-${index}" class="builder-chart-canvas"></canvas>
             </div>
@@ -10955,6 +11116,177 @@ window.addEditorChart = function() {
     if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
 };
 
+window.parseEditorChartData = function(rawData, type) {
+    const text = String(rawData || '').replace(/^\uFEFF/, '');
+    if (!text.trim()) return { labels: [], datasets: [], metadata: null };
+
+    const firstLine = text.split(/\r?\n/, 1)[0];
+    const delimiter = firstLine.includes('\t') ? '\t' : ',';
+    const rows = [];
+    let row = [];
+    let cell = '';
+    let inQuotes = false;
+
+    for (let index = 0; index < text.length; index++) {
+        const character = text[index];
+        if (character === '"') {
+            if (inQuotes && text[index + 1] === '"') {
+                cell += '"';
+                index++;
+            } else {
+                inQuotes = !inQuotes;
+            }
+        } else if (!inQuotes && character === delimiter) {
+            row.push(cell.trim());
+            cell = '';
+        } else if (!inQuotes && (character === '\n' || character === '\r')) {
+            if (character === '\r' && text[index + 1] === '\n') index++;
+            row.push(cell.trim());
+            if (row.some(value => value !== '')) rows.push(row);
+            row = [];
+            cell = '';
+        } else {
+            cell += character;
+        }
+    }
+
+    if (inQuotes) throw new Error('CSV có dấu ngoặc kép chưa được đóng.');
+    row.push(cell.trim());
+    if (row.some(value => value !== '')) rows.push(row);
+    const hasMetadata = rows[0] && rows[0][0].toLocaleLowerCase() === '# interactive chart';
+    const metadata = hasMetadata ? {} : null;
+    let dataStart = 0;
+    if (hasMetadata) {
+        if (rows[0][1] !== '1') throw new Error('Phiên bản CSV interactive chart không được hỗ trợ.');
+        dataStart = rows.findIndex((candidate, index) =>
+            index > 0 && candidate[0].toLocaleLowerCase() === 'category'
+        );
+        if (dataStart < 0) throw new Error('CSV thiếu dòng tiêu đề Category của bảng dữ liệu.');
+        rows.slice(1, dataStart).forEach((metadataRow, index) => {
+            if (metadataRow.length !== 2) throw new Error(`Dòng cấu hình ${index + 2} cần đúng 2 cột.`);
+            const key = metadataRow[0].toLocaleLowerCase();
+            if (!['type', 'title', 'unittype', 'unitcustom', 'time'].includes(key)) {
+                throw new Error(`Tùy chọn cấu hình "${metadataRow[0]}" ở dòng ${index + 2} không hợp lệ.`);
+            }
+            metadata[key] = metadataRow[1];
+        });
+        ['type', 'title', 'unittype', 'unitcustom', 'time'].forEach(key => {
+            if (!Object.prototype.hasOwnProperty.call(metadata, key)) {
+                throw new Error(`CSV thiếu cấu hình "${key}".`);
+            }
+        });
+        if (!['bar', 'line', 'pie', 'doughnut', 'table'].includes(metadata.type)) {
+            throw new Error(`Loại biểu đồ "${metadata.type}" không hợp lệ.`);
+        }
+        if (!['', '%', 'custom'].includes(metadata.unittype)) {
+            throw new Error(`Loại đơn vị "${metadata.unittype}" không hợp lệ.`);
+        }
+        metadata.unitType = metadata.unittype;
+        delete metadata.unittype;
+        type = metadata.type;
+    }
+    const dataRows = rows.slice(dataStart);
+    if (dataRows.length < 2) throw new Error('Cần có dòng tiêu đề và ít nhất một dòng dữ liệu.');
+    if (dataRows[0].length < 2) throw new Error('Cần ít nhất một cột số liệu bên cạnh cột Category.');
+
+    const columnCount = dataRows[0].length;
+    const labels = [];
+    const values = dataRows.slice(1).map((dataRow, rowIndex) => {
+        if (dataRow.length !== columnCount) {
+            throw new Error(`Dòng dữ liệu ${rowIndex + 1} có ${dataRow.length} cột; cần đúng ${columnCount} cột.`);
+        }
+        if (!dataRow[0]) throw new Error(`Dòng dữ liệu ${rowIndex + 1} chưa có Category.`);
+        labels.push(dataRow[0]);
+        return dataRow.slice(1).map((value, columnIndex) => {
+            if (!value) return 0;
+            const normalized = value.replace(/,/g, '');
+            if (!/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(normalized)) {
+                throw new Error(`Giá trị "${value}" ở dòng dữ liệu ${rowIndex + 1}, cột ${columnIndex + 2} không phải là số.`);
+            }
+            const number = Number(normalized);
+            if (!Number.isFinite(number)) {
+                throw new Error(`Giá trị ở dòng dữ liệu ${rowIndex + 1}, cột ${columnIndex + 2} vượt giới hạn.`);
+            }
+            return number;
+        });
+    });
+
+    const colors = ['#b2dfdb', '#00897b', '#004d40', '#ffb74d', '#f57c00', '#1976d2'];
+    const datasets = dataRows[0].slice(1).map((label, datasetIndex) => {
+        const seriesColor = colors[datasetIndex % colors.length];
+        const pointColors = ['bar', 'pie', 'doughnut'].includes(type)
+            ? labels.map((_, pointIndex) => colors[pointIndex % colors.length])
+            : seriesColor;
+        return {
+            label: label || `Dataset ${datasetIndex + 1}`,
+            data: values.map(dataRow => dataRow[datasetIndex]),
+            backgroundColor: pointColors,
+            borderColor: pointColors,
+            borderWidth: 1,
+            borderRadius: type === 'bar' ? 3 : 0,
+            tension: 0.3
+        };
+    });
+    return { labels, datasets, metadata };
+};
+
+window.downloadEditorChartCsvTemplate = function(index) {
+    const part = APP_DATA.parts[currentEditorPartIdx];
+    const chart = part && Array.isArray(part.interactiveCharts) ? part.interactiveCharts[index] : null;
+    if (!chart) return;
+
+    const quote = value => `"${String(value).replace(/"/g, '""')}"`;
+    const datasetLabels = (chart.datasets || []).map((dataset, datasetIndex) => dataset.label || `Series ${datasetIndex + 1}`);
+    const headers = ['Category', ...(datasetLabels.length ? datasetLabels : ['Series 1', 'Series 2'])];
+    const rows = (chart.labels || []).map((label, labelIndex) => [
+        label,
+        ...headers.slice(1).map((_, datasetIndex) => {
+            const value = chart.datasets && chart.datasets[datasetIndex] && chart.datasets[datasetIndex].data
+                ? chart.datasets[datasetIndex].data[labelIndex]
+                : 0;
+            return value === undefined || value === null ? 0 : value;
+        })
+    ]);
+    if (!rows.length) rows.push(['Category 1', ...headers.slice(1).map(() => 0)], ['Category 2', ...headers.slice(1).map(() => 0)]);
+    const metadataRows = [
+        ['# Interactive Chart', '1'],
+        ['type', chart.type || 'bar'],
+        ['title', chart.title || ''],
+        ['unitType', chart.unitType || ''],
+        ['unitCustom', chart.unitCustom || ''],
+        ['time', chart.time || '']
+    ];
+    const csv = [...metadataRows, [], headers, ...rows].map(values => values.map(quote).join(',')).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chart-${index + 1}-template.csv`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+};
+
+window.importEditorChartCsv = function(index, input) {
+    const file = input && input.files && input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        const dataEl = document.getElementById(`edit-chart-data-${index}`);
+        if (!dataEl) return;
+        dataEl.value = String(reader.result || '').replace(/^\uFEFF/, '');
+        window.saveEditorChart(index, true);
+    };
+    reader.onerror = () => {
+        const errorEl = document.getElementById(`edit-chart-data-error-${index}`);
+        if (errorEl) {
+            errorEl.textContent = 'Không thể đọc tệp CSV. Vui lòng chọn lại tệp.';
+            errorEl.classList.remove('hidden');
+        }
+        if (typeof window.showToast === 'function') window.showToast('Lỗi CSV', 'Không thể đọc tệp CSV.', 'error');
+    };
+    reader.readAsText(file);
+    input.value = '';
+};
+
 window.removeEditorChart = function(index) {
     const part = APP_DATA.parts[currentEditorPartIdx];
     if (!part || !Array.isArray(part.interactiveCharts)) return;
@@ -10965,7 +11297,7 @@ window.removeEditorChart = function(index) {
     });
 };
 
-window.saveEditorChart = function(index) {
+window.saveEditorChart = function(index, applyCsvMetadata = false) {
     const part = APP_DATA.parts[currentEditorPartIdx];
     if (!part || !Array.isArray(part.interactiveCharts) || !part.interactiveCharts[index]) return;
 
@@ -10985,51 +11317,37 @@ window.saveEditorChart = function(index) {
     if (unitCustomEl) unitCustomEl.classList.toggle('hidden', unitType !== 'custom');
 
     chart.rawTsv = rawData;
-    chart.type = type;
-    chart.title = titleEl.value;
-    chart.unitType = unitType;
-    chart.unitCustom = unitCustom;
-    chart.time = timeEl ? timeEl.value.trim() : '';
-
-    if (!rawData.trim()) {
-        chart.labels = [];
-        chart.datasets = [];
-        window.renderEditorChartPreviews(part);
-        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
-        return;
+    const errorEl = document.getElementById(`edit-chart-data-error-${index}`);
+    try {
+        const parsed = window.parseEditorChartData(rawData, type);
+        const metadata = applyCsvMetadata ? parsed.metadata : null;
+        chart.type = metadata ? metadata.type : type;
+        chart.title = metadata ? metadata.title : titleEl.value;
+        chart.unitType = metadata ? metadata.unitType : unitType;
+        chart.unitCustom = metadata ? metadata.unitcustom : unitCustom;
+        chart.time = metadata ? metadata.time : (timeEl ? timeEl.value.trim() : '');
+        if (metadata) {
+            typeEl.value = chart.type;
+            titleEl.value = chart.title;
+            if (unitTypeEl) unitTypeEl.value = chart.unitType;
+            if (unitCustomEl) {
+                unitCustomEl.value = chart.unitCustom;
+                unitCustomEl.classList.toggle('hidden', chart.unitType !== 'custom');
+            }
+            if (timeEl) timeEl.value = chart.time;
+        }
+        chart.labels = parsed.labels;
+        chart.datasets = parsed.datasets;
+        if (errorEl) {
+            errorEl.textContent = '';
+            errorEl.classList.add('hidden');
+        }
+    } catch (error) {
+        if (errorEl) {
+            errorEl.textContent = error.message;
+            errorEl.classList.remove('hidden');
+        }
     }
-
-    const rows = rawData.trim().split('\n').map(row => row.split('\t'));
-    if (rows.length < 2) {
-        chart.labels = [];
-        chart.datasets = [];
-        window.renderEditorChartPreviews(part);
-        if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
-        return;
-    }
-
-    const labels = rows.slice(1).map(row => row[0]);
-    const datasets = [];
-    const bgColors = ['#b2dfdb', '#00897b', '#004d40', '#ffb74d', '#f57c00', '#1976d2'];
-
-    for (let col = 1; col < rows[0].length; col++) {
-        const seriesColor = bgColors[(col - 1) % bgColors.length];
-        const pointColors = ['bar', 'pie', 'doughnut'].includes(type)
-            ? labels.map((_, pointIndex) => bgColors[pointIndex % bgColors.length])
-            : seriesColor;
-        datasets.push({
-            label: rows[0][col] || `Dataset ${col}`,
-            data: rows.slice(1).map(row => parseFloat((row[col] || '0').replace(/,/g, '')) || 0),
-            backgroundColor: pointColors,
-            borderColor: pointColors,
-            borderWidth: 1,
-            borderRadius: type === 'bar' ? 3 : 0,
-            tension: 0.3
-        });
-    }
-
-    chart.labels = labels;
-    chart.datasets = datasets;
     if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
     window.renderEditorChartPreviews(part);
 };
@@ -11811,6 +12129,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     }
 
     window.showLeaderboardModal = function() {
+        if (routerReady && !appRouterApplying && currentUser?.role === 'student') {
+            window.navigateAppRoute('student/leaderboard');
+            return;
+        }
         const topStudents = USERS.filter(u => u.role === 'student' && u.isPaid).sort((a,b) => (b.gems || 0) - (a.gems || 0)).slice(0, 10);
         let html = `<div class="space-y-2 mt-4">`;
         topStudents.forEach((u, i) => {
@@ -11835,13 +12157,23 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.add('hidden');
         document.getElementById('custom-modal').classList.remove('hidden');
-        document.getElementById('modal-confirm').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = () => {
+            document.getElementById('custom-modal').classList.add('hidden');
+            if (normalizeAppRoute().section === 'leaderboard') window.navigateAppRoute('student/dashboard', true);
+        };
     };
 
     window.showPeerReviewList = function() {
+        if (routerReady && !appRouterApplying && currentUser?.role === 'student') {
+            window.navigateAppRoute('student/peer-review');
+            return;
+        }
         const candidates = getPeerReviewCandidatesForCurrentStudent();
         if (candidates.length === 0) {
-            showModalMsg("Peer Review", "All caught up! No submissions are pending your review right now.");
+            if (typeof window.showToast === 'function') window.showToast("Peer Review", "All caught up! No submissions are pending your review right now.", "info");
+            if (normalizeAppRoute().section === 'peer-review') {
+                window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
+            }
             return;
         }
         let html = `<div class="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-2">`;
@@ -11861,12 +12193,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.add('hidden');
         document.getElementById('custom-modal').classList.remove('hidden');
-        document.getElementById('modal-confirm').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = () => {
+            document.getElementById('custom-modal').classList.add('hidden');
+            if (normalizeAppRoute().section === 'peer-review') window.navigateAppRoute('student/dashboard', true);
+        };
     };
 
     window.openPeerReviewModal = function(subId) {
-      const sub = (SUBMISSIONS || []).find(x => x.id === subId);
+      const sub = (SUBMISSIONS || []).find(x => String(x.id) === String(subId));
       if (!sub) return;
+      if (routerReady && !appRouterApplying && currentUser?.role === 'student') {
+        if (!getPeerReviewCandidatesForCurrentStudent().some(candidate => String(candidate.id) === String(subId))) return;
+        window.navigateAppRoute(`student/peer-review/${encodeURIComponent(subId)}`);
+        return;
+      }
 
       const modal = document.getElementById('custom-modal');
       const title = document.getElementById('modal-title');
@@ -11919,7 +12259,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
       input.classList.add('hidden');
       cancel.classList.remove('hidden');
-      cancel.onclick = () => modal.classList.add('hidden');
+      cancel.onclick = () => {
+        if (normalizeAppRoute().section === 'peer-review') window.navigateAppRoute('student/peer-review', true);
+        else modal.classList.add('hidden');
+      };
       confirm.onclick = async () => {
         confirm.textContent = 'Saving...';
         confirm.disabled = true;
@@ -11966,6 +12309,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
         document.getElementById('custom-modal')?.classList.add('hidden');
         window.renderStudentDashboard();
+        if (normalizeAppRoute().section === 'peer-review') window.navigateAppRoute('student/dashboard', true);
         if (typeof window.showToast === 'function') window.showToast('Peer Review Saved', 'Thanks for helping your classmate learn the rubric.');
       } catch (e) {
         console.error('Peer review save error:', e);
@@ -12339,6 +12683,417 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           startTest(pendingTestId, selectedParts); // Pass the chosen parts!
       }
     }
+
+    let activeTestRoute = false;
+    let directTestRoutePending = null;
+    let handlingTestRoute = false;
+    let routerReady = false;
+    let appRouterApplying = false;
+    let lastAppliedAppRoute = null;
+
+    function parseTestHashRoute() {
+      const match = window.location.hash.match(/^#\/test\/([^?]+)(?:\?(.*))?$/);
+      if (!match) return null;
+      const params = new URLSearchParams(match[2] || '');
+      let id;
+      try {
+        id = decodeURIComponent(match[1]);
+      } catch (error) {
+        return null;
+      }
+      return {
+        id,
+        parts: params.has('parts') ? params.get('parts').split(',').map(Number) : null,
+        mode: params.get('mode'),
+        minutes: params.get('mins')
+      };
+    }
+
+    function buildTestHashRoute(testId, selectedParts) {
+      const params = new URLSearchParams();
+      params.set('parts', selectedParts.join(','));
+      params.set('mode', testMode === 'free' ? 'free' : 'restricted');
+      const minutes = parseInt(document.getElementById('custom-time-input')?.value, 10);
+      if (testMode !== 'free' && minutes > 0) params.set('mins', String(minutes));
+      return `#/test/${encodeURIComponent(testId)}?${params.toString()}`;
+    }
+
+    function replaceWithDashboardRoute() {
+      activeTestRoute = false;
+      directTestRoutePending = null;
+      window.activeTestRouteHash = null;
+      const dashboardHash = currentUser && ['teacher', 'collaborator'].includes(currentUser.role)
+        ? '#/teacher/bank/tests'
+        : '#/student/dashboard';
+      if (window.location.hash !== dashboardHash) {
+        window.history.replaceState({ lmsRoute: 'dashboard' }, '', dashboardHash);
+      } else if (window.history.state?.lmsRoute !== 'dashboard') {
+        window.history.replaceState({ lmsRoute: 'dashboard' }, '', dashboardHash);
+      }
+    }
+
+    function normalizeAppRoute(hash = window.location.hash) {
+      const raw = (hash || '').replace(/^#\/?/, '');
+      if (!raw || raw === 'dashboard') return { section: 'dashboard', role: 'student' };
+      if (raw.startsWith('test/')) return { section: 'test' };
+      let parts;
+      try {
+        parts = raw.split('/').map(part => decodeURIComponent(part));
+      } catch (error) {
+        return { section: 'dashboard', role: 'student' };
+      }
+      if (parts[0] === 'student') return { role: 'student', section: parts[1] || 'dashboard', detail: parts[2] || '' };
+      if (parts[0] === 'teacher') return { role: 'teacher', section: parts[1] || 'bank', detail: parts[2] || '' };
+      if (parts[0] === 'login') return { section: 'login' };
+      if (parts[0] === 'landing') return { section: 'landing' };
+      if (parts[0] === 'hall-of-fame') return { section: 'hall-of-fame' };
+      return { section: 'dashboard', role: 'student' };
+    }
+
+    function applyAppRoute(route = normalizeAppRoute()) {
+      if (route.section === 'test' || !route) return;
+      appRouterApplying = true;
+      try {
+        const publicLanding = document.getElementById('public-landing-ui');
+        const authUi = document.getElementById('auth-ui');
+        const studentUi = document.getElementById('start-screen');
+        const editorUi = document.getElementById('editor-ui');
+        const examUi = document.getElementById('exam-ui');
+        const reviewUi = document.getElementById('review-ui');
+
+        if (route.section !== 'history') document.getElementById('student-history-modal')?.classList.add('hidden');
+        if (route.section !== 'flashcards') document.getElementById('student-fc-panel')?.classList.add('hidden');
+        if (route.section !== 'leaderboard') document.getElementById('test-leaderboard-modal')?.classList.add('hidden');
+        if (route.section !== 'forum') document.getElementById('chat-panel')?.classList.add('hidden');
+        if (route.section !== 'peer-review' && route.section !== 'leaderboard') document.getElementById('custom-modal')?.classList.add('hidden');
+        if (route.section === 'hall-of-fame') {
+          document.getElementById('hof-full-screen')?.classList.remove('hidden');
+          window.renderHOFGrid();
+          lastAppliedAppRoute = route;
+          routerReady = true;
+          return;
+        }
+        document.getElementById('hof-full-screen')?.classList.add('hidden');
+        if (route.section !== 'forum') document.getElementById('chat-panel')?.classList.add('hidden');
+        if (!currentUser) {
+          publicLanding?.classList.toggle('hidden', route.section !== 'landing' && route.section !== 'dashboard');
+          authUi?.classList.toggle('hidden', route.section !== 'login');
+          studentUi?.classList.add('hidden');
+          editorUi?.classList.add('hidden');
+          if (route.section !== 'login' && route.section !== 'landing' && route.section !== 'dashboard') {
+            window.history.replaceState({ lmsRoute: 'landing' }, '', '#/landing');
+          }
+          lastAppliedAppRoute = route;
+          routerReady = true;
+          return;
+        }
+
+        publicLanding?.classList.add('hidden');
+        authUi?.classList.add('hidden');
+        if (['teacher', 'collaborator'].includes(currentUser.role) && route.role !== 'teacher') {
+          route = { role: 'teacher', section: 'bank', detail: 'tests' };
+          window.history.replaceState({ lmsRoute: 'teacher' }, '', '#/teacher/bank/tests');
+        } else if (currentUser.role === 'student' && route.role !== 'student') {
+          route = { role: 'student', section: 'dashboard' };
+          window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
+        } else if (route.role === 'student' && route.section === 'dashboard' && window.location.hash === '#/dashboard') {
+          window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
+        }
+        if (route.role === 'teacher') {
+          if (!['teacher', 'collaborator'].includes(currentUser.role)) {
+            window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
+            route = { role: 'student', section: 'dashboard' };
+          } else {
+            studentUi?.classList.add('hidden');
+            editorUi?.classList.remove('hidden');
+            if (route.section === 'forum') {
+              window.toggleForumPanel(true);
+            } else if (route.section === 'review') {
+              const submissionId = Number(route.detail);
+              if (currentUser.role === 'teacher' && Number.isFinite(submissionId) && SUBMISSIONS.some(sub => Number(sub.id) === submissionId)) openGradingView(submissionId);
+              else {
+                route = { role: 'teacher', section: 'bank', detail: 'tests' };
+                window.history.replaceState({ lmsRoute: 'teacher' }, '', '#/teacher/bank/tests');
+                toggleEditorTab('bank');
+                window.toggleDashboardView('tests');
+              }
+            } else if (route.section === 'builder') {
+              const test = TEST_BANK.find(item => item.id === route.detail);
+              if (test) editTest(test.id);
+              else {
+                route = { role: 'teacher', section: 'bank', detail: 'tests' };
+                window.history.replaceState({ lmsRoute: 'teacher' }, '', '#/teacher/bank/tests');
+                toggleEditorTab('bank');
+              }
+            } else {
+              const validTabs = ['bank', 'classes', 'students', 'payments', 'timetable', 'landing'];
+              const tab = validTabs.includes(route.section) ? route.section : 'bank';
+              if (tab === 'bank' && ['tests', 'classes'].includes(route.detail)) {
+                sessionStorage.setItem('lms_dash_view', route.detail);
+              }
+              toggleEditorTab(tab);
+              if (tab === 'bank') window.toggleDashboardView(['tests', 'classes'].includes(route.detail) ? route.detail : 'tests');
+            }
+            lastAppliedAppRoute = route;
+            routerReady = true;
+            return;
+          }
+        }
+
+        if (route.role !== 'student' || currentUser.role !== 'student') {
+          route = { role: 'student', section: 'dashboard' };
+        }
+        if (examUi && !examUi.classList.contains('hidden')) {
+          lastAppliedAppRoute = route;
+          routerReady = true;
+          return;
+        }
+
+        editorUi?.classList.add('hidden');
+        studentUi?.classList.remove('hidden');
+        reviewUi?.classList.add('hidden');
+        if (route.section === 'dashboard' || !['history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review'].includes(route.section)) {
+          route = { role: 'student', section: 'dashboard' };
+          if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
+        } else if (route.section === 'history') {
+          window.openStudentHistory();
+        } else if (route.section === 'flashcards') {
+          window.toggleStudentFlashcardPanel(true);
+        } else if (route.section === 'peer-review') {
+          if (route.detail && getPeerReviewCandidatesForCurrentStudent().some(sub => String(sub.id) === route.detail)) {
+            window.openPeerReviewModal(Number(route.detail));
+          } else {
+            if (route.detail) {
+              route = { role: 'student', section: 'peer-review', detail: '' };
+              window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/peer-review');
+            }
+            window.showPeerReviewList();
+          }
+        } else if (route.section === 'leaderboard') {
+          window.showLeaderboardModal();
+        } else if (route.section === 'forum') {
+          window.toggleForumPanel(true);
+        } else if (route.section === 'review') {
+          const submissionId = Number(route.detail);
+          if (Number.isFinite(submissionId) && SUBMISSIONS.some(sub => Number(sub.id) === submissionId)) reviewPastSubmission(submissionId);
+          else {
+            route = { role: 'student', section: 'history' };
+            window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/history');
+            window.openStudentHistory();
+          }
+        }
+        lastAppliedAppRoute = route;
+        routerReady = true;
+      } finally {
+        appRouterApplying = false;
+      }
+    }
+
+    window.navigateAppRoute = function(path, replace = false) {
+      const hash = `#/${path.replace(/^#?\/?/, '')}`;
+      if (window.location.hash === hash) {
+        applyAppRoute(normalizeAppRoute(hash));
+        return;
+      }
+      const state = { lmsRoute: path.split('/')[0] || 'dashboard' };
+      if (replace) window.history.replaceState(state, '', hash);
+      else window.history.pushState(state, '', hash);
+      if (!parseTestHashRoute()) applyAppRoute(normalizeAppRoute(hash));
+    };
+
+    window.closeAppRouteView = function() {
+      const route = normalizeAppRoute();
+      if (route.section === 'flashcards') {
+        document.getElementById('student-fc-panel')?.classList.add('hidden');
+      } else if (route.section === 'history') {
+        document.getElementById('student-history-modal')?.classList.add('hidden');
+      } else if (route.section === 'leaderboard') {
+        document.getElementById('custom-modal')?.classList.add('hidden');
+        document.getElementById('test-leaderboard-modal')?.classList.add('hidden');
+      } else if (route.section === 'forum') {
+        document.getElementById('chat-panel')?.classList.add('hidden');
+      }
+      const dashboardRoute = currentUser && ['teacher', 'collaborator'].includes(currentUser.role)
+        ? 'teacher/bank/tests'
+        : 'student/dashboard';
+      window.navigateAppRoute(dashboardRoute, true);
+    };
+
+    function studentCanOpenTestRoute(testId) {
+      const cid = document.getElementById('student-class-select')?.value;
+      const cls = CLASSES.find(item => item.id === cid);
+      if (!cls) return false;
+
+      const pathItem = getClassPathItems(cls).find(item => item.testId === testId);
+      const assigned = (cls.assignedTests || []).includes(testId);
+      const scheduled = SCHEDULES.some(schedule =>
+        schedule.className === cls.name &&
+        (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)) &&
+        (schedule.materialIds || []).includes(testId)
+      );
+      const test = TEST_BANK.find(item => item.id === testId);
+      const price = Number(test?.price) || 0;
+      const unlocked = !test || price <= 0 || (currentUser.unlockedTests || []).includes(testId);
+      return Boolean((pathItem || assigned || scheduled) && unlocked);
+    }
+
+    function openTestHashRoute(route, fromInitialLoad = false) {
+      if (!route || !currentUser || handlingTestRoute || activeTestRoute) return;
+      handlingTestRoute = true;
+      try {
+        if (currentUser.role !== 'student') {
+          replaceWithDashboardRoute();
+          if (typeof window.showToast === 'function') window.showToast('Notice', 'Test links are available to students only.', 'info');
+          return;
+        }
+
+        const test = TEST_BANK.find(item => item.id === route.id);
+        if (!test || !studentCanOpenTestRoute(route.id)) {
+          replaceWithDashboardRoute();
+          if (typeof window.showToast === 'function') window.showToast('Unavailable', 'This test is not available to your current class.', 'error');
+          return;
+        }
+
+        const item = getCurrentStudentClassPathItem(route.id);
+        const cls = CLASSES.find(entry => entry.id === document.getElementById('student-class-select')?.value);
+        const mySubs = SUBMISSIONS.filter(sub => sub.student === currentUser.user && sub.className === (cls?.name || ''));
+        if (item && !isPrerequisiteSatisfied(item, mySubs)) {
+          replaceWithDashboardRoute();
+          if (typeof window.showToast === 'function') window.showToast('Locked', 'Complete the prerequisite before starting this test.', 'error');
+          return;
+        }
+
+        if (fromInitialLoad && !window.history.state?.lmsRoute) {
+          const requestedHash = window.location.hash;
+          window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
+          window.history.pushState({ lmsRoute: 'test' }, '', requestedHash);
+        }
+
+        directTestRoutePending = route;
+        openModeSelection(route.id);
+        const modeModal = document.getElementById('test-mode-modal');
+        if (!modeModal || modeModal.classList.contains('hidden')) {
+          replaceWithDashboardRoute();
+          return;
+        }
+
+        selectTestMode(route.mode === 'free' ? 'free' : 'restricted');
+        if (route.minutes && Number(route.minutes) > 0) {
+          document.getElementById('custom-time-input').value = String(Math.min(180, Math.max(1, Number(route.minutes))));
+        }
+        if (Array.isArray(route.parts) && route.parts.length) {
+          const requestedParts = new Set(route.parts.filter(index => Number.isInteger(index) && index >= 0 && index < test.parts.length));
+          if (requestedParts.size) {
+            document.querySelectorAll('.part-select-cb').forEach(checkbox => {
+              checkbox.checked = requestedParts.has(Number(checkbox.value));
+            });
+          }
+        }
+      } finally {
+        handlingTestRoute = false;
+      }
+    }
+
+    window.cancelTestRouteStart = function() {
+      document.getElementById('test-mode-modal').classList.add('hidden');
+      if (directTestRoutePending) replaceWithDashboardRoute();
+    };
+
+    function handleTestRouteNavigation(fromInitialLoad = false) {
+      const route = parseTestHashRoute();
+      if (route) {
+        if (activeTestRoute) {
+          if (window.activeTestRouteHash && window.location.hash !== window.activeTestRouteHash) {
+            window.history.replaceState({ lmsRoute: 'test' }, '', window.activeTestRouteHash);
+          }
+        } else if (!directTestRoutePending || directTestRoutePending.id !== route.id) {
+          openTestHashRoute(route, fromInitialLoad);
+        }
+      } else if (directTestRoutePending) {
+        document.getElementById('test-mode-modal').classList.add('hidden');
+        directTestRoutePending = null;
+      } else if (activeTestRoute) {
+        const examVisible = !document.getElementById('exam-ui').classList.contains('hidden');
+        if (examVisible && (window.isSecureModeActive || !isTimeFree)) {
+          const currentRoute = window.activeTestRouteHash;
+          if (currentRoute) window.history.replaceState({ lmsRoute: 'test' }, '', currentRoute);
+          if (typeof window.showToast === 'function') window.showToast('Test in progress', 'Exit the test using the on-screen controls.', 'info');
+          return;
+        }
+
+        if (examVisible) {
+          const currentRoute = window.activeTestRouteHash;
+          if (currentRoute) window.history.replaceState({ lmsRoute: 'test' }, '', currentRoute);
+          window.exitTestWithoutSaving();
+        } else {
+          document.getElementById('results-modal')?.classList.add('hidden');
+          document.getElementById('review-ui')?.classList.add('hidden');
+          replaceWithDashboardRoute();
+          document.getElementById('start-screen').classList.remove('hidden');
+          window.renderStudentDashboard();
+        }
+      }
+    }
+
+    function handleAppRouteNavigation(fromInitialLoad = false) {
+      const incomingTestRoute = parseTestHashRoute();
+      if (!currentUser && incomingTestRoute) {
+        sessionStorage.setItem('lms_pending_test_route', window.location.hash);
+        window.history.replaceState({ lmsRoute: 'login' }, '', '#/login');
+        applyAppRoute({ section: 'login' });
+        return;
+      }
+      const pendingTestRoute = currentUser && sessionStorage.getItem('lms_pending_test_route');
+      if (pendingTestRoute && (!window.location.hash || ['login', 'landing'].includes(normalizeAppRoute().section))) {
+        sessionStorage.removeItem('lms_pending_test_route');
+        const homeHash = ['teacher', 'collaborator'].includes(currentUser.role) ? '#/teacher/bank/tests' : '#/student/dashboard';
+        window.history.replaceState({ lmsRoute: 'dashboard' }, '', homeHash);
+        window.history.pushState({ lmsRoute: 'test' }, '', pendingTestRoute);
+      }
+      const examUi = document.getElementById('exam-ui');
+      if (!parseTestHashRoute() && examUi && !examUi.classList.contains('hidden') &&
+          window.isSecureModeActive && !activeTestRoute) {
+        const returnHash = window.activeSyntheticExamReturnHash || '#/student/dashboard';
+        window.history.replaceState({ lmsRoute: 'exam' }, '', returnHash);
+        if (typeof window.showToast === 'function') window.showToast('Exam in progress', 'Finish the secure exam using the on-screen controls.', 'info');
+        return;
+      }
+      const testRoute = parseTestHashRoute();
+      if (testRoute) {
+        handleTestRouteNavigation(fromInitialLoad);
+        routerReady = true;
+        return;
+      }
+
+      if (activeTestRoute) {
+        handleTestRouteNavigation();
+        if (activeTestRoute) return;
+      }
+
+      if (fromInitialLoad && !window.location.hash) {
+        if (currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
+          const savedTest = sessionStorage.getItem('lms_editing_test');
+          const savedSub = sessionStorage.getItem('lms_grading_sub');
+          const savedMode = sessionStorage.getItem('lms_grading_mode');
+          const savedTab = sessionStorage.getItem('lms_teacher_tab') || 'bank';
+          const savedView = sessionStorage.getItem('lms_dash_view') || 'tests';
+          const initialPath = savedSub && savedMode === 'teacher'
+            ? `#/teacher/review/${encodeURIComponent(savedSub)}`
+            : savedTest && savedTab === 'builder'
+            ? `#/teacher/builder/${encodeURIComponent(savedTest)}`
+            : savedTab === 'bank' ? `#/teacher/bank/${savedView}` : `#/teacher/${savedTab}`;
+          window.history.replaceState({ lmsRoute: 'teacher' }, '', initialPath);
+        } else if (currentUser) {
+          window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
+        } else {
+          window.history.replaceState({ lmsRoute: 'landing' }, '', '#/landing');
+        }
+      }
+      applyAppRoute();
+    }
+
+    window.addEventListener('popstate', () => handleAppRouteNavigation());
+    window.addEventListener('hashchange', () => handleAppRouteNavigation());
 
     // ✨ NEW: Random Practice Spinner
     window.spunTestId = null;
@@ -12867,6 +13622,24 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           if (selectedParts && selectedParts.length > 0) {
               APP_DATA.parts = selectedParts.map(idx => APP_DATA.parts[idx]).filter(Boolean);
           }
+      }
+
+      if (window.isFullExamMode && !window.activeSyntheticExamReturnHash) {
+          window.activeSyntheticExamReturnHash = window.location.hash || '#/student/dashboard';
+      }
+      if (currentUser?.role === 'student' && !window.isFullExamMode && APP_DATA.id && TEST_BANK.some(test => test.id === APP_DATA.id)) {
+          const routeParts = selectedParts || APP_DATA.parts.map((_, index) => index);
+          const testRouteHash = buildTestHashRoute(APP_DATA.id, routeParts);
+          const currentRoute = parseTestHashRoute();
+          const isDirectRouteStart = directTestRoutePending?.id === APP_DATA.id || currentRoute?.id === APP_DATA.id;
+          if (isDirectRouteStart) {
+              window.history.replaceState({ lmsRoute: 'test' }, '', testRouteHash);
+          } else {
+              window.history.pushState({ lmsRoute: 'test' }, '', testRouteHash);
+          }
+          activeTestRoute = true;
+          directTestRoutePending = null;
+          window.activeTestRouteHash = testRouteHash;
       }
 
       // Check for Secure Mode
@@ -13476,7 +14249,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           });
           visualHtml += `</div>`;
           visualHtml += window.createStudentChartComparisonPanel(chartsToRender);
-      } else if (p.image) {
+      } else if (p.image && APP_DATA.module !== 'writing') {
           visualHtml = `<img src="${p.image}" class="w-full rounded-xl shadow-sm mb-6 object-contain max-h-[400px] cursor-zoom-in" onclick="openLightbox(this.src)">`;
       }
       media += visualHtml;
@@ -13715,6 +14488,179 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if(!e.target.closest('#vocab-popover') && !e.target.classList.contains('vocab-word')) document.getElementById('vocab-popover').classList.add('hidden'); 
         if(!e.target.closest('#grammar-popover') && !e.target.classList.contains('grammar-word')) document.getElementById('grammar-popover').classList.add('hidden'); 
     });
+
+    window.locateQuestion = function(questionIndex, event) {
+        if (event) event.stopPropagation();
+        const part = APP_DATA?.parts?.[currentPartIdx];
+        const question = part?.questions?.[questionIndex];
+        const status = document.getElementById(`locate-status-${questionIndex}`);
+        const passage = document.getElementById('passage-container');
+        if (!part || !question || !passage) return;
+
+        if (APP_DATA.module === 'listening' && !isTimeFree) return;
+        if (passage.classList.contains('hidden')) window.toggleTranscript();
+
+        const root = APP_DATA.module === 'reading'
+            ? document.getElementById('passage-text-content')
+            : passage;
+        if (!root) return;
+
+        const questionText = document.createElement('div');
+        questionText.innerHTML = `${question.instruction || ''} ${question.text || ''}`;
+        const stopWords = new Set([
+            'about', 'after', 'again', 'against', 'among', 'also', 'been', 'before', 'being', 'between',
+            'both', 'could', 'does', 'each', 'from', 'have', 'into', 'more', 'most', 'much', 'must',
+            'only', 'other', 'over', 'same', 'some', 'such', 'than', 'that', 'their', 'them', 'then',
+            'there', 'these', 'they', 'this', 'those', 'through', 'under', 'very', 'what', 'when',
+            'where', 'which', 'while', 'will', 'with', 'would', 'your', 'according', 'answer',
+            'following', 'question', 'questions', 'choose', 'select', 'complete', 'write', 'words',
+            'letters', 'numbers', 'paragraph', 'passage', 'statement', 'statements', 'information'
+        ]);
+        const getTerms = text => String(text || '')
+            .toLocaleLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .match(/[\p{L}\p{N}]{3,}/gu) || [];
+        const queryTerms = [...new Set(getTerms(questionText.textContent).filter(term => !stopWords.has(term)))];
+        const candidates = APP_DATA.module === 'listening'
+            ? [...root.querySelectorAll('[data-karaoke-index], [data-listening-index]')]
+            : [...root.querySelectorAll('p')].filter(candidate => candidate.textContent.trim());
+        if (!candidates.length && root.textContent.trim()) candidates.push(root);
+        if (!candidates.length) {
+            if (status) status.textContent = 'Không tìm được từ khóa phù hợp trong nội dung.';
+            return;
+        }
+
+        const normalizeTarget = text => String(text || '').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
+        const indexedTarget = Number(question.locateIndex);
+        let bestIndex = question.locateText
+            && Number.isInteger(indexedTarget)
+            && candidates[indexedTarget]
+            && normalizeTarget(candidates[indexedTarget].textContent).includes(normalizeTarget(question.locateText))
+                ? indexedTarget
+                : -1;
+        if (bestIndex < 0 && question.locateText) {
+            bestIndex = candidates.findIndex(candidate =>
+                normalizeTarget(candidate.textContent).includes(normalizeTarget(question.locateText))
+            );
+        }
+        const usedAssignedTarget = bestIndex >= 0 && Boolean(question.locateText);
+        if (bestIndex < 0) {
+            if (question.locateText) {
+                if (status) status.textContent = 'Vị trí đã gán không còn trong passage/script. Giáo viên cần gán lại.';
+                return;
+            }
+            if (!queryTerms.length) {
+                if (status) status.textContent = 'Không tìm được từ khóa phù hợp trong nội dung.';
+                return;
+            }
+            const candidateTerms = candidates.map(candidate => new Set(getTerms(candidate.textContent)));
+            const documentFrequency = new Map();
+            candidateTerms.forEach(terms => terms.forEach(term => {
+                documentFrequency.set(term, (documentFrequency.get(term) || 0) + 1);
+            }));
+            let bestScore = 0;
+            candidateTerms.forEach((terms, index) => {
+                let score = 0;
+                queryTerms.forEach(term => {
+                    if (terms.has(term)) {
+                        const frequency = documentFrequency.get(term) || 1;
+                        score += 1 + Math.log((candidates.length + 1) / frequency);
+                    }
+                });
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestIndex = index;
+                }
+            });
+        }
+        if (bestIndex < 0) {
+            if (status) status.textContent = 'Không tìm thấy từ khóa trong passage/transcript.';
+            return;
+        }
+
+        passage.querySelectorAll('.locate-match').forEach(element => {
+            if (element.dataset.locateExact === 'true' && element.parentNode) {
+                const parent = element.parentNode;
+                while (element.firstChild) parent.insertBefore(element.firstChild, element);
+                parent.removeChild(element);
+            } else {
+                element.classList.remove('locate-match');
+            }
+        });
+        const target = candidates[bestIndex];
+        let exactHighlight = false;
+        if (question.locateText) {
+            const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT);
+            const textNodes = [];
+            let textNode;
+            while ((textNode = walker.nextNode())) textNodes.push(textNode);
+
+            let normalizedText = '';
+            const positions = [];
+            textNodes.forEach(node => {
+                const value = node.nodeValue || '';
+                for (let offset = 0; offset < value.length; offset++) {
+                    const character = value[offset];
+                    if (/\s/.test(character)) {
+                        if (normalizedText && !normalizedText.endsWith(' ')) {
+                            normalizedText += ' ';
+                            positions.push({ node, offset });
+                        }
+                        continue;
+                    }
+                    const normalizedCharacter = character.toLocaleLowerCase();
+                    for (let characterIndex = 0; characterIndex < normalizedCharacter.length; characterIndex++) {
+                        normalizedText += normalizedCharacter[characterIndex];
+                        positions.push({ node, offset });
+                    }
+                }
+            });
+
+            const normalizedQuery = normalizeTarget(question.locateText);
+            const matchStart = normalizedText.indexOf(normalizedQuery);
+            if (matchStart >= 0 && normalizedQuery.length > 0) {
+                const start = positions[matchStart];
+                const end = positions[matchStart + normalizedQuery.length - 1];
+                if (start && end) {
+                    const range = document.createRange();
+                    range.setStart(start.node, start.offset);
+                    range.setEnd(end.node, end.offset + 1);
+                    const highlight = document.createElement('span');
+                    highlight.className = 'locate-match';
+                    highlight.dataset.locateExact = 'true';
+                    highlight.appendChild(range.extractContents());
+                    range.insertNode(highlight);
+                    exactHighlight = true;
+                }
+            }
+        }
+        if (!exactHighlight) target.classList.add('locate-match');
+        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+
+        if (APP_DATA.module === 'listening') {
+            const cueIndex = Number(target.dataset.karaokeIndex ?? target.dataset.listeningIndex);
+            const audio = getActiveListeningPlayback();
+            const savedStart = part.karaoke?.[cueIndex]?.start;
+            const karaokeCue = savedStart != null && Number.isFinite(Number(savedStart))
+                ? { start: Number(savedStart) }
+                : null;
+            const cue = karaokeCue && karaokeCue.start !== null
+                ? karaokeCue
+                : getListeningCues(part, audio && Number.isFinite(audio.duration) ? audio.duration : undefined)[cueIndex];
+            if (audio && cue && cue.start !== null && Number.isFinite(Number(cue.start))) {
+                audio.currentTime = Math.max(0, Number(cue.start));
+                audio.play().catch(error => console.log('Auto-play prevented', error));
+            }
+            if (status) status.textContent = usedAssignedTarget
+                ? `Đã đến vị trí đã gán (câu transcript ${cueIndex + 1}).`
+                : `Đã tìm thấy ở câu transcript ${cueIndex + 1}.`;
+        } else if (status) {
+            status.textContent = usedAssignedTarget
+                ? `Đã đến vị trí đã gán (đoạn ${bestIndex + 1}).`
+                : `Đã tìm thấy ở đoạn ${bestIndex + 1}.`;
+        }
+    };
 
     function renderQuestions() {
       const c = document.getElementById('questions-container'); 
@@ -14046,6 +14992,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             if (q.type !== 'essay' && q.type !== 'audio_record') {
                 btnContainer += `<button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition shadow-sm">Check Answer</button>`;
             }
+        }
+
+        if (APP_DATA.module === 'reading' || (APP_DATA.module === 'listening' && isTimeFree)) {
+            btnContainer += `<button type="button" onclick="window.locateQuestion(${i}, event)" class="text-xs bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold px-3 py-1.5 rounded transition shadow-sm border border-blue-200 mr-2">🔎 Locate</button><span id="locate-status-${i}" class="text-xs text-slate-500" aria-live="polite"></span>`;
         }
         
         if (isPreviewMode && q.type !== 'essay' && q.type !== 'audio_record') {
@@ -14558,6 +15508,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         } else {
            document.getElementById('start-screen').classList.remove('hidden'); 
            window.renderStudentDashboard(); 
+           replaceWithDashboardRoute();
         }
       });
     };
@@ -14656,6 +15607,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             } else {
                 // ✨ FULL MOCK COMPLETED
                 window.isFullExamMode = false;
+                window.activeSyntheticExamReturnHash = null;
                 window.exitSecureMode();
 
                 let resultsHtml = '<div class="space-y-3 mt-6 text-left max-h-[300px] overflow-y-auto">';
@@ -14803,6 +15755,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       } else {
          document.getElementById('start-screen').classList.remove('hidden'); 
          renderStudentDashboard(); 
+         replaceWithDashboardRoute();
       }
     }
     
@@ -14835,9 +15788,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }
       else if (currentUser && currentUser.role === 'teacher') {
          document.getElementById('editor-ui').classList.remove('hidden');
+         replaceWithDashboardRoute();
       } else {
          document.getElementById('start-screen').classList.remove('hidden');
          renderStudentDashboard();
+         replaceWithDashboardRoute();
       }
     }
 
@@ -14922,6 +15877,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           if(!test) { showModalMsg("Error", "Original test deleted."); return; }
       }
 
+      if (routerReady && !appRouterApplying) {
+          window.navigateAppRoute(`teacher/review/${subId}`);
+          return;
+      }
+
       // ✨ NEW: Mark student reply as read when teacher opens it!
       if (sub.studentReply && !sub.teacherReadReply) {
           sub.teacherReadReply = true;
@@ -14951,6 +15911,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           if(!test) return;
       }
       
+      if (routerReady && !appRouterApplying) {
+          window.navigateAppRoute(`student/review/${subId}`);
+          return;
+      }
+
       APP_DATA = test; answers = sub.answers || {};
       if (sub.questionAnalytics && sub.questionAnalytics.length) {
         questionBlockAccumulated = {};
@@ -15028,7 +15993,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         
         lHtml += `<div class="passage-text font-black text-xl mb-6 mt-8 first:mt-0 text-slate-800">${p.title}</div>`;
         if(p.audioUrl) lHtml += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-6 shadow-sm rounded-lg border border-slate-200"></audio>`;
-        if(p.image) lHtml += `<div class="mb-6 bg-slate-50 p-4 border border-slate-200 rounded-xl text-center shadow-inner"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
+        if(p.image && APP_DATA.module !== 'writing') lHtml += `<div class="mb-6 bg-slate-50 p-4 border border-slate-200 rounded-xl text-center shadow-inner"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
         lHtml += `<div class="leading-loose text-slate-800 text-[1.05rem] selection-wrapper">${txt}</div>`;
       });
       
@@ -15558,11 +16523,18 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }
     };
 
-    window.toggleStudentFlashcardPanel = function() {
+    window.toggleStudentFlashcardPanel = function(forceOpen = false) {
+      if (routerReady && !appRouterApplying && currentUser?.role === 'student' &&
+          document.getElementById('exam-ui')?.classList.contains('hidden') &&
+          document.getElementById('review-ui')?.classList.contains('hidden')) {
+        const panel = document.getElementById('student-fc-panel');
+        window.navigateAppRoute(panel?.classList.contains('hidden') ? 'student/flashcards' : 'student/dashboard');
+        return;
+      }
       const p = document.getElementById('student-fc-panel');
       
       // Toggle logic targeting the new full-screen modal's 'hidden' state
-      if (p.classList.contains('hidden')) {
+      if (forceOpen || p.classList.contains('hidden')) {
         p.classList.remove('hidden');
         const sel = document.getElementById('panel-fc-list-select');
         
@@ -17763,7 +18735,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         APP_DATA.parts.forEach((p, pIdx) => {
             html += `<h2>${p.title || 'Part ' + (pIdx + 1)}</h2>`;
-            if (p.image) {
+            if (p.image && APP_DATA.module !== 'writing') {
                 html += `<div class="passage"><img src="${p.image}"></div>`;
             }
             if (p.text) {
@@ -18589,7 +19561,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         CHAT_MESSAGES = [...FORUM_POSTS];
     };
 
-    window.toggleForumPanel = function() {
+    window.toggleForumPanel = function(forceOpen = false) {
+        if (routerReady && !appRouterApplying && currentUser) {
+            const panel = document.getElementById('chat-panel');
+            const isOpen = panel && !panel.classList.contains('hidden');
+            const rolePath = ['teacher', 'collaborator'].includes(currentUser.role) ? 'teacher/forum' : 'student/forum';
+            window.navigateAppRoute(forceOpen || !isOpen ? rolePath : (rolePath.startsWith('teacher') ? 'teacher/bank/tests' : 'student/dashboard'));
+            return;
+        }
         let p = document.getElementById('chat-panel');
 
         if (!p) {
@@ -18637,7 +19616,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         seedForumDemoData();
 
-        if (p.classList.contains('hidden')) {
+        if (forceOpen || p.classList.contains('hidden')) {
             p.classList.remove('hidden');
             window.renderForumThreads();
         } else {
