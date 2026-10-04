@@ -24,9 +24,66 @@
         "type": "image/svg+xml"
       }]
     };
-    const blob = new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'});
+    const startupBrandingCacheKey = 'ielts_lms_startup_branding';
+    let manifestObjectUrl = null;
+    window.applyStartupBranding = function(profile = {}) {
+        const appName = String(profile.appName || '').trim() || 'Khanh LMS';
+        const openingTitle = String(profile.openingTitle || '').trim() || 'Connecting to Cloud...';
+        const openingMessage = String(profile.openingMessage || '').trim();
+        const logoUrl = profile.appLogo || '';
+
+        document.title = `${appName} - Cloud Connected`;
+        const appNameElement = document.getElementById('startup-app-name');
+        if (appNameElement) appNameElement.textContent = appName;
+        const openingTitleElement = document.getElementById('startup-opening-title');
+        if (openingTitleElement) openingTitleElement.textContent = openingTitle;
+        const openingMessageElement = document.getElementById('startup-opening-message');
+        if (openingMessageElement) {
+            openingMessageElement.textContent = openingMessage;
+            openingMessageElement.classList.toggle('hidden', !openingMessage);
+        }
+        const startupLogo = document.getElementById('startup-app-logo');
+        if (startupLogo) {
+            startupLogo.src = logoUrl;
+            startupLogo.classList.toggle('hidden', !logoUrl);
+        }
+        const authText = document.getElementById('app-logo-auth-text');
+        if (authText) authText.textContent = appName;
+
+        manifestJSON.name = appName;
+        manifestJSON.short_name = appName.slice(0, 20);
+        const manifestLink = document.getElementById('pwa-manifest');
+        if (manifestLink) {
+            if (manifestObjectUrl) URL.revokeObjectURL(manifestObjectUrl);
+            manifestObjectUrl = URL.createObjectURL(new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'}));
+            manifestLink.href = manifestObjectUrl;
+        }
+    };
+    window.cacheStartupBranding = function(profile) {
+        const branding = {
+            appName: profile.appName || '',
+            openingTitle: profile.openingTitle || '',
+            openingMessage: profile.openingMessage || '',
+            appLogo: profile.appLogo || null
+        };
+        try {
+            localStorage.setItem(startupBrandingCacheKey, JSON.stringify(branding));
+        } catch (error) {
+            console.warn('Could not cache startup branding locally.', error);
+        }
+        window.applyStartupBranding(branding);
+    };
+    let cachedStartupBranding = {};
+    try {
+        const savedBranding = JSON.parse(localStorage.getItem(startupBrandingCacheKey) || '{}');
+        if (savedBranding && typeof savedBranding === 'object' && !Array.isArray(savedBranding)) {
+            cachedStartupBranding = savedBranding;
+        }
+    } catch (error) {
+        console.warn('Could not read cached startup branding.', error);
+    }
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(blob));
+        window.applyStartupBranding(cachedStartupBranding);
     });
     window.addEventListener('beforeunload', function (e) {
         if (document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden')) {
@@ -109,6 +166,175 @@
     .locate-match { background: #fef08a !important; box-shadow: 0 0 0 4px #fef08a, 0 0 0 7px rgba(245, 158, 11, 0.35) !important; border-radius: 0.25rem; }
 
     .interactive-chart-frame { position: relative; width: 100%; height: 320px; max-height: 320px; min-width: 0; }
+    .app-sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 80;
+        width: 256px;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-right: 1px solid #e2e8f0;
+        box-shadow: 8px 0 24px rgba(15, 23, 42, 0.08);
+        overflow-y: auto;
+    }
+    .app-sidebar-link {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.7rem 0.85rem;
+        border-radius: 0.75rem;
+        color: #475569;
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-align: left;
+    }
+    .app-sidebar-link:hover,
+    .app-sidebar-link.is-active {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+    .app-sidebar-backdrop,
+    .app-sidebar-toggle {
+        display: none;
+    }
+    .app-sidebar-collapse {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #start-screen > #student-banner-bg,
+    #start-screen > #student-dashboard-content {
+        width: calc(100% - 256px);
+        max-width: none;
+        margin-left: 256px;
+        margin-right: 0;
+    }
+    #editor-ui > #editor-view-bank,
+    #editor-ui > #editor-view-subs,
+    #editor-ui > #editor-view-students,
+    #editor-ui > #editor-view-payments,
+    #editor-ui > #editor-view-timetable,
+    #editor-ui > #editor-view-landing,
+    #editor-ui > #editor-view-builder {
+        margin-left: 256px;
+    }
+    #editor-ui > header {
+        padding-left: calc(256px + 1.5rem);
+    }
+    #editor-ui.sidebar-collapsed > header {
+        padding-left: calc(76px + 1.5rem);
+    }
+    #start-screen.sidebar-collapsed > #student-banner-bg,
+    #start-screen.sidebar-collapsed > #student-dashboard-content {
+        width: calc(100% - 76px);
+        margin-left: 76px;
+    }
+    #editor-ui.sidebar-collapsed > #editor-view-bank,
+    #editor-ui.sidebar-collapsed > #editor-view-subs,
+    #editor-ui.sidebar-collapsed > #editor-view-students,
+    #editor-ui.sidebar-collapsed > #editor-view-payments,
+    #editor-ui.sidebar-collapsed > #editor-view-timetable,
+    #editor-ui.sidebar-collapsed > #editor-view-landing,
+    #editor-ui.sidebar-collapsed > #editor-view-builder {
+        margin-left: 76px;
+    }
+    #start-screen.sidebar-collapsed #student-sidebar,
+    #editor-ui.sidebar-collapsed #editor-sidebar {
+        width: 76px;
+    }
+    #start-screen.sidebar-collapsed .sidebar-label,
+    #editor-ui.sidebar-collapsed .sidebar-label,
+    #start-screen.sidebar-collapsed .app-sidebar-collapse-label,
+    #editor-ui.sidebar-collapsed .app-sidebar-collapse-label {
+        display: none;
+    }
+    #start-screen.sidebar-collapsed .app-sidebar-link,
+    #editor-ui.sidebar-collapsed .app-sidebar-link {
+        justify-content: center;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    #editor-ui.sidebar-focus #editor-sidebar,
+    #editor-ui.sidebar-focus #editor-sidebar-backdrop {
+        display: none;
+    }
+    #editor-ui.sidebar-focus > #editor-view-builder {
+        margin-left: 0;
+    }
+    #editor-ui.sidebar-focus > header {
+        padding-left: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+        .app-sidebar {
+            width: min(280px, 84vw);
+            transform: translateX(-105%);
+            box-shadow: 16px 0 40px rgba(15, 23, 42, 0.22);
+        }
+        .app-sidebar.is-open {
+            transform: translateX(0);
+        }
+        .app-sidebar-backdrop.is-open {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 79;
+            background: rgba(15, 23, 42, 0.45);
+        }
+        .app-sidebar-toggle {
+            display: inline-flex;
+        }
+        .app-sidebar-collapse {
+            display: none;
+        }
+        #start-screen > #student-banner-bg,
+        #start-screen > #student-dashboard-content,
+        #start-screen.sidebar-collapsed > #student-banner-bg,
+        #start-screen.sidebar-collapsed > #student-dashboard-content {
+            width: 100%;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #editor-ui > #editor-view-bank,
+        #editor-ui > #editor-view-subs,
+        #editor-ui > #editor-view-students,
+        #editor-ui > #editor-view-payments,
+        #editor-ui > #editor-view-timetable,
+        #editor-ui > #editor-view-landing,
+        #editor-ui > #editor-view-builder,
+        #editor-ui.sidebar-collapsed > #editor-view-bank,
+        #editor-ui.sidebar-collapsed > #editor-view-subs,
+        #editor-ui.sidebar-collapsed > #editor-view-students,
+        #editor-ui.sidebar-collapsed > #editor-view-payments,
+        #editor-ui.sidebar-collapsed > #editor-view-timetable,
+        #editor-ui.sidebar-collapsed > #editor-view-landing,
+        #editor-ui.sidebar-collapsed > #editor-view-builder {
+            margin-left: 0;
+        }
+        #editor-ui > header,
+        #editor-ui.sidebar-collapsed > header {
+            padding-left: 1.5rem;
+        }
+        #start-screen.sidebar-collapsed #student-sidebar,
+        #editor-ui.sidebar-collapsed #editor-sidebar {
+            width: min(280px, 84vw);
+        }
+        #start-screen.sidebar-collapsed .sidebar-label,
+        #editor-ui.sidebar-collapsed .sidebar-label,
+        #start-screen.sidebar-collapsed .app-sidebar-collapse-label,
+        #editor-ui.sidebar-collapsed .app-sidebar-collapse-label {
+            display: inline;
+        }
+        #start-screen.sidebar-collapsed .app-sidebar-link,
+        #editor-ui.sidebar-collapsed .app-sidebar-link {
+            justify-content: flex-start;
+            padding: 0.7rem 0.85rem;
+        }
+    }
+
     @media (max-width: 768px) {
         .interactive-chart-frame { height: 260px; max-height: 260px; }
     }
@@ -411,6 +637,315 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+    .stagger-fade-in > * {
+        opacity: 1 !important;
+    }
+    @keyframes entry-loader-spin {
+        to { transform: rotate(360deg); }
+    }
+    #loader-spinner {
+        animation: entry-loader-spin 1s linear infinite !important;
+    }
+
+    .auth-card {
+        width: min(900px, calc(100vw - 48px));
+        min-height: 520px;
+        display: grid;
+        grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+        overflow: hidden;
+        border-radius: 24px;
+    }
+    .auth-brand-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: clamp(2rem, 5vw, 4rem);
+        background: linear-gradient(145deg, rgba(239, 246, 255, 0.98), rgba(224, 231, 255, 0.9));
+        border-right: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    #app-logo-auth-container {
+        width: 100%;
+    }
+    #app-logo-auth-img {
+        max-width: 100%;
+        max-height: 96px;
+    }
+    #auth-subtitle {
+        margin: 1rem 0 0;
+        max-width: 18rem;
+    }
+    .auth-brand-caption {
+        margin-top: 2rem;
+        color: #64748b;
+        text-align: center;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        max-width: 18rem;
+    }
+    .auth-form-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: clamp(1.5rem, 4vw, 3.5rem);
+        min-width: 0;
+    }
+    .auth-form-panel > #auth-error,
+    .auth-form-panel > .space-y-5 {
+        width: 100%;
+        max-width: 460px;
+    }
+
+    @media (max-width: 1024px) and (orientation: portrait) {
+        #split-container,
+        #review-split-container,
+        #builder-split {
+            flex-direction: column !important;
+        }
+        #passage-container,
+        #review-left-pane,
+        #builder-left {
+            width: 100% !important;
+            min-width: 0 !important;
+            height: 42%;
+            border-right: 0 !important;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        #questions-container,
+        #review-right-pane,
+        #builder-right {
+            width: 100% !important;
+            min-width: 0 !important;
+            flex: 1 1 0 !important;
+        }
+        #resizer,
+        #review-resizer,
+        #builder-resizer {
+            width: 100% !important;
+            height: 16px !important;
+            cursor: row-resize !important;
+            position: relative;
+        }
+    }
+
+    @media (max-width: 768px) {
+        html,
+        body {
+            width: 100%;
+            min-width: 320px;
+            min-height: 100%;
+        }
+        body {
+            height: 100dvh;
+        }
+        #cloud-loader,
+        #public-landing-ui,
+        #auth-ui,
+        #start-screen,
+        #editor-ui,
+        #exam-ui,
+        #review-ui {
+            height: 100dvh;
+            min-height: 100dvh;
+        }
+        #public-landing-ui > .bg-blue-900 {
+            padding: 2.5rem 1rem 5rem;
+        }
+        #public-profile-content h1 {
+            font-size: clamp(1.8rem, 8vw, 3rem);
+            line-height: 1.15;
+            overflow-wrap: anywhere;
+        }
+        #public-profile-content p {
+            font-size: clamp(1rem, 4vw, 1.2rem);
+        }
+        #auth-ui {
+            position: fixed;
+            inset: 0;
+            align-items: flex-start;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 1rem;
+        }
+        #auth-ui > div:not(.absolute) {
+            width: min(100%, 460px) !important;
+            max-width: 100% !important;
+            margin: auto;
+        }
+        .auth-card {
+            display: block;
+            min-height: 0;
+            max-height: calc(100dvh - 2rem);
+            overflow-y: auto;
+            border-radius: 20px;
+        }
+        .auth-brand-panel {
+            padding: 1.25rem 1.25rem 0.25rem;
+            background: transparent;
+            border-right: 0;
+        }
+        #app-logo-auth-text {
+            font-size: 2rem;
+        }
+        #app-logo-auth-img {
+            max-height: 64px;
+        }
+        #auth-subtitle {
+            margin-top: 0.35rem;
+        }
+        .auth-brand-caption {
+            display: none;
+        }
+        .auth-form-panel {
+            padding: 0.5rem 1.25rem 1.5rem;
+        }
+        #start-screen > #student-banner-bg {
+            padding: 1rem;
+        }
+        #student-banner-bg > header {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        #student-banner-bg > header > div {
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        #student-banner-bg h1 {
+            font-size: 1.25rem;
+        }
+        #start-screen > #student-dashboard-content {
+            margin-top: -3rem;
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+        #editor-ui > header {
+            min-height: 0;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 0.65rem;
+        }
+        #editor-default-header > button:first-child {
+            font-size: 1.1rem;
+        }
+        #editor-default-header {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between;
+        }
+        #editor-ui > header > .flex.gap-2.items-center.shrink-0 {
+            padding-left: 0;
+            width: 100%;
+            justify-content: flex-end;
+        }
+        #editor-view-builder #builder-left,
+        #editor-view-builder #builder-right,
+        #passage-container,
+        #questions-container,
+        #review-left-pane,
+        #review-right-pane {
+            min-width: 0 !important;
+            padding: 1rem !important;
+        }
+        #exam-ui > header {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.5rem;
+            padding: 0.5rem;
+        }
+        #exam-ui > header > div:first-of-type {
+            min-width: 0;
+            gap: 0.5rem;
+        }
+        #exam-module-title {
+            max-width: 46vw;
+            font-size: 0.85rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #exam-ui > header > div:nth-of-type(2) {
+            position: static;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            transform: none;
+            justify-self: center;
+        }
+        #exam-ui > header > div:nth-of-type(3) {
+            min-width: 0;
+            justify-self: end;
+        }
+        #exam-ui > header > div:nth-of-type(3) > div {
+            gap: 0.25rem;
+        }
+        #exam-action-btn-text {
+            font-size: 0.65rem;
+        }
+        #exam-ui footer {
+            height: auto;
+            min-height: 3.5rem;
+            padding: 0.35rem;
+        }
+        #exam-ui footer > div:first-child,
+        #exam-ui footer > div:last-child {
+            width: auto;
+            gap: 0.25rem;
+        }
+        #exam-ui footer > div:first-child span {
+            display: none;
+        }
+        #review-ui > header {
+            padding: 0.65rem;
+            gap: 0.5rem;
+        }
+        #review-ui > header h1 {
+            font-size: 1rem;
+        }
+        #review-left-pane,
+        #builder-left,
+        #passage-container {
+            flex: 0 0 42%;
+        }
+        #review-right-pane,
+        #builder-right,
+        #questions-container {
+            flex: 1 1 0;
+        }
+        [id$="-modal"] > div:not(.absolute) {
+            max-height: calc(100dvh - 1rem);
+            overflow-y: auto;
+        }
+        table {
+            max-width: 100%;
+        }
+    }
+
+    @media (max-width: 420px) {
+        #editor-main-tabs button {
+            padding: 0.5rem 0.65rem;
+            font-size: 0.75rem;
+        }
+        #editor-view-bank,
+        #editor-view-classes,
+        #editor-view-students,
+        #editor-view-payments,
+        #editor-view-timetable,
+        #editor-view-landing {
+            padding: 0.75rem;
+        }
+        #public-packages-grid {
+            gap: 0.75rem;
+        }
+    }
   </style>
 </head>
 <body class="font-sans bg-slate-100 overflow-hidden h-screen text-slate-800 transition-colors duration-300">
@@ -420,8 +955,10 @@
       <div class="absolute inset-0 bg-blue-500 blur-[30px] opacity-30 rounded-full"></div>
       <div id="loader-spinner" class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-white shadow-[0_0_15px_rgba(255,255,255,0.5)]"></div>
     </div>
-    <h1 class="text-3xl font-extrabold text-white mb-3 tracking-wide drop-shadow-md">Khanh LMS</h1>
-    <h2 class="text-lg font-medium text-blue-200 mb-2 tracking-wide">Connecting to Cloud...</h2>
+    <img id="startup-app-logo" src="" class="hidden max-h-16 max-w-48 object-contain mb-4" alt="App logo">
+    <h1 id="startup-app-name" class="text-3xl font-extrabold text-white mb-3 tracking-wide drop-shadow-md">Khanh LMS</h1>
+    <h2 id="startup-opening-title" class="text-lg font-medium text-blue-200 mb-2 tracking-wide">Connecting to Cloud...</h2>
+    <p id="startup-opening-message" class="hidden text-blue-100/80 font-medium text-sm max-w-xl text-center px-4 mb-2"></p>
     <div id="cloud-loader-text" class="text-blue-100/70 font-mono text-sm max-w-xl text-center px-4">Initializing secure database connection</div>
   </div>
 
@@ -488,16 +1025,20 @@
     <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 7s;"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 9s;"></div>
     
-    <div class="bg-white/95 backdrop-blur-sm p-10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-[400px] relative z-10 animate-fade-in-up border border-white/20">
-      <div id="app-logo-auth-container" class="flex justify-center mb-2 min-h-[40px]">
-          <h1 id="app-logo-auth-text" class="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">Khanh LMS</h1>
-          <img id="app-logo-auth-img" src="" class="h-16 object-contain hidden">
-      </div>
-      <p class="text-center text-slate-500 mb-8 font-medium" id="auth-subtitle">Login to your account</p>
-      
-      <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
+    <div class="auth-card bg-white/95 backdrop-blur-sm rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-10 animate-fade-in-up border border-white/20">
+      <section class="auth-brand-panel">
+        <button type="button" id="app-logo-auth-container" onclick="window.goToAppHome('student')" class="flex justify-center mb-2 min-h-[40px] cursor-pointer" aria-label="Go to Homepage">
+            <span id="app-logo-auth-text" class="block text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">Khanh LMS</span>
+            <img id="app-logo-auth-img" src="" class="h-16 object-contain hidden">
+        </button>
+        <p class="text-center text-slate-500 font-medium" id="auth-subtitle">Login to your account</p>
+        <p class="auth-brand-caption">Sign in to continue your learning journey.</p>
+      </section>
 
-      <div class="space-y-5">
+      <section class="auth-form-panel">
+        <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
+
+        <div class="space-y-5">
         <div>
           <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
           <input type="text" id="auth-user" onkeydown="if(event.key==='Enter') handleAuthSubmit()" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="e.g. student123">
@@ -534,7 +1075,8 @@
             </button>
             <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
         </div>
-      </div>
+        </div>
+      </section>
 
     </div>
   </div>
@@ -552,15 +1094,21 @@
     </div>
   </div>
 
-  <div id="test-meta-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-[400px] shadow-2xl animate-scale-up">
-      <h2 id="meta-modal-heading" class="text-xl font-bold mb-4 text-slate-900">Test Settings</h2>
+  <div id="test-meta-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[250] flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-up">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6">
+      <h2 id="meta-modal-heading" class="md:col-span-2 text-xl font-bold mb-4 text-slate-900">Test Settings</h2>
+      <div class="mb-4">
       <label class="block text-sm font-bold text-slate-700 mb-1">Test Title</label>
-      <input type="text" id="meta-title-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none font-medium" />
+      <input type="text" id="meta-title-input" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-blue-600 outline-none font-medium" />
+      </div>
+      <div class="mb-4">
       <label class="block text-sm font-bold text-slate-700 mb-1">Topics / Tags (Comma separated)</label>
-      <input type="text" id="meta-topics-input" placeholder="e.g. Science, Nature, Maps" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none text-sm" />
+      <input type="text" id="meta-topics-input" placeholder="e.g. Science, Nature, Maps" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-blue-600 outline-none text-sm" />
+      </div>
+      <div class="mb-4">
       <label class="block text-sm font-bold text-slate-700 mb-1">Target Band / Difficulty (i+1)</label>
-      <select id="meta-difficulty-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none text-sm font-medium bg-white">
+      <select id="meta-difficulty-input" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-blue-600 outline-none text-sm font-medium bg-white">
           <option value="">-- General / Mixed --</option>
           <option value="4.0">Band 4.0</option>
           <option value="4.5">Band 4.5</option>
@@ -574,30 +1122,34 @@
           <option value="8.5">Band 8.5</option>
           <option value="9.0">Band 9.0</option>
       </select>
-      
+      </div>
+      <div class="mb-4">
       <label class="block text-sm font-bold text-slate-700 mb-1">Completion Status</label>
-      <select id="meta-status-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none text-sm font-medium bg-white cursor-pointer">
+      <select id="meta-status-input" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-blue-600 outline-none text-sm font-medium bg-white cursor-pointer">
           <option value="not_started">🔴 Not Started</option>
           <option value="in_progress">🟡 In Progress</option>
           <option value="review_ready">🟣 Ready for Review</option>
           <option value="approved">🟢 Approved</option>
       </select>
-
+      </div>
+      <div class="mb-4">
       <label class="block text-sm font-black text-amber-600 mb-1 flex items-center gap-1">💎 Premium Unlock Price (Gems)</label>
-      <input type="number" id="meta-price-input" placeholder="0 for Free" class="w-full border-2 border-amber-200 bg-amber-50 rounded px-3 py-2 mb-4 focus:border-amber-500 outline-none text-sm font-black text-amber-700 shadow-inner" />
-      
-      <div class="border-t border-slate-200 pt-4 mb-6">
+      <input type="number" id="meta-price-input" placeholder="0 for Free" class="w-full border-2 border-amber-200 bg-amber-50 rounded px-3 py-2 focus:border-amber-500 outline-none text-sm font-black text-amber-700 shadow-inner" />
+      </div>
+      <div class="mb-4">
           <label class="block text-sm font-bold text-slate-700 mb-1">Assign to (Collaborator)</label>
-          <select id="meta-assignee-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none text-sm font-medium bg-white cursor-pointer"></select>
-
+          <select id="meta-assignee-input" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-blue-600 outline-none text-sm font-medium bg-white cursor-pointer"></select>
+      </div>
+      <div class="md:col-span-2 mb-4">
           <label class="block text-sm font-black text-emerald-600 mb-1 flex items-center gap-1">💰 Incentive / Bounty (VND)</label>
           <input type="number" id="meta-incentive-input" placeholder="e.g. 20000" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded px-3 py-2 mb-2 focus:border-emerald-500 outline-none text-sm font-black text-emerald-700 shadow-inner" />
           <p class="text-[10px] text-slate-500">Earnings are credited when status is changed to "Approved".</p>
       </div>
 
-      <div class="flex justify-end gap-3">
+      <div class="md:col-span-2 flex justify-end gap-3 border-t border-slate-200 pt-4 mt-2">
         <button id="meta-cancel" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
         <button id="meta-confirm" class="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 font-bold shadow">Save Settings</button>
+      </div>
       </div>
     </div>
   </div>
@@ -1575,10 +2127,11 @@
         
         <!-- LEFT SIDE: Logo, Title & Streak -->
         <div class="flex items-center gap-6">
-            <h1 class="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3 drop-shadow-sm">
+            <button type="button" onclick="window.toggleAppSidebar('student')" class="app-sidebar-toggle w-10 h-10 items-center justify-center rounded-xl bg-white/10 text-white border border-white/20 text-xl" aria-label="Open navigation menu" aria-expanded="false" aria-controls="student-sidebar">☰</button>
+            <button type="button" onclick="window.goToAppHome('student')" class="text-left text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3 drop-shadow-sm" title="Go to Home">
                <div id="app-logo-student" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm overflow-hidden shrink-0">🎓</div>
                Student Portal
-            </h1>
+            </button>
             
             <!-- Streak is now here on the left -->
             <div id="streak-widget" class="hidden items-center gap-1.5 bg-rose-950/40 px-3 py-1.5 rounded-xl border border-rose-400/30 shadow-sm transition transform" title="Daily Login Streak">
@@ -1623,8 +2176,26 @@
       </header>
     </div>
 
+    <div id="student-sidebar-backdrop" class="app-sidebar-backdrop" onclick="window.closeAppSidebar('student')"></div>
+    <aside id="student-sidebar" class="app-sidebar" aria-label="Student navigation">
+      <div class="flex items-center justify-between gap-2 p-4 border-b border-slate-100">
+        <span class="sidebar-label text-xs font-black uppercase tracking-widest text-slate-400">Learning Menu</span>
+        <button type="button" class="app-sidebar-collapse text-slate-500 hover:text-blue-700 px-2 py-1 rounded-lg hover:bg-slate-100" onclick="window.toggleAppSidebar('student')" title="Collapse sidebar" aria-label="Collapse sidebar">⇤</button>
+        <button type="button" class="app-sidebar-toggle w-9 h-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" onclick="window.closeAppSidebar('student')" aria-label="Close navigation menu">✕</button>
+      </div>
+      <nav class="flex flex-col gap-1 p-3">
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label">Dashboard</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-history" onclick="window.navigateFromSidebar('student','student/history')"><span>📜</span><span class="sidebar-label">Learning History</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label">Flashcards</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-peer-review" onclick="window.navigateFromSidebar('student','student/peer-review')"><span>🤝</span><span class="sidebar-label">Peer Review</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-leaderboard" onclick="window.navigateFromSidebar('student','student/leaderboard')"><span>🏆</span><span class="sidebar-label">Leaderboard</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-forum" onclick="window.navigateFromSidebar('student','student/forum')"><span>💬</span><span class="sidebar-label">Class Forum</span></button>
+        <button type="button" class="app-sidebar-link" onclick="window.closeAppSidebar('student'); window.openStudentProfile()"><span>⚙️</span><span class="sidebar-label">Profile & Goals</span></button>
+      </nav>
+    </aside>
+
     <!-- Main Dashboard Container -->
-    <div class="max-w-[1400px] mx-auto -mt-20 relative z-20 px-4 lg:px-8 space-y-6 pb-20">
+    <div id="student-dashboard-content" class="max-w-[1400px] mx-auto -mt-20 relative z-20 px-4 lg:px-8 space-y-6 pb-20">
 
       <!-- TARGET GOALS WIDGET -->
       <div id="student-target-widget" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-blue-100 flex-col md:flex-row justify-between items-center gap-6 overflow-hidden relative">
@@ -1826,18 +2397,12 @@
       <!-- LEFT SECTION -->
       <div class="flex items-center gap-6 flex-1 relative z-10 min-w-0">
         <!-- Default State: Logo & Tabs -->
-        <div id="editor-default-header" class="flex items-center gap-8 w-full">
-            <h1 class="text-2xl font-black tracking-tight text-white flex items-center gap-2 drop-shadow-sm">
+        <div id="editor-default-header" class="flex items-center gap-4 w-full">
+            <button type="button" onclick="window.goToAppHome('teacher')" class="text-left text-2xl font-black tracking-tight text-white flex items-center gap-2 drop-shadow-sm" title="Go to Home">
                 <div id="app-logo-teacher" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm overflow-hidden shrink-0">🛠</div>
                 LMS <span class="font-light text-blue-200 text-lg">| Teacher</span>
-            </h1>
-            <div class="flex bg-blue-950/40 rounded-2xl p-1.5 shadow-inner space-x-1 border border-blue-400/20" id="editor-main-tabs">
-              <button onclick="toggleEditorTab('bank')" id="tab-btn-bank" class="px-4 py-2 bg-white text-blue-900 rounded-xl text-sm font-black shadow-sm transition">Dashboard</button>
-              <button onclick="toggleEditorTab('students')" id="tab-btn-students" class="px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition">Students</button>
-              <button onclick="toggleEditorTab('payments')" id="tab-btn-payments" class="px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition">Payments</button>
-              <button onclick="toggleEditorTab('timetable')" id="tab-btn-timetable" class="px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition">Timetable</button>
-              <button onclick="toggleEditorTab('landing')" id="tab-btn-landing" class="px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition">Landing Page</button>
-            </div>
+            </button>
+            <button type="button" class="app-sidebar-toggle w-10 h-10 items-center justify-center rounded-xl bg-white/10 text-white border border-white/20 text-xl" onclick="window.toggleAppSidebar('teacher')" aria-label="Open navigation menu" aria-expanded="false" aria-controls="editor-sidebar">☰</button>
         </div>
 
         <!-- Builder State: Back Button & Controls -->
@@ -1935,6 +2500,24 @@
       </div>
     </header>
 
+    <div id="editor-sidebar-backdrop" class="app-sidebar-backdrop" onclick="window.closeAppSidebar('teacher')"></div>
+    <aside id="editor-sidebar" class="app-sidebar" aria-label="Teacher navigation">
+      <div class="flex items-center justify-between gap-2 p-4 border-b border-slate-100">
+        <span class="sidebar-label text-xs font-black uppercase tracking-widest text-slate-400">Workspace</span>
+        <button type="button" class="app-sidebar-collapse text-slate-500 hover:text-blue-700 px-2 py-1 rounded-lg hover:bg-slate-100" onclick="window.toggleAppSidebar('teacher')" title="Collapse sidebar" aria-label="Collapse sidebar">⇤</button>
+        <button type="button" class="app-sidebar-toggle w-9 h-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" onclick="window.closeAppSidebar('teacher')" aria-label="Close navigation menu">✕</button>
+      </div>
+      <nav class="flex flex-col gap-1 p-3">
+        <button type="button" id="tab-btn-bank" class="app-sidebar-link is-active" data-sidebar-item="teacher-bank" onclick="window.navigateFromSidebar('teacher','teacher/bank/tests')"><span>📚</span><span class="sidebar-label">Test Bank</span></button>
+        <button type="button" id="sidebar-btn-classes" class="app-sidebar-link" data-sidebar-item="teacher-classes" onclick="window.navigateFromSidebar('teacher','teacher/bank/classes')"><span>👥</span><span class="sidebar-label">Classes & Subs</span></button>
+        <button type="button" id="tab-btn-students" class="app-sidebar-link" data-sidebar-item="teacher-students" onclick="window.navigateFromSidebar('teacher','teacher/students')"><span>🎓</span><span class="sidebar-label">Students</span></button>
+        <button type="button" id="tab-btn-payments" class="app-sidebar-link" data-sidebar-item="teacher-payments" onclick="window.navigateFromSidebar('teacher','teacher/payments')"><span>💳</span><span class="sidebar-label">Payments</span></button>
+        <button type="button" id="tab-btn-timetable" class="app-sidebar-link" data-sidebar-item="teacher-timetable" onclick="window.navigateFromSidebar('teacher','teacher/timetable')"><span>🗓️</span><span class="sidebar-label">Timetable</span></button>
+        <button type="button" id="tab-btn-landing" class="app-sidebar-link" data-sidebar-item="teacher-landing" onclick="window.navigateFromSidebar('teacher','teacher/landing')"><span>🌐</span><span class="sidebar-label">Landing Page</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="teacher-forum" onclick="window.navigateFromSidebar('teacher','teacher/forum')"><span>💬</span><span class="sidebar-label">Class Forum</span></button>
+      </nav>
+    </aside>
+
     <div id="editor-view-bank" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-7xl mx-auto pb-20">
         
@@ -1963,38 +2546,38 @@
               <p class="text-sm text-slate-500 font-medium mt-1">Manage and assign your cloud-synced materials</p>
             </div>
             
-            <div class="grid grid-cols-3 md:grid-cols-7 gap-3">
-                <button onclick="createNewTest('reading')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">📖</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Reading</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                <button onclick="createNewTest('reading')" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">📖</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Add Reading</span>
                 </button>
-                <button onclick="createNewTest('listening')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-sky-50 text-sky-700 hover:bg-sky-100 transition border border-sky-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">🎧</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Listening</span>
+                <button onclick="createNewTest('listening')" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-sky-50 text-sky-700 hover:bg-sky-100 transition border border-sky-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">🎧</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Add Listening</span>
                 </button>
-                <button onclick="createNewTest('writing')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">✍️</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Writing</span>
+                <button onclick="createNewTest('writing')" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">✍️</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Add Writing</span>
                 </button>
-                <button onclick="createNewTest('speaking')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-cyan-50 text-cyan-700 hover:bg-cyan-100 transition border border-cyan-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">🗣️</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Speaking</span>
+                <button onclick="createNewTest('speaking')" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-cyan-50 text-cyan-700 hover:bg-cyan-100 transition border border-cyan-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">🗣️</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Add Speaking</span>
                 </button>
-                <button onclick="createNewTest('activity')" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 transition border border-fuchsia-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">🎲</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Activity</span>
+                <button onclick="createNewTest('activity')" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100 transition border border-fuchsia-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">🎲</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Add Activity</span>
                 </button>
-                <button onclick="window.openBulkTestImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">📥</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Bulk<br>Tests</span>
+                <button onclick="window.openBulkTestImport()" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">📥</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Bulk Tests</span>
                 </button>
-                <button onclick="window.openRapidFullTestImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition border border-purple-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">🚀</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Rapid<br>Import</span>
+                <button onclick="window.openRapidFullTestImport()" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition border border-purple-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">🚀</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Rapid Import</span>
                 </button>
-                <button onclick="window.openTemplateManager()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition border border-amber-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">📝</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Manage<br>Templates</span>
+                <button onclick="window.openTemplateManager()" class="flex items-center justify-start gap-4 min-h-[76px] p-4 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition border border-amber-100 shadow-sm active:scale-95">
+                    <span class="text-2xl drop-shadow-sm shrink-0">📝</span>
+                    <span class="text-xs font-black uppercase tracking-wide text-left leading-tight">Manage Templates</span>
                 </button>
             </div>
           </div>
@@ -2044,10 +2627,8 @@
     </div>
 </div>
 
+            <div id="test-bank-pagination" class="flex flex-wrap justify-center items-center gap-2 mb-6"></div>
             <div id="test-bank-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 stagger-fade-in"></div>
-            
-            <!-- ✨ NEW: Pagination Container -->
-            <div id="test-bank-pagination" class="flex flex-wrap justify-center items-center gap-2 mt-8 pb-4"></div>
           </div>
 
         <div id="dash-view-classes" class="hidden flex-col gap-6 animate-fade-in-up">
@@ -2294,6 +2875,25 @@
                     <p class="text-sm text-slate-500 mt-1">This is what unregistered students see when they visit your link.</p>
                 </div>
                 <button onclick="window.savePublicProfile()" id="btn-save-pub" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold shadow-sm transition hover:-translate-y-0.5">Save Changes</button>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-50 space-y-5">
+                <div>
+                    <h3 class="text-lg font-black text-blue-900">App Opening Screen</h3>
+                    <p class="text-sm text-slate-500 mt-1">Customize the branding shown immediately while the app is starting. The logo below is shared across the opening screen, menus, and app pages.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Webapp Name</label>
+                    <input type="text" id="pp-app-name" class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold text-slate-800 outline-none focus:border-blue-500" placeholder="e.g. TOEIC With Chloe">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Opening Screen Title</label>
+                    <input type="text" id="pp-opening-title" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-800 outline-none focus:border-blue-500" placeholder="e.g. Welcome to our learning space">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Opening Screen Message</label>
+                    <textarea id="pp-opening-message" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 h-20 resize-none" placeholder="Optional welcome message shown during startup"></textarea>
+                </div>
             </div>
 
             <div class="bg-white p-8 rounded-2xl shadow-sm border border-blue-50 space-y-6">
@@ -3430,7 +4030,7 @@ window.initFirebaseSystem = async function() {
         root.querySelectorAll('[data-karaoke-index]').forEach((line, index) => line.classList.toggle('is-active', index === audio._karaokeLiveIndex));
         const activeLine = root.querySelector(`[data-karaoke-index="${audio._karaokeLiveIndex}"]`);
         if (activeLine && root._lastScrolledIndex !== audio._karaokeLiveIndex) {
-            activeLine.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            activeLine.scrollIntoView({ block: 'center', behavior: 'auto' });
             root._lastScrolledIndex = audio._karaokeLiveIndex;
         }
         audio._karaokeLiveLastTime = now;
@@ -3775,7 +4375,7 @@ window.initFirebaseSystem = async function() {
         if (activeIndex >= 0 && root._lastScrolledIndex !== activeIndex) {
             const line = root.querySelector(`[data-karaoke-index="${activeIndex}"]`);
             if (line) {
-                line.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                line.scrollIntoView({ block: 'center', behavior: 'auto' });
                 root._lastScrolledIndex = activeIndex;
             }
         }
@@ -3919,7 +4519,7 @@ window.initFirebaseSystem = async function() {
         if (activeIndex >= 0) {
             const line = root.querySelector(`[data-listening-index="${activeIndex}"]`);
             if (line && line.dataset.listeningScrolled !== 'true') {
-                line.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                line.scrollIntoView({ block: 'nearest', behavior: 'auto' });
                 line.dataset.listeningScrolled = 'true';
             }
         }
@@ -5042,6 +5642,7 @@ window.initFirebaseSystem = async function() {
     // --- GLOBAL BRANDING / LOGO SYSTEM ---
     window.applyGlobalLogo = function() {
         const logoUrl = PUBLIC_PROFILE.appLogo;
+        if (typeof window.applyStartupBranding === 'function') window.applyStartupBranding(PUBLIC_PROFILE);
         
         const stuLogo = document.getElementById('app-logo-student');
         if (stuLogo) stuLogo.innerHTML = logoUrl ? `<img src="${logoUrl}" class="w-full h-full object-cover">` : '🎓';
@@ -5276,7 +5877,7 @@ window.initFirebaseSystem = async function() {
 
         // Smart Scrolling: Keeps the word centered in the view
         if (idx % 8 === 0 || words[idx].getBoundingClientRect().bottom > window.innerHeight - 100) {
-            words[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            words[idx].scrollIntoView({ behavior: 'auto', block: 'center' });
         }
 
         window.skimmingState.index++;
@@ -5311,7 +5912,7 @@ window.initFirebaseSystem = async function() {
                 if(currentIdx > 0 && currentIdx < words.length) words[currentIdx-1].classList.remove('is-current');
                 
                 window.skimmingState.index = targetIdx;
-                words[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                words[targetIdx].scrollIntoView({ behavior: 'auto', block: 'center' });
             }
         } else { // Prev
             if (currentIdx === 0) return;
@@ -5333,7 +5934,7 @@ window.initFirebaseSystem = async function() {
             if(currentIdx>0 && currentIdx<=words.length) words[currentIdx-1].classList.remove('is-current');
             
             window.skimmingState.index = targetIdx;
-            words[targetIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            words[targetIdx].scrollIntoView({ behavior: 'auto', block: 'center' });
         }
     };
 
@@ -5738,7 +6339,15 @@ window.initFirebaseSystem = async function() {
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => { if (snap.exists()) BILLING_SETTINGS = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => { if (snap.exists()) AVAILABILITY = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => { PACKAGES = snap.docs.map(d => d.data()); if(currentUser?.role === 'teacher') renderStudentsList(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => { if (snap.exists()) PUBLIC_PROFILE = snap.data(); if(typeof window.applyGlobalLogo === 'function') window.applyGlobalLogo(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => {
+                        if (snap.exists()) PUBLIC_PROFILE = snap.data();
+                        if (typeof window.cacheStartupBranding === 'function') window.cacheStartupBranding(PUBLIC_PROFILE);
+                        if (typeof window.applyGlobalLogo === 'function') window.applyGlobalLogo();
+                        if (document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
+                        resolve();
+                    });
+                }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => { HOF_STUDENTS = snap.docs.map(d => d.data()); if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => { if (snap.exists()) TEACHER_TEMPLATES = snap.data().items || []; resolve(); }); })
             ]);
@@ -6528,6 +7137,7 @@ window.initFirebaseSystem = async function() {
 
     window.toggleDashboardView = function(view) {
       sessionStorage.setItem('lms_dash_view', view);
+      setSidebarRoute('teacher', `teacher/bank/${view}`);
       const testsView = document.getElementById('dash-view-tests');
       const classesView = document.getElementById('dash-view-classes');
       const btnTests = document.getElementById('dash-btn-tests');
@@ -6565,7 +7175,8 @@ window.initFirebaseSystem = async function() {
           document.getElementById('editor-notifications-menu')?.classList.add('hidden');
           document.getElementById('btn-assign-builder')?.classList.add('hidden');
           
-          document.querySelector('#editor-default-header h1').innerHTML = `
+          const editorBrand = document.querySelector('#editor-default-header > button:first-child');
+          if (editorBrand) editorBrand.innerHTML = `
               <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🤝</div>
               LMS <span class="font-light text-blue-200 text-lg">| Collab</span>
           `;
@@ -6614,6 +7225,8 @@ window.initFirebaseSystem = async function() {
 
     function toggleEditorTab(tab) {
       sessionStorage.setItem('lms_teacher_tab', tab);
+      const editorRoot = document.getElementById('editor-ui');
+      if (editorRoot) editorRoot.classList.toggle('sidebar-focus', tab === 'builder');
       if (routerReady && !appRouterApplying && currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
           const view = tab === 'bank' ? (sessionStorage.getItem('lms_dash_view') || 'tests') : '';
           window.navigateAppRoute(`teacher/${tab}${view ? `/${view}` : ''}`);
@@ -6625,7 +7238,7 @@ window.initFirebaseSystem = async function() {
       });
       ['bank', 'classes', 'students', 'payments', 'timetable', 'landing'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
-        if(b) b.className = t===tab ? 'px-4 py-2 bg-white text-blue-900 rounded-xl text-sm font-black shadow-sm transition' : 'px-4 py-2 text-blue-100 hover:text-white hover:bg-white/10 rounded-xl text-sm font-bold transition';
+        if(b) b.className = `app-sidebar-link${t === tab ? ' is-active' : ''}`;
       });
 
       if (tab === 'builder') {
@@ -6706,10 +7319,11 @@ window.initFirebaseSystem = async function() {
     const TESTS_PER_PAGE = 16;
 
     window.changeTestBankPage = function(page) {
-        currentTestBankPage = page;
+        const bankView = document.getElementById('editor-view-bank');
+        const scrollTop = bankView?.scrollTop || 0;
+        currentTestBankPage = Math.max(1, Number(page) || 1);
         renderTestBank(false);
-        // Smooth scroll back to the top of the test bank when changing pages
-        document.getElementById('editor-view-bank').scrollTo({ top: 0, behavior: 'smooth' });
+        if (bankView) bankView.scrollTop = scrollTop;
     };
 
     function renderTestBank(resetPage = false) {
@@ -9680,7 +10294,7 @@ window.initFirebaseSystem = async function() {
       setTimeout(() => {
           const qList = document.getElementById('editor-questions-list');
           if (qList && qList.lastElementChild) {
-              qList.lastElementChild.scrollIntoView({behavior: "smooth", block: "center"});
+              qList.lastElementChild.scrollIntoView({behavior: "auto", block: "center"});
           }
       }, 100);
     }
@@ -9727,7 +10341,7 @@ window.initFirebaseSystem = async function() {
         // Auto-scroll
         setTimeout(() => {
             const block = document.getElementById(`q-block-${idx + 1}`);
-            if (block) block.scrollIntoView({behavior: "smooth", block: "center"});
+            if (block) block.scrollIntoView({behavior: "auto", block: "center"});
         }, 100);
     };
     
@@ -10638,6 +11252,9 @@ window.initFirebaseSystem = async function() {
     };
 
     window.populateLandingPageEditor = function() {
+        document.getElementById('pp-app-name').value = PUBLIC_PROFILE.appName || '';
+        document.getElementById('pp-opening-title').value = PUBLIC_PROFILE.openingTitle || '';
+        document.getElementById('pp-opening-message').value = PUBLIC_PROFILE.openingMessage || '';
         document.getElementById('pp-title').value = PUBLIC_PROFILE.missionTitle || '';
         document.getElementById('pp-mission').value = PUBLIC_PROFILE.missionText || '';
         
@@ -10899,6 +11516,10 @@ window.initFirebaseSystem = async function() {
         btn.textContent = 'Saving...'; btn.disabled = true;
 
         PUBLIC_PROFILE = {
+            ...PUBLIC_PROFILE,
+            appName: document.getElementById('pp-app-name').value.trim(),
+            openingTitle: document.getElementById('pp-opening-title').value.trim(),
+            openingMessage: document.getElementById('pp-opening-message').value.trim(),
             missionTitle: document.getElementById('pp-title').value.trim(),
             missionText: document.getElementById('pp-mission').value.trim(),
             heroImage: window.tempPPHero,
@@ -10927,6 +11548,9 @@ window.initFirebaseSystem = async function() {
         try {
             // 1. Save Landing Page Details
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), PUBLIC_PROFILE);
+            window.cacheStartupBranding(PUBLIC_PROFILE);
+            window.applyGlobalLogo();
+            window.renderPublicProfile();
             
             // 2. ✨ NEW: Save Hall of Fame safely to their own individual database files!
             const currentIds = window.tempPPHallOfFame.map(h => h.id);
@@ -12750,8 +13374,80 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       return { section: 'dashboard', role: 'student' };
     }
 
+    window.toggleAppSidebar = function(role) {
+      const root = document.getElementById(role === 'teacher' ? 'editor-ui' : 'start-screen');
+      const sidebar = document.getElementById(role === 'teacher' ? 'editor-sidebar' : 'student-sidebar');
+      const backdrop = document.getElementById(role === 'teacher' ? 'editor-sidebar-backdrop' : 'student-sidebar-backdrop');
+      const toggle = root?.querySelector('.app-sidebar-toggle');
+      if (!root || !sidebar || !backdrop) return;
+
+      if (window.matchMedia('(max-width: 1024px)').matches) {
+        const open = !sidebar.classList.contains('is-open');
+        sidebar.classList.toggle('is-open', open);
+        backdrop.classList.toggle('is-open', open);
+        if (toggle) toggle.setAttribute('aria-expanded', String(open));
+      } else {
+        const collapsed = root.classList.toggle('sidebar-collapsed');
+        const collapseButton = root.querySelector('.app-sidebar-collapse');
+        if (collapseButton) {
+          collapseButton.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+          collapseButton.setAttribute('aria-label', collapseButton.title);
+        }
+      }
+    };
+
+    window.closeAppSidebar = function(role) {
+      const root = document.getElementById(role === 'teacher' ? 'editor-ui' : 'start-screen');
+      const sidebar = document.getElementById(role === 'teacher' ? 'editor-sidebar' : 'student-sidebar');
+      const backdrop = document.getElementById(role === 'teacher' ? 'editor-sidebar-backdrop' : 'student-sidebar-backdrop');
+      sidebar?.classList.remove('is-open');
+      backdrop?.classList.remove('is-open');
+      root?.querySelector('.app-sidebar-toggle')?.setAttribute('aria-expanded', 'false');
+    };
+
+    function setSidebarRoute(role, path) {
+      const routeParts = path.replace(/^#?\/?/, '').split('/');
+      let item;
+      if (role === 'teacher') {
+        item = routeParts[1] === 'bank'
+          ? (routeParts[2] === 'classes' ? 'teacher-classes' : 'teacher-bank')
+          : `teacher-${routeParts[1]}`;
+      } else {
+        const section = routeParts[1] === 'review' ? 'history' : (routeParts[1] || 'dashboard');
+        item = `student-${section}`;
+      }
+      document.querySelectorAll(`#${role === 'teacher' ? 'editor-sidebar' : 'student-sidebar'} [data-sidebar-item]`).forEach(button => {
+        button.classList.toggle('is-active', button.dataset.sidebarItem === item);
+      });
+    }
+
+    window.navigateFromSidebar = function(role, path) {
+      window.navigateAppRoute(path);
+      setSidebarRoute(role, path);
+      window.closeAppSidebar(role);
+    };
+
+    window.goToAppHome = function(role) {
+      if (!currentUser) {
+        window.navigateAppRoute('landing');
+        return;
+      }
+      const isTeacher = role === 'teacher' || ['teacher', 'collaborator'].includes(currentUser?.role);
+      const targetRole = isTeacher ? 'teacher' : 'student';
+      const path = isTeacher ? 'teacher/bank/tests' : 'student/dashboard';
+      window.navigateAppRoute(path);
+      setSidebarRoute(targetRole, path);
+      window.closeAppSidebar(targetRole);
+      const view = document.getElementById(isTeacher ? 'editor-view-bank' : 'start-screen');
+      if (view) view.scrollTop = 0;
+    };
+
     function applyAppRoute(route = normalizeAppRoute()) {
       if (route.section === 'test' || !route) return;
+      if (route.role && ['student', 'teacher'].includes(route.role)) {
+        setSidebarRoute(route.role, window.location.hash);
+        window.closeAppSidebar(route.role);
+      }
       appRouterApplying = true;
       try {
         const publicLanding = document.getElementById('public-landing-ui');
@@ -14636,7 +15332,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
         }
         if (!exactHighlight) target.classList.add('locate-match');
-        target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        target.scrollIntoView({ block: 'center', behavior: 'auto' });
 
         if (APP_DATA.module === 'listening') {
             const cueIndex = Number(target.dataset.karaokeIndex ?? target.dataset.listeningIndex);
