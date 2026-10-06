@@ -2021,6 +2021,17 @@
                   </div>
               </div>
 
+              <div class="bg-indigo-50 p-5 rounded-xl border border-indigo-200 shadow-sm space-y-3">
+                  <h3 class="text-sm font-black text-indigo-800 uppercase tracking-widest border-b border-indigo-200 pb-2">Refer a Student</h3>
+                  <p class="text-xs text-indigo-700">Each successful referral gives you and the new student 10% off one future payment.</p>
+                  <div class="flex gap-2">
+                      <input id="profile-referral-code" readonly class="min-w-0 flex-1 border border-indigo-200 bg-white p-2.5 rounded-lg font-black text-indigo-900 tracking-widest">
+                      <button type="button" onclick="window.copyReferralCode()" class="px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-sm">Copy</button>
+                  </div>
+                  <p id="profile-referral-credits" class="text-xs font-bold text-indigo-700"></p>
+                  <button id="profile-renewal-button" type="button" onclick="window.openStudentRenewal()" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg py-2.5 font-bold text-sm">Pay tuition / renew lessons</button>
+              </div>
+
               <!-- Account Security Section -->
               <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 mt-4">
                   <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b pb-2">App Settings & Security</h3>
@@ -2744,6 +2755,13 @@
         <!-- Payments Management -->
         <div id="editor-view-payments" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
           <div class="max-w-6xl mx-auto">
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-6">
+                <div class="p-6 border-b border-slate-100">
+                    <h3 class="text-xl font-black text-blue-950">🎓 Student Access & Payment Status</h3>
+                    <p class="text-sm text-slate-500 mt-1">Review each student's paid plan, access expiry, and pending payment request.</p>
+                </div>
+                <div id="payment-access-list" class="overflow-x-auto"></div>
+            </div>
             
             <!-- REVENUE ANALYTICS CHART -->
             <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-blue-50 mb-6">
@@ -3612,7 +3630,7 @@ window.initFirebaseSystem = async function() {
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
     let HOF_STUDENTS = []; // ✨ NEW: Dedicated Collection for Hall of Fame
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
-    let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 20 };
+    let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
 
@@ -6341,7 +6359,7 @@ window.initFirebaseSystem = async function() {
             // 2. Attach PUBLIC real-time listeners (Safe data everyone needs to see)
             await Promise.all([
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), snap => { TEST_BANK = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => { CLASSES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }),
+                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => { CLASSES = snap.docs.map(d => d.data()); if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners(); if (currentUser?.role === 'student' && window.refreshStudentPresenceListeners) window.refreshStudentPresenceListeners(); window.triggerUIRefresh(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => { if (snap.exists()) BILLING_SETTINGS = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => { if (snap.exists()) AVAILABILITY = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => { PACKAGES = snap.docs.map(d => d.data()); if(currentUser?.role === 'teacher') renderStudentsList(); resolve(); }); }),
@@ -6380,6 +6398,11 @@ window.initFirebaseSystem = async function() {
 
     window.attachPrivateListeners = async function() {
         const promises = [];
+
+        if (currentUser?.isDemo) {
+            prepareDemoSession(currentUser);
+            return;
+        }
         
         if (currentUser.role === 'teacher') {
             promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => { USERS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
@@ -6496,26 +6519,144 @@ window.initFirebaseSystem = async function() {
             const attQ = window.fsQuery(window.fsCollection(window.db, window.fPath('attendance')), window.fsWhere('student', '==', currentUser.user));
             promises.push(new Promise(resolve => { window.fsOnSnapshot(attQ, snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
 
-            const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
+            const myClasses = CLASSES.filter(c => !window.isTemplateClass(c) && (c.enrolledStudents || []).includes(currentUser.user));
             const myClassNames = [...new Set(myClasses.map(c => c.name).filter(Boolean))];
             const myClassIds = myClasses.map(c => c.id);
 
-            if (myClassNames.length > 0) {
-                const safeClassIds = myClassIds.slice(0, 10);
-
+            const safeClassIds = myClassIds.slice(0, 10);
+            let resolveInitialScheduleLoad;
+            const initialScheduleLoad = new Promise(resolve => { resolveInitialScheduleLoad = resolve; });
+            promises.push(initialScheduleLoad);
+            let initialScheduleBatchesRemaining = 0;
+            let initialScheduleLoadResolved = false;
+            let scheduleListenerGeneration = 0;
+            window.studentScheduleUnsubscribes = window.studentScheduleUnsubscribes || [];
+            window.refreshStudentScheduleListeners = function() {
+                const generation = ++scheduleListenerGeneration;
+                window.studentScheduleUnsubscribes.forEach(unsubscribe => unsubscribe());
+                window.studentScheduleUnsubscribes = [];
+                const enrolledClasses = CLASSES.filter(c => !window.isTemplateClass(c) && (c.enrolledStudents || []).includes(currentUser.user));
+                const enrolledNames = [...new Set(enrolledClasses.map(c => c.name).filter(Boolean))];
                 const scheduleBatches = [];
-                for (let i = 0; i < myClassNames.length; i += 10) {
-                    const classNameBatch = myClassNames.slice(i, i + 10);
-                    const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('className', 'in', classNameBatch));
-                    promises.push(new Promise(resolve => {
-                        window.fsOnSnapshot(schedQ, snap => {
-                            scheduleBatches[i / 10] = snap.docs.map(d => d.data());
-                            SCHEDULES = scheduleBatches.flat();
-                            window.triggerUIRefresh();
-                            resolve();
-                        });
-                    }));
+                const batchCount = Math.ceil(enrolledNames.length / 10);
+                initialScheduleBatchesRemaining = batchCount;
+                if (!batchCount) {
+                    SCHEDULES = [];
+                    if (!initialScheduleLoadResolved) {
+                        initialScheduleLoadResolved = true;
+                        resolveInitialScheduleLoad();
+                    }
+                    window.triggerUIRefresh();
+                    return;
                 }
+
+                for (let i = 0; i < enrolledNames.length; i += 10) {
+                    const batchIndex = i / 10;
+                    const classNameBatch = enrolledNames.slice(i, i + 10);
+                    const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('className', 'in', classNameBatch));
+                    let isFirstSnapshot = true;
+                    const unsubscribe = window.fsOnSnapshot(schedQ, snap => {
+                        if (generation !== scheduleListenerGeneration) return;
+                        scheduleBatches[batchIndex] = snap.docs.map(d => d.data());
+                        SCHEDULES = scheduleBatches.flat();
+                        window.triggerUIRefresh();
+                        if (isFirstSnapshot) {
+                            isFirstSnapshot = false;
+                            initialScheduleBatchesRemaining--;
+                            if (!initialScheduleLoadResolved && initialScheduleBatchesRemaining === 0) {
+                                initialScheduleLoadResolved = true;
+                                resolveInitialScheduleLoad();
+                            }
+                        }
+                    });
+                    if (typeof unsubscribe === 'function') window.studentScheduleUnsubscribes.push(unsubscribe);
+                }
+            };
+            window.refreshStudentScheduleListeners();
+
+            window.studentPresenceUnsubscribes = window.studentPresenceUnsubscribes || [];
+            window.classPresenceByClass = window.classPresenceByClass || {};
+            let presenceListenerGeneration = 0;
+            let lastPresenceWriteAt = 0;
+            let presenceWriteInFlight = false;
+            window.refreshStudentPresenceListeners = function() {
+                const generation = ++presenceListenerGeneration;
+                window.studentPresenceUnsubscribes.forEach(unsubscribe => unsubscribe());
+                window.studentPresenceUnsubscribes = [];
+                window.classPresenceByClass = {};
+                const enrolledClasses = CLASSES.filter(cls => !window.isTemplateClass(cls) && (cls.enrolledStudents || []).includes(currentUser.user));
+                const classIds = [...new Set(enrolledClasses.map(cls => cls.id).filter(Boolean))];
+                if (!classIds.length) {
+                    window.triggerUIRefresh();
+                    return;
+                }
+                for (let index = 0; index < classIds.length; index += 10) {
+                    const classIdBatch = classIds.slice(index, index + 10);
+                    const presenceQuery = window.fsQuery(
+                        window.fsCollection(window.db, window.fPath('class_presence')),
+                        window.fsWhere('classId', 'in', classIdBatch)
+                    );
+                    const unsubscribe = window.fsOnSnapshot(presenceQuery, snap => {
+                        if (generation !== presenceListenerGeneration) return;
+                        classIdBatch.forEach(classId => { window.classPresenceByClass[classId] = {}; });
+                        snap.docs.forEach(docSnap => {
+                            const presence = docSnap.data();
+                            if (!classIdBatch.includes(presence.classId) || !presence.student) return;
+                            window.classPresenceByClass[presence.classId][presence.student] = presence;
+                        });
+                        window.triggerUIRefresh();
+                    }, error => {
+                        if (generation !== presenceListenerGeneration) return;
+                        console.error('Unable to load mini-class presence:', error);
+                        if (!window.studentPresencePermissionWarningShown) {
+                            window.studentPresencePermissionWarningShown = true;
+                            if (typeof window.showToast === 'function') window.showToast('Classmate status unavailable', 'Firestore rules must allow enrolled classmates to read class_presence records.', 'error');
+                        }
+                    });
+                    if (typeof unsubscribe === 'function') window.studentPresenceUnsubscribes.push(unsubscribe);
+                }
+            };
+
+            window.writeStudentPresence = async function(isOnline = true, force = false) {
+                if (!currentUser || currentUser.role !== 'student' || presenceWriteInFlight) return;
+                const now = Date.now();
+                if (!force && now - lastPresenceWriteAt < 45000) return;
+                presenceWriteInFlight = true;
+                lastPresenceWriteAt = now;
+                const enrolledClasses = CLASSES.filter(cls => !window.isTemplateClass(cls) && (cls.enrolledStudents || []).includes(currentUser.user));
+                try {
+                    await Promise.all(enrolledClasses.map(cls => {
+                        const presenceId = encodeURIComponent(`${cls.id}_${currentUser.user}`);
+                        return window.fsSetDoc(
+                            window.fsDoc(window.db, window.fPath('class_presence'), presenceId),
+                            { classId: cls.id, student: currentUser.user, isOnline, lastActiveAt: now }
+                        );
+                    }));
+                } catch (error) {
+                    console.error('Unable to update mini-class presence:', error);
+                    if (!window.studentPresencePermissionWarningShown) {
+                        window.studentPresencePermissionWarningShown = true;
+                        if (typeof window.showToast === 'function') window.showToast('Classmate status unavailable', 'Firestore rules must allow students to update their own class_presence records.', 'error');
+                    }
+                } finally {
+                    presenceWriteInFlight = false;
+                }
+            };
+
+            window.refreshStudentPresenceListeners();
+            window.writeStudentPresence(true, true);
+            if (!window.studentPresenceHeartbeat) {
+                window.studentPresenceHeartbeat = setInterval(() => {
+                    if (document.visibilityState === 'visible') window.writeStudentPresence(true);
+                }, 45000);
+                document.addEventListener('visibilitychange', () => {
+                    window.writeStudentPresence(document.visibilityState === 'visible', true);
+                });
+                window.addEventListener('pagehide', () => window.writeStudentPresence(false, true));
+                window.addEventListener('focus', () => window.writeStudentPresence(true));
+            }
+
+            if (myClassNames.length > 0) {
                 
                 // STUDENT FORUM LISTENER WITH NATIVE OS NOTIFICATIONS
                 const msgQ = window.fsQuery(window.fsCollection(window.db, window.fPath('messages')), window.fsWhere('classId', 'in', safeClassIds));
@@ -6538,7 +6679,6 @@ window.initFirebaseSystem = async function() {
                     }); 
                 }));
             } else {
-                SCHEDULES = [];
                 CHAT_MESSAGES = [];
             }
             
@@ -6631,34 +6771,9 @@ window.initFirebaseSystem = async function() {
         });
 
         try {
-            // 1. Fetch or create 'student' account directly
-            let demoUser = USERS.find(u => u.user === 'student');
-            if (!demoUser) {
-                const docSnap = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), 'student'));
-                if (docSnap.exists()) demoUser = docSnap.data();
-                else demoUser = { user: 'student', pass: '123', role: 'student', isPaid: true, paymentStatus: 'paid', createdAt: new Date().toLocaleDateString() };
-            }
-            
-            // Force unlock status so they don't hit the payment wall
-            demoUser.isPaid = true;
-            demoUser.paymentStatus = 'paid';
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), 'student'), demoUser);
-
-            // 2. Automatically enroll in a class so materials show up
-            if (CLASSES.length > 0) {
-                let targetClass = CLASSES.find(c => c.name.toLowerCase().includes('demo')) || CLASSES[0];
-                if (!targetClass.enrolledStudents) targetClass.enrolledStudents = [];
-                if (!targetClass.enrolledStudents.includes('student')) {
-                    targetClass.enrolledStudents.push('student');
-                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), targetClass.id), targetClass);
-                }
-            }
-
-            // 3. ✨ BYPASS LOGIN: Inject session instantly!
-            currentUser = demoUser;
+            prepareDemoSession();
             sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
             
-            // Load private data and teleport directly to the dashboard
             await window.attachPrivateListeners();
             checkAuth();
             
@@ -6668,7 +6783,7 @@ window.initFirebaseSystem = async function() {
                 b.disabled = false; 
             });
             
-            if (typeof window.showToast === 'function') window.showToast("Demo Active", "Welcome to the Student Portal!");
+            if (typeof window.showToast === 'function') window.showToast("Demo Active", "Welcome! Demo changes are temporary and won't be saved.");
             
         } catch (e) {
             console.error("Demo Setup Error:", e);
@@ -6701,6 +6816,76 @@ window.initFirebaseSystem = async function() {
       if(toggleBtn) toggleBtn.textContent = authMode === 'login' ? 'Need a student account? Sign up' : 'Already have an account? Log in';
       
       document.getElementById('auth-error').classList.add('hidden');
+    }
+
+    async function ensureStudentReferralIdentity(user) {
+      if (!user || user.role !== 'student') return user;
+
+      let code = String(user.referralCode || '').trim().toUpperCase();
+      for (let attempt = 0; attempt < 5; attempt++) {
+        if (!code) {
+          const bytes = new Uint8Array(8);
+          if (window.crypto?.getRandomValues) window.crypto.getRandomValues(bytes);
+          else for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+          code = `LMS${Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+        }
+
+        const codeRef = window.fsDoc(window.db, window.fPath('referral_codes'), code);
+        const existing = await window.fsGetDoc(codeRef);
+        if (!existing.exists() || existing.data().user === user.user) {
+          user.referralCode = code;
+          await window.fsSetDoc(codeRef, { user: user.user, code });
+          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), user.user), user);
+          return user;
+        }
+        code = '';
+      }
+      throw new Error('Could not allocate a unique referral code.');
+    }
+
+    function prepareDemoSession(user = currentUser) {
+      const demoUser = {
+        ...(user?.isDemo ? user : {}),
+        user: 'demo_student',
+        role: 'student',
+        isPaid: true,
+        paymentStatus: 'paid',
+        billingAccessOverride: true,
+        isDemo: true
+      };
+      let demoClass = CLASSES.find(cls => cls.name?.toLowerCase().includes('demo') && !window.isTemplateClass(cls))
+        || CLASSES.find(cls => window.isSchedulableClass(cls))
+        || CLASSES.find(cls => !window.isTemplateClass(cls));
+
+      if (!demoClass) {
+        demoClass = {
+          id: 'demo-local',
+          name: 'Demo Class',
+          assignedTests: TEST_BANK.map(test => test.id),
+          enrolledStudents: [],
+          learningPaths: TEST_BANK.map((test, index) => ({
+            id: `demo-week-${index + 1}`,
+            title: `Practice ${index + 1}`,
+            items: [{ title: test.title, testId: test.id }]
+          }))
+        };
+        CLASSES.push(demoClass);
+      }
+      demoClass.enrolledStudents = [...new Set([...(demoClass.enrolledStudents || []), demoUser.user])];
+
+      currentUser = demoUser;
+      USERS = [demoUser];
+      try {
+        const savedSubmissions = JSON.parse(sessionStorage.getItem('demo_submissions') || '[]');
+        SUBMISSIONS = Array.isArray(savedSubmissions) ? savedSubmissions : [];
+      } catch (error) {
+        console.error('Unable to restore demo submissions:', error);
+        SUBMISSIONS = [];
+      }
+      ATTENDANCE = [];
+      SCHEDULES = [];
+      CHAT_MESSAGES = [];
+      return demoUser;
     }
 
     async function handleAuthSubmit() {
@@ -6759,6 +6944,8 @@ window.initFirebaseSystem = async function() {
             
             currentUser = userDoc.data();
           }
+
+          if (currentUser.role === 'student') currentUser = await ensureStudentReferralIdentity(currentUser);
           
           sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
           
@@ -6814,6 +7001,8 @@ window.initFirebaseSystem = async function() {
                 };
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
             }
+
+            currentUser = await ensureStudentReferralIdentity(currentUser);
             
             sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
             await window.attachPrivateListeners();
@@ -7051,7 +7240,7 @@ window.initFirebaseSystem = async function() {
         // ✨ NEW: Update Teacher Dashboard Quick Stats Widgets
         const statsContainer = document.getElementById('teacher-quick-stats');
         if (statsContainer) {
-            const activeStudents = USERS.filter(u => u.role === 'student' && u.isPaid).length;
+            const activeStudents = USERS.filter(u => u.role === 'student' && hasActiveStudentAccess(u)).length;
             const d = new Date();
             const localToday = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
             const classesToday = SCHEDULES.filter(s => s.date === localToday).length;
@@ -7483,7 +7672,7 @@ window.initFirebaseSystem = async function() {
 
         // Populate the class dropdown dynamically based on available classes
         const classSelect = document.getElementById('assign-class-select');
-        classSelect.innerHTML = CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        classSelect.innerHTML = CLASSES.map(c => `<option value="${c.id}">${getClassParent(c) ? `Small class · ${c.name}` : c.name}</option>`).join('');
 
         // Reset the form back to sensible defaults upon opening
         document.getElementById('assign-attempts').value = 'unlimited';
@@ -7516,11 +7705,16 @@ window.initFirebaseSystem = async function() {
         const btn = document.getElementById('btn-confirm-assign');
         btn.textContent = "Assigning..."; btn.disabled = true;
 
-        if (!cls.assignedTests) cls.assignedTests = [];
-        
-        // Only push to array if it hasn't been assigned yet
-        if (!cls.assignedTests.includes(tid)) {
-            cls.assignedTests.push(tid);
+        const parent = getClassParent(cls);
+        if (parent && !getClassAssignedTests(cls).includes(tid)) {
+            showModalMsg("Material Not Inherited", `Assign this test to the parent class "${parent.name}" first, then set this small class's deadline.`);
+            btn.textContent = "Assign"; btn.disabled = false;
+            return;
+        }
+
+        if (!parent) {
+            if (!cls.assignedTests) cls.assignedTests = [];
+            if (!cls.assignedTests.includes(tid)) cls.assignedTests.push(tid);
         }
 
         // Store the configuration settings inside the class object
@@ -7930,15 +8124,15 @@ window.initFirebaseSystem = async function() {
       
       document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
-        const assigned = cls.assignedTests || [];
+        const assigned = getClassAssignedTests(cls);
         const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
-        const isPathEnabled = cls.learningPathEnabled !== false;
+        const isPathEnabled = (getClassParent(cls) || cls).learningPathEnabled !== false;
         
         const isOwner = currentUser.role === 'teacher';
                 // --- NEW: MINI-CLASS TEACHER DASHBOARD LOGIC (GROUPED) ---
         let progressBoardHtml = '';
         if (enrolled.length > 0) {
-            const requiredTestIds = cls.assignedTests || [];
+            const requiredTestIds = getClassAssignedTests(cls);
             const miniClassesMap = cls.miniClasses || {};
             
             let studentStats = enrolled.map(student => {
@@ -8025,17 +8219,21 @@ window.initFirebaseSystem = async function() {
         }
         // -----------------------------------------------------
 
+        const parentClass = getClassParent(cls);
+        const childClasses = CLASSES.filter(candidate => candidate.parentClassId === cls.id);
         const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center justify-end w-full gap-3">
+                    ${!cls.parentClassId ? `<button onclick="window.promptCreateChildClass('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shadow-sm">+ Create Small Class</button>` : ''}
+                    ${parentClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100">Small class · ${parentClass.name}</span>` : childClasses.length ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-100">Material template · ${childClasses.length} small class${childClasses.length === 1 ? '' : 'es'}</span>` : ''}
                     <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none">
                         <label class="text-[10px] font-black text-rose-500 uppercase tracking-widest whitespace-nowrap">Meet Link:</label>
                         <input type="text" onchange="window.updateClassMeetLink('${cls.id}', this.value)" value="${cls.meetLink || ''}" placeholder="https://meet.google.com/..." class="w-full md:w-36 text-sm text-slate-600 font-bold outline-none bg-transparent border-none p-0 focus:ring-0">
                     </div>
-                    <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none">
+                    ${parentClass ? `<span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-100">Base fee inherited · ${formatVND(getClassBaseFee(cls))}/lesson</span>` : `<div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none">
                         <label class="text-[10px] font-black text-blue-500 uppercase tracking-widest whitespace-nowrap">Fee/Lesson:</label>
                         <input type="number" onchange="window.updateClassFee('${cls.id}', this.value)" value="${cls.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000}" class="w-full md:w-24 text-sm text-emerald-600 font-black outline-none text-right bg-transparent border-none p-0 focus:ring-0">
-                    </div>
-                    <button onclick="window.toggleClassLearningPath('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${isPathEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Enable sequential material locking">${isPathEnabled ? 'Learning Path: On' : 'Learning Path: Off'}</button>                    <button onclick="window.toggleClassBooking('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${cls.allowBooking ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Allow students to manually book lessons from your availability schedule">${cls.allowBooking ? 'Booking: Allowed' : 'Booking: Off'}</button>
+                    </div>`}
+                    ${parentClass ? '' : `<button onclick="window.toggleClassLearningPath('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${isPathEnabled ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Enable sequential material locking">${isPathEnabled ? 'Learning Path: On' : 'Learning Path: Off'}</button>`}                    ${window.isTemplateClass(cls) ? '' : `<button onclick="window.toggleClassBooking('${cls.id}')" class="flex-1 md:flex-none text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 transition ${cls.allowBooking ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 shadow-sm'}" title="Allow students to manually book lessons from your availability schedule">${cls.allowBooking ? 'Booking: Allowed' : 'Booking: Off'}</button>`}
                     <button onclick="deleteClass('${cls.id}')" class="flex-1 md:flex-none text-rose-500 hover:text-white bg-white hover:bg-rose-500 border border-slate-200 hover:border-rose-500 rounded-xl font-bold text-xs px-4 py-2.5 transition shadow-sm shrink-0 uppercase tracking-widest">Delete</button>
                 </div>
         ` : '';
@@ -8235,6 +8433,7 @@ window.initFirebaseSystem = async function() {
 
     window.updateClassFee = async function(cid, fee) {
         const cls = CLASSES.find(c => c.id === cid);
+        if (getClassParent(cls)) return;
         if(cls) {
             cls.feePerLesson = Number(fee);
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
@@ -8252,6 +8451,10 @@ window.initFirebaseSystem = async function() {
     window.toggleClassBooking = async function(cid) {
       const cls = CLASSES.find(c => c.id === cid);
       if (!cls) return;
+      if (window.isTemplateClass(cls)) {
+        showModalMsg("Small Class Required", "Manual booking must be enabled on a small class.");
+        return;
+      }
       cls.allowBooking = cls.allowBooking ? false : true;
       await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
       renderClasses();
@@ -8276,6 +8479,104 @@ window.initFirebaseSystem = async function() {
         renderClasses(); 
       }); 
     }
+
+    window.promptCreateChildClass = function(parentId) {
+      const parent = CLASSES.find(cls => cls.id === parentId);
+      if (!parent) return;
+
+      showInputPrompt("Create Small Class", `Name for the small class using "${parent.name}" materials:`, async name => {
+        const childName = String(name || '').trim();
+        if (!childName) return;
+        if (CLASSES.some(cls => cls.name.toLowerCase() === childName.toLowerCase())) {
+          showModalMsg("Duplicate Class", "A class with this name already exists.");
+          return;
+        }
+
+        const isFirstChild = !CLASSES.some(cls => cls.parentClassId === parent.id);
+        const studentsToMove = isFirstChild ? [...(parent.enrolledStudents || [])] : [];
+        const originalParent = JSON.parse(JSON.stringify(parent));
+        const child = {
+          id: 'c_' + Date.now(),
+          name: childName,
+          parentClassId: parent.id,
+          assignedTests: [],
+          learningPaths: [],
+          testSettings: isFirstChild ? JSON.parse(JSON.stringify(parent.testSettings || {})) : {},
+          enrolledStudents: studentsToMove,
+          feePerLesson: parent.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000,
+          meetLink: parent.meetLink || '',
+          learningPathEnabled: parent.learningPathEnabled !== false,
+          allowBooking: false,
+          owner: parent.owner || currentUser.user,
+          collaborators: [...(parent.collaborators || [])]
+        };
+
+        const schedulesToMove = isFirstChild ? SCHEDULES.filter(schedule => window.scheduleBelongsToClass(schedule, parent)) : [];
+        let childCreated = false;
+        try {
+          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), child.id), child);
+          childCreated = true;
+          CLASSES.push(child);
+
+          if (childCreated && isFirstChild) {
+            for (const schedule of schedulesToMove) {
+              const movedSchedule = { ...schedule, classId: child.id, className: child.name };
+              await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), movedSchedule.id), movedSchedule);
+              SCHEDULES = SCHEDULES.map(item => item.id === movedSchedule.id ? movedSchedule : item);
+            }
+            parent.isTemplate = true;
+            parent.enrolledStudents = [];
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), parent.id), parent);
+          }
+
+          renderClasses();
+          if (typeof window.renderTimetable === 'function') window.renderTimetable();
+          if (typeof window.showToast === 'function') {
+            window.showToast("Small Class Created", isFirstChild && studentsToMove.length
+              ? `${studentsToMove.length} existing student(s) and ${schedulesToMove.length} schedule(s) were moved into the new small class.`
+              : `The small class now inherits materials from ${parent.name}.`);
+          }
+        } catch (error) {
+          console.error('Unable to create small class:', error);
+          let rollbackFailed = false;
+          if (isFirstChild) {
+            Object.assign(parent, originalParent);
+            try {
+              await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), parent.id), originalParent);
+            } catch (rollbackError) {
+              rollbackFailed = true;
+              console.error('Unable to restore the original class after child creation failed:', rollbackError);
+            }
+            for (const schedule of schedulesToMove) {
+              try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), schedule.id), schedule);
+              } catch (rollbackError) {
+                rollbackFailed = true;
+                console.error(`Unable to restore schedule "${schedule.id}" after child creation failed:`, rollbackError);
+              }
+            }
+          }
+          if (childCreated) {
+            try {
+              await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('classes'), child.id));
+            } catch (rollbackError) {
+              rollbackFailed = true;
+              console.error('Unable to remove the incomplete small class:', rollbackError);
+            }
+          }
+          CLASSES = CLASSES.filter(cls => cls.id !== child.id);
+          if (childCreated && isFirstChild) {
+            SCHEDULES = SCHEDULES.map(item => schedulesToMove.find(schedule => schedule.id === item.id) || item);
+          }
+          renderClasses();
+          if (rollbackFailed) {
+            showModalMsg("Error", "Small class creation failed, and some changes could not be rolled back. Please check the class roster and schedules before retrying.");
+          } else {
+            showModalMsg("Error", "Could not create the small class. Existing class and schedule data were restored.");
+          }
+        }
+      });
+    };
 
     // ✨ COLLABORATORS MODAL LOGIC
     window.currentCollabClassId = null;
@@ -8391,14 +8692,29 @@ window.initFirebaseSystem = async function() {
     };
     
     async function deleteClass(id) {
+      const childClasses = CLASSES.filter(cls => cls.parentClassId === id);
+      if (childClasses.length) {
+        showModalMsg("Delete Small Classes First", "This class is a material template. Delete or move its small classes before removing the template.");
+        return;
+      }
+      const clsToDelete = CLASSES.find(cls => cls.id === id);
+      const parent = getClassParent(clsToDelete);
       CLASSES = CLASSES.filter(c => c.id !== id); 
       await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('classes'), id));
+      if (parent && !CLASSES.some(cls => cls.parentClassId === parent.id)) {
+        parent.isTemplate = false;
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), parent.id), parent);
+      }
       renderClasses(); 
     }
 
     window.promptEnrollStudent = function(cid) {
         const cls = CLASSES.find(c => c.id === cid);
-        if(!cls) return;
+        if (!cls) return;
+        if (window.isTemplateClass(cls)) {
+            showModalMsg("Small Class Required", "Enroll students into a small class, not its material template.");
+            return;
+        }
         const availableStudents = USERS.filter(u => u.role === 'student' && !(cls.enrolledStudents || []).includes(u.user));
         
         if(availableStudents.length === 0) {
@@ -10986,10 +11302,105 @@ window.initFirebaseSystem = async function() {
       });
     }
 
+    let studentBillingExpiryTimer = null;
+
+    function getBillingExpiryMillis(user) {
+      const expiry = user?.billingExpiresAt;
+      if (expiry && typeof expiry.toMillis === 'function') return expiry.toMillis();
+      if (expiry && typeof expiry.toDate === 'function') return expiry.toDate().getTime();
+      if (typeof expiry === 'number' && Number.isFinite(expiry)) return expiry;
+      if (typeof expiry === 'string' && expiry.trim()) {
+        const parsed = Date.parse(expiry);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+      return null;
+    }
+
+    function hasActiveStudentAccess(user, now = Date.now()) {
+      if (!user || user.isPaid !== true) return false;
+      if (user.billingAccessOverride === true) return true;
+      const expiry = getBillingExpiryMillis(user);
+      return expiry === null || expiry > now;
+    }
+
+    function getStudentBillingStatus(user, now = Date.now()) {
+      const expiry = getBillingExpiryMillis(user);
+      const hasAccess = hasActiveStudentAccess(user, now);
+      const pending = user?.paymentStatus === 'pending';
+      const overridden = user?.billingAccessOverride === true && user?.isPaid === true;
+      const legacy = user?.isPaid === true && expiry === null && !overridden;
+      const label = pending
+        ? (hasAccess ? 'Active · renewal pending' : 'Payment pending')
+        : hasAccess
+          ? (overridden ? 'Active · manual override' : legacy ? 'Active · no expiry recorded' : 'Active')
+          : expiry !== null && expiry <= now ? 'Expired · locked' : 'Locked';
+      return { hasAccess, pending, expiry, label, legacy, overridden };
+    }
+
+    function formatBillingDate(timestamp) {
+      if (timestamp === null || timestamp === undefined) return '—';
+      const date = new Date(timestamp);
+      return Number.isNaN(date.getTime()) ? '—' : date.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function formatBillingDateInput(timestamp) {
+      if (timestamp === null || timestamp === undefined) return '';
+      const date = new Date(timestamp);
+      if (Number.isNaN(date.getTime())) return '';
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function parseBillingDeadlineDate(value) {
+      const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return null;
+      const [, year, month, day] = match.map(Number);
+      const date = new Date(year, month - 1, day, 23, 59, 59, 999);
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+      return date.getTime();
+    }
+
+    function addBillingMonths(timestamp, months) {
+      const date = new Date(timestamp);
+      const originalDay = date.getDate();
+      date.setDate(1);
+      date.setMonth(date.getMonth() + months);
+      const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+      date.setDate(Math.min(originalDay, lastDay));
+      date.setHours(23, 59, 59, 999);
+      return date.getTime();
+    }
+
+    function scheduleStudentBillingExpiry() {
+      if (studentBillingExpiryTimer) clearTimeout(studentBillingExpiryTimer);
+      studentBillingExpiryTimer = null;
+      if (!currentUser || currentUser.role !== 'student' || !currentUser.isPaid || currentUser.billingAccessOverride === true) return;
+      const expiry = getBillingExpiryMillis(currentUser);
+      if (expiry === null) return;
+      const remaining = expiry - Date.now();
+      if (remaining <= 0) return;
+      studentBillingExpiryTimer = setTimeout(() => {
+        studentBillingExpiryTimer = null;
+        if (hasActiveStudentAccess(currentUser)) {
+          scheduleStudentBillingExpiry();
+          return;
+        }
+        if (document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden')) {
+          document.getElementById('exam-ui').classList.add('hidden');
+          activeTestRoute = false;
+        }
+        window.initStudentDashboard();
+        window.navigateAppRoute('student/dashboard', true);
+      }, Math.min(remaining + 50, 2147483647));
+    }
+
+    window.hasActiveStudentAccess = hasActiveStudentAccess;
+    window.getStudentBillingStatus = getStudentBillingStatus;
+
     window.initStudentDashboard = function initStudentDashboard(preserveCid = null) {
       document.getElementById('student-name-display').textContent = currentUser.user;
       
-      const isPaid = currentUser.isPaid === true;
+      scheduleStudentBillingExpiry();
+      const isPaid = hasActiveStudentAccess(currentUser);
       const mainContent = document.getElementById('student-main-content');
       if (mainContent) mainContent.classList.toggle('hidden', !isPaid);
       
@@ -11000,7 +11411,7 @@ window.initFirebaseSystem = async function() {
           warnContainer.innerHTML = ''; 
           
           // FIX: Safely loads classes without crashing the UI
-          const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
+          const myClasses = CLASSES.filter(c => !window.isTemplateClass(c) && (c.enrolledStudents || []).includes(currentUser.user));
           const sel = document.getElementById('student-class-select');
           
           const currentVal = preserveCid !== null ? preserveCid : sel.value;
@@ -11041,18 +11452,99 @@ window.initFirebaseSystem = async function() {
 
     const formatVND = (amt) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amt);
 
+    window.calculateGroupLessonFee = function(baseFee, studentCount) {
+        let fee = Math.max(0, Number(baseFee) || 0);
+        const count = Math.max(1, Math.floor(Number(studentCount) || 1));
+        for (let student = 1; student < count; student++) {
+            fee = Math.round((fee * 0.9) / 5000) * 5000;
+        }
+        return fee;
+    };
+
+    window.checkoutReferralState = null;
+    window.applyReferralCode = async function() {
+        const input = document.getElementById('checkout-referral-code');
+        const status = document.getElementById('checkout-referral-status');
+        if (!input || !status || !currentUser) return;
+
+        const code = input.value.trim().toUpperCase();
+        if (!code) {
+            window.checkoutReferralState = null;
+            currentUser.appliedReferralCode = null;
+            currentUser.appliedReferralBy = null;
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            status.textContent = 'Referral code removed.';
+            window.updateCheckoutMath();
+            return;
+        }
+        if (currentUser.referralDiscountUsed) {
+            status.textContent = 'Your one-time referral discount has already been used.';
+            return;
+        }
+        if (currentUser.isPaid || Number(currentUser.totalLessonsPaid) > 0) {
+            status.textContent = 'Referral codes can only be used by a new student on their first payment.';
+            return;
+        }
+
+        try {
+            const referralSnap = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('referral_codes'), code));
+            if (!referralSnap.exists()) {
+                window.checkoutReferralState = null;
+                status.textContent = 'Referral code not found.';
+                window.updateCheckoutMath();
+                return;
+            }
+
+            const referrer = referralSnap.data().user;
+            if (!referrer || referrer === currentUser.user) {
+                window.checkoutReferralState = null;
+                status.textContent = 'You cannot use your own referral code.';
+                window.updateCheckoutMath();
+                return;
+            }
+
+            currentUser.appliedReferralCode = code;
+            currentUser.appliedReferralBy = referrer;
+            window.checkoutReferralState = { code, referrer };
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            status.textContent = `Code accepted. Your first payment and the referrer's next payment each receive 10% off.`;
+            window.updateCheckoutMath();
+        } catch (error) {
+            console.error('Unable to validate referral code:', error);
+            status.textContent = 'Could not verify the referral code. Please try again.';
+        }
+    };
+
     window.renderStudentCheckout = function renderStudentCheckout() {
         let classOpts = '';
+        const availableClasses = CLASSES.filter(cls => !window.isTemplateClass(cls));
         
         if (PACKAGES.length > 0) {
-            classOpts += `<optgroup label="--- Bundled Packages ---">`;
-            classOpts += PACKAGES.map(p => `<option value="pkg_${p.id}">📦 ${p.name}</option>`).join('');
+            const availablePackages = PACKAGES.filter(pkg => (pkg.classes || []).some(classId => {
+                const cls = CLASSES.find(candidate => candidate.id === classId);
+                return cls && !window.isTemplateClass(cls);
+            }));
+            if (availablePackages.length) {
+                classOpts += `<optgroup label="--- Bundled Packages ---">`;
+                classOpts += availablePackages.map(p => `<option value="pkg_${p.id}">📦 ${p.name}</option>`).join('');
+                classOpts += `</optgroup>`;
+            }
+        }
+        if (availableClasses.length) {
+            classOpts += `<optgroup label="--- Classes ---">`;
+            classOpts += availableClasses.map(cls => `<option value="${cls.id}">${cls.parentClassId ? '👥 ' : ''}${cls.name}</option>`).join('');
             classOpts += `</optgroup>`;
         }
         
-        if (!classOpts) classOpts = `<option value="">No packages available</option>`;
+        if (!classOpts) classOpts = `<option value="">No classes or packages available</option>`;
 
         const lpmDefault = BILLING_SETTINGS.lessonsPerMonth || 12;
+        const billingExpiry = getBillingExpiryMillis(currentUser);
+        const expiredPlanNotice = billingExpiry !== null && billingExpiry <= Date.now()
+            ? `<p class="text-amber-100 mb-5 font-bold">Your ${currentUser.billingPlanTitle || 'tuition plan'} expired on ${formatBillingDate(billingExpiry)}. Submit your next payment and wait for teacher verification to restore course access.</p>`
+            : '';
 
         document.getElementById('student-payment-warning').innerHTML = `
          <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl shadow-2xl overflow-hidden border border-blue-500 flex flex-col lg:flex-row">
@@ -11061,7 +11553,9 @@ window.initFirebaseSystem = async function() {
                    <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Access Locked
                 </div>
                 <h2 class="text-3xl font-black text-white mb-3">Unlock Your Course</h2>
+                ${hasActiveStudentAccess(currentUser) ? `<button type="button" onclick="window.closeStudentRenewal()" class="text-left text-sm font-bold text-blue-100 hover:text-white mb-3">← Back to my classes</button>` : ''}
                 <p class="text-blue-100 mb-6 font-medium">Customize your study plan below to calculate your tuition.</p>
+                ${expiredPlanNotice}
                 
                 <div class="flex gap-4 mb-6">
                     <div class="flex-1">
@@ -11077,6 +11571,14 @@ window.initFirebaseSystem = async function() {
                 </div>
 
                 <div id="checkout-package-info" class="hidden bg-blue-900/40 border border-blue-500/50 rounded-xl p-4 mb-6 shadow-inner"></div>
+                <div class="mb-6 rounded-xl border border-blue-400/50 bg-blue-900/30 p-4">
+                    <label class="block text-xs font-bold text-blue-100 uppercase tracking-widest mb-2">Referral code (optional)</label>
+                    <div class="flex gap-2">
+                        <input id="checkout-referral-code" type="text" maxlength="40" placeholder="Enter a student's code" class="min-w-0 flex-1 bg-white border border-blue-200 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold uppercase">
+                        <button type="button" onclick="window.applyReferralCode()" class="bg-white text-blue-800 hover:bg-blue-50 px-4 rounded-lg font-bold text-sm">Apply</button>
+                    </div>
+                    <div id="checkout-referral-status" class="text-xs text-blue-100 mt-2" aria-live="polite"></div>
+                </div>
 
                 <div class="space-y-4" id="checkout-plans-container"></div>
             </div>
@@ -11102,6 +11604,19 @@ window.initFirebaseSystem = async function() {
          </div>
         `;
 
+        window.checkoutReferralState = currentUser.appliedReferralBy && !currentUser.referralDiscountUsed && !currentUser.isPaid && !Number(currentUser.totalLessonsPaid)
+            ? { code: currentUser.appliedReferralCode, referrer: currentUser.appliedReferralBy }
+            : null;
+        const referralInput = document.getElementById('checkout-referral-code');
+        if (referralInput && currentUser.appliedReferralCode && window.checkoutReferralState) referralInput.value = currentUser.appliedReferralCode;
+        const referralStatus = document.getElementById('checkout-referral-status');
+        if (referralStatus) {
+            const credits = Math.max(0, Number(currentUser.referralDiscountCredits) || 0);
+            referralStatus.textContent = window.checkoutReferralState
+                ? `Code accepted. Your first payment and the referrer's next payment each receive 10% off.${credits ? ` You also have ${credits} referral discount(s) earned.` : ''}`
+                : credits ? `You have ${credits} referral discount(s) earned for future payments.` : '';
+        }
+
         window.updateCheckoutMath();
     };
 
@@ -11121,7 +11636,7 @@ window.initFirebaseSystem = async function() {
             const pkg = PACKAGES.find(p => p.id === pkgId);
             
             if (pkg && infoContainer) {
-                const classNames = (pkg.classes || []).map(cid => CLASSES.find(c => c.id === cid)?.name).filter(Boolean);
+                const classNames = (pkg.classes || []).map(cid => CLASSES.find(c => c.id === cid)).filter(cls => cls && !window.isTemplateClass(cls)).map(cls => cls.name);
                 infoContainer.innerHTML = `
                     <h4 class="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-2 flex items-center gap-1">📦 Bundle Includes:</h4>
                     <ul class="text-sm font-medium text-white space-y-1">
@@ -11137,23 +11652,55 @@ window.initFirebaseSystem = async function() {
             if (infoContainer) infoContainer.classList.add('hidden');
 
             const cls = CLASSES.find(c => c.id === selVal);
-            if (cls && cls.feePerLesson) fpl = cls.feePerLesson;
+            if (cls) fpl = getClassBaseFee(cls);
         }
 
         const lpmInput = document.getElementById('checkout-lpm');
         const lpm = parseInt(lpmInput ? lpmInput.value : (BILLING_SETTINGS.lessonsPerMonth || 12)) || 1;
         
+        const isSingleClass = Boolean(selVal && !selVal.startsWith('pkg_'));
+        const selectedClass = isSingleClass ? CLASSES.find(cls => cls.id === selVal) : null;
+        const groupSize = selectedClass
+            ? (selectedClass.enrolledStudents || []).length + ((selectedClass.enrolledStudents || []).includes(currentUser.user) ? 0 : 1)
+            : null;
+        if (selectedClass && groupSize > 1) {
+            fpl = window.calculateGroupLessonFee(fpl, groupSize);
+            if (infoContainer) {
+                infoContainer.innerHTML = `<p class="text-sm font-bold text-white">👥 ${groupSize} students in this small class · ${formatVND(fpl)} per lesson after group discount.</p>`;
+                infoContainer.classList.remove('hidden');
+            }
+        } else if (selectedClass && infoContainer) {
+            infoContainer.innerHTML = `<p class="text-sm font-bold text-white">${selectedClass.parentClassId ? `Small class using shared materials · ${formatVND(fpl)} per lesson.` : `${formatVND(fpl)} per lesson.`}</p>`;
+            infoContainer.classList.remove('hidden');
+        }
+
+        const referralCreditsAvailable = Math.max(0, Math.floor(Number(currentUser.referralDiscountCredits) || 0));
+        const newStudentReferral = Boolean(window.checkoutReferralState && !currentUser.referralDiscountUsed && !currentUser.isPaid && !Number(currentUser.totalLessonsPaid));
+        const referralDiscountCount = referralCreditsAvailable + (newStudentReferral ? 1 : 0);
+        const applyReferralDiscounts = amount => {
+            let discounted = amount;
+            for (let credit = 0; credit < referralDiscountCount; credit++) discounted = Math.round(discounted * 0.9);
+            return discounted;
+        };
+        const configuredComboRate = Number(BILLING_SETTINGS.discCombo);
+        const configuredCourseRate = Number(BILLING_SETTINGS.discCourse);
+        const comboRate = Number.isFinite(configuredComboRate) ? configuredComboRate : 10;
+        const courseRate = Number.isFinite(configuredCourseRate) ? configuredCourseRate : 10;
         const p1Raw = fpl * lpm;
         const p2Raw = fpl * lpm * 2;
-        const p2Disc = p2Raw * (1 - ((BILLING_SETTINGS.discCombo || 10) / 100));
+        const p2Disc = p2Raw * (1 - (comboRate / 100));
         const p4Raw = fpl * lpm * 4;
-        const p4Disc = p4Raw * (1 - ((BILLING_SETTINGS.discCourse || 20) / 100));
+        const p4Disc = p4Raw * (1 - (courseRate / 100));
 
         window.checkoutPlans = [
-            { id: 1, title: '1 Month Standard', lessons: lpm, raw: p1Raw, final: p1Raw, label: 'Pay as you go' },
-            { id: 2, title: '2 Month Combo', lessons: lpm*2, raw: p2Raw, final: p2Disc, label: `Save ${BILLING_SETTINGS.discCombo || 10}%`, pop: true },
-            { id: 4, title: 'Full Course (4M)', lessons: lpm*4, raw: p4Raw, final: p4Disc, label: `Save ${BILLING_SETTINGS.discCourse || 20}%` }
+            { id: 1, title: '1 Month Standard', months: 1, lessons: lpm, raw: p1Raw, final: applyReferralDiscounts(p1Raw), label: 'Pay as you go' },
+            { id: 2, title: '2 Month Combo', months: 2, lessons: lpm*2, raw: p2Raw, final: applyReferralDiscounts(p2Disc), label: `Save ${comboRate}%`, pop: true },
+            { id: 4, title: 'Full Course (4M)', months: 4, lessons: lpm*4, raw: p4Raw, final: applyReferralDiscounts(p4Disc), label: `Save ${courseRate}%` }
         ];
+        window.checkoutPlans.forEach(plan => {
+            plan.referralCreditsApplied = referralDiscountCount;
+            plan.groupSize = groupSize;
+        });
 
         const ctn = document.getElementById('checkout-plans-container');
         if (ctn) {
@@ -11171,6 +11718,8 @@ window.initFirebaseSystem = async function() {
                         ${p.raw > p.final ? `<div id="pkg-raw-${idx}" class="text-sm line-through mb-0.5 text-blue-300 transition-colors font-semibold">${formatVND(p.raw)}</div>` : ''}
                         <div id="pkg-price-${idx}" class="font-black text-xl text-white transition-colors">${formatVND(p.final)}</div>
                         ${p.label !== 'Pay as you go' ? `<div class="text-[10px] font-bold text-blue-900 mt-1.5 uppercase tracking-widest bg-amber-400 px-2 py-0.5 rounded inline-block shadow-sm">${p.label}</div>` : ''}
+                        ${p.groupSize > 1 ? `<div class="text-[10px] font-bold text-blue-200 mt-1">${p.groupSize} students · group rate</div>` : ''}
+                        ${p.referralCreditsApplied ? `<div class="text-[10px] font-bold text-emerald-200 mt-1">${p.referralCreditsApplied} × 10% referral discount included</div>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -11244,16 +11793,46 @@ window.initFirebaseSystem = async function() {
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Sending Notification...`;
         
-        const pkg = window.checkoutPlans[window.selectedCheckoutPlan];
+        const pkg = window.checkoutPlans?.[window.selectedCheckoutPlan];
+        if (!pkg) {
+            showModalMsg("Notice", "Select a valid payment plan first.");
+            btn.disabled = false;
+            btn.textContent = "I Have Transferred the Money ✓";
+            return;
+        }
+        const previousUser = { ...currentUser };
+        currentUser.pendingRenewal = currentUser.isPaid === true;
         currentUser.paymentStatus = 'pending';
-        currentUser.pendingInfo = `${courseName} (${pkg.title})`;
+        currentUser.pendingInfo = `${courseName} (${pkg.title}) · ${formatVND(pkg.final)}`;
         currentUser.pendingLessons = pkg.lessons; 
+        currentUser.pendingAmount = pkg.final;
+        currentUser.pendingPlanTitle = pkg.title;
+        currentUser.pendingPlanMonths = pkg.months;
+        currentUser.pendingPaymentId = `pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        currentUser.pendingReferralCreditsUsed = Math.min(pkg.referralCreditsApplied || 0, Number(currentUser.referralDiscountCredits) || 0);
+        currentUser.pendingReferralBy = window.checkoutReferralState && !currentUser.referralDiscountUsed && !currentUser.isPaid && !Number(currentUser.totalLessonsPaid)
+            ? window.checkoutReferralState.referrer
+            : null;
+        currentUser.pendingReferralCode = currentUser.pendingReferralBy ? window.checkoutReferralState.code : null;
         
         if (selVal.startsWith('pkg_')) {
             const packageObj = PACKAGES.find(p => p.id === selVal.replace('pkg_', ''));
-            currentUser.pendingClasses = packageObj ? packageObj.classes : [];
+            currentUser.pendingClasses = packageObj
+                ? (packageObj.classes || []).filter(classId => {
+                    const cls = CLASSES.find(candidate => candidate.id === classId);
+                    return cls && !window.isTemplateClass(cls);
+                })
+                : [];
         } else {
-            currentUser.pendingClasses = [selVal];
+            const cls = CLASSES.find(candidate => candidate.id === selVal);
+            currentUser.pendingClasses = cls && !window.isTemplateClass(cls) ? [cls.id] : [];
+        }
+        if (!currentUser.pendingClasses.length) {
+            showModalMsg("Notice", "Select an available small class or a bundle that includes an active class.");
+            btn.disabled = false;
+            btn.textContent = "I Have Transferred the Money ✓";
+            currentUser.paymentStatus = 'unpaid';
+            return;
         }
         
         const cloudUserIdx = USERS.findIndex(u => u.user === currentUser.user);
@@ -11262,12 +11841,52 @@ window.initFirebaseSystem = async function() {
             USERS[cloudUserIdx].pendingInfo = currentUser.pendingInfo;
             USERS[cloudUserIdx].pendingClasses = currentUser.pendingClasses;
             USERS[cloudUserIdx].pendingLessons = currentUser.pendingLessons;
+            USERS[cloudUserIdx].pendingAmount = currentUser.pendingAmount;
+            USERS[cloudUserIdx].pendingPlanTitle = currentUser.pendingPlanTitle;
+            USERS[cloudUserIdx].pendingPlanMonths = currentUser.pendingPlanMonths;
+            USERS[cloudUserIdx].pendingPaymentId = currentUser.pendingPaymentId;
+            USERS[cloudUserIdx].pendingReferralCreditsUsed = currentUser.pendingReferralCreditsUsed;
+            USERS[cloudUserIdx].pendingReferralBy = currentUser.pendingReferralBy;
+            USERS[cloudUserIdx].pendingReferralCode = currentUser.pendingReferralCode;
         }
-        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+        } catch (error) {
+            console.error('Unable to submit tuition payment request:', error);
+            currentUser = previousUser;
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+            const cloudUserIdx = USERS.findIndex(u => u.user === currentUser.user);
+            if (cloudUserIdx > -1) USERS[cloudUserIdx] = currentUser;
+            btn.disabled = false;
+            btn.textContent = "I Have Transferred the Money ✓";
+            showModalMsg("Payment Request Failed", "Could not notify the teacher. Please try again.");
+            return;
+        }
         
         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
         
+        if (currentUser.pendingRenewal && typeof window.showToast === 'function') {
+            window.showToast("Payment Submitted", "Your renewal request was sent. Your current class access remains active during verification.");
+        }
         window.initStudentDashboard(); 
+    };
+
+    window.openStudentRenewal = function() {
+        if (!currentUser || currentUser.role !== 'student' || (!currentUser.isPaid && getBillingExpiryMillis(currentUser) === null)) return;
+        if (currentUser.paymentStatus === 'pending') {
+            showModalMsg("Payment Pending", "Please wait for the teacher to verify your current payment request.");
+            return;
+        }
+        window.renderStudentCheckout();
+        const warning = document.getElementById('student-payment-warning');
+        warning.classList.remove('hidden');
+        warning.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.closeStudentRenewal = function() {
+        const warning = document.getElementById('student-payment-warning');
+        warning.classList.add('hidden');
+        window.renderStudentDashboard();
     };
 
     window.openStudentHistory = function() {
@@ -11315,6 +11934,7 @@ window.initFirebaseSystem = async function() {
         // 4. Build Banking / Account HTML
         let lessonsUsed = myAtt.length;
         let lessonsRemaining = currentUser.totalLessonsPaid ? Math.max(0, currentUser.totalLessonsPaid - lessonsUsed) : 'N/A';
+        const billingStatus = getStudentBillingStatus(currentUser);
         
         let finHtml = `
             <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
@@ -11324,8 +11944,10 @@ window.initFirebaseSystem = async function() {
                 </div>
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                     <span class="font-bold text-slate-600 text-sm">Tuition Status:</span> 
-                    <span class="font-black text-[11px] uppercase tracking-widest px-2.5 py-1 rounded ${currentUser.isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${currentUser.isPaid ? 'Active (Paid)' : 'Locked / Pending'}</span>
+                    <span class="font-black text-[11px] uppercase tracking-widest px-2.5 py-1 rounded ${billingStatus.hasAccess ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${billingStatus.label}</span>
                 </div>
+                ${currentUser.billingPlanTitle ? `<div class="flex justify-between items-center border-b border-slate-100 pb-3"><span class="font-bold text-slate-600 text-sm">Paid Plan:</span><span class="font-bold text-slate-700 text-sm">${currentUser.billingPlanTitle}</span></div>` : ''}
+                ${billingStatus.expiry !== null ? `<div class="flex justify-between items-center border-b border-slate-100 pb-3"><span class="font-bold text-slate-600 text-sm">Access Until:</span><span class="font-bold text-slate-700 text-sm">${formatBillingDate(billingStatus.expiry)}</span></div>` : ''}
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-slate-600 text-sm">Lessons Remaining:</span> 
                     <span class="font-black text-indigo-700 text-lg">${lessonsRemaining}</span>
@@ -12747,7 +13369,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 pgrid.innerHTML = PACKAGES.map(p => {
                     const classNames = (p.classes || []).map(cid => {
                         const found = CLASSES.find(c => c.id === cid);
-                        return found ? found.name : '';
+                        return found && !window.isTemplateClass(found) ? found.name : '';
                     }).filter(Boolean);
                     
                     return `
@@ -12771,14 +13393,87 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }
     };
 
+    function getClassParent(cls) {
+      return cls?.parentClassId ? CLASSES.find(candidate => candidate.id === cls.parentClassId) || null : null;
+    }
+
+    window.isTemplateClass = function(cls) {
+      return Boolean(cls && !cls.parentClassId && (cls.isTemplate || CLASSES.some(candidate => candidate.parentClassId === cls.id)));
+    };
+
+    window.isSchedulableClass = function(cls) {
+      return Boolean(cls?.parentClassId && getClassParent(cls));
+    };
+
+    function getSchedulableClassOptions() {
+      const options = CLASSES.filter(window.isSchedulableClass).map(cls => ({
+        key: cls.id,
+        label: cls.name,
+        cls,
+        isLegacyMiniClass: false
+      }));
+
+      CLASSES.forEach(parent => {
+        if (!parent.miniClasses || typeof parent.miniClasses !== 'object') return;
+        const enrolledStudents = Array.isArray(parent.enrolledStudents) ? parent.enrolledStudents : null;
+        const groupedStudents = new Map();
+        Object.entries(parent.miniClasses).forEach(([student, miniName]) => {
+          const name = String(miniName || '').trim();
+          if (!name || (enrolledStudents && !enrolledStudents.includes(student))) return;
+          if (!groupedStudents.has(name)) groupedStudents.set(name, []);
+          groupedStudents.get(name).push(student);
+        });
+
+        groupedStudents.forEach((students, name) => {
+          if (CLASSES.some(cls => cls.parentClassId === parent.id && cls.name === name)) return;
+          const key = `legacy-mini:${encodeURIComponent(parent.id)}:${encodeURIComponent(name)}`;
+          options.push({
+            key,
+            label: `${parent.name} · ${name}`,
+            cls: { ...parent, enrolledStudents: students, miniClassName: name, isLegacyMiniClass: true },
+            isLegacyMiniClass: true
+          });
+        });
+      });
+
+      return options;
+    }
+
+    function getSelectedSchedulableClass(value) {
+      return getSchedulableClassOptions().find(option => option.key === value) || null;
+    }
+
+    function getClassAssignedTests(cls) {
+      if (!cls) return [];
+      const source = getClassParent(cls) || cls;
+      return [...new Set(Array.isArray(source.assignedTests) ? source.assignedTests : [])];
+    }
+
+    function getClassBaseFee(cls) {
+      const source = getClassParent(cls) || cls;
+      return Number(source?.feePerLesson) || Number(BILLING_SETTINGS.feePerLesson) || 100000;
+    }
+
+    function getClassTestSettings(cls, testId) {
+      if (!cls) return {};
+      const parentSettings = getClassParent(cls)?.testSettings?.[testId] || {};
+      const inheritedSettings = { ...parentSettings };
+      if (getClassParent(cls)) {
+        delete inheritedSettings.dueDate;
+        delete inheritedSettings.dueTime;
+      }
+      return { ...inheritedSettings, ...(cls.testSettings?.[testId] || {}) };
+    }
+
     function getClassLearningPaths(cls) {
       if (!cls) return [];
-      const learningPathEnabled = cls.learningPathEnabled !== false;
-      const fallbackTests = Array.isArray(cls.assignedTests) ? cls.assignedTests : [];
-      const hasPaths = Array.isArray(cls.learningPaths) && cls.learningPaths.length;
+      const source = getClassParent(cls) || cls;
+      const learningPathEnabled = source.learningPathEnabled !== false;
+      const fallbackTests = getClassAssignedTests(cls);
+      const hasPaths = Array.isArray(source.learningPaths) && source.learningPaths.length;
 
       if (learningPathEnabled && hasPaths) {
-        return cls.learningPaths.map((path, idx) => ({
+        return source.learningPaths.map((path, idx) => ({
           id: path.id || `path_${idx + 1}`,
           title: path.title || `Week ${idx + 1}`,
           description: path.description || '',
@@ -12911,7 +13606,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             window.navigateAppRoute('student/leaderboard');
             return;
         }
-        const topStudents = USERS.filter(u => u.role === 'student' && u.isPaid).sort((a,b) => (b.gems || 0) - (a.gems || 0)).slice(0, 10);
+        const topStudents = USERS.filter(u => u.role === 'student' && hasActiveStudentAccess(u)).sort((a,b) => (b.gems || 0) - (a.gems || 0)).slice(0, 10);
         let html = `<div class="space-y-2 mt-4">`;
         topStudents.forEach((u, i) => {
             let rankStyles = "text-slate-400 bg-slate-50 border-slate-200";
@@ -13096,6 +13791,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     };
 
     window.renderStudentDashboard = function renderStudentDashboard() {
+      if (!hasActiveStudentAccess(currentUser)) {
+          window.initStudentDashboard();
+          return;
+      }
       const cid = document.getElementById('student-class-select').value;
       const list = document.getElementById('student-tests-list');
       const prog = document.getElementById('student-progress-section');
@@ -13116,7 +13815,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }
       
       const cls = CLASSES.find(c => c.id === cid);
-      if(!cls) return;
+      if(!cls || window.isTemplateClass(cls) || !(cls.enrolledStudents || []).includes(currentUser.user)) {
+          window.initStudentDashboard();
+          return;
+      }
       
       if(bottomSec) { bottomSec.classList.remove('hidden'); bottomSec.classList.add('flex'); }
       if(quickActions) { quickActions.classList.remove('hidden'); quickActions.classList.add('flex'); }
@@ -13215,7 +13917,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const targetIPlusOne = myBand > 0 ? myBand + 0.5 : null;
         const testDiff = t ? parseFloat(t.difficulty) : null;
         
-        const settings = cls && cls.testSettings ? cls.testSettings[item.testId] : null;
+        const settings = getClassTestSettings(cls, item.testId);
         let deadlineHtml = '';
         if (settings && settings.dueDate && !isCompleted) {
             deadlineHtml = `<div class="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded shadow-sm mt-1 inline-block">Due: ${settings.dueDate} ${settings.dueTime || ''}</div>`;
@@ -13357,45 +14059,42 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const nextModule = nextTest?.module || 'All set';
       const nextLabel = nextUp ? (nextUp.title || nextTest?.title || 'Next step') : 'You are all caught up';
 
-                  // --- NEW: STUDENT MINI-CLASS LOGIC (FILTERED) ---
-      const enrolledStudents = cls.enrolledStudents || [];
-      const miniClassesMap = cls.miniClasses || {};
-      const myMiniClass = miniClassesMap[currentUser.user];
-      
-      let peers = enrolledStudents;
-      let displayClassName = cls.name;
-      
-      // Nếu học sinh đã được phân Mini-class, chỉ lấy các bạn chung Mini-class để đua top!
-      if (myMiniClass) {
-          peers = enrolledStudents.filter(st => miniClassesMap[st] === myMiniClass);
-          displayClassName = myMiniClass;
-      }
+      const peers = [...new Set((cls.enrolledStudents || []).filter(student => student && student !== currentUser.user))];
+      const displayClassName = cls.name;
+      const classPresence = window.classPresenceByClass?.[cls.id] || {};
+      const classmates = peers.map(student => {
+          const presence = classPresence[student];
+          const lastActiveAt = Number(presence?.lastActiveAt) || null;
+          const online = Boolean(presence?.isOnline && lastActiveAt && Date.now() - lastActiveAt < 120000);
+          let activityLabel = 'Chưa ghi nhận hoạt động';
+          if (lastActiveAt) {
+              const elapsedMinutes = Math.max(0, Math.floor((Date.now() - lastActiveAt) / 60000));
+              activityLabel = online ? 'Đang online' : elapsedMinutes < 1 ? 'Hoạt động vừa xong' : elapsedMinutes < 60
+                  ? `Hoạt động ${elapsedMinutes} phút trước`
+                  : elapsedMinutes < 1440
+                      ? `Hoạt động ${Math.floor(elapsedMinutes / 60)} giờ trước`
+                      : `Hoạt động ${Math.floor(elapsedMinutes / 1440)} ngày trước`;
+          }
+          return { student, online, activityLabel };
+      }).sort((a, b) => Number(b.online) - Number(a.online) || a.student.localeCompare(b.student));
 
-      let classLeaderboard = peers.map(st => {
-          const subs = SUBMISSIONS.filter(s => s.student === st && s.className === cls.name);
-          const score = subs.reduce((acc, curr) => {
-              const m = curr.score.match(/Band\s*([\d.]+)/) || curr.score.match(/([\d.]+)\s*\//);
-              return acc + (m ? parseFloat(m[1]) : 0);
-          }, 0);
-          return { student: st, score: score, count: subs.length };
-      }).sort((a,b) => b.score - a.score).slice(0, 5); // Chỉ lấy Top 5
-
-      let pendingDeadlinesHtml = '';
-      if (cls.testSettings) {
-          Object.keys(cls.testSettings).forEach(tid => {
-              if (!completedTestIds.includes(tid)) {
-                  const setting = cls.testSettings[tid];
-                  if (setting.dueDate) {
-                      const tName = TEST_BANK.find(x => x.id === tid)?.title || 'Bài tập / Test';
-                      pendingDeadlinesHtml += `
-                      <div class="bg-rose-50 border border-rose-200 p-3 rounded-xl mb-2 flex justify-between items-center shadow-sm">
-                          <span class="text-xs font-bold text-rose-800 truncate pr-2 w-2/3" title="${tName}">${tName}</span>
-                          <span class="text-[10px] bg-rose-600 text-white font-black px-2 py-1 rounded shadow-sm whitespace-nowrap">⏳ Hạn: ${setting.dueDate}</span>
-                      </div>`;
-                  }
-              }
-          });
-      }
+      const homeworkTestIds = [...new Set([
+          ...pathItems.map(item => item.testId).filter(Boolean),
+          ...classSchedules.flatMap(schedule => schedule.homeworkTests || []),
+          ...Object.keys(cls.testSettings || {})
+      ])];
+      const pendingDeadlines = homeworkTestIds
+          .filter(testId => !completedTestIds.includes(testId))
+          .map(testId => ({ testId, settings: getClassTestSettings(cls, testId) }))
+          .filter(item => item.settings?.dueDate)
+          .sort((a, b) => `${a.settings.dueDate} ${a.settings.dueTime || ''}`.localeCompare(`${b.settings.dueDate} ${b.settings.dueTime || ''}`));
+      let pendingDeadlinesHtml = pendingDeadlines.map(({ testId, settings }) => {
+          const title = TEST_BANK.find(test => test.id === testId)?.title || 'Bài tập / Test';
+          return `<div class="bg-rose-50 border border-rose-200 p-3 rounded-xl mb-2 flex justify-between items-center shadow-sm">
+              <span class="text-xs font-bold text-rose-800 truncate pr-2 w-2/3" title="${title}">${title}</span>
+              <span class="text-[10px] bg-rose-600 text-white font-black px-2 py-1 rounded shadow-sm whitespace-nowrap">⏳ Hạn: ${settings.dueDate}${settings.dueTime ? ` ${settings.dueTime}` : ''}</span>
+          </div>`;
+      }).join('');
       if (!pendingDeadlinesHtml) pendingDeadlinesHtml = `<div class="text-xs text-slate-500 font-bold bg-slate-50 p-4 rounded-xl border border-slate-200 text-center shadow-inner">Tuyệt vời! Bạn không nợ bài tập nào. 🎉</div>`;
       // -------------------------------------
 
@@ -13419,8 +14118,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             <div class="flex items-center gap-3 mb-5 border-b border-slate-100 pb-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-inner shrink-0">🏫</div>
                 <div class="min-w-0">
-                    <h3 class="font-black text-slate-800 text-base leading-tight truncate">Lớp: ${displayClassName}</h3>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Khóa: ${cls.name}</p>
+                    <h3 class="font-black text-slate-800 text-base leading-tight truncate">Mini class: ${displayClassName}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Tài liệu chung: ${getClassParent(cls)?.name || cls.name}</p>
                 </div>
             </div>
             
@@ -13430,21 +14129,19 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             </div>
 
             <div>
-                <h4 class="text-[10px] font-black uppercase text-emerald-600 mb-3 tracking-widest flex items-center gap-1.5"><span>🏆</span> Top 5 Lớp Hiện Tại</h4>
+                <h4 class="text-[10px] font-black uppercase text-emerald-600 mb-3 tracking-widest flex items-center gap-1.5"><span>👥</span> Bạn cùng mini class (${classmates.length})</h4>
                 <div class="space-y-2">
-                    ${classLeaderboard.map((lb, i) => `
-                        <div class="flex items-center justify-between p-3 rounded-xl ${lb.student === currentUser.user ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'bg-slate-50 border border-slate-100'} transition-all hover:scale-[1.02]">
-                            <div class="flex items-center gap-3">
-                                <span class="font-black ${i === 0 ? 'text-amber-500 text-sm' : 'text-slate-400 text-xs'} w-4 text-center">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</span>
-                                <img src="https://ui-avatars.com/api/?name=${lb.student}&background=random" class="w-7 h-7 rounded-full shadow-sm border border-white">
-                                <span class="text-xs font-bold ${lb.student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${lb.student}${lb.student === currentUser.user ? '<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(Bạn)</span>' : ''}</span>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-[12px] font-black text-emerald-600">${lb.score.toFixed(1)} đ</span>
-                                <span class="text-[9px] font-bold text-slate-400 mt-0.5">${lb.count} bài</span>
+                ${classmates.map(({ student, online, activityLabel }) => `
+                    <div class="flex items-center justify-between gap-2 p-3 rounded-xl ${student === currentUser.user ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'bg-slate-50 border border-slate-100'} transition-all">
+                        <div class="flex items-center gap-3">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student)}&background=random" class="w-8 h-8 rounded-full shadow-sm border border-white">
+                            <div class="min-w-0">
+                                <span class="text-xs font-bold ${student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${escapeForumHtml(student)}${student === currentUser.user ? '<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(Bạn)</span>' : ''}</span>
+                                <span class="flex items-center gap-1.5 mt-1 text-[10px] font-bold ${online ? 'text-emerald-600' : 'text-slate-400'}"><span class="w-2 h-2 rounded-full ${online ? 'bg-emerald-500' : 'bg-slate-300'}"></span>${activityLabel}</span>
                             </div>
                         </div>
-                    `).join('')}
+                    </div>
+                `).join('') || '<p class="text-xs text-slate-400 italic">Chưa có học viên khác trong mini class này.</p>'}
                 </div>
             </div>
         </div>
@@ -13752,6 +14449,15 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if (route.role !== 'student' || currentUser.role !== 'student') {
           route = { role: 'student', section: 'dashboard' };
         }
+        if (!hasActiveStudentAccess(currentUser)) {
+          if (examUi && !examUi.classList.contains('hidden')) examUi.classList.add('hidden');
+          activeTestRoute = false;
+          if (route.section !== 'dashboard') {
+            route = { role: 'student', section: 'dashboard' };
+            window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/dashboard');
+          }
+          window.initStudentDashboard();
+        }
         if (examUi && !examUi.classList.contains('hidden')) {
           lastAppliedAppRoute = route;
           routerReady = true;
@@ -13829,12 +14535,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     };
 
     function studentCanOpenTestRoute(testId) {
+      if (!hasActiveStudentAccess(currentUser)) return false;
       const cid = document.getElementById('student-class-select')?.value;
       const cls = CLASSES.find(item => item.id === cid);
       if (!cls) return false;
 
       const pathItem = getClassPathItems(cls).find(item => item.testId === testId);
-      const assigned = (cls.assignedTests || []).includes(testId);
+      const assigned = getClassAssignedTests(cls).includes(testId);
       const scheduled = SCHEDULES.some(schedule =>
         window.scheduleBelongsToClass(schedule, cls) &&
         (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)) &&
@@ -16491,12 +17198,18 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           }
 
           try { 
-              await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub);
+              if (currentUser.isDemo) {
+                  sessionStorage.setItem('demo_submissions', JSON.stringify(SUBMISSIONS));
+              } else {
+                  await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub);
+              }
               
               // 🏆 ECONOMY REWARD: Grant 50 Gems for normal test
               if (!window.isFullExamMode) {
                   currentUser.gems = (currentUser.gems || 0) + 50;
-                  await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                  if (!currentUser.isDemo) {
+                      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                  }
                   sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
                   window.updateDashboardHeader();
               }
@@ -18209,6 +18922,158 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }
     };
 
+    let paymentAccessRefreshTimer = null;
+
+    function renderPaymentAccessList() {
+        const container = document.getElementById('payment-access-list');
+        if (!container) return;
+        if (paymentAccessRefreshTimer) clearTimeout(paymentAccessRefreshTimer);
+
+        const students = USERS.filter(user => user.role === 'student').sort((a, b) => {
+            if (a.paymentStatus === 'pending' && b.paymentStatus !== 'pending') return -1;
+            if (b.paymentStatus === 'pending' && a.paymentStatus !== 'pending') return 1;
+            return String(a.user).localeCompare(String(b.user));
+        });
+        const now = Date.now();
+        const nextExpiry = students
+            .map(user => getBillingExpiryMillis(user))
+            .filter(expiry => expiry !== null && expiry > now)
+            .sort((a, b) => a - b)[0];
+
+        if (nextExpiry) {
+            paymentAccessRefreshTimer = setTimeout(
+                renderPaymentAccessList,
+                Math.min(nextExpiry - now + 100, 2147483647)
+            );
+        }
+
+        if (!students.length) {
+            container.innerHTML = '<div class="p-8 text-center text-slate-500 italic">No students to display.</div>';
+            return;
+        }
+
+        container.innerHTML = `<table class="w-full min-w-[900px] text-left border-collapse">
+            <thead><tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <th class="p-4">Student</th><th class="p-4">Paid Plan</th><th class="p-4">Last Payment</th>
+                <th class="p-4">Payment Deadline</th><th class="p-4 text-center">Access Status</th><th class="p-4">Pending Payment</th><th class="p-4 text-right">Action</th>
+            </tr></thead><tbody class="divide-y divide-slate-100 text-sm">
+                ${students.map(user => {
+                    const billing = getStudentBillingStatus(user, now);
+                    const statusClass = billing.hasAccess
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : billing.pending
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-rose-50 text-rose-700 border-rose-200';
+                    const plan = user.billingPlanTitle || (billing.legacy ? 'Existing access (no expiry recorded)' : '—');
+                    const pendingInfo = user.paymentStatus === 'pending' ? (user.pendingInfo || 'Awaiting review') : '—';
+                    const action = user.paymentStatus === 'pending'
+                        ? `<button onclick="togglePaymentStatus('${user.user}', true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm whitespace-nowrap">✓ Approve payment</button>`
+                        : `<button onclick="togglePaymentStatus('${user.user}', ${!billing.hasAccess})" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap">${billing.hasAccess ? 'Lock access' : 'Unlock access'}</button>`;
+                    return `<tr class="hover:bg-blue-50/40">
+                        <td class="p-4 font-bold text-slate-800">${user.user}</td>
+                        <td class="p-4 text-slate-700">${plan}</td>
+                        <td class="p-4 text-slate-600"><div>${formatBillingDate(user.billingLastPaymentAt)}</div><div class="text-xs font-bold text-emerald-700">${user.billingLastPaymentAmount ? formatVND(user.billingLastPaymentAmount) : '—'}</div></td>
+                        <td class="p-4">
+                            <div class="font-bold ${billing.expiry !== null && billing.expiry <= now && !billing.overridden ? 'text-rose-600' : 'text-slate-700'}">${billing.overridden ? 'Manual override' : formatBillingDate(billing.expiry)}</div>
+                            <button onclick="window.editStudentBillingDeadline('${user.user}')" class="mt-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:underline">${billing.expiry === null ? 'Set deadline' : 'Edit deadline'}</button>
+                        </td>
+                        <td class="p-4 text-center"><span class="inline-flex border px-2.5 py-1 rounded-full text-[10px] font-black whitespace-nowrap ${statusClass}">${billing.label}</span></td>
+                        <td class="p-4 text-xs text-slate-600 max-w-[240px] truncate" title="${pendingInfo}">${pendingInfo}</td>
+                        <td class="p-4 text-right">${action}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody></table>`;
+    }
+
+    window.editStudentBillingDeadline = function(username) {
+        if (!currentUser || currentUser.role !== 'teacher') return;
+        const student = USERS.find(user => user.user === username && user.role === 'student');
+        if (!student) {
+            showModalMsg('Student Not Found', 'Could not find this student account. Refresh the list and try again.');
+            return;
+        }
+
+        const modal = document.getElementById('custom-modal');
+        const title = document.getElementById('modal-title');
+        const message = document.getElementById('modal-message');
+        const input = document.getElementById('modal-input');
+        const cancel = document.getElementById('modal-cancel');
+        const confirm = document.getElementById('modal-confirm');
+        title.textContent = `Payment Deadline: ${student.user}`;
+        message.innerHTML = `
+            <label for="student-billing-deadline-input" class="block text-sm font-bold text-slate-700 mb-2">Last day to pay (access remains available through this date)</label>
+            <input id="student-billing-deadline-input" type="date" value="${formatBillingDateInput(getBillingExpiryMillis(student))}" class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold text-slate-800 outline-none focus:border-blue-500">
+            <p class="text-xs text-slate-500 mt-2">If the student has not renewed by the end of this date, course access will be locked. Saving a deadline also disables any manual access override.</p>
+            ${getBillingExpiryMillis(student) !== null ? `<button type="button" onclick="window.clearStudentBillingDeadline('${student.user}')" class="mt-3 text-xs font-bold text-rose-600 hover:text-rose-800 hover:underline">Remove payment deadline</button>` : ''}
+        `;
+        input.classList.add('hidden');
+        cancel.textContent = 'Cancel';
+        cancel.classList.remove('hidden');
+        confirm.textContent = 'Save Deadline';
+        confirm.disabled = false;
+        modal.classList.remove('hidden');
+
+        cancel.onclick = () => {
+            modal.classList.add('hidden');
+            confirm.textContent = 'OK';
+            confirm.disabled = false;
+        };
+        confirm.onclick = async () => {
+            const deadlineInput = document.getElementById('student-billing-deadline-input');
+            const deadline = parseBillingDeadlineDate(deadlineInput?.value);
+            if (deadline === null) {
+                showModalMsg('Invalid Date', 'Choose a valid payment deadline before saving.');
+                return;
+            }
+
+            confirm.disabled = true;
+            confirm.textContent = 'Saving...';
+            const updatedStudent = { ...student, billingExpiresAt: deadline, billingAccessOverride: false, billingDeadlineSetByEditor: true };
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), updatedStudent);
+                Object.assign(student, updatedStudent);
+                modal.classList.add('hidden');
+                confirm.textContent = 'OK';
+                confirm.disabled = false;
+                renderStudentsList();
+                renderPaymentAccessList();
+                if (typeof window.showToast === 'function') window.showToast('Deadline Saved', `${username}'s access deadline is ${formatBillingDate(deadline)}.`);
+            } catch (error) {
+                console.error(`Unable to save payment deadline for "${username}":`, error);
+                confirm.disabled = false;
+                confirm.textContent = 'Save Deadline';
+                showModalMsg('Save Failed', 'Could not save the payment deadline. Please try again.');
+            }
+        };
+    };
+
+    window.clearStudentBillingDeadline = async function(username) {
+        if (!currentUser || currentUser.role !== 'teacher') return;
+        const student = USERS.find(user => user.user === username && user.role === 'student');
+        if (!student) {
+            showModalMsg('Student Not Found', 'Could not find this student account. Refresh the list and try again.');
+            return;
+        }
+        const updatedStudent = { ...student };
+        delete updatedStudent.billingExpiresAt;
+        delete updatedStudent.billingDeadlineSetByEditor;
+        updatedStudent.billingAccessOverride = false;
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), updatedStudent);
+            Object.assign(student, updatedStudent);
+            document.getElementById('custom-modal').classList.add('hidden');
+            const confirm = document.getElementById('modal-confirm');
+            confirm.textContent = 'OK';
+            confirm.disabled = false;
+            renderStudentsList();
+            renderPaymentAccessList();
+            if (typeof window.showToast === 'function') window.showToast('Deadline Removed', `${username}'s payment deadline was removed.`);
+        } catch (error) {
+            console.error(`Unable to remove payment deadline for "${username}":`, error);
+            showModalMsg('Save Failed', 'Could not remove the payment deadline. Please try again.');
+        }
+    };
+
     window.renderPaymentsView = function() {
         document.getElementById('bill-fee').value = BILLING_SETTINGS.feePerLesson || 100000;
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
@@ -18228,6 +19093,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         // Render the Packages list
         const pkgList = document.getElementById('packages-pricing-list');
+        renderPaymentAccessList();
         if (pkgList) {
             if (PACKAGES.length === 0) {
                 pkgList.innerHTML = `<div class="col-span-full text-slate-400 italic text-sm py-4 text-center bg-slate-50 rounded-xl border border-slate-100">No packages created yet.</div>`;
@@ -18276,7 +19142,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }
 
         // Dynamically calculate a realistic baseline based on actual active students
-        const activeCount = USERS.filter(u => u.role === 'student' && u.isPaid).length;
+        const activeCount = USERS.filter(u => u.role === 'student' && hasActiveStudentAccess(u)).length;
         const defaultFee = BILLING_SETTINGS.feePerLesson || 100000;
         const defaultLpm = BILLING_SETTINGS.lessonsPerMonth || 12;
         const avgMonthlyValue = activeCount > 0 ? (activeCount * defaultFee * defaultLpm) : (5 * 100000 * 12); // Fallback to 5 students if empty
@@ -18424,22 +19290,23 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     const trackedAtt = ATTENDANCE.filter(a => a.student === s.user).length;
                     const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
                     const isPending = s.paymentStatus === 'pending';
+                    const billing = getStudentBillingStatus(s);
                     
                     let statusBadge = '';
                     if (isPending) {
-                        statusBadge = `<div class="inline-flex flex-col gap-1"><span class="bg-rose-100 text-rose-700 border border-rose-200 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm animate-pulse whitespace-nowrap text-center">Pending</span>`;
+                        statusBadge = `<div class="inline-flex flex-col gap-1"><span class="bg-amber-100 text-amber-800 border border-amber-200 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded shadow-sm whitespace-nowrap text-center">${billing.label}</span>`;
                         if(s.pendingInfo) statusBadge += `<span class="text-[9px] text-rose-500 font-bold truncate max-w-[120px]" title="${s.pendingInfo}">${s.pendingInfo}</span></div>`;
-                    } else if (s.isPaid) {
-                        statusBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">Active</span>`;
+                    } else if (billing.hasAccess) {
+                        statusBadge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">${billing.label}</span>`;
                     } else {
-                        statusBadge = `<span class="bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">Locked</span>`;
+                        statusBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">${billing.label}</span>`;
                     }
 
                     let approveBtn = '';
                     if (isPending) {
                         approveBtn = `<button onclick="togglePaymentStatus('${s.user}', true)" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">✓ Approve</button>`;
                     } else {
-                        approveBtn = `<button onclick="togglePaymentStatus('${s.user}', ${!s.isPaid})" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">${s.isPaid ? 'Lock' : 'Unlock'}</button>`;
+                        approveBtn = `<button onclick="togglePaymentStatus('${s.user}', ${!billing.hasAccess})" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">${billing.hasAccess ? 'Lock' : 'Unlock'}</button>`;
                     }
 
                     return `
@@ -18609,7 +19476,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.promptCreatePackage = function() {
         if(CLASSES.length === 0) { showModalMsg("Error", "Create some classes first before grouping them into a package."); return; }
         
-        const classChecks = CLASSES.map(c => `
+        const classChecks = CLASSES.filter(c => !window.isTemplateClass(c)).map(c => `
             <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-100 rounded border border-slate-200 mb-2 bg-white shadow-sm transition">
                 <input type="checkbox" class="pkg-class-cb w-4 h-4 text-purple-600 rounded" value="${c.id}">
                 <span class="font-bold text-sm text-slate-700">${c.name}</span>
@@ -18657,7 +19524,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const pkg = PACKAGES.find(p => p.id === pid);
         if(!pkg) return;
 
-        const classChecks = CLASSES.map(c => `
+        const classChecks = CLASSES.filter(c => !window.isTemplateClass(c)).map(c => `
             <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-100 rounded border border-slate-200 mb-2 bg-white shadow-sm transition">
                 <input type="checkbox" class="pkg-class-cb w-4 h-4 text-purple-600 rounded" value="${c.id}" ${(pkg.classes || []).includes(c.id) ? 'checked' : ''}>
                 <span class="font-bold text-sm text-slate-700">${c.name}</span>
@@ -18757,7 +19624,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         showInputPrompt("Add Student", "Enter new student username:", async (username) => {
             if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
             showInputPrompt("Password", `Enter password for ${username}:`, async (password) => {
-                const newStudent = { user: username, pass: password, role: 'student', isPaid: true, paymentStatus: 'paid', pendingClasses: null, createdAt: new Date().toLocaleDateString() };
+                let newStudent = { user: username, pass: password, role: 'student', isPaid: true, paymentStatus: 'paid', pendingClasses: null, createdAt: new Date().toLocaleDateString() };
+                newStudent = await ensureStudentReferralIdentity(newStudent);
                 USERS.push(newStudent);
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newStudent);
                 renderStudentsList();
@@ -18794,7 +19662,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
                 // Check if user already exists to prevent overwriting
                 if (!USERS.find(u => u.user === username)) {
-                    const newStudent = { 
+                    let newStudent = { 
                         user: username, 
                         pass: password, 
                         role: 'student', 
@@ -18803,6 +19671,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         pendingClasses: null, 
                         createdAt: new Date().toLocaleDateString() 
                     };
+                    newStudent = await ensureStudentReferralIdentity(newStudent);
                     USERS.push(newStudent);
                     await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newStudent);
                     count++;
@@ -18851,13 +19720,28 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 // Note: We deliberately do not change user.isPaid here so we don't accidentally lock/unlock their courses!
             } else {
                 // Standard Course Enrollment Logic
+                const isApprovedCoursePayment = status && user.paymentStatus === 'pending' && Boolean(user.pendingInfo);
+                if (status && user.pendingClasses && Array.isArray(user.pendingClasses)) {
+                    const ambiguousTemplate = user.pendingClasses.find(classId => {
+                        const cls = CLASSES.find(candidate => candidate.id === classId);
+                        return window.isTemplateClass(cls) && CLASSES.filter(candidate => candidate.parentClassId === cls.id).length !== 1;
+                    });
+                    if (ambiguousTemplate) {
+                        showModalMsg("Enrollment Needs Review", "This payment refers to a material template with multiple small classes. Select the correct small class before approving the enrollment.");
+                        return;
+                    }
+                }
+
                 user.isPaid = status;
                 user.paymentStatus = status ? 'paid' : 'unpaid';
+                if (!status) user.billingAccessOverride = false;
+                if (status && !isApprovedCoursePayment) user.billingAccessOverride = true;
                 
                 // AUTOMATIC ENROLLMENT MAGIC:
                 if (status && user.pendingClasses && Array.isArray(user.pendingClasses)) {
                     for (let cid of user.pendingClasses) {
-                        const cls = CLASSES.find(c => c.id === cid);
+                        let cls = CLASSES.find(c => c.id === cid);
+                        if (window.isTemplateClass(cls)) cls = CLASSES.find(candidate => candidate.parentClassId === cls.id);
                         if (cls) {
                             if (!cls.enrolledStudents) cls.enrolledStudents = [];
                             if (!cls.enrolledStudents.includes(username)) {
@@ -18869,19 +19753,80 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 }
 
                 if (status) {
+                    if (isApprovedCoursePayment) {
+                        const planTitle = user.pendingPlanTitle || user.pendingInfo || 'Monthly tuition';
+                        const parsedMonths = Number(user.pendingPlanMonths);
+                        const titleMonths = /full course|4m/i.test(planTitle) ? 4 : /2 month/i.test(planTitle) ? 2 : 1;
+                        const planMonths = Number.isInteger(parsedMonths) && parsedMonths > 0 ? parsedMonths : titleMonths;
+                        const now = Date.now();
+                        const currentExpiry = getBillingExpiryMillis(user);
+                        const billingStart = currentExpiry !== null && currentExpiry > now ? currentExpiry : now;
+                        const expiresAt = addBillingMonths(billingStart, planMonths);
+                        const paymentId = user.pendingPaymentId || `approved_${username}_${now}`;
+                        const paymentHistory = Array.isArray(user.paymentHistory) ? user.paymentHistory : [];
+                        user.billingPlanTitle = user.pendingPlanTitle || `${planMonths} Month Plan`;
+                        user.billingPlanMonths = planMonths;
+                        user.billingLastPaymentAt = now;
+                        user.billingLastPaymentAmount = Number(user.pendingAmount) || 0;
+                        user.billingExpiresAt = expiresAt;
+                        user.billingAccessOverride = false;
+                        if (!paymentHistory.some(payment => payment.id === paymentId)) {
+                            paymentHistory.push({
+                                id: paymentId,
+                                plan: user.billingPlanTitle,
+                                months: planMonths,
+                                amount: user.billingLastPaymentAmount,
+                                approvedAt: now,
+                                expiresAt
+                            });
+                        }
+                        user.paymentHistory = paymentHistory;
+                        user.lastApprovedPaymentId = paymentId;
+                    }
                     if (user.pendingLessons) {
                         user.totalLessonsPaid = (user.totalLessonsPaid || 0) + user.pendingLessons;
                     } else if (!user.totalLessonsPaid) {
                         user.totalLessonsPaid = BILLING_SETTINGS.lessonsPerMonth || 12; // Fallback
                     }
+                    user.referralDiscountCredits = Math.max(
+                        0,
+                        (Number(user.referralDiscountCredits) || 0) - (Number(user.pendingReferralCreditsUsed) || 0)
+                    );
+                    if (user.pendingReferralBy && !user.referralDiscountUsed) {
+                        const referrerRef = window.fsDoc(window.db, window.fPath('users'), user.pendingReferralBy);
+                        const referrerSnap = await window.fsGetDoc(referrerRef);
+                        if (referrerSnap.exists()) {
+                            const referrer = referrerSnap.data();
+                            const rewardedUsers = referrer.referralRewardedUsers || [];
+                            if (!rewardedUsers.includes(user.user)) {
+                                referrer.referralDiscountCredits = (Number(referrer.referralDiscountCredits) || 0) + 1;
+                                referrer.referralRewardedUsers = [...rewardedUsers, user.user];
+                                await window.fsSetDoc(referrerRef, referrer);
+                                const referrerIndex = USERS.findIndex(candidate => candidate.user === referrer.user);
+                                if (referrerIndex >= 0) USERS[referrerIndex] = referrer;
+                            }
+                        } else {
+                            console.error(`Referral owner "${user.pendingReferralBy}" no longer exists; referral credit was not granted.`);
+                        }
+                        user.referralDiscountUsed = true;
+                        user.referralRewardGranted = true;
+                    }
                     user.pendingInfo = null; 
                     user.pendingClasses = null; 
                     user.pendingLessons = null;
+                    user.pendingAmount = null;
+                    user.pendingReferralCreditsUsed = null;
+                    user.pendingReferralBy = null;
+                    user.pendingReferralCode = null;
+                    user.pendingPlanTitle = null;
+                    user.pendingPlanMonths = null;
+                    user.pendingPaymentId = null;
                 }
             }
 
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), user);
             renderStudentsList();
+            renderPaymentAccessList();
             renderClasses(); 
         }
     }
@@ -19052,8 +19997,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                                 <div onclick="selectDate('${dateStr}', '${role}')" 
                                      class="absolute inset-x-0.5 sm:inset-x-1 z-10 ${evColor} text-white rounded-md p-1 sm:p-1.5 shadow-sm border cursor-pointer pointer-events-auto transition-transform hover:scale-[1.02] hover:z-20 overflow-hidden flex flex-col"
                                      style="top: ${topPx}px; height: ${heightPx}px;"
-                                     title="${s.time} - ${s.className}\n${s.topic || ''}">
-                                    <div class="text-[9px] sm:text-[11px] font-black leading-tight truncate drop-shadow-sm">${s.className}</div>
+                                     title="${s.time} - ${window.getScheduleClassLabel(s)}\n${s.topic || ''}">
+                                    <div class="text-[9px] sm:text-[11px] font-black leading-tight truncate drop-shadow-sm">${window.getScheduleClassLabel(s)}</div>
                                     <div class="text-[8px] sm:text-[10px] font-medium opacity-90 truncate leading-tight mt-0.5">${s.time}</div>
                                 </div>`;
                             });
@@ -19103,7 +20048,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     <div class="bg-white border border-slate-200 p-4 rounded-lg shadow-sm mb-3">
                         <div class="flex justify-between items-start mb-2 border-b border-slate-100 pb-2">
                             <div>
-                                <span class="font-black text-blue-900 block text-lg">${s.className}</span>
+                                <span class="font-black text-blue-900 block text-lg">${window.getScheduleClassLabel(s)}</span>
                                 <span class="text-xs font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded inline-block mt-1 shadow-sm">${s.time}</span>
                             </div>
                             <div class="flex gap-1 shrink-0">
@@ -19187,10 +20132,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     }
 
     function promptCreateSchedule(dateStr = '') {
-        if(CLASSES.length === 0) { showModalMsg("Error", "Create a Class first."); return; }
+        const scheduleClassOptions = getSchedulableClassOptions();
+        if(scheduleClassOptions.length === 0) { showModalMsg("Error", "Create or assign a mini class before scheduling."); return; }
         if(!dateStr) dateStr = new Date().toISOString().split('T')[0];
 
-        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        let classOpts = '<option value="">-- Select a Mini Class --</option>' + scheduleClassOptions.map(option => `<option value="${option.key}">${option.label}</option>`).join('');
 
         document.getElementById('modal-title').textContent = "Schedule a Lesson";
         document.getElementById('modal-message').innerHTML = `
@@ -19251,24 +20197,25 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.querySelector('#custom-modal > div').classList.add('w-[600px]');
 
         window.updateSchedClassOptions = () => {
-            const clsId = document.getElementById('sched-class').value;
-            const cls = CLASSES.find(c => c.id === clsId);
+            const selectedOption = getSelectedSchedulableClass(document.getElementById('sched-class').value);
+            const cls = selectedOption?.cls;
+            const assignedTests = getClassAssignedTests(cls);
             
             // Load Tests
             const testCont = document.getElementById('sched-tests-container');
             const homeworkTestCont = document.getElementById('sched-homework-tests-container');
-            if(!cls || !cls.assignedTests || cls.assignedTests.length === 0) {
+            if(!cls || assignedTests.length === 0) {
                 testCont.innerHTML = "No tests assigned.";
                 testCont.classList.add('italic', 'text-slate-500');
                 homeworkTestCont.innerHTML = "No tests assigned.";
                 homeworkTestCont.classList.add('italic', 'text-slate-500');
             } else {
-                testCont.innerHTML = cls.assignedTests.map(tid => {
+                testCont.innerHTML = assignedTests.map(tid => {
                     const t = TEST_BANK.find(x => x.id === tid);
                     return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-200 p-1 rounded transition"><input type="checkbox" class="sched-test-cb w-3.5 h-3.5 text-blue-600 rounded" value="${t.id}"> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
                 }).join('');
                 testCont.classList.remove('italic', 'text-slate-500');
-                homeworkTestCont.innerHTML = cls.assignedTests.map(tid => {
+                homeworkTestCont.innerHTML = assignedTests.map(tid => {
                     const t = TEST_BANK.find(x => x.id === tid);
                     return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-amber-100 p-1 rounded transition"><input type="checkbox" class="sched-homework-test-cb w-3.5 h-3.5 text-amber-600 rounded" value="${t.id}"> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
                 }).join('');
@@ -19295,7 +20242,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         };
         
         document.getElementById('modal-confirm').onclick = async () => {
-            const selectedClass = CLASSES.find(c => c.id === document.getElementById('sched-class').value);
+            const selectedOption = getSelectedSchedulableClass(document.getElementById('sched-class').value);
+            const selectedClass = selectedOption?.cls;
             const date = document.getElementById('sched-date').value;
             const timeRaw = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
@@ -19305,7 +20253,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
 
-            if(selectedClass && date && timeRaw) {
+            if(selectedClass && (selectedOption.isLegacyMiniClass || window.isSchedulableClass(selectedClass)) && date && timeRaw) {
                 const time = window.formatClassTime(timeRaw);
                 if (!time) {
                     showModalMsg("Error", "Please enter a valid class time.");
@@ -19316,6 +20264,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     id: 'sch_'+Date.now(), 
                     classId: selectedClass.id,
                     className: selectedClass.name, 
+                    ...(selectedOption.isLegacyMiniClass ? {
+                        miniClassName: selectedClass.miniClassName,
+                        miniClassParentId: selectedClass.id
+                    } : {}),
                     date, time, topic, 
                     prepText,
                     assignedTests: selectedTests,
@@ -19352,7 +20304,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const sched = SCHEDULES.find(s => s.id === id);
         if(!sched) return;
 
-        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.id}" ${(sched.classId ? c.id === sched.classId : c.name === sched.className) ? 'selected' : ''}>${c.name}</option>`).join('');
+        const scheduleClassOptions = getSchedulableClassOptions();
+        let classOpts = '<option value="">-- Select a Mini Class --</option>' + scheduleClassOptions.map(option => {
+            const isSelected = option.isLegacyMiniClass
+                ? sched.miniClassParentId === option.cls.id && sched.miniClassName === option.cls.miniClassName
+                : (sched.classId ? option.cls.id === sched.classId : option.cls.name === sched.className);
+            return `<option value="${option.key}" ${isSelected ? 'selected' : ''}>${option.label}</option>`;
+        }).join('');
         const parsedScheduleTime = window.parseClassDateTime(sched.date, sched.time);
         const scheduleTimeInput = parsedScheduleTime ? `${String(parsedScheduleTime.getHours()).padStart(2, '0')}:${String(parsedScheduleTime.getMinutes()).padStart(2, '0')}` : '';
 
@@ -19414,25 +20372,26 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.querySelector('#custom-modal > div').classList.add('w-[600px]');
 
         window.updateSchedClassOptions = () => {
-            const clsId = document.getElementById('sched-class').value;
-            const cls = CLASSES.find(c => c.id === clsId);
+            const selectedOption = getSelectedSchedulableClass(document.getElementById('sched-class').value);
+            const cls = selectedOption?.cls;
+            const assignedTests = getClassAssignedTests(cls);
             
             // Tests
             const testCont = document.getElementById('sched-tests-container');
             const homeworkTestCont = document.getElementById('sched-homework-tests-container');
-            if(!cls || !cls.assignedTests || cls.assignedTests.length === 0) {
+            if(!cls || assignedTests.length === 0) {
                 testCont.innerHTML = "No tests assigned.";
                 testCont.classList.add('italic', 'text-slate-500');
                 homeworkTestCont.innerHTML = "No tests assigned.";
                 homeworkTestCont.classList.add('italic', 'text-slate-500');
             } else {
-                testCont.innerHTML = cls.assignedTests.map(tid => {
+                testCont.innerHTML = assignedTests.map(tid => {
                     const t = TEST_BANK.find(x => x.id === tid);
                     const isChecked = (sched.assignedTests || []).includes(tid) ? 'checked' : '';
                     return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-200 p-1 rounded transition"><input type="checkbox" class="sched-test-cb w-3.5 h-3.5 text-blue-600 rounded" value="${t.id}" ${isChecked}> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
                 }).join('');
                 testCont.classList.remove('italic', 'text-slate-500');
-                homeworkTestCont.innerHTML = cls.assignedTests.map(tid => {
+                homeworkTestCont.innerHTML = assignedTests.map(tid => {
                     const t = TEST_BANK.find(x => x.id === tid);
                     const isChecked = (sched.homeworkTests || []).includes(tid) ? 'checked' : '';
                     return t ? `<label class="flex items-center space-x-2 cursor-pointer hover:bg-amber-100 p-1 rounded transition"><input type="checkbox" class="sched-homework-test-cb w-3.5 h-3.5 text-amber-600 rounded" value="${t.id}" ${isChecked}> <span class="truncate font-medium text-slate-800 text-xs">${t.title}</span></label>` : '';
@@ -19465,7 +20424,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         };
 
         document.getElementById('modal-confirm').onclick = async () => {
-            const selectedClass = CLASSES.find(c => c.id === document.getElementById('sched-class').value);
+            const selectedOption = getSelectedSchedulableClass(document.getElementById('sched-class').value);
+            const selectedClass = selectedOption?.cls;
             const date = document.getElementById('sched-date').value;
             const time = window.formatClassTime(document.getElementById('sched-time').value);
             const topic = document.getElementById('sched-topic').value;
@@ -19475,11 +20435,18 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
 
-            if(selectedClass && date && time) {
+            if(selectedClass && (selectedOption.isLegacyMiniClass || window.isSchedulableClass(selectedClass)) && date && time) {
                 const updatedSchedule = {
                     ...sched,
                     classId: selectedClass.id,
                     className: selectedClass.name,
+                    ...(selectedOption.isLegacyMiniClass ? {
+                        miniClassName: selectedClass.miniClassName,
+                        miniClassParentId: selectedClass.id
+                    } : {
+                        miniClassName: '',
+                        miniClassParentId: ''
+                    }),
                     date,
                     time,
                     topic,
@@ -20176,8 +21143,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const cid = document.getElementById('student-class-select').value;
         const cls = CLASSES.find(c => c.id === cid);
         
-        if (!cls) {
-            showModalMsg("Error", "Class not found.");
+        if (!window.isSchedulableClass(cls)) {
+            showModalMsg("Mini Class Required", "Class bookings can only be created for an active mini class, not its parent class.");
             return;
         }
 
@@ -20217,13 +21184,43 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     // --- STUDENT PROFILE & TARGETS LOGIC ---
     let tempAvatarBase64 = null;
 
-    window.openStudentProfile = function() {
+    window.openStudentProfile = async function() {
+        try {
+            if (currentUser.isDemo) {
+                currentUser.referralCode = currentUser.referralCode || 'DEMO-ONLY';
+            } else {
+                currentUser = await ensureStudentReferralIdentity(currentUser);
+            }
+            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+        } catch (error) {
+            console.error('Unable to prepare student referral code:', error);
+            showModalMsg("Referral Code Error", "Could not load your referral code. Please try again later.");
+            return;
+        }
         tempAvatarBase64 = currentUser.avatar || null;
         document.getElementById('profile-name-display').textContent = currentUser.user;
         document.getElementById('profile-avatar-preview').src = tempAvatarBase64 || `https://ui-avatars.com/api/?name=${currentUser.user}&background=random`;
         document.getElementById('profile-target-score').value = currentUser.targetScore || '';
         document.getElementById('profile-test-date').value = currentUser.testDate || '';
+        document.getElementById('profile-referral-code').value = currentUser.referralCode;
+        const referralCredits = Math.max(0, Number(currentUser.referralDiscountCredits) || 0);
+        document.getElementById('profile-referral-credits').textContent = `${referralCredits} referral discount${referralCredits === 1 ? '' : 's'} available for future payments.`;
+        document.getElementById('profile-renewal-button').classList.toggle('hidden', (!currentUser.isPaid && getBillingExpiryMillis(currentUser) === null) || currentUser.paymentStatus === 'pending');
         document.getElementById('student-profile-modal').classList.remove('hidden');
+    };
+
+    window.copyReferralCode = async function() {
+        const input = document.getElementById('profile-referral-code');
+        if (!input?.value) return;
+        try {
+            await navigator.clipboard.writeText(input.value);
+            if (typeof window.showToast === 'function') window.showToast("Copied", "Referral code copied to clipboard.");
+        } catch (error) {
+            console.error('Unable to copy referral code:', error);
+            input.select();
+            document.execCommand('copy');
+            if (typeof window.showToast === 'function') window.showToast("Referral Code", "Select and copy the highlighted code.");
+        }
     };
 
     window.handleAvatarUpload = function(e) {
@@ -20276,7 +21273,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         try {
             const cloudUserIdx = USERS.findIndex(u => u.user === currentUser.user);
             if(cloudUserIdx > -1) USERS[cloudUserIdx] = currentUser;
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            if (!currentUser.isDemo) {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+            }
             sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
             
             document.getElementById('student-profile-modal').classList.add('hidden');
@@ -20304,7 +21303,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             display.textContent = (currentUser.gems || 0).toLocaleString();
         }
 
-        const isPaid = currentUser.isPaid === true;
+        const isPaid = hasActiveStudentAccess(currentUser);
 
         // Gem Widget Visibility
         const gemW = document.getElementById('gem-balance-widget');
@@ -20380,7 +21379,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     // ✨ NEW: Daily Streak Logic Handler
     window.checkDailyStreak = async function() {
         // Halt streak logic if user hasn't unlocked the course yet
-        if (!currentUser || currentUser.role !== 'student' || !currentUser.isPaid) return;
+        if (!currentUser || currentUser.role !== 'student' || !hasActiveStudentAccess(currentUser)) return;
 
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
@@ -20422,7 +21421,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
             
             try {
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                if (!currentUser.isDemo) {
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                }
                 sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
                 window.updateDashboardHeader();
                 
@@ -21231,8 +22232,16 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         return schedule.classId ? schedule.classId === cls.id : schedule.className === cls.name;
     };
 
+    window.getScheduleClassLabel = function(schedule) {
+        if (!schedule) return '';
+        return schedule.miniClassParentId && schedule.miniClassName
+            ? `${schedule.className} · ${schedule.miniClassName}`
+            : schedule.className || '';
+    };
+
     window.checkUpcomingClasses = function() {
         if (!currentUser || !SCHEDULES || SCHEDULES.length === 0) return;
+        if (currentUser.role === 'student' && !hasActiveStudentAccess(currentUser)) return;
         
         const reminderMins = AVAILABILITY.reminderMinutes || 15;
         const now = new Date();
@@ -21291,14 +22300,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const cid = document.getElementById('student-class-select')?.value;
         if(!cid) return;
         const cls = CLASSES.find(c => c.id === cid);
-        if(!cls || !cls.testSettings) return;
+        if(!cls || window.isTemplateClass(cls) || !(cls.enrolledStudents || []).includes(currentUser.user)) return;
 
         const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
         const completedTestIds = mySubs.map(s => s.testId);
+        const classSchedules = SCHEDULES.filter(schedule => window.scheduleBelongsToClass(schedule, cls) && (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)));
+        const deadlineTestIds = [...new Set([
+            ...getClassPathItems(cls).map(item => item.testId).filter(Boolean),
+            ...classSchedules.flatMap(schedule => schedule.homeworkTests || []),
+            ...Object.keys(cls.testSettings || {})
+        ])];
 
-        Object.keys(cls.testSettings).forEach(tid => {
+        deadlineTestIds.forEach(tid => {
             if (completedTestIds.includes(tid)) return; // Already done
-            const settings = cls.testSettings[tid];
+            const settings = getClassTestSettings(cls, tid);
             if (!settings.dueDate) return;
 
             const dueStr = settings.dueDate + (settings.dueTime ? 'T' + settings.dueTime : 'T23:59');
