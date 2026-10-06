@@ -5942,7 +5942,7 @@ window.initFirebaseSystem = async function() {
     // --- SCHEDULED LESSONS / MATERIALS ENGINE ---
     
     // ✨ Overhauled Add Schedule Modal (Includes Native Lesson Attacher)
-    window.promptCreateSchedule = function(dateStr) {
+    window.promptCreateScheduleLegacy = function(dateStr) {
         let defaultDate = dateStr || window.currentSelectedDate;
         if (!defaultDate) {
             const d = new Date();
@@ -6140,8 +6140,9 @@ window.initFirebaseSystem = async function() {
                 
                 // ✨ 1. Build the direct Enter buttons (No "Materials Attached" text!)
                 let lessonButtons = '';
-                if (s.materialIds && s.materialIds.length > 0) {
-                    lessonButtons = s.materialIds.map(tId => {
+                const lessonTestIds = [...new Set([...(s.assignedTests || []), ...(s.materialIds || [])])];
+                if (lessonTestIds.length > 0) {
+                    lessonButtons = lessonTestIds.map(tId => {
                         const test = TEST_BANK.find(t => t.id === tId);
                         if (!test) return '';
                         const icon = test.module === 'reading' ? '📖' : test.module === 'listening' ? '🎧' : test.module === 'writing' ? '✍️' : '🗣️';
@@ -6196,7 +6197,11 @@ window.initFirebaseSystem = async function() {
         const dayNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
         title.textContent = `${dayNames[dateObj.getDay()]}, ${dateObj.getDate()} tháng ${dateObj.getMonth() + 1}, ${dateObj.getFullYear()}`;
 
-        const daySchedules = SCHEDULES.filter(s => s.date === dateStr).sort((a, b) => a.time.localeCompare(b.time));
+        const selectedClassId = document.getElementById('student-class-select')?.value;
+        const selectedClass = CLASSES.find(c => c.id === selectedClassId);
+        const daySchedules = SCHEDULES
+            .filter(s => s.date === dateStr && selectedClass && window.scheduleBelongsToClass(s, selectedClass) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)))
+            .sort((a, b) => a.time.localeCompare(b.time));
 
         let html = '';
         if (daySchedules.length === 0) {
@@ -6204,8 +6209,9 @@ window.initFirebaseSystem = async function() {
         } else {
             daySchedules.forEach(s => {
                 let materialHtml = '';
-                if (s.materialIds && s.materialIds.length > 0) {
-                    const materialButtons = s.materialIds.map(tId => {
+                const lessonTestIds = [...new Set([...(s.assignedTests || []), ...(s.materialIds || [])])];
+                if (lessonTestIds.length > 0) {
+                    const materialButtons = lessonTestIds.map(tId => {
                         const test = TEST_BANK.find(t => t.id === tId);
                         if (!test) return '';
                         const icon = test.module === 'reading' ? '📖' : test.module === 'listening' ? '🎧' : test.module === 'writing' ? '✍️' : '🗣️';
@@ -6491,15 +6497,25 @@ window.initFirebaseSystem = async function() {
             promises.push(new Promise(resolve => { window.fsOnSnapshot(attQ, snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
 
             const myClasses = CLASSES.filter(c => (c.enrolledStudents || []).includes(currentUser.user));
-            const myClassNames = myClasses.map(c => c.name);
+            const myClassNames = [...new Set(myClasses.map(c => c.name).filter(Boolean))];
             const myClassIds = myClasses.map(c => c.id);
 
             if (myClassNames.length > 0) {
-                const safeClassNames = myClassNames.slice(0, 10);
                 const safeClassIds = myClassIds.slice(0, 10);
 
-                const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('className', 'in', safeClassNames));
-                promises.push(new Promise(resolve => { window.fsOnSnapshot(schedQ, snap => { SCHEDULES = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+                const scheduleBatches = [];
+                for (let i = 0; i < myClassNames.length; i += 10) {
+                    const classNameBatch = myClassNames.slice(i, i + 10);
+                    const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('className', 'in', classNameBatch));
+                    promises.push(new Promise(resolve => {
+                        window.fsOnSnapshot(schedQ, snap => {
+                            scheduleBatches[i / 10] = snap.docs.map(d => d.data());
+                            SCHEDULES = scheduleBatches.flat();
+                            window.triggerUIRefresh();
+                            resolve();
+                        });
+                    }));
+                }
                 
                 // STUDENT FORUM LISTENER WITH NATIVE OS NOTIFICATIONS
                 const msgQ = window.fsQuery(window.fsCollection(window.db, window.fPath('messages')), window.fsWhere('classId', 'in', safeClassIds));
@@ -7919,6 +7935,95 @@ window.initFirebaseSystem = async function() {
         const isPathEnabled = cls.learningPathEnabled !== false;
         
         const isOwner = currentUser.role === 'teacher';
+                // --- NEW: MINI-CLASS TEACHER DASHBOARD LOGIC (GROUPED) ---
+        let progressBoardHtml = '';
+        if (enrolled.length > 0) {
+            const requiredTestIds = cls.assignedTests || [];
+            const miniClassesMap = cls.miniClasses || {};
+            
+            let studentStats = enrolled.map(student => {
+                const mySubs = SUBMISSIONS.filter(s => s.student === student && s.className === cls.name);
+                const completedIds = [...new Set(mySubs.map(s => s.testId))];
+                let completedRequired = 0, pendingDeadlines = 0, totalScoreVal = 0, scoredCount = 0;
+
+                requiredTestIds.forEach(tid => {
+                    const isCompleted = completedIds.includes(tid);
+                    if (isCompleted) completedRequired++;
+                    
+                    const settings = cls.testSettings && cls.testSettings[tid];
+                    if (settings && settings.dueDate && !isCompleted) {
+                        const dueStr = settings.dueDate + (settings.dueTime ? 'T' + settings.dueTime : 'T23:59');
+                        if (new Date(dueStr) > new Date()) pendingDeadlines++;
+                    }
+
+                    if (isCompleted) {
+                        const sub = mySubs.find(s => s.testId === tid);
+                        if (sub && sub.score) {
+                            const scoreMatch = sub.score.match(/Band\s*([\d.]+)/) || sub.score.match(/([\d.]+)\s*\//);
+                            if (scoreMatch) { totalScoreVal += parseFloat(scoreMatch[1]); scoredCount++; }
+                        }
+                    }
+                });
+
+                return {
+                    student, completedRequired, totalRequired: requiredTestIds.length,
+                    progressPct: requiredTestIds.length ? Math.round((completedRequired / requiredTestIds.length) * 100) : 0,
+                    avgScore: scoredCount > 0 ? (totalScoreVal / scoredCount).toFixed(1) : '-',
+                    pendingDeadlines,
+                    miniClass: miniClassesMap[student] || 'Chưa phân lớp'
+                };
+            });
+
+            // Group data by Mini-Class
+            const groupedStats = {};
+            studentStats.forEach(stat => {
+                if(!groupedStats[stat.miniClass]) groupedStats[stat.miniClass] = [];
+                groupedStats[stat.miniClass].push(stat);
+            });
+
+            progressBoardHtml = `<div class="col-span-full border-t border-slate-200 bg-slate-50 p-6 space-y-8">`;
+            
+            for (const [mName, mStats] of Object.entries(groupedStats)) {
+                // Sort each group
+                mStats.sort((a, b) => b.progressPct !== a.progressPct ? b.progressPct - a.progressPct : (parseFloat(b.avgScore)||0) - (parseFloat(a.avgScore)||0));
+                
+                progressBoardHtml += `
+                <div>
+                    <h4 class="font-black text-indigo-900 text-lg flex items-center gap-2 mb-3"><span>🏆</span> Lớp: ${mName === 'Chưa phân lớp' ? cls.name + ' (Tổng)' : mName}</h4>
+                    <div class="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
+                        <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                            <thead class="bg-slate-100 border-b border-slate-200">
+                                <tr>
+                                    <th class="p-3 font-bold text-slate-600 text-center w-16">Hạng</th>
+                                    <th class="p-3 font-bold text-slate-600">Học viên</th>
+                                    <th class="p-3 font-bold text-slate-600 min-w-[200px]">Tiến độ làm bài</th>
+                                    <th class="p-3 font-bold text-slate-600 text-center">Điểm TB</th>
+                                    <th class="p-3 font-bold text-slate-600 text-center">Deadline chờ nộp</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${mStats.map((stat, idx) => `
+                                    <tr class="hover:bg-blue-50/50 transition-colors">
+                                        <td class="p-3 text-center border-r border-slate-100">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `<span class="font-black text-slate-500">${idx + 1}</span>`}</td>
+                                        <td class="p-3 font-bold text-slate-800 flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=${stat.student}&background=random" class="w-6 h-6 rounded-full shadow-sm"> ${stat.student}</td>
+                                        <td class="p-3">
+                                            <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
+                                                <span>Đã làm: ${stat.completedRequired}/${stat.totalRequired} bài</span><span class="text-blue-600">${stat.progressPct}%</span>
+                                            </div>
+                                            <div class="w-full bg-slate-100 rounded-full h-2 shadow-inner overflow-hidden"><div class="bg-blue-500 h-full rounded-full" style="width: ${stat.progressPct}%"></div></div>
+                                        </td>
+                                        <td class="p-3 text-center font-black text-emerald-600">${stat.avgScore}</td>
+                                        <td class="p-3 text-center">${stat.pendingDeadlines > 0 ? `<span class="bg-rose-100 text-rose-700 font-bold px-2 py-1 rounded text-xs shadow-sm">⏰ ${stat.pendingDeadlines} bài</span>` : `<span class="text-slate-400 text-xs font-medium">Hoàn tất</span>`}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }
+            progressBoardHtml += `</div>`;
+        }
+        // -----------------------------------------------------
 
         const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center justify-end w-full gap-3">
@@ -7974,14 +8079,32 @@ window.initFirebaseSystem = async function() {
                         Enrolled Students (${enrolled.length})
                         ${isOwner ? `<button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200">+ Assign User</button>` : ''}
                     </h4>
-                    <div class="space-y-2 max-h-60 overflow-y-auto pr-1 ${isOwner ? 'mb-6' : ''}">
-                        ${enrolled.length ? enrolled.map(student => `
+                                        <div class="space-y-2 max-h-60 overflow-y-auto pr-1 ${isOwner ? 'mb-6' : ''}">
+                        ${enrolled.length ? enrolled.map(student => {
+                            const miniClassesMap = cls.miniClasses || {};
+                            const uniqueMinis = [...new Set(Object.values(miniClassesMap))];
+                            const myMini = miniClassesMap[student] || '';
+                            
+                            return `
                             <div class="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition">
-                                <span class="font-medium text-slate-800 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span> ${student}</span>
-                                ${isOwner ? `<button onclick="window.unenrollStudent('${cls.id}', '${student}')" class="text-rose-400 text-xs font-bold hover:text-rose-600 px-2 py-1">Remove</button>` : ''}
-                            </div>
-                        `).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center"><svg class="w-8 h-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg><p class="text-xs font-bold text-slate-500">No students enrolled</p></div>'}
+                                <div class="flex items-center gap-2">
+                                    <span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span>
+                                    <span class="font-bold text-slate-800">${student}</span>
+                                </div>
+                                ${isOwner ? `
+                                <div class="flex items-center gap-2">
+                                    <select onchange="window.assignMiniClass('${cls.id}', '${student}', this.value)" class="text-xs font-bold text-indigo-700 bg-white border border-slate-200 rounded px-2 py-1.5 outline-none focus:border-indigo-500 shadow-sm cursor-pointer">
+                                        <option value="">-- Chưa phân lớp --</option>
+                                        ${uniqueMinis.map(m => `<option value="${m}" ${myMini === m ? 'selected' : ''}>Lớp: ${m}</option>`).join('')}
+                                        <option value="NEW">+ Tạo Mini-class mới...</option>
+                                    </select>
+                                    <button onclick="window.unenrollStudent('${cls.id}', '${student}')" class="text-rose-400 text-xs font-bold hover:text-white hover:bg-rose-500 px-2 py-1.5 border border-transparent rounded transition">Xóa</button>
+                                </div>
+                                ` : `<span class="text-xs font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded">${myMini || 'Chưa phân lớp'}</span>`}
+                            </div>`;
+                        }).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center"><p class="text-xs font-bold text-slate-500">No students enrolled</p></div>'}
                     </div>
+
 
                     ${isOwner ? `
                     <!-- NEW COLLABORATORS SECTION -->
@@ -8095,10 +8218,12 @@ window.initFirebaseSystem = async function() {
                         `).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-white rounded-xl border-2 border-dashed border-slate-200 text-center shadow-sm"><svg class="w-8 h-8 text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"></path></svg><p class="text-xs font-bold text-slate-500">No recent activity</p></div>'}
                     </div>
                 </div>
+                ${progressBoardHtml}
             </div>
         </div>`;
       }).join('');
     }
+
 
     window.deleteSubmission = function(id) {
         showConfirm("Delete Submission", "Are you sure you want to permanently delete this student's submission?", async () => {
@@ -8300,6 +8425,35 @@ window.initFirebaseSystem = async function() {
             renderClasses();
         };
     }
+
+        window.assignMiniClass = async function(cid, student, val) {
+        const cls = CLASSES.find(c => c.id === cid);
+        if (!cls) return;
+        if (!cls.miniClasses) cls.miniClasses = {};
+        
+        if (val === 'NEW') {
+            const newName = prompt("Nhập tên Lớp Nhỏ mới (VD: B2.1):");
+            if (newName && newName.trim()) {
+                cls.miniClasses[student] = newName.trim();
+            } else {
+                return renderClasses(); // Hủy bỏ
+            }
+        } else if (val === '') {
+            delete cls.miniClasses[student];
+        } else {
+            cls.miniClasses[student] = val;
+        }
+        
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            if(typeof window.showToast === 'function') window.showToast("Đã phân lớp", `Học viên ${student} đã được chuyển lớp.`);
+            renderClasses();
+        } catch(e) {
+            console.error(e);
+            alert("Lỗi khi lưu dữ liệu lên Cloud.");
+        }
+    };
+
 
     window.unenrollStudent = async function(cid, student) {
         const cls = CLASSES.find(c => c.id === cid);
@@ -13101,7 +13255,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         </div>`;
       };
 
-      const classSchedules = SCHEDULES.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
+      const classSchedules = SCHEDULES.filter(s => window.scheduleBelongsToClass(s, cls) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
       if (schedSec) {
           // Show the Timetable if they have classes OR if they are allowed to book them!
           if (classSchedules.length || cls.allowBooking) {
@@ -13203,49 +13357,108 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const nextModule = nextTest?.module || 'All set';
       const nextLabel = nextUp ? (nextUp.title || nextTest?.title || 'Next step') : 'You are all caught up';
 
+                  // --- NEW: STUDENT MINI-CLASS LOGIC (FILTERED) ---
+      const enrolledStudents = cls.enrolledStudents || [];
+      const miniClassesMap = cls.miniClasses || {};
+      const myMiniClass = miniClassesMap[currentUser.user];
+      
+      let peers = enrolledStudents;
+      let displayClassName = cls.name;
+      
+      // Nếu học sinh đã được phân Mini-class, chỉ lấy các bạn chung Mini-class để đua top!
+      if (myMiniClass) {
+          peers = enrolledStudents.filter(st => miniClassesMap[st] === myMiniClass);
+          displayClassName = myMiniClass;
+      }
+
+      let classLeaderboard = peers.map(st => {
+          const subs = SUBMISSIONS.filter(s => s.student === st && s.className === cls.name);
+          const score = subs.reduce((acc, curr) => {
+              const m = curr.score.match(/Band\s*([\d.]+)/) || curr.score.match(/([\d.]+)\s*\//);
+              return acc + (m ? parseFloat(m[1]) : 0);
+          }, 0);
+          return { student: st, score: score, count: subs.length };
+      }).sort((a,b) => b.score - a.score).slice(0, 5); // Chỉ lấy Top 5
+
+      let pendingDeadlinesHtml = '';
+      if (cls.testSettings) {
+          Object.keys(cls.testSettings).forEach(tid => {
+              if (!completedTestIds.includes(tid)) {
+                  const setting = cls.testSettings[tid];
+                  if (setting.dueDate) {
+                      const tName = TEST_BANK.find(x => x.id === tid)?.title || 'Bài tập / Test';
+                      pendingDeadlinesHtml += `
+                      <div class="bg-rose-50 border border-rose-200 p-3 rounded-xl mb-2 flex justify-between items-center shadow-sm">
+                          <span class="text-xs font-bold text-rose-800 truncate pr-2 w-2/3" title="${tName}">${tName}</span>
+                          <span class="text-[10px] bg-rose-600 text-white font-black px-2 py-1 rounded shadow-sm whitespace-nowrap">⏳ Hạn: ${setting.dueDate}</span>
+                      </div>`;
+                  }
+              }
+          });
+      }
+      if (!pendingDeadlinesHtml) pendingDeadlinesHtml = `<div class="text-xs text-slate-500 font-bold bg-slate-50 p-4 rounded-xl border border-slate-200 text-center shadow-inner">Tuyệt vời! Bạn không nợ bài tập nào. 🎉</div>`;
+      // -------------------------------------
+
       prog.innerHTML = `
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-5 text-white shadow-sm border border-blue-500/40">
             <div class="flex items-center justify-between gap-3 mb-4">
                 <div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Today at a glance</h3>
-                    <div class="font-black text-xl mt-1">Keep your streak alive</div>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Bài học tiếp theo</h3>
+                    <div class="font-black text-xl mt-1">Lộ trình của bạn</div>
                 </div>
-                <span class="text-2xl">✨</span>
+                <span class="text-2xl">📚</span>
             </div>
-            <div class="grid grid-cols-3 gap-3 text-left">
-                <div class="bg-white/10 border border-white/20 rounded-2xl p-3 backdrop-blur-sm">
-                    <div class="text-[10px] uppercase tracking-[0.16em] text-blue-100">Next</div>
-                    <div class="font-black text-sm mt-1 leading-snug line-clamp-2">${nextLabel}</div>
-                </div>
-                <div class="bg-white/10 border border-white/20 rounded-2xl p-3 backdrop-blur-sm">
-                    <div class="text-[10px] uppercase tracking-[0.16em] text-blue-100">Ready</div>
-                    <div class="font-black text-2xl mt-1">${readyCount}</div>
-                </div>
-                <div class="bg-white/10 border border-white/20 rounded-2xl p-3 backdrop-blur-sm">
-                    <div class="text-[10px] uppercase tracking-[0.16em] text-blue-100">Focus</div>
-                    <div class="font-black text-sm mt-1 uppercase">${nextModule}</div>
-                </div>
+            <div class="bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-sm mb-4">
+                <div class="text-[10px] uppercase tracking-[0.16em] text-blue-200 mb-1">Môn học: ${nextModule}</div>
+                <div class="font-black text-lg leading-snug line-clamp-2">${nextLabel}</div>
             </div>
-            ${nextUp ? `<button onclick="openModeSelection('${nextUp.testId}')" class="mt-4 w-full bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">Start next lesson <span aria-hidden="true">→</span></button>` : ''}
+            ${nextUp ? `<button onclick="openModeSelection('${nextUp.testId}')" class="w-full bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">Vào Học Ngay <span aria-hidden="true">→</span></button>` : ''}
         </div>
 
-        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+        <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm mt-1">
+            <div class="flex items-center gap-3 mb-5 border-b border-slate-100 pb-4">
+                <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-inner shrink-0">🏫</div>
+                <div class="min-w-0">
+                    <h3 class="font-black text-slate-800 text-base leading-tight truncate">Lớp: ${displayClassName}</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Khóa: ${cls.name}</p>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h4 class="text-[10px] font-black uppercase text-rose-500 mb-3 tracking-widest flex items-center gap-1.5"><span>⏰</span> Bài Tập Cần Nộp</h4>
+                ${pendingDeadlinesHtml}
+            </div>
+
+            <div>
+                <h4 class="text-[10px] font-black uppercase text-emerald-600 mb-3 tracking-widest flex items-center gap-1.5"><span>🏆</span> Top 5 Lớp Hiện Tại</h4>
+                <div class="space-y-2">
+                    ${classLeaderboard.map((lb, i) => `
+                        <div class="flex items-center justify-between p-3 rounded-xl ${lb.student === currentUser.user ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'bg-slate-50 border border-slate-100'} transition-all hover:scale-[1.02]">
+                            <div class="flex items-center gap-3">
+                                <span class="font-black ${i === 0 ? 'text-amber-500 text-sm' : 'text-slate-400 text-xs'} w-4 text-center">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</span>
+                                <img src="https://ui-avatars.com/api/?name=${lb.student}&background=random" class="w-7 h-7 rounded-full shadow-sm border border-white">
+                                <span class="text-xs font-bold ${lb.student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${lb.student}${lb.student === currentUser.user ? '<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(Bạn)</span>' : ''}</span>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[12px] font-black text-emerald-600">${lb.score.toFixed(1)} đ</span>
+                                <span class="text-[9px] font-bold text-slate-400 mt-0.5">${lb.count} bài</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mt-1">
             <div class="flex justify-between items-end mb-3">
                 <div>
-                    <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest">Course Progress</h3>
-                    <div class="font-bold text-slate-600 text-sm mt-1">${completedCount} of ${totalTests} modules completed</div>
+                    <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest">Tiến độ lộ trình</h3>
+                    <div class="font-bold text-slate-600 text-sm mt-1">${completedCount} / ${totalTests} bài đã hoàn thành</div>
                 </div>
                 <span class="font-black text-4xl text-blue-600 tracking-tighter leading-none">${progressPct}%</span>
             </div>
             <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden shadow-inner border border-slate-200/60 mt-4">
                 <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-full rounded-full transition-all duration-1000 shadow-sm" style="width: ${progressPct}%"></div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex flex-col items-center">
-            <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest w-full text-left mb-2 pl-1">Skill Analysis</h3>
-            <div class="w-full flex justify-center" style="height: 220px;">
-                <canvas id="skills-radar-chart"></canvas>
             </div>
         </div>
       `;
@@ -13623,9 +13836,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const pathItem = getClassPathItems(cls).find(item => item.testId === testId);
       const assigned = (cls.assignedTests || []).includes(testId);
       const scheduled = SCHEDULES.some(schedule =>
-        schedule.className === cls.name &&
+        window.scheduleBelongsToClass(schedule, cls) &&
         (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)) &&
-        (schedule.materialIds || []).includes(testId)
+        [...(schedule.assignedTests || []), ...(schedule.materialIds || [])].includes(testId)
       );
       const test = TEST_BANK.find(item => item.id === testId);
       const price = Number(test?.price) || 0;
@@ -18729,17 +18942,17 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 if (role === 'student') {
                     const cid = document.getElementById('student-class-select')?.value;
                     const cls = CLASSES.find(c => c.id === cid);
-                    if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
+                    daySchedules = cls ? daySchedules.filter(s => window.scheduleBelongsToClass(s, cls) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user))) : [];
                 }
                 
                 const hasClass = daySchedules.length > 0;
-                const badgeColor = role === 'student' ? 'bg-indigo-500' : 'bg-blue-500';
+                const badgeColor = 'bg-blue-500';
                 const badgeHtml = hasClass ? `<div class="mt-auto pt-2"><div class="w-2 h-2 rounded-full ${badgeColor} mx-auto shadow-sm"></div></div>` : '';
                 
                 let classesStr = "p-2 min-h-[60px] border rounded-lg cursor-pointer transition flex flex-col items-center justify-start hover:shadow-md";
                 if (isToday) classesStr += " bg-slate-800 font-bold text-white border-slate-900";
                 else classesStr += " bg-white text-slate-700 border-slate-200 hover:border-slate-400";
-                if (hasClass && !isToday) classesStr += role === 'student' ? " ring-2 ring-indigo-200 border-indigo-300 bg-indigo-50" : " ring-2 ring-blue-200 border-blue-300 bg-blue-50";
+                if (hasClass && !isToday) classesStr += " ring-2 ring-blue-200 border-blue-300 bg-blue-50";
 
                 gridHtml += `<div onclick="selectDate('${dateStr}', '${role}')" class="${classesStr}">
                     <span class="${isToday ? '' : 'mt-1'}">${day}</span>
@@ -18820,7 +19033,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             if (role === 'student') {
                                 const cid = document.getElementById('student-class-select')?.value;
                                 const cls = CLASSES.find(c => c.id === cid);
-                                if (cls) daySchedules = daySchedules.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
+                            daySchedules = cls ? daySchedules.filter(s => window.scheduleBelongsToClass(s, cls) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user))) : [];
                             }
                             
                             let colsEventsHtml = '';
@@ -18833,7 +19046,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                                 const topPx = ((eventHour - START_HOUR) + (eventMin / 60)) * ROW_HEIGHT;
                                 const durMins = AVAILABILITY.duration || 60;
                                 const heightPx = (durMins / 60) * ROW_HEIGHT;
-                                const evColor = role === 'student' ? 'bg-indigo-500 hover:bg-indigo-600 border-indigo-400' : 'bg-blue-600 hover:bg-blue-700 border-blue-500';
+                                const evColor = 'bg-blue-600 hover:bg-blue-700 border-blue-500';
                                 
                                 colsEventsHtml += `
                                 <div onclick="selectDate('${dateStr}', '${role}')" 
@@ -18913,7 +19126,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             let dayScheds = SCHEDULES.filter(s => s.date === dateStr);
             const cid = document.getElementById('student-class-select').value;
             const cls = CLASSES.find(c => c.id === cid);
-            if (cls) dayScheds = dayScheds.filter(s => s.className === cls.name && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
+            dayScheds = cls ? dayScheds.filter(s => window.scheduleBelongsToClass(s, cls) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user))) : [];
             
             document.getElementById('day-modal-title').textContent = displayDate;
             const content = document.getElementById('day-modal-content');
@@ -18922,6 +19135,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 content.innerHTML = '<p class="text-slate-500 italic mt-4">No scheduled classes or tasks for this day.</p>';
             } else {
                 content.innerHTML = dayScheds.map(s => {
+                    const lessonTestIds = [...new Set([...(s.assignedTests || []), ...(s.materialIds || [])])];
                     const renderTestItem = (tid) => {
                         const t = TEST_BANK.find(x => x.id === tid); if(!t) return '';
                         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber' };
@@ -18931,7 +19145,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                           <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); openModeSelection('${t.id}')" class="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-4 rounded text-xs shadow transition">Start</button>
                         </div>`;
                     };
-                    const lessonTests = (s.assignedTests || []).map(tid => renderTestItem(tid)).join('');
+                    const lessonTests = lessonTestIds.map(tid => renderTestItem(tid)).join('');
                     const homeworkTests = (s.homeworkTests || []).map(tid => renderTestItem(tid)).join('');
                     const prepHtml = s.prepText ? `<div class="p-3 bg-white rounded border border-slate-200 shadow-sm text-sm text-slate-700 mb-4 whitespace-pre-wrap leading-relaxed">${window.linkifyText(s.prepText)}</div>` : '';
                     
@@ -18976,7 +19190,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if(CLASSES.length === 0) { showModalMsg("Error", "Create a Class first."); return; }
         if(!dateStr) dateStr = new Date().toISOString().split('T')[0];
 
-        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
 
         document.getElementById('modal-title').textContent = "Schedule a Lesson";
         document.getElementById('modal-message').innerHTML = `
@@ -19037,8 +19251,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.querySelector('#custom-modal > div').classList.add('w-[600px]');
 
         window.updateSchedClassOptions = () => {
-            const clsName = document.getElementById('sched-class').value;
-            const cls = CLASSES.find(c => c.name === clsName);
+            const clsId = document.getElementById('sched-class').value;
+            const cls = CLASSES.find(c => c.id === clsId);
             
             // Load Tests
             const testCont = document.getElementById('sched-tests-container');
@@ -19081,7 +19295,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         };
         
         document.getElementById('modal-confirm').onclick = async () => {
-            const cls = document.getElementById('sched-class').value;
+            const selectedClass = CLASSES.find(c => c.id === document.getElementById('sched-class').value);
             const date = document.getElementById('sched-date').value;
             const timeRaw = document.getElementById('sched-time').value;
             const topic = document.getElementById('sched-topic').value;
@@ -19091,13 +19305,17 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
 
-            if(cls && date && timeRaw) {
-                const [h, m] = timeRaw.split(':');
-                const time = `${h%12||12}:${m} ${h>=12?'PM':'AM'}`;
+            if(selectedClass && date && timeRaw) {
+                const time = window.formatClassTime(timeRaw);
+                if (!time) {
+                    showModalMsg("Error", "Please enter a valid class time.");
+                    return;
+                }
 
                 const newSched = { 
                     id: 'sch_'+Date.now(), 
-                    className: cls, 
+                    classId: selectedClass.id,
+                    className: selectedClass.name, 
                     date, time, topic, 
                     prepText,
                     assignedTests: selectedTests,
@@ -19108,26 +19326,35 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     dateAdded: new Date().toLocaleDateString() 
                 };
                 
-                SCHEDULES.push(newSched);
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), newSched.id), newSched);
-                
-                document.getElementById('custom-modal').classList.add('hidden');
-                document.querySelector('#custom-modal > div').classList.remove('w-[600px]');
-                document.querySelector('#custom-modal > div').classList.add('w-96');
-                
-                window.renderCalendar('teacher');
-                window.selectDate(date, 'teacher');
+                try {
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), newSched.id), newSched);
+                    SCHEDULES.push(newSched);
+                    
+                    document.getElementById('custom-modal').classList.add('hidden');
+                    document.querySelector('#custom-modal > div').classList.remove('w-[600px]');
+                    document.querySelector('#custom-modal > div').classList.add('w-96');
+                    
+                    window.renderCalendar('teacher');
+                    window.selectDate(date, 'teacher');
+                } catch (error) {
+                    console.error('Unable to save scheduled class:', error);
+                    showModalMsg("Error", "Could not save the scheduled class. Please try again.");
+                }
             } else {
                 alert("Please select a class, date, and time.");
             }
         };
     }
 
+    window.promptCreateScheduleLegacy = window.promptCreateSchedule;
+
     window.editSchedule = function(id) {
         const sched = SCHEDULES.find(s => s.id === id);
         if(!sched) return;
 
-        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.name}" ${c.name === sched.className ? 'selected' : ''}>${c.name}</option>`).join('');
+        let classOpts = '<option value="">-- Select a Class --</option>' + CLASSES.map(c => `<option value="${c.id}" ${(sched.classId ? c.id === sched.classId : c.name === sched.className) ? 'selected' : ''}>${c.name}</option>`).join('');
+        const parsedScheduleTime = window.parseClassDateTime(sched.date, sched.time);
+        const scheduleTimeInput = parsedScheduleTime ? `${String(parsedScheduleTime.getHours()).padStart(2, '0')}:${String(parsedScheduleTime.getMinutes()).padStart(2, '0')}` : '';
 
         document.getElementById('modal-title').textContent = "Edit Schedule";
         document.getElementById('modal-message').innerHTML = `
@@ -19149,7 +19376,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 </div>
                 <div class="w-1/2">
                    <label class="block text-sm font-bold text-slate-700 mb-1">Time Text</label>
-                   <input type="text" id="sched-time" value="${sched.time}" placeholder="e.g. 10:00 AM" class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
+                   <input type="time" id="sched-time" value="${scheduleTimeInput}" class="w-full border-2 border-slate-200 p-2 rounded-md outline-none font-bold text-slate-700 focus:border-blue-500">
                 </div>
             </div>
             
@@ -19187,8 +19414,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.querySelector('#custom-modal > div').classList.add('w-[600px]');
 
         window.updateSchedClassOptions = () => {
-            const clsName = document.getElementById('sched-class').value;
-            const cls = CLASSES.find(c => c.name === clsName);
+            const clsId = document.getElementById('sched-class').value;
+            const cls = CLASSES.find(c => c.id === clsId);
             
             // Tests
             const testCont = document.getElementById('sched-tests-container');
@@ -19238,9 +19465,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         };
 
         document.getElementById('modal-confirm').onclick = async () => {
-            const cls = document.getElementById('sched-class').value;
+            const selectedClass = CLASSES.find(c => c.id === document.getElementById('sched-class').value);
             const date = document.getElementById('sched-date').value;
-            const time = document.getElementById('sched-time').value;
+            const time = window.formatClassTime(document.getElementById('sched-time').value);
             const topic = document.getElementById('sched-topic').value;
             const prepText = document.getElementById('sched-prep').value.trim();
             const recordingLink = document.getElementById('sched-recording').value.trim();
@@ -19248,25 +19475,35 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const selectedHomeworkTests = Array.from(document.querySelectorAll('.sched-homework-test-cb:checked')).map(cb => cb.value);
             const selectedStudents = Array.from(document.querySelectorAll('.sched-student-cb:checked')).map(cb => cb.value);
 
-            if(cls && date && time) {
-                sched.className = cls;
-                sched.date = date;
-                sched.time = time;
-                sched.topic = topic;
-                sched.prepText = prepText;
-                sched.recordingLink = recordingLink;
-                sched.assignedTests = selectedTests;
-                sched.homeworkTests = selectedHomeworkTests;
-                sched.attendingStudents = selectedStudents;
-                
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), sched.id), sched);
-                
-                document.getElementById('custom-modal').classList.add('hidden');
-                document.querySelector('#custom-modal > div').classList.remove('w-[600px]');
-                document.querySelector('#custom-modal > div').classList.add('w-96');
-                
-                window.renderCalendar('teacher');
-                window.selectDate(date, 'teacher');
+            if(selectedClass && date && time) {
+                const updatedSchedule = {
+                    ...sched,
+                    classId: selectedClass.id,
+                    className: selectedClass.name,
+                    date,
+                    time,
+                    topic,
+                    prepText,
+                    recordingLink,
+                    assignedTests: selectedTests,
+                    homeworkTests: selectedHomeworkTests,
+                    attendingStudents: selectedStudents
+                };
+
+                try {
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('schedules'), sched.id), updatedSchedule);
+                    SCHEDULES = SCHEDULES.map(item => item.id === sched.id ? updatedSchedule : item);
+                    
+                    document.getElementById('custom-modal').classList.add('hidden');
+                    document.querySelector('#custom-modal > div').classList.remove('w-[600px]');
+                    document.querySelector('#custom-modal > div').classList.add('w-96');
+                    
+                    window.renderCalendar('teacher');
+                    window.selectDate(date, 'teacher');
+                } catch (error) {
+                    console.error('Unable to update scheduled class:', error);
+                    showModalMsg("Error", "Could not update the scheduled class. Please try again.");
+                }
             } else {
                 alert("Please fill out the class, date, and time fields.");
             }
@@ -19951,6 +20188,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         const newSched = { 
             id: 'sch_'+Date.now(), 
+            classId: cls.id,
             className: cls.name, 
             date: dateStr, 
             time: time12, 
@@ -20963,17 +21201,34 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     
     window.parseClassDateTime = function(dateStr, timeStr) {
         if (!dateStr || !timeStr) return null;
-        try {
-            const [y, m, d] = dateStr.split('-');
-            const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-            if (!match) return null;
-            let h = parseInt(match[1]);
-            const min = parseInt(match[2]);
-            const ampm = match[3].toUpperCase();
-            if (ampm === 'PM' && h < 12) h += 12;
-            if (ampm === 'AM' && h === 12) h = 0;
-            return new Date(y, m - 1, d, h, min, 0, 0);
-        } catch(e) { return null; }
+        const dateMatch = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        const timeMatch = String(timeStr).trim().match(/^(?:(\d{1,2}):([0-5]\d)\s*(AM|PM)|([01]?\d|2[0-3]):([0-5]\d))$/i);
+        if (!dateMatch || !timeMatch) return null;
+
+        const [, year, month, day] = dateMatch;
+        let hour = Number(timeMatch[1] || timeMatch[4]);
+        const minute = Number(timeMatch[2] || timeMatch[5]);
+        if (timeMatch[3]) {
+            if (hour < 1 || hour > 12) return null;
+            if (timeMatch[3].toUpperCase() === 'PM' && hour < 12) hour += 12;
+            if (timeMatch[3].toUpperCase() === 'AM' && hour === 12) hour = 0;
+        }
+
+        const parsed = new Date(Number(year), Number(month) - 1, Number(day), hour, minute, 0, 0);
+        if (parsed.getFullYear() !== Number(year) || parsed.getMonth() !== Number(month) - 1 || parsed.getDate() !== Number(day)) return null;
+        return parsed;
+    };
+
+    window.formatClassTime = function(timeStr) {
+        const match = String(timeStr || '').match(/^([01]?\d|2[0-3]):([0-5]\d)$/);
+        if (!match) return '';
+        const hour = Number(match[1]);
+        return `${hour % 12 || 12}:${match[2]} ${hour >= 12 ? 'PM' : 'AM'}`;
+    };
+
+    window.scheduleBelongsToClass = function(schedule, cls) {
+        if (!schedule || !cls) return false;
+        return schedule.classId ? schedule.classId === cls.id : schedule.className === cls.name;
     };
 
     window.checkUpcomingClasses = function() {
@@ -20992,7 +21247,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     if (s.attendingStudents.includes(currentUser.user)) isMe = true;
                 } else {
                     // Check if they are enrolled in the overarching class (Legacy fallback)
-                    const cls = CLASSES.find(c => c.name === s.className);
+                    const cls = CLASSES.find(c => s.classId ? c.id === s.classId : c.name === s.className);
                     if (cls && cls.enrolledStudents && cls.enrolledStudents.includes(currentUser.user)) {
                         isMe = true;
                     }
