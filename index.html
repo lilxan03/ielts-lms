@@ -1684,13 +1684,19 @@
 
   <!-- STUDENT ADD FLASHCARD MODAL -->
   <div id="student-fc-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[200] flex items-center justify-center">
-    <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
-      <h2 class="text-xl font-bold mb-4 text-slate-900">Add to Flashcards</h2>
-      <label class="block text-sm font-bold text-slate-700 mb-1">Term / Selection</label>
-      <input type="text" id="fc-term-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none font-bold" />
-      <label class="block text-sm font-bold text-slate-700 mb-1">Definition / Translation</label>
-      <textarea id="fc-def-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none text-sm" rows="3"></textarea>
-      <label class="block text-sm font-bold text-slate-700 mb-1">Save to List</label>
+    <div class="bg-white rounded-lg p-6 w-full max-w-lg mx-4 shadow-2xl animate-scale-up">
+      <h2 class="text-xl font-bold mb-1 text-slate-900">Add a phrase or language chunk</h2>
+      <p class="text-xs text-slate-500 mb-4">Save complete collocations, phrasal verbs, idioms, or sentence frames—not isolated word translations.</p>
+      <label class="block text-sm font-bold text-slate-700 mb-1">Phrase / chunk</label>
+      <input type="text" id="fc-term-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none font-bold" placeholder="e.g. take something into consideration" />
+      <label class="block text-sm font-bold text-slate-700 mb-1">Meaning / translation</label>
+      <textarea id="fc-def-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none text-sm" rows="2" placeholder="Explain the whole phrase in context"></textarea>
+      <label class="block text-sm font-bold text-slate-700 mb-1">Example sentence (optional)</label>
+      <textarea id="fc-context-input" class="w-full border border-slate-300 rounded px-3 py-2 mb-3 focus:ring-blue-600 outline-none text-sm" rows="2" placeholder="We should take the long-term costs into consideration."></textarea>
+      <div class="flex items-center justify-between mb-5">
+        <label for="fc-list-select" class="block text-sm font-bold text-slate-700">Save to deck</label>
+        <button type="button" onclick="window.createFlashcardDeck()" class="text-blue-600 text-xs font-bold hover:underline">+ New deck</button>
+      </div>
       <select id="fc-list-select" class="w-full border border-slate-300 rounded px-3 py-2 mb-5 focus:ring-blue-600 outline-none text-sm font-medium"></select>
       <div class="flex justify-between items-center">
         <button onclick="promptCreateFcList()" class="text-blue-600 text-sm font-bold hover:underline">+ New List</button>
@@ -3334,7 +3340,10 @@
     <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] overflow-hidden border border-slate-200 animate-scale-up">
       <div class="p-5 md:p-6 bg-gradient-to-r from-indigo-700 to-blue-800 flex justify-between items-center shrink-0 z-20 shadow-md">
         <h2 class="font-black text-xl md:text-2xl text-white flex items-center gap-3 tracking-tight"><span class="bg-white/20 p-2 rounded-xl shadow-inner leading-none">🗂️</span> Study Cards</h2>
-        <button onclick="window.closeAppRouteView()" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+        <div class="flex items-center gap-3">
+          <button onclick="window.openFlashcardForm()" class="px-3 py-2 bg-white/15 hover:bg-white/25 border border-white/25 text-white rounded-lg text-sm font-bold transition">＋ Add phrase</button>
+          <button onclick="window.closeAppRouteView()" class="text-white/70 hover:text-white font-black text-4xl leading-none transition transform hover:scale-110">&times;</button>
+        </div>
       </div>
       <div class="p-4 md:p-6 bg-slate-50 border-b border-slate-200 shrink-0 shadow-sm z-10">
         <select id="panel-fc-list-select" onchange="window.renderFlashcardPanel()" class="w-full border-2 border-slate-300 p-3 md:p-4 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none text-base md:text-lg cursor-pointer shadow-sm bg-white"></select>
@@ -5064,6 +5073,11 @@ window.initFirebaseSystem = async function() {
         if (cardIndex === -1) return;
         
         deck[cardIndex] = window.calculateSM2(deck[cardIndex], quality);
+        const reviewedAt = Date.now();
+        const reviewHistory = Array.isArray(deck[cardIndex].reviewHistory) ? deck[cardIndex].reviewHistory : [];
+        reviewHistory.push({ at: reviewedAt, quality });
+        deck[cardIndex].reviewHistory = reviewHistory.filter(review => Number(review.at) >= reviewedAt - 30 * 24 * 60 * 60 * 1000);
+        deck[cardIndex].lastReviewAt = reviewedAt;
         
         // ✨ FIX: Prevent cloud sync for temporary test decks! (Allows studying without polluting personal lists)
         if (listId === 'temp_test_deck') {
@@ -5071,6 +5085,17 @@ window.initFirebaseSystem = async function() {
                 if (typeof window.renderStudyFlashcard === 'function') window.renderStudyFlashcard();
             }
             return; 
+        }
+
+        if (currentUser?.isDemo) {
+            sessionStorage.setItem('demo_flashcards', JSON.stringify(FLASHCARDS));
+            if (typeof window.showToast === 'function') window.showToast("Progress Saved", "Demo progress is saved for this browser session.");
+            if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('hidden')) {
+                window.renderFlashcardPanel();
+            } else if (document.getElementById('study-mode-modal') && !document.getElementById('study-mode-modal').classList.contains('hidden')) {
+                window.renderStudyFlashcard();
+            }
+            return;
         }
         
         try {
@@ -5101,26 +5126,54 @@ window.initFirebaseSystem = async function() {
         const selection = window.getSelection();
         let term = '';
         if (selection && selection.rangeCount > 0) term = selection.toString().trim();
-        
-        document.getElementById('fc-term-input').value = term;
-        document.getElementById('fc-def-input').value = '';
-        
-        const selectEl = document.getElementById('fc-list-select');
-        selectEl.innerHTML = '';
-        
-        // Filter out the temporary deck
+        window.openFlashcardForm(term);
+    };
+
+    window.openFlashcardForm = function(term = '', def = '', context = '') {
+        const termInput = document.getElementById('fc-term-input');
+        const defInput = document.getElementById('fc-def-input');
+        const contextInput = document.getElementById('fc-context-input');
+        const listSelect = document.getElementById('fc-list-select');
+        if (!termInput || !defInput || !contextInput || !listSelect) return;
+
+        termInput.value = term;
+        defInput.value = def;
+        contextInput.value = context;
         const listIds = Object.keys(FLASHCARDS || {}).filter(id => id !== 'temp_test_deck');
-        if (listIds.length === 0) {
-            selectEl.innerHTML = '<option value="">-- No Lists Available --</option>';
-        } else {
-            listIds.forEach(id => {
-                const opt = document.createElement('option');
-                opt.value = id;
-                opt.textContent = id.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Clean formatting
-                selectEl.appendChild(opt);
-            });
+        listSelect.innerHTML = listIds.map(id => `<option value="${id}">${id.replace(/_/g, ' ')}</option>`).join('');
+        if (!listIds.length) listSelect.innerHTML = '<option value="">Create a deck first</option>';
+        if (window.activeFlashcardList && listIds.includes(window.activeFlashcardList)) {
+            listSelect.value = window.activeFlashcardList;
         }
         document.getElementById('student-fc-modal').classList.remove('hidden');
+    };
+
+    window.createFlashcardDeck = function() {
+        showInputPrompt("New Phrase Deck", "Enter a name for your phrase deck:", name => {
+            const label = String(name || '').trim();
+            const deckId = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+            if (!deckId) {
+                if (typeof window.showToast === 'function') window.showToast("Invalid deck name", "Enter a name containing letters or numbers.", "error");
+                return;
+            }
+            if (!FLASHCARDS[deckId]) FLASHCARDS[deckId] = [];
+            const select = document.getElementById('fc-list-select');
+            if (select) {
+                select.innerHTML = Object.keys(FLASHCARDS).filter(id => id !== 'temp_test_deck')
+                    .map(id => `<option value="${id}">${id.replace(/_/g, ' ')}</option>`).join('');
+                select.value = deckId;
+            }
+            window.activeFlashcardList = deckId;
+            if (currentUser?.isDemo) {
+                sessionStorage.setItem('demo_flashcards', JSON.stringify(FLASHCARDS));
+                return;
+            }
+            window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), `${currentUser.user}_${deckId}`), { data: FLASHCARDS[deckId] })
+                .catch(error => {
+                    console.error('Unable to save flashcard deck:', error);
+                    if (typeof window.showModalMsg === 'function') window.showModalMsg("Error", "Could not create the flashcard deck.");
+                });
+        });
     };
 
     window.closeStudentFlashcardCreator = function() {
@@ -5151,6 +5204,7 @@ window.initFirebaseSystem = async function() {
     window.saveStudentFlashcard = async function() {
         const term = document.getElementById('fc-term-input').value.trim();
         const def = document.getElementById('fc-def-input').value.trim();
+        const context = document.getElementById('fc-context-input').value.trim();
         const listId = document.getElementById('fc-list-select').value;
         
         if (!term || !def) {
@@ -6822,6 +6876,7 @@ window.initFirebaseSystem = async function() {
       if (!user || user.role !== 'student') return user;
 
       let code = String(user.referralCode || '').trim().toUpperCase();
+      if (code) return user;
       for (let attempt = 0; attempt < 5; attempt++) {
         if (!code) {
           const bytes = new Uint8Array(8);
@@ -6833,14 +6888,23 @@ window.initFirebaseSystem = async function() {
         const codeRef = window.fsDoc(window.db, window.fPath('referral_codes'), code);
         const existing = await window.fsGetDoc(codeRef);
         if (!existing.exists() || existing.data().user === user.user) {
-          user.referralCode = code;
+          const updatedUser = { ...user, referralCode: code };
           await window.fsSetDoc(codeRef, { user: user.user, code });
-          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), user.user), user);
-          return user;
+          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), user.user), updatedUser);
+          return updatedUser;
         }
         code = '';
       }
       throw new Error('Could not allocate a unique referral code.');
+    }
+
+    async function tryEnsureStudentReferralIdentity(user) {
+      try {
+        return { user: await ensureStudentReferralIdentity(user), error: null };
+      } catch (error) {
+        console.error('Student referral setup failed:', error);
+        return { user, error };
+      }
     }
 
     function prepareDemoSession(user = currentUser) {
@@ -6875,6 +6939,13 @@ window.initFirebaseSystem = async function() {
 
       currentUser = demoUser;
       USERS = [demoUser];
+      FLASHCARDS = {};
+      try {
+        const savedDecks = JSON.parse(sessionStorage.getItem('demo_flashcards') || '{}');
+        if (savedDecks && typeof savedDecks === 'object' && !Array.isArray(savedDecks)) FLASHCARDS = savedDecks;
+      } catch (error) {
+        console.error('Unable to restore demo flashcards:', error);
+      }
       try {
         const savedSubmissions = JSON.parse(sessionStorage.getItem('demo_submissions') || '[]');
         SUBMISSIONS = Array.isArray(savedSubmissions) ? savedSubmissions : [];
@@ -6902,9 +6973,8 @@ window.initFirebaseSystem = async function() {
       const mappedEmail = `${safeEmailPrefix}@khanhlms.com`;
 
       try {
-          const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
-          
           if (authMode === 'register') {
+            const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
             if (userDoc.exists()) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up as Student"; btn.disabled=false; return; }
             
             // Try to create in Firebase Auth (Fail-safe if not enabled in console yet)
@@ -6920,13 +6990,34 @@ window.initFirebaseSystem = async function() {
           } else {
             // LOGIN MODE
             let isAuthenticated = false;
+            let authError = null;
 
-            // Attempt 1: True Firebase Authentication (For newer accounts)
+            // Authenticate first so profile reads do not run under anonymous access.
             try {
                 await window.fsAuthSignIn(window.auth, mappedEmail, p);
                 isAuthenticated = true;
-            } catch(authErr) {
-                // Attempt 2: Legacy DB Auth & Silent Migration (For your Teacher account)
+            } catch (error) {
+                authError = error;
+            }
+
+            let userDoc;
+            try {
+                userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
+            } catch (profileError) {
+                console.error('Unable to read the account profile after login attempt:', profileError);
+                if (isAuthenticated && (profileError.code === 'permission-denied' || /missing or insufficient permissions/i.test(profileError.message || ''))) {
+                    throw new Error('Password accepted, but Firestore denied access to this student profile. The Firestore rules must allow the signed-in student to read their own users document.');
+                }
+                throw profileError;
+            }
+
+            if (isAuthenticated && !userDoc.exists()) {
+                throw new Error('The password was accepted, but the student profile is missing in Firestore. Ask the teacher to restore this account profile.');
+            }
+
+            if (!isAuthenticated) {
+                // Legacy accounts store a password in the profile and can only migrate
+                // when Firestore rules still permit reading that legacy profile.
                 if (userDoc.exists() && userDoc.data().pass === p) {
                     try {
                         console.log("Upgrading legacy account to secure Firebase Auth...");
@@ -6935,17 +7026,30 @@ window.initFirebaseSystem = async function() {
                         console.warn("Silent migration failed. Logging in via legacy mode.", migrateErr);
                     }
                     isAuthenticated = true; // ✨ FIX: Let you in no matter what!
+                } else if (!userDoc.exists()) {
+                    err.textContent = authError?.code === 'auth/invalid-credential'
+                        ? 'Invalid username or password'
+                        : authError?.message || 'Invalid username or password';
+                    err.classList.remove('hidden');
+                    btn.textContent = "Log In";
+                    btn.disabled = false;
+                    return;
                 }
             }
 
             if (!isAuthenticated) {
-                err.textContent = 'Invalid credentials'; err.classList.remove('hidden'); btn.textContent="Log In"; btn.disabled=false; return;
+                err.textContent = 'Invalid username or password'; err.classList.remove('hidden'); btn.textContent="Log In"; btn.disabled=false; return;
             }
             
             currentUser = userDoc.data();
           }
 
-          if (currentUser.role === 'student') currentUser = await ensureStudentReferralIdentity(currentUser);
+          let referralSetupError = null;
+          if (currentUser.role === 'student') {
+              const referralResult = await tryEnsureStudentReferralIdentity(currentUser);
+              currentUser = referralResult.user;
+              referralSetupError = referralResult.error;
+          }
           
           sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
           
@@ -6953,6 +7057,9 @@ window.initFirebaseSystem = async function() {
           await window.attachPrivateListeners();
           
           checkAuth();
+          if (referralSetupError && typeof window.showToast === 'function') {
+              window.showToast("Referral code unavailable", "You are signed in, but the referral code could not be created. Ask the teacher to check Firestore permissions.");
+          }
       } catch (e) {
           console.error(e); 
           // ✨ FIX: Show the exact error message so we know what broke!
@@ -7002,11 +7109,15 @@ window.initFirebaseSystem = async function() {
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
             }
 
-            currentUser = await ensureStudentReferralIdentity(currentUser);
+            const referralResult = await tryEnsureStudentReferralIdentity(currentUser);
+            currentUser = referralResult.user;
             
             sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
             await window.attachPrivateListeners();
             checkAuth();
+            if (referralResult.error && typeof window.showToast === 'function') {
+                window.showToast("Referral code unavailable", "You are signed in, but the referral code could not be created. Ask the teacher to check Firestore permissions.");
+            }
             
         } catch (e) {
             console.error("Google Auth Error:", e);
@@ -18194,24 +18305,28 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       e.preventDefault(); e.stopPropagation(); document.getElementById('exam-selection-tooltip').classList.add('hidden');
       const sel = window.getSelection().toString().trim();
       if(!sel) return;
-      document.getElementById('fc-term-input').value = sel; document.getElementById('fc-def-input').value = '';
-      const listSel = document.getElementById('fc-list-select');
-      
       const testTitle = (APP_DATA && APP_DATA.title) ? APP_DATA.title : 'My List';
       
       if(!FLASHCARDS[testTitle]) { 
           FLASHCARDS[testTitle] = []; 
-          const docId = `${currentUser.user}_${testTitle}`;
-          window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), {data: []}); 
+          if (currentUser?.isDemo) {
+              sessionStorage.setItem('demo_flashcards', JSON.stringify(FLASHCARDS));
+          } else {
+              const docId = `${currentUser.user}_${testTitle}`;
+              window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), {data: []}).catch(error => {
+                  console.error('Unable to create flashcard deck:', error);
+                  window.showModalMsg("Error", "Could not create the flashcard deck.");
+              });
+          }
       }
-      
-      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}" ${k===testTitle?'selected':''}>📁 My Deck: ${k}</option>`).join('');
-      document.getElementById('student-fc-modal').classList.remove('hidden');
+      window.activeFlashcardList = testTitle;
+      window.openFlashcardForm(sel);
     }
     
     window.saveStudentFlashcard = async function() {
         const term = document.getElementById('fc-term-input').value.trim();
         const def = document.getElementById('fc-def-input').value.trim();
+        const context = document.getElementById('fc-context-input').value.trim();
         const listId = document.getElementById('fc-list-select').value;
         
         if (!term || !def || !listId) {
@@ -18221,34 +18336,43 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         if (!FLASHCARDS[listId]) FLASHCARDS[listId] = [];
 
+        const now = Date.now();
         const newCard = {
             id: 'fc_' + Date.now(),
             term: term,
             def: def,
+            context,
             list: listId,
             
             // --- ✨ SM-2 Spaced Repetition Fields ---
             repetition: 0,
-            interval: 0,
+            interval: 1,
             efactor: 2.5,
-            nextReviewDate: Date.now()
+            nextReviewDate: now,
+            reviewHistory: []
         };
 
         FLASHCARDS[listId].push(newCard);
 
         try {
-            const docId = `${currentUser.user}_${listId}`;
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: FLASHCARDS[listId] });
+            if (currentUser?.isDemo) {
+                sessionStorage.setItem('demo_flashcards', JSON.stringify(FLASHCARDS));
+            } else {
+                const docId = `${currentUser.user}_${listId}`;
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: FLASHCARDS[listId] });
+            }
             window.showToast("Saved", "Flashcard added successfully!");
             
             document.getElementById('student-fc-modal').classList.add('hidden');
             document.getElementById('fc-term-input').value = '';
             document.getElementById('fc-def-input').value = '';
+            document.getElementById('fc-context-input').value = '';
             
             if (!document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
                 window.renderFlashcardPanel();
             }
         } catch (err) {
+            FLASHCARDS[listId] = FLASHCARDS[listId].filter(card => card.id !== newCard.id);
             console.error(err);
             window.showModalMsg("Error", "Failed to save flashcard.");
         }
@@ -18321,8 +18445,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     window.importCardToMine = async function(term) {
       const v = APP_DATA.vocab.find(x => x.term === term); if(!v) return;
-      
-      document.getElementById('fc-term-input').value = v.term;
       let textLines = [];
       if(v.lvl) textLines.push(`Level: ${v.lvl}`);
       if(v.pron) textLines.push(`[${v.pron}]`);
@@ -18330,18 +18452,26 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if(v.vi) textLines.push(`VI: ${v.vi}`);
       if(v.syn) textLines.push(`Syn: ${v.syn}`);
       if(v.ant) textLines.push(`Ant: ${v.ant}`);
-      document.getElementById('fc-def-input').value = textLines.join('\n');
-      
-      const listSel = document.getElementById('fc-list-select');
-      
-      if(Object.keys(FLASHCARDS).length === 0) { 
-          FLASHCARDS['My List'] = []; 
-          const docId = `${currentUser.user}_My List`;
-          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), {data: []}); 
+      const listIds = Object.keys(FLASHCARDS).filter(id => id !== 'temp_test_deck');
+      let defaultList = listIds[0];
+      if (!defaultList) {
+          defaultList = 'my_phrases';
+          FLASHCARDS[defaultList] = [];
+          if (currentUser?.isDemo) {
+              sessionStorage.setItem('demo_flashcards', JSON.stringify(FLASHCARDS));
+          } else {
+              try {
+                  await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), `${currentUser.user}_${defaultList}`), { data: [] });
+              } catch (error) {
+                  delete FLASHCARDS[defaultList];
+                  console.error('Unable to create phrase deck:', error);
+                  window.showModalMsg("Error", "Could not create a phrase deck for this card.");
+                  return;
+              }
+          }
       }
-      
-      listSel.innerHTML = Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 My Deck: ${k}</option>`).join('');
-      document.getElementById('student-fc-modal').classList.remove('hidden');
+      window.activeFlashcardList = defaultList;
+      window.openFlashcardForm(v.term, textLines.join('\n'), v.example || v.context || '');
     }
 
     // ==========================================
@@ -18367,11 +18497,17 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             if (c.repetition === undefined) {
                 c.repetition = 0; c.interval = 0; c.efactor = 2.5; c.nextReviewDate = 0; needsSave = true;
             }
+            if (!Array.isArray(c.reviewHistory)) c.reviewHistory = [];
         });
         
-        // Silently save patched legacy cards to the cloud
-        if (needsSave && currentUser) {
-             window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), `${currentUser.user}_${listId}`), { data: deck }).catch(e=>console.log(e));
+        if (needsSave && currentUser && !currentUser.isDemo) {
+             window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), `${currentUser.user}_${listId}`), { data: deck }).catch(error => {
+                 console.error('Unable to migrate flashcard review data:', error);
+                 if (!window.flashcardMigrationWarningShown) {
+                     window.flashcardMigrationWarningShown = true;
+                     window.showModalMsg("Flashcard Sync Error", "Could not prepare your old flashcards for spaced repetition. Check your connection and try again.");
+                 }
+             });
         }
         
         let dueCards = deck.filter(card => !card.nextReviewDate || card.nextReviewDate <= now);
@@ -18395,94 +18531,155 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             return;
         }
 
-        // Apply SM-2 algorithm math
-        deck[cardIndex] = window.calculateSM2(deck[cardIndex], quality);
-        
-        // ✨ UI RESPONDS INSTANTLY: Re-render the panel immediately before waiting for cloud sync
-        if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('translate-x-full')) {
-            window.renderFlashcardPanel();
-        }
+        const previousCard = JSON.parse(JSON.stringify(deck[cardIndex]));
+        const reviewedAt = Date.now();
+        const reviewedCard = window.calculateSM2(deck[cardIndex], quality);
+        const reviewHistory = Array.isArray(previousCard.reviewHistory) ? previousCard.reviewHistory : [];
+        reviewHistory.push({ at: reviewedAt, quality });
+        reviewedCard.reviewHistory = reviewHistory.filter(review => Number(review.at) >= reviewedAt - 30 * 24 * 60 * 60 * 1000).slice(-100);
+        reviewedCard.lastReviewAt = reviewedAt;
+        deck[cardIndex] = reviewedCard;
 
         try {
-            const docId = `${currentUser.user}_${listId}`;
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: deck });
-        } catch (err) {
-            console.error("SRS Sync Error:", err);
+            if (currentUser?.isDemo) {
+                sessionStorage.setItem('demo_flashcards', JSON.stringify(FLASHCARDS));
+            } else {
+                const docId = `${currentUser.user}_${listId}`;
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: deck });
+            }
+            window.showToast("Progress Saved", `Next review in ${deck[cardIndex].interval} day(s).`);
+            if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('hidden')) {
+                window.renderFlashcardPanel();
+            }
+            if (document.getElementById('study-mode-modal') && !document.getElementById('study-mode-modal').classList.contains('hidden')) {
+                window.renderStudyFlashcard();
+            }
+        } catch (error) {
+            deck[cardIndex] = previousCard;
+            console.error("SRS Sync Error:", error);
+            if (document.getElementById('student-fc-panel') && !document.getElementById('student-fc-panel').classList.contains('hidden')) {
+                window.renderFlashcardPanel();
+            }
+            window.showModalMsg("Sync Error", "Could not save your flashcard review. Your progress was not recorded; please try again.");
         }
     };
 
     window.renderFlashcardPanel = function() {
         const select = document.getElementById('panel-fc-list-select');
         if (!select) return;
-        
-        const listId = select.value;
         const container = document.getElementById('panel-fc-container');
         if (!container) return;
 
-        // 1. Populate dropdown lists if empty
-        const lists = Object.keys(FLASHCARDS);
-        const hasTeacherDeck = Array.from(select.options).some(option => option.value.startsWith('tv_'));
-        if (lists.length === 0 && !hasTeacherDeck) {
-            select.innerHTML = '<option value="">No Flashcard Decks Found</option>';
-            container.innerHTML = '<div class="text-center text-slate-400 mt-10 text-sm">Highlight any word during practice to create a flashcard deck!</div>';
+        const escapeHtml = value => String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        const teacherOptions = Array.from(select.options)
+            .filter(option => option.value.startsWith('tv_'))
+            .map(option => ({ value: option.value, label: option.textContent }));
+        const listIds = Object.keys(FLASHCARDS || {}).filter(id => id !== 'temp_test_deck');
+        const previousSelection = select.value;
+        select.innerHTML = [
+            ...teacherOptions.map(option => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`),
+            ...listIds.map(id => `<option value="${escapeHtml(id)}">📁 My Deck: ${escapeHtml(id.replace(/_/g, ' '))}</option>`)
+        ].join('');
+
+        if (!select.options.length) {
+            select.innerHTML = '<option value="">Create a deck to start</option>';
+            container.innerHTML = '<div class="p-8 text-center text-slate-600"><p class="font-bold text-lg mb-2">Start learning phrases as chunks</p><p class="text-sm">Create a deck, then add collocations, phrasal verbs, idioms, or sentence frames with an example sentence.</p></div>';
             return;
         }
+        if ([...select.options].some(option => option.value === previousSelection)) select.value = previousSelection;
 
-        if (!select.innerHTML || select.options.length === 0) {
-            select.innerHTML = lists.map(l => `<option value="${l}">${l}</option>`).join('');
-        }
-
-        const activeList = select.value || lists[0];
-        
+        const activeList = select.value;
+        window.activeFlashcardList = activeList;
         const dueCards = window.getCardsDueForReview(activeList);
         const isTeacherDeck = activeList.startsWith('tv_');
-
-        if (dueCards.length === 0) {
-            container.innerHTML = `<div class="p-10 text-center flex flex-col items-center justify-center h-full"><span class="text-7xl mb-4 block drop-shadow-md">🎉</span><h3 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">All Caught Up!</h3><p class="text-slate-500 font-medium text-lg">You have reviewed all flashcards in this deck for today.</p></div>`;
-            return;
-        }
-
-        const card = dueCards[0];
-        
-        // Safely escape terms to prevent quotes from breaking the button clicks
-        const safeList = activeList.replace(/'/g, "\\'");
-        const safeId = card.id || '';
-        const safeTerm = (card.term || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const deck = FLASHCARDS[activeList] || [];
+        const escapeRegExp = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const firstDueCard = dueCards[0];
+        const recallPrompt = firstDueCard && typeof firstDueCard.context === 'string' && firstDueCard.context.trim()
+            ? firstDueCard.context.replace(new RegExp(escapeRegExp(firstDueCard.term), 'ig'), '_____')
+            : firstDueCard?.def || firstDueCard?.eng || firstDueCard?.vi || 'Recall the phrase from its meaning.';
+        const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        const recentReviews = deck.flatMap(card => Array.isArray(card.reviewHistory) ? card.reviewHistory : [])
+            .filter(review => Number(review.at) >= weekAgo);
+        const recalledReviews = recentReviews.filter(review => Number(review.quality) >= 3).length;
+        const recallRate = recentReviews.length ? Math.round(recalledReviews / recentReviews.length * 100) : null;
+        const statsHtml = `
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-5">
+                <div class="bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
+                    <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Recall rate · 7 days</div>
+                    <div class="text-xl font-black text-indigo-700 mt-1">${recallRate === null ? '—' : `${recallRate}%`}</div>
+                    <div class="text-[10px] text-slate-500">${recentReviews.length ? `${recalledReviews}/${recentReviews.length} recalls rated` : 'Rate reviews to start tracking'}</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm">
+                    <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">Due now</div>
+                    <div class="text-xl font-black text-amber-600 mt-1">${dueCards.length}</div>
+                    <div class="text-[10px] text-slate-500">cards to review</div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-3 text-center shadow-sm col-span-2 md:col-span-1">
+                    <div class="text-[10px] font-black uppercase tracking-wider text-slate-400">In this deck</div>
+                    <div class="text-xl font-black text-slate-700 mt-1">${deck.length || (isTeacherDeck ? dueCards.length : 0)}</div>
+                    <div class="text-[10px] text-slate-500">phrase cards</div>
+                </div>
+            </div>`;
 
         container.innerHTML = `
-            <div class="flex flex-col justify-between w-full max-w-4xl mx-auto animate-fade-in h-full">
-                <div class="text-sm font-black text-slate-400 uppercase tracking-widest text-center mb-4 mt-2 shrink-0">
-                    ${isTeacherDeck ? 'Reviewing Teacher Vocab' : `Due Reviews Left: <span class="text-blue-600">${dueCards.length}</span>`}
-                </div>
-                
-                <div class="flip-card perspective-1000 flex-1 flex items-center justify-center my-2 md:my-4 cursor-pointer group relative w-full shrink-0 min-h-[300px]" onclick="this.classList.toggle('flipped')">
-                    ${isTeacherDeck ? `<button onclick="event.stopPropagation(); window.importCardToMine('${safeTerm}')" class="absolute -top-4 -right-4 w-12 h-12 bg-blue-600 text-white rounded-full font-black shadow-lg opacity-0 group-hover:opacity-100 transition z-20 text-3xl leading-none flex items-center justify-center hover:scale-110 hover:bg-blue-700">+</button>` : ''}
-                    
-                    <div class="flip-card-inner relative w-full h-full text-center transition-transform duration-500 rounded-[2.5rem] shadow-xl" style="transform-style: preserve-3d;">
-                        
-                        <div class="flip-card-front absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 border-4 border-blue-800 rounded-[2.5rem] p-6 md:p-10 flex flex-col items-center justify-center text-white shadow-inner" style="-webkit-backface-visibility: hidden; backface-visibility: hidden;">
-                            <span class="text-xs font-black text-blue-200 uppercase tracking-widest absolute top-6 bg-blue-950/50 px-4 py-1.5 rounded-full border border-blue-400/20">Tap to Flip 🔄</span>
-                            <h3 class="text-4xl md:text-5xl lg:text-7xl font-black tracking-tight drop-shadow-lg px-4 leading-snug">${card.term}</h3>
-                        </div>
-
-                        <div class="flip-card-back absolute inset-0 bg-white border-4 border-slate-200 rounded-[2.5rem] p-6 md:p-10 flex flex-col items-center justify-center" style="-webkit-backface-visibility: hidden; backface-visibility: hidden; transform: rotateY(180deg);">
-                            <span class="text-xs font-black text-slate-400 uppercase tracking-widest absolute top-6 bg-slate-100 px-4 py-1.5 rounded-full border border-slate-200">Definition</span>
-                            <p class="text-xl md:text-3xl lg:text-4xl font-bold text-slate-700 leading-relaxed overflow-y-auto w-full px-2 md:px-6 custom-scrollbar mt-8">${card.def}</p>
+            <div class="w-full max-w-4xl mx-auto animate-fade-in">
+                ${statsHtml}
+                ${dueCards.length ? `
+                    <div class="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-3">${isTeacherDeck ? 'Teacher vocabulary · save a phrase to track recall' : `Due reviews · ${dueCards.length} remaining`}</div>
+                    <div class="flip-card perspective-1000 w-full min-h-[300px] md:min-h-[360px] cursor-pointer group relative mb-5" onclick="this.classList.toggle('flipped')">
+                        ${isTeacherDeck ? '<button id="flashcard-import-current" type="button" class="absolute top-3 right-3 z-20 w-11 h-11 bg-blue-600 text-white rounded-full font-black shadow-lg text-2xl">+</button>' : ''}
+                        <div class="flip-card-inner relative w-full h-full min-h-[300px] md:min-h-[360px] text-center transition-transform duration-500" style="transform-style:preserve-3d">
+                            <div class="flip-card-front absolute inset-0 bg-gradient-to-br from-blue-700 to-blue-900 border-4 border-blue-800 rounded-[2rem] p-6 md:p-10 flex flex-col items-center justify-center text-white" style="backface-visibility:hidden">
+                                <span class="text-xs font-black text-blue-200 uppercase tracking-widest mb-6">Recall the whole phrase · tap to reveal</span>
+                                <p class="text-xl md:text-3xl font-bold leading-relaxed whitespace-pre-wrap">${escapeHtml(recallPrompt)}</p>
+                            </div>
+                            <div class="flip-card-back absolute inset-0 bg-white border-4 border-slate-200 rounded-[2rem] p-6 md:p-10 flex flex-col items-center justify-center overflow-y-auto" style="backface-visibility:hidden;transform:rotateY(180deg)">
+                                <span class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Phrase / chunk</span>
+                                <h3 class="text-2xl md:text-4xl font-black text-indigo-800 leading-snug mb-4">${escapeHtml(dueCards[0].term)}</h3>
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Meaning / translation</span>
+                                <p class="text-base md:text-xl font-bold text-slate-700 leading-relaxed whitespace-pre-wrap">${escapeHtml(dueCards[0].def || dueCards[0].eng || dueCards[0].vi || 'No definition provided.')}</p>
+                                ${dueCards[0].context ? `<div class="mt-4 pt-3 border-t border-slate-200 w-full text-left"><div class="text-[10px] font-black uppercase tracking-wider text-indigo-500 mb-1">Example in context</div><p class="text-sm md:text-base text-slate-600 italic whitespace-pre-wrap">${escapeHtml(dueCards[0].context)}</p></div>` : ''}
+                            </div>
                         </div>
                     </div>
-                </div>
+                    ${isTeacherDeck ? '<p class="text-center text-xs text-slate-500 mb-4">Save this phrase to your deck to start spaced-repetition tracking.</p>' : `
+                    <div class="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <p class="text-[10px] md:text-xs font-black text-slate-500 text-center mb-3 uppercase tracking-widest">How well did you recall the entire phrase?</p>
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                            <button type="button" data-review-quality="0" disabled class="py-3 bg-rose-50 hover:bg-rose-100 text-rose-700 font-black rounded-xl text-sm border-2 border-rose-200 disabled:opacity-40">Blank · ❌</button>
+                            <button type="button" data-review-quality="2" disabled class="py-3 bg-orange-50 hover:bg-orange-100 text-orange-700 font-black rounded-xl text-sm border-2 border-orange-200 disabled:opacity-40">Hard · ⚠️</button>
+                            <button type="button" data-review-quality="4" disabled class="py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-black rounded-xl text-sm border-2 border-blue-200 disabled:opacity-40">Good · 👍</button>
+                            <button type="button" data-review-quality="5" disabled class="py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-black rounded-xl text-sm border-2 border-emerald-200 disabled:opacity-40">Easy · 🌟</button>
+                        </div>
+                    </div>`}
+                ` : `<div class="p-8 text-center bg-white rounded-2xl border border-slate-200"><span class="text-5xl block mb-3">🎉</span><h3 class="text-2xl font-black text-slate-800 mb-2">All caught up</h3><p class="text-sm text-slate-500">No cards are due right now. Add a phrase or come back when the next review is due.</p></div>`}
+            </div>`;
 
-                <div class="bg-white p-5 md:p-8 rounded-[2rem] border border-slate-200 shadow-sm mt-4 md:mt-6 w-full shrink-0">
-                    <p class="text-[10px] md:text-xs font-black text-slate-500 text-center mb-3 md:mb-4 uppercase tracking-widest">How well did you recall this?</p>
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 0, '${safeTerm}')" class="py-3 md:py-4 bg-rose-50 hover:bg-rose-100 text-rose-700 font-black rounded-xl text-sm transition border-2 border-rose-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">0: Blank <span>❌</span></button>
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 2, '${safeTerm}')" class="py-3 md:py-4 bg-orange-50 hover:bg-orange-100 text-orange-700 font-black rounded-xl text-sm transition border-2 border-orange-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">2: Hard <span>⚠️</span></button>
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 4, '${safeTerm}')" class="py-3 md:py-4 bg-blue-50 hover:bg-blue-100 text-blue-700 font-black rounded-xl text-sm transition border-2 border-blue-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">4: Good <span>👍</span></button>
-                        <button onclick="window.submitFlashcardReview('${safeList}', '${safeId}', 5, '${safeTerm}')" class="py-3 md:py-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-black rounded-xl text-sm transition border-2 border-emerald-200 shadow-sm flex items-center justify-center gap-2 hover:-translate-y-0.5">5: Easy <span>🌟</span></button>
-                    </div>
-                </div>
-            </div>
-        `;
+        const importButton = document.getElementById('flashcard-import-current');
+        if (importButton) {
+            importButton.addEventListener('click', event => {
+                event.stopPropagation();
+                window.importCardToMine(dueCards[0].term);
+            });
+        }
+        const recallCard = container.querySelector('.flip-card');
+        if (recallCard && !isTeacherDeck) {
+            recallCard.addEventListener('click', () => {
+                const hasRevealedAnswer = recallCard.classList.contains('flipped');
+                container.querySelectorAll('[data-review-quality]').forEach(button => { button.disabled = !hasRevealedAnswer; });
+            });
+        }
+        container.querySelectorAll('[data-review-quality]').forEach(button => {
+            button.addEventListener('click', () => {
+                window.submitFlashcardReview(activeList, dueCards[0].id, Number(button.dataset.reviewQuality));
+            });
+        });
     };
 
 
