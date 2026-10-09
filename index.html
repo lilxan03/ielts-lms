@@ -16523,7 +16523,18 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           qListContainer = document.getElementById('questions-list-container');
       }
       
-      if (APP_DATA.module === 'listening') {
+      if (APP_DATA.module === 'listening' && window.listeningMediaInjection) {
+          const audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
+          if (mediaDiv.dataset.audioUrl !== audioUrl || mediaDiv.innerHTML === '') {
+              window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
+              mediaDiv.innerHTML = window.listeningMediaInjection;
+              mediaDiv.dataset.audioUrl = audioUrl;
+              if (window.getListeningYoutubeVideoId(audioUrl)) {
+                  window.configureListeningMedia(audioUrl, 'practice-listening-audio', 'practice-youtube-player', { controls: isTimeFree });
+              }
+              wireKaraokeAudio(getListeningPlayback('practice-listening-audio', 'practice-youtube-player'), document.getElementById('passage-container'));
+          }
+      } else if (APP_DATA.module === 'listening') {
           if (mediaDiv.innerHTML !== '') {
               window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
               mediaDiv.innerHTML = '';
