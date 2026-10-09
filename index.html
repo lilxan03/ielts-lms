@@ -4264,6 +4264,28 @@ window.initFirebaseSystem = async function() {
         }
     };
 
+    function renderListeningYoutubeFallback(container, videoId, message) {
+        if (!container) return;
+        const panel = document.createElement('div');
+        panel.className = 'flex h-full w-full items-center justify-center bg-[#0b0b0d] p-6 text-center text-white';
+        const content = document.createElement('div');
+        const title = document.createElement('div');
+        title.className = 'mb-2 text-xl font-bold';
+        title.textContent = 'Video cannot play here';
+        const detail = document.createElement('div');
+        detail.className = 'mb-4 text-sm text-slate-300';
+        detail.textContent = message;
+        const link = document.createElement('a');
+        link.className = 'inline-block rounded-full bg-white px-5 py-2 font-black text-slate-900 shadow';
+        link.href = `https://www.youtube.com/watch?v=${videoId}`;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Open on YouTube';
+        content.append(title, detail, link);
+        panel.appendChild(content);
+        container.replaceChildren(panel);
+    }
+
     function getListeningPlayback(audioId, youtubeContainerId) {
         const record = youtubeContainerId && listeningYoutubePlayers.get(youtubeContainerId);
         return record ? record.facade : document.getElementById(audioId);
@@ -4395,14 +4417,14 @@ window.initFirebaseSystem = async function() {
                                     ? 'This YouTube video does not allow embedded playback.'
                                     : `YouTube player error (${event.data}).`;
                             if (record.callbacks.onError) record.callbacks.onError(message);
-                            if (window.location.protocol === 'file:') {
-                                window.openListeningVideoFallback(url);
-                            }
+                            renderListeningYoutubeFallback(youtubeContainer, videoId, message);
                         }
                     }
                 });
             }).catch(error => {
-                if (record.callbacks.onError) record.callbacks.onError('Could not load the YouTube player.');
+                const message = 'The embedded player could not load. Open the video directly on YouTube.';
+                if (record.callbacks.onError) record.callbacks.onError(message);
+                renderListeningYoutubeFallback(youtubeContainer, videoId, message);
                 console.error('YouTube player API failed:', error);
             });
             return record.facade;
@@ -16144,6 +16166,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if (APP_DATA.module === 'listening') {
         const listeningAudioUrl = (p.audioUrl || '').trim();
                     const listeningYoutubeVideoId = window.getListeningYoutubeVideoId(p.audioUrl || '');
+                    window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
           const notice = document.getElementById('listening-exam-notice');
           const instruction = document.getElementById('listening-exam-instruction');
           const buttonLabel = document.getElementById('listening-exam-button-label');
@@ -16190,7 +16213,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               </div>
           `;
           passageContainer.innerHTML = `${window.listeningMediaInjection || ''}${studyToggles}${transcriptPanelHtml}`;
-          wireKaraokeAudio(getActiveListeningPlayback(), passageContainer);
+          const listeningPlayback = listeningYoutubeVideoId
+              ? window.configureListeningMedia(listeningAudioUrl, 'practice-listening-audio', 'practice-youtube-player', { controls: Boolean(isTimeFree) })
+              : getActiveListeningPlayback();
+          wireKaraokeAudio(listeningPlayback, passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
@@ -16560,10 +16586,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }
       
       if (APP_DATA.module === 'listening') {
-          if (mediaDiv.innerHTML !== '') {
-              window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
-              mediaDiv.innerHTML = '';
-          }
+          if (mediaDiv.innerHTML !== '') mediaDiv.innerHTML = '';
           mediaDiv.dataset.audioUrl = '';
       } else if (window.listeningMediaInjection) {
           const audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
