@@ -121,6 +121,104 @@
     }
     .rich-editor p { margin-bottom: 0.5rem; }
     .rich-editor:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
+
+    .youtube-embed-shell {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+      margin: 0 0 1.25rem;
+      padding: 0.35rem 0;
+      width: 100%;
+    }
+    .youtube-embed-card {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      border-radius: 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: #02050a;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+    }
+    .youtube-embed-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
+      pointer-events: none;
+      z-index: 1;
+    }
+    #edit-listening-youtube-player,
+    #exam-listening-youtube-player,
+    .youtube-player-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      overflow: hidden;
+      border-radius: 1rem;
+    }
+    #edit-listening-youtube-player iframe,
+    #exam-listening-youtube-player iframe,
+    .youtube-player-frame iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+    .youtube-embed-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .youtube-embed-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1rem;
+      border-radius: 0.85rem;
+      background: #fff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      box-shadow: 0 10px 18px rgba(96, 165, 250, 0.18);
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .youtube-embed-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(96, 165, 250, 0.24);
+    }
+    .youtube-embed-link::before {
+      content: "▶";
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.15rem;
+      height: 1.15rem;
+      border-radius: 999px;
+      background: #ef4444;
+      color: white;
+      font-size: 0.62rem;
+      line-height: 1;
+      padding-left: 0.08rem;
+    }
+    .youtube-embed-transcript-btn {
+      flex-shrink: 0;
+      border: 1px solid #bfdbfe;
+      background: #fff;
+      color: #1d4ed8;
+      border-radius: 0.75rem;
+      padding: 0.6rem 0.9rem;
+      font-size: 0.72rem;
+      font-weight: 800;
+      box-shadow: 0 8px 14px rgba(59, 130, 246, 0.12);
+    }
         .speech-word { transition: background-color 100ms ease, color 100ms ease; border-radius: 0.2rem; }
         .karaoke-line { transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease; }
         .karaoke-line.is-active { background: rgba(59, 130, 246, 0.14); color: #1d4ed8; box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.12); }
@@ -3272,7 +3370,7 @@
     <div class="flex flex-1 overflow-hidden theme-bg-main relative" id="split-container">
       
       <!-- Listening Exam Mode Overlay -->
-      <div id="listening-exam-overlay" class="hidden absolute inset-0 bg-[#404040] z-[100] flex-col items-center justify-center text-white p-8 text-center">
+      <div id="listening-exam-overlay" class="hidden absolute left-0 top-0 bottom-0 w-1/2 bg-[#404040] z-[100] flex-col items-center justify-center text-white p-8 text-center">
          <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-6"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
             <p id="listening-exam-notice" class="text-lg mb-6 max-w-2xl leading-relaxed font-medium">You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.</p>
             <p id="listening-exam-instruction" class="mb-8 font-medium">To continue, click Play.</p>
@@ -3281,7 +3379,7 @@
                 <span id="listening-exam-button-label">Play</span>
          </button>
       </div>
-    <div id="exam-listening-youtube-player" class="hidden absolute inset-0 z-10 bg-black"></div>
+    <div id="exam-listening-youtube-player" class="hidden absolute left-0 top-0 bottom-0 w-1/2 z-10 bg-black"></div>
     <audio id="exam-listening-audio" class="hidden"></audio>
 
       <div class="border-r border-slate-300 overflow-y-auto p-8 pb-32 shadow-inner theme-bg-main relative" id="passage-container" style="width: 50%;"></div>
@@ -15988,6 +16086,23 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const listeningTranscriptHtml = renderKaraokeTranscript(p) || renderListeningTranscript(p);
 
       window.listeningMediaInjection = '';
+      window.createListeningVideoCard = function(playerId, videoUrl, showTranscriptButton = false) {
+          const safeUrl = String(videoUrl || '').trim();
+          const transcriptButton = showTranscriptButton
+              ? '<button onclick="toggleTranscript()" class="youtube-embed-transcript-btn" title="Show/Hide Transcript">👁️ Transcript</button>'
+              : '';
+          return `
+              <div class="youtube-embed-shell">
+                  <div class="youtube-embed-card">
+                      <div id="${playerId}" class="youtube-player-frame" aria-label="Listening video player"></div>
+                  </div>
+                  <div class="youtube-embed-actions">
+                      ${safeUrl ? `<a href="${safeUrl}" target="_blank" rel="noreferrer" class="youtube-embed-link">Watch on YouTube</a>` : ''}
+                      ${transcriptButton}
+                  </div>
+              </div>
+          `;
+      };
 
       if (APP_DATA.module === 'listening') {
         const listeningAudioUrl = (p.audioUrl || '').trim();
@@ -16000,12 +16115,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             : 'You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.';
           if (instruction) instruction.textContent = 'To continue, click Play.';
           if (buttonLabel) buttonLabel.textContent = 'Play';
-          passageContainer.classList.add('hidden');
-          resizer.classList.add('hidden');
+          passageContainer.classList.remove('hidden');
+          resizer.classList.remove('hidden');
           
           if (listeningAudioUrl) {
               if (listeningYoutubeVideoId) {
-                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex items-center gap-3"><div id="practice-youtube-player" class="w-full aspect-video flex-1 min-w-0"></div>${isTimeFree ? '<button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button>' : ''}</div>`;
+                  window.listeningMediaInjection = window.createListeningVideoCard('practice-youtube-player', listeningAudioUrl, Boolean(isTimeFree));
                   window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
                   if (listeningOverlay) {
                       listeningOverlay.classList.remove('hidden');
@@ -16032,7 +16147,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           }
           // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
           passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `${studyToggles}<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
+          passageContainer.innerHTML = `${window.listeningMediaInjection || ''}${studyToggles}<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
           wireKaraokeAudio(getActiveListeningPlayback(), passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
@@ -16402,7 +16517,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           qListContainer = document.getElementById('questions-list-container');
       }
       
-      if (window.listeningMediaInjection) {
+      if (APP_DATA.module === 'listening') {
+          if (mediaDiv.innerHTML !== '') {
+              window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
+              mediaDiv.innerHTML = '';
+          }
+          mediaDiv.dataset.audioUrl = '';
+      } else if (window.listeningMediaInjection) {
           const audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
           if (mediaDiv.dataset.audioUrl !== audioUrl) {
               window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
