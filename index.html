@@ -15797,16 +15797,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     };
 
     window.toggleTranscript = function() {
-        const passage = document.getElementById('passage-container');
-        const resizer = document.getElementById('resizer');
-        // Toggle visibility of the left reading pane
-        if (passage.classList.contains('hidden')) {
-            passage.classList.remove('hidden');
-            resizer.classList.remove('hidden');
-        } else {
-            passage.classList.add('hidden');
-            resizer.classList.add('hidden');
-        }
+        const transcriptPanel = document.getElementById('listening-transcript-panel');
+        if (!transcriptPanel) return;
+        transcriptPanel.classList.toggle('hidden');
     };
 
     window.readingSpeed = 220;
@@ -16151,9 +16144,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
               if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
           }
-          // ✨ NEW: Preload the transcript text into the DOM (it stays hidden until toggled)
-          passageContainer.style.width = '50%'; 
-          passageContainer.innerHTML = `${window.listeningMediaInjection || ''}${studyToggles}<div class="passage-text font-bold mb-6">${p.title} (Transcript)</div>${media}<div class="passage-text text-justify">${listeningTranscriptHtml || htmlText}</div>`;
+          passageContainer.style.width = '50%';
+          const transcriptPanelHtml = `
+              <div id="listening-transcript-panel" class="hidden mt-6 passage-text text-justify">
+                  <div class="passage-text font-bold mb-4">${p.title} (Transcript)</div>
+                  ${listeningTranscriptHtml || htmlText}
+              </div>
+          `;
+          passageContainer.innerHTML = `${window.listeningMediaInjection || ''}${studyToggles}${transcriptPanelHtml}`;
           wireKaraokeAudio(getActiveListeningPlayback(), passageContainer);
       } else if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
           passageContainer.classList.remove('hidden');
@@ -16523,18 +16521,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           qListContainer = document.getElementById('questions-list-container');
       }
       
-      if (APP_DATA.module === 'listening' && window.listeningMediaInjection) {
-          const audioUrl = APP_DATA.parts[currentPartIdx].audioUrl || '';
-          if (mediaDiv.dataset.audioUrl !== audioUrl || mediaDiv.innerHTML === '') {
-              window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
-              mediaDiv.innerHTML = window.listeningMediaInjection;
-              mediaDiv.dataset.audioUrl = audioUrl;
-              if (window.getListeningYoutubeVideoId(audioUrl)) {
-                  window.configureListeningMedia(audioUrl, 'practice-listening-audio', 'practice-youtube-player', { controls: isTimeFree });
-              }
-              wireKaraokeAudio(getListeningPlayback('practice-listening-audio', 'practice-youtube-player'), document.getElementById('passage-container'));
-          }
-      } else if (APP_DATA.module === 'listening') {
+      if (APP_DATA.module === 'listening') {
           if (mediaDiv.innerHTML !== '') {
               window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
               mediaDiv.innerHTML = '';
