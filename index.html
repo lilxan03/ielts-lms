@@ -4251,6 +4251,19 @@ window.initFirebaseSystem = async function() {
         }
     }
 
+    window.openListeningVideoFallback = function(rawUrl) {
+        let value = String(rawUrl || '').trim();
+        const videoId = window.getListeningYoutubeVideoId(value);
+        if (videoId) {
+            value = `https://www.youtube.com/watch?v=${videoId}`;
+        }
+        if (!value || !/^https?:\/\//i.test(value)) return;
+        const popup = window.open(value, '_blank', 'noopener,noreferrer');
+        if (!popup) {
+            window.location.href = value;
+        }
+    };
+
     function getListeningPlayback(audioId, youtubeContainerId) {
         const record = youtubeContainerId && listeningYoutubePlayers.get(youtubeContainerId);
         return record ? record.facade : document.getElementById(audioId);
@@ -4272,6 +4285,28 @@ window.initFirebaseSystem = async function() {
         const youtubeContainer = document.getElementById(youtubeContainerId);
 
         if (videoId && youtubeContainer) {
+            if (window.location.protocol === 'file:') {
+                if (audio) {
+                    audio.pause();
+                    audio.removeAttribute('src');
+                    audio.load();
+                    audio.classList.add('hidden');
+                }
+                youtubeContainer.classList.remove('hidden');
+                youtubeContainer.innerHTML = `
+                    <div class="flex h-full w-full items-center justify-center bg-[#0b0b0d] text-white p-6 text-center">
+                        <div>
+                            <div class="text-3xl font-black mb-3">▶</div>
+                            <div class="text-xl font-bold mb-2">YouTube video</div>
+                            <div class="text-sm text-slate-300 mb-4">Open this video in a browser tab because embedded YouTube playback is blocked on local files.</div>
+                            <button type="button" onclick="window.openListeningVideoFallback('${url.replace(/'/g, "\\'")}')" class="bg-white text-slate-900 font-black px-5 py-2 rounded-full shadow">Open video</button>
+                        </div>
+                    </div>
+                `;
+                if (callbacks.onError) callbacks.onError('Embedded YouTube playback is blocked on local files. Opening the video in a new tab instead.');
+                window.openListeningVideoFallback(url);
+                return null;
+            }
             if (audio) {
                 audio.pause();
                 audio.removeAttribute('src');
@@ -4360,6 +4395,9 @@ window.initFirebaseSystem = async function() {
                                     ? 'This YouTube video does not allow embedded playback.'
                                     : `YouTube player error (${event.data}).`;
                             if (record.callbacks.onError) record.callbacks.onError(message);
+                            if (window.location.protocol === 'file:') {
+                                window.openListeningVideoFallback(url);
+                            }
                         }
                     }
                 });
