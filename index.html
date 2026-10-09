@@ -4347,7 +4347,7 @@ window.initFirebaseSystem = async function() {
                         },
                         onError: event => {
                             const message = event.data === 153
-                                ? 'YouTube requires this page to be opened over HTTP(S), not directly from a file.'
+                                ? 'Embedded YouTube playback is blocked on file:// pages. Open the app through a local web server (for example http://localhost:8000) to play the video inside the page.'
                                 : event.data === 101 || event.data === 150
                                     ? 'This YouTube video does not allow embedded playback.'
                                     : `YouTube player error (${event.data}).`;
