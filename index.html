@@ -4347,7 +4347,7 @@ window.initFirebaseSystem = async function() {
                         },
                         onError: event => {
                             const message = event.data === 153
-                                ? 'Embedded YouTube playback is blocked on file:// pages. Open the app through a local web server (for example http://localhost:8000) to play the video inside the page.'
+                                ? 'This YouTube video does not allow embedded playback (error 153). Use a different YouTube link that allows embedding, or open the original video in a browser. Opening from file:// can also block embedded playback.'
                                 : event.data === 101 || event.data === 150
                                     ? 'This YouTube video does not allow embedded playback.'
                                     : `YouTube player error (${event.data}).`;
@@ -16087,7 +16087,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
       window.listeningMediaInjection = '';
       window.createListeningVideoCard = function(playerId, videoUrl, showTranscriptButton = false) {
-          const safeUrl = String(videoUrl || '').trim();
           const transcriptButton = showTranscriptButton
               ? '<button onclick="toggleTranscript()" class="youtube-embed-transcript-btn" title="Show/Hide Transcript">👁️ Transcript</button>'
               : '';
@@ -16097,7 +16096,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                       <div id="${playerId}" class="youtube-player-frame" aria-label="Listening video player"></div>
                   </div>
                   <div class="youtube-embed-actions">
-                      ${safeUrl ? `<a href="${safeUrl}" target="_blank" rel="noreferrer" class="youtube-embed-link">Watch on YouTube</a>` : ''}
                       ${transcriptButton}
                   </div>
               </div>
