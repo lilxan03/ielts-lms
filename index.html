@@ -4521,7 +4521,7 @@ window.initFirebaseSystem = async function() {
     function renderKaraokeTranscript(part) {
         const cues = getKaraokeCues(part);
         if (!cues.length) return '';
-        return `<div class="karaoke-transcript space-y-2 leading-loose" data-karaoke-root>${cues.map((cue, index) => {
+        return `<div class="karaoke-transcript space-y-2 leading-relaxed" data-karaoke-root>${cues.map((cue, index) => {
             let lineText = escapeKaraokeText(cue.text);
             if (typeof isTimeFree !== 'undefined' && isTimeFree) {
                 if (APP_DATA?.grammar?.length) {
@@ -4544,8 +4544,8 @@ window.initFirebaseSystem = async function() {
             const hasTime = cue.start !== null;
             const clickAttr = hasTime ? `onclick="window.seekKaraokeSentence(${index}, event)"` : '';
             const styleClass = hasTime ? 'cursor-pointer hover:bg-blue-50' : '';
-            return `<span class="karaoke-line inline-block px-1.5 py-0.5 rounded transition-all duration-200 ${styleClass}" data-karaoke-index="${index}" ${clickAttr}>${lineText}</span>`;
-        }).join(' ')}</div>`;
+            return `<div class="karaoke-line block w-full px-1.5 py-0.5 rounded transition-all duration-200 ${styleClass}" data-karaoke-index="${index}" ${clickAttr}>${lineText}</div>`;
+        }).join('')}</div>`;
     }
 
     window.seekKaraokeAudioByIndex = function(index) {
@@ -4653,7 +4653,7 @@ window.initFirebaseSystem = async function() {
         const cues = getListeningCues(part);
         if (!cues.length) return '';
         
-        return `<div class="listening-transcript space-y-2" data-listening-root>${cues.map((cue, index) => {
+        return `<div class="listening-transcript space-y-2 leading-relaxed" data-listening-root>${cues.map((cue, index) => {
             let lineText = escapeListeningText(cue.text);
             
             // Keep vocabulary terms clickable inside the listening transcript.
@@ -4676,7 +4676,7 @@ window.initFirebaseSystem = async function() {
                 }
             }
             
-            return `<span class="listening-line block px-2 py-1" data-listening-index="${index}">${wrapListeningWords(lineText)}</span>`;
+            return `<div class="listening-line block w-full px-2 py-1 rounded" data-listening-index="${index}">${wrapListeningWords(lineText)}</div>`;
         }).join('')}</div>`;
     }
 
