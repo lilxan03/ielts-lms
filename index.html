@@ -3553,27 +3553,22 @@ window.initFirebaseSystem = async function() {
                 return Promise.race([uploadTask(), timeoutTask]);
             };
 
-            loaderText.innerHTML = "Authenticating Connection...<br><br><span class='text-xs'>If this fails, ensure you enabled Anonymous Sign-in in Firebase.</span>";
-            
-            try {
-               await signInAnonymously(auth);
-            } catch (authErr) {
-               spinner.classList.add('hidden');
-               loaderText.innerHTML = `
-                 <div class='bg-rose-900/50 border border-rose-500 p-4 rounded text-left'>
-                    <b class='text-rose-400'>Authentication Error:</b><br>
-                    <span class='text-rose-200 text-xs font-mono'>${authErr.message}</span><br><br>
-                    <b class='text-white'>How to fix:</b><br>
-                    1. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains<br>
-                    2. Ensure your Github/Vercel URL is added there!<br>
-                    3. Ensure "Anonymous" is enabled in Sign-in methods.
-                 </div>
-               `;
-               return; 
-            }
-
-            loaderText.innerHTML = "Fetching Data from Firestore...";
-            await window.bootLMS();
+            // Theo dõi trạng thái đăng nhập chính thức (Email hoặc Google)
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // Đã có tài khoản đăng nhập -> Tải dữ liệu vào hệ thống
+                    loaderText.innerHTML = "Fetching Data from Firestore...";
+                    if (typeof window.bootLMS === 'function') await window.bootLMS();
+                } else {
+                    // Chưa đăng nhập -> Ẩn màn hình loading màu xanh
+                    const loader = document.getElementById('cloud-loader');
+                    if (loader) loader.classList.add('hidden');
+                    
+                    // Hiện màn hình Landing Page (hoặc màn hình Đăng nhập tùy bạn thiết lập)
+                    const landingUi = document.getElementById('public-landing-ui');
+                    if (landingUi) landingUi.classList.remove('hidden');
+                }
+            });
             
         } catch (error) {
             console.error("Firebase System Crash:", error);
