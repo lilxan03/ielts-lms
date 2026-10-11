@@ -3174,6 +3174,19 @@
           </div>
           <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-3 rounded-b-lg rounded-tl-lg mb-1 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white" style="min-height: 60px;" oninput="window.updateBuilderFeatureVisibility(); window.triggerEditorAutosave()"></div>
           <div id="edit-title-hint" class="hidden text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 mb-4">🎓 This is the real task question. It's shown to students in Practice Mode AND Full Mock Test.</div>
+          <div id="speaking-questions-field" class="hidden mt-4">
+              <div class="flex justify-between items-end mb-1">
+                  <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Questions</label>
+                  <div class="flex flex-wrap gap-1 bg-slate-100 px-2 py-1 rounded-t-lg border border-b-0 border-slate-300 shadow-inner">
+                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] font-bold rounded transition">B</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] italic rounded transition">I</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] underline rounded transition">U</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertUnorderedList')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] font-bold rounded transition">• List</button>
+                      <button type="button" onmousedown="event.preventDefault(); window.execCmd('insertOrderedList')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] font-bold rounded transition">1. List</button>
+                  </div>
+              </div>
+              <div id="edit-speaking-questions" class="rich-editor w-full min-h-[120px] border border-slate-300 p-3 rounded-b-lg rounded-tl-lg focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 leading-relaxed outline-none transition-all shadow-sm bg-white" contenteditable="true" oninput="window.triggerEditorAutosave()"></div>
+          </div>
           
           <div id="builder-media-fields" class="mt-3">
             <div id="audio-field-container">
@@ -3791,11 +3804,13 @@ window.initFirebaseSystem = async function() {
         const audioField = document.getElementById('audio-field-container');
         const chartsWrapper = document.getElementById('interactive-charts-wrapper');
         const imageField = document.getElementById('image-field-container');
+        const speakingQuestionsField = document.getElementById('speaking-questions-field');
 
         if (mediaFields) mediaFields.classList.toggle('hidden', !(isListening || showCharts || showImages));
         if (audioField) audioField.classList.toggle('hidden', !isListening);
         if (chartsWrapper) chartsWrapper.classList.toggle('hidden', !showCharts);
         if (imageField) imageField.classList.toggle('hidden', !showImages);
+        if (speakingQuestionsField) speakingQuestionsField.classList.toggle('hidden', APP_DATA.module !== 'speaking');
     };
     const listeningYoutubePlayers = new Map();
     let listeningYoutubeApiPromise = null;
@@ -8180,9 +8195,9 @@ window.initFirebaseSystem = async function() {
             ];
         } else if (mod === 'speaking') {
             return [
-                { title: "Part 1: Introduction", text: "Let's talk about [Topic].\n\n- Question 1\n- Question 2\n- Question 3", questions: [{ blockId: 's1_'+Date.now(), type: 'audio_record', ids: [1], instruction: 'Record your answer for Part 1' }] },
-                { title: "Part 2: Cue Card", text: "Describe [Topic].\nYou should say:\n- point 1\n- point 2\n- point 3\n\nYou will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say.", questions: [{ blockId: 's2_'+Date.now(), type: 'audio_record', ids: [2], instruction: 'Record your answer for Part 2' }] },
-                { title: "Part 3: Discussion", text: "Let's consider first of all [Topic].\n\n- Question 1\n- Question 2", questions: [{ blockId: 's3_'+Date.now(), type: 'audio_record', ids: [3], instruction: 'Record your answer for Part 3' }] }
+                { title: "Part 1: Introduction", speakingQuestions: "Let's talk about [Topic].<ul><li>Question 1</li><li>Question 2</li><li>Question 3</li></ul>", text: "", questions: [{ blockId: 's1_'+Date.now(), type: 'audio_record', ids: [1], instruction: 'Record your answer for Part 1' }] },
+                { title: "Part 2: Cue Card", speakingQuestions: "Describe [Topic].<p>You should say:</p><ul><li>point 1</li><li>point 2</li><li>point 3</li></ul><p>You will have to talk about the topic for one to two minutes. You have one minute to think about what you are going to say.</p>", text: "", questions: [{ blockId: 's2_'+Date.now(), type: 'audio_record', ids: [2], instruction: 'Record your answer for Part 2' }] },
+                { title: "Part 3: Discussion", speakingQuestions: "Let's consider first of all [Topic].<ul><li>Question 1</li><li>Question 2</li></ul>", text: "", questions: [{ blockId: 's3_'+Date.now(), type: 'audio_record', ids: [3], instruction: 'Record your answer for Part 3' }] }
             ];
         } else if (mod === 'activity') {
             return [
@@ -10130,6 +10145,7 @@ window.initFirebaseSystem = async function() {
       const titleHint = document.getElementById('edit-title-hint');
       const textHint = document.getElementById('edit-text-hint');
       const textLabelSpan = document.getElementById('edit-text-label-text');
+      const titleLabel = document.getElementById('edit-title-label');
       
       const ct = document.getElementById('criteria-toolbar');
       const sepCrit = document.getElementById('toolbar-sep-crit');
@@ -10141,6 +10157,10 @@ window.initFirebaseSystem = async function() {
           titleHint.classList.remove('hidden');
           textHint.classList.remove('hidden');
           textLabelSpan.textContent = 'Sample Answer (Practice Mode Only)';
+          titleLabel.textContent = APP_DATA.module === 'speaking' ? 'Title' : 'Part Title / Main Prompt';
+          titleHint.textContent = APP_DATA.module === 'speaking'
+              ? '🎓 Enter the topic or title here. Add speaking prompts in the Questions field below.'
+              : "🎓 This is the real task question. It's shown to students in Practice Mode AND Full Mock Test.";
           
           if(ct) { ct.classList.remove('hidden'); ct.classList.add('flex'); }
           if(sepCrit) sepCrit.classList.remove('hidden');
@@ -10151,6 +10171,7 @@ window.initFirebaseSystem = async function() {
           titleHint.classList.add('hidden');
           textHint.classList.add('hidden');
           textLabelSpan.textContent = 'Prompt / Passage Text';
+          titleLabel.textContent = 'Part Title / Main Prompt';
           
           if(ct) { ct.classList.add('hidden'); ct.classList.remove('flex'); }
           if(sepCrit) sepCrit.classList.add('hidden');
@@ -10436,6 +10457,8 @@ window.initFirebaseSystem = async function() {
       if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = p.title||'';
       else titleEl.innerHTML = p.title||'';
       window.updateBuilderFeatureVisibility(p);
+      const speakingQuestionsEl = document.getElementById('edit-speaking-questions');
+      if (speakingQuestionsEl) speakingQuestionsEl.innerHTML = p.speakingQuestions || '';
       
       const editorAudioUrl = p.audioUrl || '';
       document.getElementById('edit-audio-url').value = editorAudioUrl;
@@ -11551,6 +11574,10 @@ window.initFirebaseSystem = async function() {
           if (taskNumber) p.writingTask = `task${taskNumber}`;
       }
       p.title = titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA' ? titleEl.value : titleEl.innerHTML;
+      const speakingQuestionsEl = document.getElementById('edit-speaking-questions');
+      if (APP_DATA.module === 'speaking' && speakingQuestionsEl) {
+          p.speakingQuestions = speakingQuestionsEl.innerHTML;
+      }
       p.audioUrl = document.getElementById('edit-audio-url').value;
     const startInput = document.getElementById('edit-listening-start');
     p.listeningHighlightStart = startInput ? Math.max(0, Number(startInput.value) || 0) : 0;
@@ -16268,6 +16295,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           
           // ✨ FIX: Grab the Part Title (which acts as the main essay prompt for Writing)
           const titleHtml = p.title ? `<div class="passage-text font-bold mb-6 text-lg">${p.title}</div>` : '';
+          const speakingQuestionsHtml = APP_DATA.module === 'speaking' && p.speakingQuestions
+              ? `<section class="passage-text mb-6"><h2 class="font-bold text-base mb-2">Questions</h2><div class="leading-relaxed">${p.speakingQuestions}</div></section>`
+              : '';
           
           let examPromptHtml = p.questions.map((q) => {
               let html = '';
@@ -16282,7 +16312,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           
           if (!isTimeFree) {
               // ✨ FIX: Inject the titleHtml at the very top of the passage container!
-              passageContainer.innerHTML = `${titleHtml}${examPromptHtml}${media}`;
+              passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}`;
           } else {
               const sampleText = (p.text || '').trim();
               let sampleAnswerBlock = '';
@@ -16302,7 +16332,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                   </div>`;
               }
               // ✨ FIX: Inject the titleHtml here as well!
-              passageContainer.innerHTML = `${titleHtml}${examPromptHtml}${media}${sampleAnswerBlock}`;
+              passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}${sampleAnswerBlock}`;
           }
 
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
@@ -17955,6 +17985,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }
         
         lHtml += `<div class="passage-text font-black text-xl mb-6 mt-8 first:mt-0 text-slate-800">${p.title}</div>`;
+        if (APP_DATA.module === 'speaking' && p.speakingQuestions) {
+            lHtml += `<section class="passage-text mb-6"><h2 class="font-bold text-base mb-2">Questions</h2><div class="leading-relaxed">${p.speakingQuestions}</div></section>`;
+        }
         if(p.audioUrl) lHtml += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-6 shadow-sm rounded-lg border border-slate-200"></audio>`;
         if(p.image && APP_DATA.module !== 'writing') lHtml += `<div class="mb-6 bg-slate-50 p-4 border border-slate-200 rounded-xl text-center shadow-inner"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
         lHtml += `<div class="leading-loose text-slate-800 text-[1.05rem] selection-wrapper">${txt}</div>`;
