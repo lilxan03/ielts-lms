@@ -1091,7 +1091,7 @@
               <button onclick="window.showAuthFromLanding()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xl px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                   Create Free Account to Start &rarr;
               </button>
-              <button onclick="window.loginAsDemo()" class="text-indigo-600 hover:text-indigo-800 font-black text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-6 py-2.5 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5">
+              <button onclick="window.loginAsDemo()" class="hidden text-indigo-600 hover:text-indigo-800 font-black text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-6 py-2.5 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
                   🕹️ Try Demo Student Account
               </button>
               <p class="text-sm text-slate-500 font-bold">🎁 Sign up today and get 50 Free Gems!</p>
@@ -1171,7 +1171,7 @@
         </button>
         
         <div class="text-center mt-5 pt-5 border-t border-slate-100 flex flex-col gap-4">
-            <button onclick="window.loginAsDemo()" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg border border-slate-200 transition text-sm flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5">
+            <button onclick="window.loginAsDemo()" type="button" class="hidden w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg border border-slate-200 transition text-sm flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
                 🕹️ Try Demo Student Account
             </button>
             <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
@@ -3471,7 +3471,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     // ✨ NEW: Added sendPasswordResetEmail
-    import { getAuth, signInAnonymously, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
     // ✨ NEW: Web Push Notifications SDK
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
@@ -3553,8 +3553,29 @@ window.initFirebaseSystem = async function() {
                 return Promise.race([uploadTask(), timeoutTask]);
             };
 
-            // Theo dõi trạng thái đăng nhập chính thức (Email hoặc Google)
+            // Theo dõi trạng thái đăng nhập chính thức (Email hoặc Google) và chặn anonymous access hoàn toàn
             onAuthStateChanged(auth, async (user) => {
+                if (user?.isAnonymous) {
+                    try {
+                        await signOut(auth);
+                    } catch (signOutError) {
+                        console.warn('Anonymous access cleanup failed:', signOutError);
+                    }
+
+                    const err = document.getElementById('auth-error');
+                    if (err) {
+                        err.textContent = 'Anonymous login is disabled for security reasons.';
+                        err.classList.remove('hidden');
+                    }
+
+                    const loader = document.getElementById('cloud-loader');
+                    if (loader) loader.classList.add('hidden');
+
+                    const landingUi = document.getElementById('public-landing-ui');
+                    if (landingUi) landingUi.classList.remove('hidden');
+                    return;
+                }
+
                 if (user) {
                     // Đã có tài khoản đăng nhập -> Tải dữ liệu vào hệ thống
                     loaderText.innerHTML = "Fetching Data from Firestore...";
@@ -7047,35 +7068,22 @@ window.initFirebaseSystem = async function() {
     };
 
     window.loginAsDemo = async function() {
-        // Give immediate visual feedback that it's loading
-        document.querySelectorAll('button[onclick="window.loginAsDemo()"]').forEach(b => { 
-            b.innerHTML = "⏳ Entering Demo..."; 
-            b.disabled = true; 
+        const message = "Anonymous/demo login is disabled for security reasons.";
+
+        if (typeof window.showModalMsg === 'function') {
+            window.showModalMsg('Access restricted', message);
+        } else if (typeof window.showToast === 'function') {
+            window.showToast('Access restricted', message, 'error');
+        }
+
+        const buttons = document.querySelectorAll('button[onclick="window.loginAsDemo()"]');
+        buttons.forEach((b) => {
+            b.disabled = true;
+            b.title = message;
+            b.setAttribute('aria-disabled', 'true');
         });
 
-        try {
-            prepareDemoSession();
-            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-            
-            await window.attachPrivateListeners();
-            checkAuth();
-            
-            // Restore button text just in case they log out later
-            document.querySelectorAll('button[onclick="window.loginAsDemo()"]').forEach(b => { 
-                b.innerHTML = "🕹️ Try Demo Student Account"; 
-                b.disabled = false; 
-            });
-            
-            if (typeof window.showToast === 'function') window.showToast("Demo Active", "Welcome! Demo changes are temporary and won't be saved.");
-            
-        } catch (e) {
-            console.error("Demo Setup Error:", e);
-            if (typeof window.showModalMsg === 'function') window.showModalMsg("Error", "Could not load demo account. " + e.message);
-            document.querySelectorAll('button[onclick="window.loginAsDemo()"]').forEach(b => { 
-                b.innerHTML = "🕹️ Try Demo Student Account"; 
-                b.disabled = false; 
-            });
-        }
+        console.warn(message);
     };
 
     window.togglePasswordVisibility = function(inputId, btn) {
