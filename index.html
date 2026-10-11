@@ -3476,14 +3476,15 @@
     // ✨ NEW: Web Push Notifications SDK
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
-window.initFirebaseSystem = async function() {
+    window.initFirebaseSystem = async function() {
         const firebaseConfig = {
-          apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-          authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-          projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-          storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-          messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-          appId: import.meta.env.VITE_FIREBASE_APP_ID
+          apiKey: "AIzaSyC9XmnannGOWSltRQ4ZX_ER_2kNH4MPpSw",
+          authDomain: "khanh-ielts.firebaseapp.com",
+          projectId: "khanh-ielts",
+          storageBucket: "khanh-ielts.firebasestorage.app",
+          messagingSenderId: "448190151769",
+          appId: "1:448190151769:web:2ce1fc076e48d4a70a0548",
+          measurementId: "G-XK8M5ZYPRP"
         };
 
         const loaderText = document.getElementById('cloud-loader-text');
