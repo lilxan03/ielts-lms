@@ -3172,7 +3172,7 @@
                   <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2 py-0.5 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-[10px] underline rounded transition">U</button>
               </div>
           </div>
-          <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-3 rounded-b-lg rounded-tl-lg mb-1 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white" style="min-height: 60px;" oninput="window.triggerEditorAutosave()"></div>
+          <div id="edit-passage-title" contenteditable="true" class="rich-editor w-full border border-slate-300 p-3 rounded-b-lg rounded-tl-lg mb-1 focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 font-medium text-slate-800 transition-all shadow-sm outline-none bg-white" style="min-height: 60px;" oninput="window.updateBuilderFeatureVisibility(); window.triggerEditorAutosave()"></div>
           <div id="edit-title-hint" class="hidden text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 mb-4">🎓 This is the real task question. It's shown to students in Practice Mode AND Full Mock Test.</div>
           
           <div id="builder-media-fields" class="mt-3">
@@ -3747,6 +3747,56 @@ window.initFirebaseSystem = async function() {
     let APP_DATA = { module: 'reading', parts: [], vocab: [], grammar: [] };
     let editingTestId = null;
     let currentEditorPartIdx = 0;
+
+    function getWritingTaskNumber(part, titleOverride) {
+        if (!part || !APP_DATA || APP_DATA.module !== 'writing') return null;
+        if (part.writingTask === 'task1' || part.writingTask === 1) return 1;
+        if (part.writingTask === 'task2' || part.writingTask === 2) return 2;
+
+        const getTaskNumber = value => {
+            const plainTitle = String(value || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ');
+            const match = plainTitle.match(/\btask\s*([12])\b/i);
+            return match ? Number(match[1]) : null;
+        };
+        const taskFromTitle = getTaskNumber(titleOverride) || getTaskNumber(part.title) || getTaskNumber(APP_DATA.title);
+        if (taskFromTitle) return taskFromTitle;
+
+        const partIndex = APP_DATA.parts ? APP_DATA.parts.indexOf(part) : -1;
+        if (APP_DATA.parts && APP_DATA.parts.length > 1 && partIndex >= 0) {
+            return partIndex === 0 ? 1 : partIndex === 1 ? 2 : null;
+        }
+        return null;
+    }
+
+    function isWritingTask1Part(part, titleOverride) {
+        return getWritingTaskNumber(part, titleOverride) === 1;
+    }
+
+    function isCurrentEditorWritingTask1Part(part) {
+        const titleEl = document.getElementById('edit-passage-title');
+        return isWritingTask1Part(part, titleEl ? titleEl.textContent : undefined);
+    }
+
+    window.updateBuilderFeatureVisibility = function(part) {
+        if (!APP_DATA) return;
+        const currentPart = part || (APP_DATA.parts && APP_DATA.parts[currentEditorPartIdx]);
+        const titleEl = document.getElementById('edit-passage-title');
+        const currentTitle = titleEl
+            ? (titleEl.isContentEditable ? titleEl.textContent : titleEl.value)
+            : undefined;
+        const isListening = APP_DATA.module === 'listening';
+        const showCharts = isWritingTask1Part(currentPart, currentTitle);
+        const showImages = APP_DATA.module === 'reading';
+        const mediaFields = document.getElementById('builder-media-fields');
+        const audioField = document.getElementById('audio-field-container');
+        const chartsWrapper = document.getElementById('interactive-charts-wrapper');
+        const imageField = document.getElementById('image-field-container');
+
+        if (mediaFields) mediaFields.classList.toggle('hidden', !(isListening || showCharts || showImages));
+        if (audioField) audioField.classList.toggle('hidden', !isListening);
+        if (chartsWrapper) chartsWrapper.classList.toggle('hidden', !showCharts);
+        if (imageField) imageField.classList.toggle('hidden', !showImages);
+    };
     const listeningYoutubePlayers = new Map();
     let listeningYoutubeApiPromise = null;
 
@@ -8125,8 +8175,8 @@ window.initFirebaseSystem = async function() {
             ];
         } else if (mod === 'writing') {
             return [
-                { title: "Task 1", text: "You should spend about 20 minutes on this task.\n\n[Insert chart/graph description here]\n\nWrite at least 150 words.", questions: [{ blockId: 'w1_'+Date.now(), type: 'essay', ids: [1], instruction: 'Write your essay below.', points: 1 }] },
-                { title: "Task 2", text: "You should spend about 40 minutes on this task.\n\n[Insert essay prompt here]\n\nWrite at least 250 words.", questions: [{ blockId: 'w2_'+Date.now(), type: 'essay', ids: [2], instruction: 'Write your essay below.', points: 1 }] }
+                { title: "Task 1", writingTask: 'task1', text: "You should spend about 20 minutes on this task.\n\n[Insert chart/graph description here]\n\nWrite at least 150 words.", questions: [{ blockId: 'w1_'+Date.now(), type: 'essay', ids: [1], instruction: 'Write your essay below.', points: 1 }] },
+                { title: "Task 2", writingTask: 'task2', text: "You should spend about 40 minutes on this task.\n\n[Insert essay prompt here]\n\nWrite at least 250 words.", questions: [{ blockId: 'w2_'+Date.now(), type: 'essay', ids: [2], instruction: 'Write your essay below.', points: 1 }] }
             ];
         } else if (mod === 'speaking') {
             return [
@@ -10075,22 +10125,6 @@ window.initFirebaseSystem = async function() {
       const qs = document.getElementById('quick-status-toggle');
       if (qs) qs.value = APP_DATA.status || 'not_started';
       
-      const media = document.getElementById('builder-media-fields');
-      const audioField = document.getElementById('audio-field-container');
-      const imageField = document.getElementById('image-field-container');
-      
-      if (APP_DATA.module === 'listening' || APP_DATA.module === 'speaking') {
-          media.classList.remove('hidden');
-          audioField.classList.remove('hidden');
-          imageField.classList.add('hidden');
-      } else if (APP_DATA.module === 'reading') {
-          media.classList.remove('hidden');
-          audioField.classList.add('hidden');
-          imageField.classList.remove('hidden');
-      } else {
-          media.classList.add('hidden');
-      }
-      
       // Writing tests use the title field as the REAL task question (shown in every mode),
       // and the passage-text field becomes an optional Sample Answer (Practice Mode only).
       const titleHint = document.getElementById('edit-title-hint');
@@ -10401,6 +10435,7 @@ window.initFirebaseSystem = async function() {
       const titleEl = document.getElementById('edit-passage-title');
       if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = p.title||'';
       else titleEl.innerHTML = p.title||'';
+      window.updateBuilderFeatureVisibility(p);
       
       const editorAudioUrl = p.audioUrl || '';
       document.getElementById('edit-audio-url').value = editorAudioUrl;
@@ -11511,6 +11546,10 @@ window.initFirebaseSystem = async function() {
     function saveCurrentEditorPart() {
       const p = APP_DATA.parts[currentEditorPartIdx];
       const titleEl = document.getElementById('edit-passage-title');
+      if (APP_DATA.module === 'writing' && !p.writingTask) {
+          const taskNumber = getWritingTaskNumber(p);
+          if (taskNumber) p.writingTask = `task${taskNumber}`;
+      }
       p.title = titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA' ? titleEl.value : titleEl.innerHTML;
       p.audioUrl = document.getElementById('edit-audio-url').value;
     const startInput = document.getElementById('edit-listening-start');
@@ -12707,6 +12746,8 @@ window.loadChartEditorUI = function() {
 
     const part = APP_DATA.parts[currentEditorPartIdx];
     if (!part) return;
+    window.updateBuilderFeatureVisibility(part);
+    if (!isCurrentEditorWritingTask1Part(part)) return;
 
     if (ensurePartInteractiveCharts(part) && typeof window.triggerEditorAutosave === 'function') {
         window.triggerEditorAutosave();
@@ -12789,7 +12830,7 @@ window.renderEditorChartPreviews = function(part) {
 
 window.addEditorChart = function() {
     const part = APP_DATA.parts[currentEditorPartIdx];
-    if (!part) return;
+    if (!isCurrentEditorWritingTask1Part(part)) return;
     ensurePartInteractiveCharts(part);
     part.interactiveCharts.push({ type: 'bar', title: '', rawTsv: '', labels: [], datasets: [], unitType: '', unitCustom: '', time: '' });
     window.loadChartEditorUI();
@@ -12969,7 +13010,7 @@ window.importEditorChartCsv = function(index, input) {
 
 window.removeEditorChart = function(index) {
     const part = APP_DATA.parts[currentEditorPartIdx];
-    if (!part || !Array.isArray(part.interactiveCharts)) return;
+    if (!isCurrentEditorWritingTask1Part(part) || !Array.isArray(part.interactiveCharts)) return;
     window.showConfirm("Xóa biểu đồ", "Bạn có chắc chắn muốn xóa biểu đồ này khỏi bài test?", () => {
         part.interactiveCharts.splice(index, 1);
         window.loadChartEditorUI();
@@ -12979,7 +13020,7 @@ window.removeEditorChart = function(index) {
 
 window.saveEditorChart = function(index, applyCsvMetadata = false) {
     const part = APP_DATA.parts[currentEditorPartIdx];
-    if (!part || !Array.isArray(part.interactiveCharts) || !part.interactiveCharts[index]) return;
+    if (!isCurrentEditorWritingTask1Part(part) || !Array.isArray(part.interactiveCharts) || !part.interactiveCharts[index]) return;
 
     const dataEl = document.getElementById(`edit-chart-data-${index}`);
     const typeEl = document.getElementById(`edit-chart-type-${index}`);
@@ -16117,12 +16158,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }
 
       let media = '';
-      if(p.audioUrl && APP_DATA.module !== 'listening') media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4 rounded"></audio>`;
+      if(p.audioUrl && APP_DATA.module === 'listening') media += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-4 rounded"></audio>`;
       let visualHtml = '';
       let chartsToRender = [];
-      if (Array.isArray(p.interactiveCharts) && p.interactiveCharts.length > 0) {
+      if (isWritingTask1Part(p) && Array.isArray(p.interactiveCharts) && p.interactiveCharts.length > 0) {
           chartsToRender = p.interactiveCharts;
-      } else if (p.interactiveChart) {
+      } else if (isWritingTask1Part(p) && p.interactiveChart) {
           chartsToRender = [p.interactiveChart];
       }
 
