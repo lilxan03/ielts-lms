@@ -3468,13 +3468,24 @@
 
     <!-- FIREBASE INITIALIZATION -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    // ✨ NEW: Added sendPasswordResetEmail
-    import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
-    // ✨ NEW: Web Push Notifications SDK
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDqiWcuRrj6s5nNr1NvMSnYk5DyQYNr89E",
+    authDomain: "khanh-ielts-v2.firebaseapp.com",
+    projectId: "khanh-ielts-v2",
+    storageBucket: "khanh-ielts-v2.firebasestorage.app",
+    messagingSenderId: "1045761879860",
+    appId: "1:1045761879860:web:09bb16937630369e887f61"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+</script>
 
 window.initFirebaseSystem = async function() {
         const firebaseConfig = {
