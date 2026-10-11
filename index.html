@@ -3475,13 +3475,14 @@
 
   // Your web app's Firebase configuration
   const firebaseConfig = {
-    apiKey: "AIzaSyDqiWcuRrj6s5nNr1NvMSnYk5DyQYNr89E",
-    authDomain: "khanh-ielts-v2.firebaseapp.com",
-    projectId: "khanh-ielts-v2",
-    storageBucket: "khanh-ielts-v2.firebasestorage.app",
-    messagingSenderId: "1045761879860",
-    appId: "1:1045761879860:web:09bb16937630369e887f61"
-  };
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    // ✨ NEW: Added sendPasswordResetEmail
+    import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+    // ✨ NEW: Web Push Notifications SDK
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
@@ -3489,13 +3490,12 @@
 
 window.initFirebaseSystem = async function() {
         const firebaseConfig = {
-          apiKey: "AIzaSyC9XmnannGOWSltRQ4ZX_ER_2kNH4MPpSw",
-          authDomain: "khanh-ielts.firebaseapp.com",
-          projectId: "khanh-ielts",
-          storageBucket: "khanh-ielts.firebasestorage.app",
-          messagingSenderId: "448190151769",
-          appId: "1:448190151769:web:2ce1fc076e48d4a70a0548",
-          measurementId: "G-XK8M5ZYPRP"
+          apiKey: "AIzaSyDqiWcuRrj6s5nNr1NvMSnYk5DyQYNr89E",
+          authDomain: "khanh-ielts-v2.firebaseapp.com",
+          projectId: "khanh-ielts-v2",
+          storageBucket: "khanh-ielts-v2.firebasestorage.app",
+          messagingSenderId: "1045761879860",
+          appId: "1:1045761879860:web:09bb16937630369e887f61"
         };
 
         const loaderText = document.getElementById('cloud-loader-text');
