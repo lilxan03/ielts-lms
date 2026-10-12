@@ -3466,15 +3466,7 @@
     </div>
   </div>
 
-    <!-- FIREBASE INITIALIZATION -->
-  <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
+  <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -3484,11 +3476,7 @@
     // ✨ NEW: Web Push Notifications SDK
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
-
-window.initFirebaseSystem = async function() {
+    window.initFirebaseSystem = async function() {
         const firebaseConfig = {
           apiKey: "AIzaSyDqiWcuRrj6s5nNr1NvMSnYk5DyQYNr89E",
           authDomain: "khanh-ielts-v2.firebaseapp.com",
