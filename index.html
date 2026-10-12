@@ -1634,6 +1634,13 @@
       <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2">
         <div class="p-5 flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-slate-200">
           <label for="ielts-latex-input" class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">LaTeX-style source</label>
+          <div class="flex flex-col sm:flex-row gap-2 mb-3">
+            <select id="ielts-latex-template" class="flex-1 min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 outline-none" aria-label="Choose a question template">
+              <option value="">Choose a template…</option>
+            </select>
+            <button type="button" onclick="window.insertIeltsLatexTemplate()" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg text-sm font-bold transition">Insert template</button>
+          </div>
+          <p id="ielts-latex-template-help" class="text-xs text-slate-500 mb-2">Templates are filtered for the selected skill and inserted at the cursor.</p>
           <textarea id="ielts-latex-input" spellcheck="false" oninput="window.updateIeltsLatexPreview()" class="flex-1 min-h-[220px] resize-none border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" placeholder="\passage{The Evolution of Language}{
 The system relies on \gap{photosynthesis}.
 If the user inputs \gap[colour]{color}, both are accepted.
@@ -23466,10 +23473,136 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         };
     };
 
+    window.getIeltsLatexTemplates = function() {
+        return {
+            reading: [
+                ['Passage with gap-fill', String.raw`\passage{Passage title}{
+Write the passage here. The answer is \gap[alt=alternative]{correct answer}.
+}`],
+                ['Drag-and-drop completion', String.raw`\passage{Passage title}{
+Write the passage here. The answer is \drop{correct option}.
+}`],
+                ['Multiple choice', String.raw`\mcq{Write the question here}{
+  \choice{Incorrect option}
+  \correct{Correct option}
+  \choice{Another incorrect option}
+}`],
+                ['True / False / Not Given', String.raw`\tfng{Write a statement based on the passage.}{TRUE}[Explain why this is the answer.]`],
+                ['Yes / No / Not Given', String.raw`\tfng{Write a statement about the writer's views.}{YES}[Explain why this is the answer.]`],
+                ['Matching headings', String.raw`\matchingheadings{Choose the correct heading for each paragraph.}{
+  \item{Paragraph A}{Heading 1}
+  \item{Paragraph B}{Heading 2}
+}{
+  \option{Heading 1}
+  \option{Heading 2}
+  \option{Unused heading}
+}`],
+                ['Matching information', String.raw`\matchinginfo{Match each statement to its source.}{
+  \item{Write a statement to match.}{Source A}
+  \item{Write another statement.}{Source B}
+}{
+  \option{Source A}
+  \option{Source B}
+}`],
+                ['Map labelling (grid)', String.raw`\mapgrid[image=https://example.com/map.png]{Choose the correct location for each place.}{
+  \item{Place name}{A}
+}{
+  \option{A}
+  \option{B}
+  \option{C}
+}`],
+                ['Map labelling (hotspots)', String.raw`\maphotspots[image=https://example.com/map.png]{Label each place on the map.}{
+  \hotspot{25}{40}{Place name}
+}{
+  \option{Place name}
+}`]
+            ],
+            listening: [
+                ['Audio with timed gap-fill', String.raw`\audio{https://example.com/audio.mp3}
+\passage{Listening Part 1}{
+Write the listening transcript here. The answer is \gap[time=01:23;alt=alternative]{correct answer}.
+}`],
+                ['Drag-and-drop completion', String.raw`\passage{Listening Part 1}{
+Write the transcript here. The answer is \drop{correct option}.
+}`],
+                ['Multiple choice', String.raw`\mcq{Write the question here}{
+  \choice{Incorrect option}
+  \correct{Correct option}
+  \choice{Another incorrect option}
+}`],
+                ['Map labelling (grid)', String.raw`\mapgrid[image=https://example.com/map.png]{Choose the correct location for each place.}{
+  \item{Place name}{A}
+}{
+  \option{A}
+  \option{B}
+  \option{C}
+}`],
+                ['Map labelling (hotspots)', String.raw`\maphotspots[image=https://example.com/map.png]{Label each place on the map.}{
+  \hotspot{25}{40}{Place name}
+}{
+  \option{Place name}
+}`]
+            ],
+            writing: [
+                ['Writing Task 1 (Academic)', String.raw`\writingtask[task=1]{Writing Task 1}{Summarise the information by selecting and reporting the main features, and make comparisons where relevant.}`],
+                ['Writing Task 1 (General Training)', String.raw`\writingtask[task=1]{Writing Task 1}{Write a letter in response to the situation. Include all three bullet points: [point 1], [point 2], and [point 3].}`],
+                ['Writing Task 2 essay', String.raw`\writingtask[task=2]{Writing Task 2}{Write about the following topic. Give reasons for your answer and include relevant examples from your knowledge or experience.}`]
+            ],
+            speaking: [
+                ['Speaking cue card with follow-ups', String.raw`\speaking{Describe a memorable experience}{Describe an experience you remember well. You should say:
+- what happened
+- where and when it happened
+- who was with you
+- and explain why you remember it.
+}{
+  \question{How do people usually celebrate this kind of experience?}
+  \question{Do you think people's memories change over time?}
+}`],
+                ['Speaking notes prompt', String.raw`\notes{Make brief notes before you speak. Do not write a full script.}`]
+            ]
+        };
+    };
+
+    window.refreshIeltsLatexTemplates = function() {
+        const select = document.getElementById('ielts-latex-template');
+        const help = document.getElementById('ielts-latex-template-help');
+        const skill = APP_DATA && APP_DATA.module;
+        const templates = window.getIeltsLatexTemplates()[skill] || [];
+        select.innerHTML = '<option value="">Choose a template…</option>' + templates
+            .map((template, index) => `<option value="${index}">${template[0]}</option>`).join('');
+        select.dataset.skill = skill || '';
+        help.textContent = templates.length
+            ? `Showing ${templates.length} templates for ${skill}. Insert at the cursor, then replace the example text and answers.`
+            : 'No templates are available for the selected skill.';
+    };
+
+    window.insertIeltsLatexTemplate = function() {
+        const select = document.getElementById('ielts-latex-template');
+        const skill = APP_DATA && APP_DATA.module;
+        if (select.dataset.skill !== skill) window.refreshIeltsLatexTemplates();
+        if (select.value === '') return;
+        const template = (window.getIeltsLatexTemplates()[skill] || [])[Number(select.value)];
+        if (!template) return;
+
+        const input = document.getElementById('ielts-latex-input');
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const before = input.value.slice(0, start);
+        const after = input.value.slice(end);
+        const prefix = before && !before.endsWith('\n') ? '\n\n' : '';
+        const suffix = after && !after.startsWith('\n') ? '\n\n' : '';
+        const cursor = before.length + prefix.length + template[1].length;
+        input.value = before + prefix + template[1] + suffix + after;
+        input.setSelectionRange(cursor, cursor);
+        input.focus();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
     window.openIeltsLatexImport = function() {
         const input = document.getElementById('ielts-latex-input');
         input.value = '';
         document.getElementById('latex-import-modal').classList.remove('hidden');
+        window.refreshIeltsLatexTemplates();
         window.updateIeltsLatexPreview();
         input.focus();
     };
