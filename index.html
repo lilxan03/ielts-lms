@@ -1646,7 +1646,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
 }
 
 \tfng{The study was conducted in 2026.}{NOT GIVEN}[The passage does not mention the study date.]"></textarea>
-          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> accepts alternatives; <code>\gap[time=01:23]{answer}</code> stores a listening timestamp. Use <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code>, and <code>\tfng{statement}{TRUE|FALSE|NOT GIVEN}[explanation]</code>. A passage containing gaps becomes one inline fill-in-the-blanks block; passage text/title replace the current part's content when compiled.</p>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; <code>time=01:23</code> marks a listening blank. Use <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, <code>\mapgrid</code>, or <code>\maphotspots</code>. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
         </div>
         <div class="p-5 flex flex-col min-h-0 bg-slate-50">
           <div class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Live preview</div>
@@ -16796,6 +16796,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         })[char]);
         const displayOption = value => q.latexSource ? escapeLatexOption(value) : pt(value);
         const optionAttribute = value => q.latexSource ? escapeLatexOption(value) : value.replace(/'/g, "\\'");
+        const optionHandlerArg = value => q.latexSource ? 'this.textContent' : `'${value.replace(/'/g, "\\'")}'`;
         
         if(q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
            const opts = q.type === 'tfng' ? ['True','False','Not Given'] : (q.type === 'ynng' ? ['Yes','No','Not Given'] : q.options);
@@ -16852,9 +16853,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
            // ✨ NEW: Removed explicit text-sizes so .draggable-item inherits the global scalable font size. Increased px/py paddings.
            if (APP_DATA.module === 'listening') {
-               content = `<div class="flex flex-col md:flex-row flex-wrap gap-8 items-start justify-start w-full"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium"></p><div class="flex flex-col gap-2 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${o}</div>`).join('')}</div></div></div>`;
+               content = `<div class="flex flex-col md:flex-row flex-wrap gap-8 items-start justify-start w-full"><div class="leading-relaxed overflow-x-auto max-w-full">${txt}</div><div class="w-full sm:w-auto min-w-[140px] shrink-0 p-3 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-xs text-slate-500 mb-2 font-medium"></p><div class="flex flex-col gap-2 min-h-[32px] items-start">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, ${optionHandlerArg(o)})" onclick="window.mobileTapSelect(event, this, ${optionHandlerArg(o)})" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center leading-snug font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit">${displayOption(o)}</div>`).join('')}</div></div></div>`;
            } else {
-               content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${o}</div>`).join('')}</div></div>`;
+               content = `<div class="mb-5 leading-relaxed">${txt}</div><div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag and drop an option to fill in each blank.</p><div class="flex flex-wrap gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, ${optionHandlerArg(o)})" onclick="window.mobileTapSelect(event, this, ${optionHandlerArg(o)})" class="draggable-item bg-white border border-slate-200 rounded px-3 py-1.5 min-w-[40px] text-center font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab">${displayOption(o)}</div>`).join('')}</div></div>`;
            }
         } else if(q.type === 'matching_headings') {
            let txt = pt(rawText);
@@ -16863,7 +16864,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                const used = q.ids.map(i => answers[i]).filter(Boolean);
                availOpts = availOpts.filter(o => { if(used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
            }
-           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-col gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-4 py-3 w-full text-left font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab leading-snug">${o}</div>`).join('')}</div></div>`;
+           content = (txt ? `<div class="mb-5 leading-relaxed">${txt}</div>` : '') + `<div class="p-4 bg-slate-50 border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)"><p class="italic text-sm text-slate-500 mb-3">Drag into passage gaps on the left.</p><div class="flex flex-col gap-2 min-h-[32px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, ${optionHandlerArg(o)})" onclick="window.mobileTapSelect(event, this, ${optionHandlerArg(o)})" class="draggable-item bg-white border border-slate-200 rounded px-4 py-3 w-full text-left font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab leading-snug">${displayOption(o)}</div>`).join('')}</div></div>`;
         } else if (q.type === 'map_labelling_hotspots') {
            let availOpts = q.options || [];
            const used = q.ids.map(i => answers[i]).filter(Boolean);
@@ -16894,7 +16895,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                </div>
                <div class="w-full sm:w-auto min-w-[160px] shrink-0 p-4 bg-white border border-slate-100 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)">
                    <div class="flex flex-col gap-2 min-h-[40px] items-stretch">
-                       ${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" onclick="window.mobileTapSelect(event, this, '${o.replace(/'/g,"\\'")}')" class="draggable-item bg-white border border-slate-200 rounded px-3 py-2 font-medium text-slate-800 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit md:max-w-full text-left md:text-center">${o}</div>`).join('')}
+                       ${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, ${optionHandlerArg(o)})" onclick="window.mobileTapSelect(event, this, ${optionHandlerArg(o)})" class="draggable-item bg-white border border-slate-200 rounded px-3 py-2 font-medium text-slate-800 shadow-sm hover:border-blue-300 hover:text-blue-700 transition cursor-grab inline-block max-w-fit md:max-w-full text-left md:text-center">${displayOption(o)}</div>`).join('')}
                    </div>
                </div>
            </div>`;
@@ -16907,7 +16908,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
            let table = `<div class="overflow-x-auto shadow-sm rounded border border-slate-300 w-full"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-[#c2d4ec]">`;
            table += `<th class="border border-slate-300 px-4 py-3 font-bold text-slate-800 min-w-[150px]"></th>`;
            opts.forEach(c => {
-               table += `<th class="border border-slate-300 px-3 py-3 text-center font-bold text-slate-800 text-sm whitespace-nowrap min-w-[50px]">${c}</th>`;
+               table += `<th class="border border-slate-300 px-3 py-3 text-center font-bold text-slate-800 text-sm whitespace-nowrap min-w-[50px]">${displayOption(c)}</th>`;
            });
            table += `</tr></thead><tbody>`;
            
@@ -16920,7 +16921,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                opts.forEach(c => {
                    const isSelected = answers[id] === c;
                    const bgClass = isSelected ? 'bg-[#d0e3f5]' : 'bg-white hover:bg-slate-100';
-                   table += `<td class="border border-slate-300 p-0 text-center cursor-pointer transition-colors ${bgClass}" onclick="handleAns(${id}, this.dataset.val); renderPart(currentPartIdx);" data-val="${c.replace(/"/g,"&quot;")}">
+                   table += `<td class="border border-slate-300 p-0 text-center cursor-pointer transition-colors ${bgClass}" onclick="handleAns(${id}, this.dataset.val); renderPart(currentPartIdx);" data-val="${q.latexSource ? escapeLatexOption(c) : c.replace(/"/g,"&quot;")}">
                        <div class="w-full h-full flex items-center justify-center min-h-[44px]">
                            ${isSelected ? `<svg class="w-6 h-6 text-[#5cb85c] font-black drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>` : ''}
                        </div>
@@ -16934,14 +16935,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         } else if(q.type === 'matching_info') {
            const statements = (rawText).split('\n').filter(Boolean);
            const cols = q.options || [];
-           let table = `<div class="overflow-x-auto mb-4"><table class="w-full text-left border-collapse border border-slate-300 bg-white"><thead><tr class="bg-slate-50"><th class="border border-slate-300 px-3 py-2 font-bold text-slate-700" style="font-size: 0.95rem;">Statement</th>${cols.map(c => `<th class="border border-slate-300 px-2 py-2 text-center min-w-[40px] font-bold text-slate-700" style="font-size: 0.95rem;">${c}</th>`).join('')}</tr></thead><tbody>`;
+           let table = `<div class="overflow-x-auto mb-4"><table class="w-full text-left border-collapse border border-slate-300 bg-white"><thead><tr class="bg-slate-50"><th class="border border-slate-300 px-3 py-2 font-bold text-slate-700" style="font-size: 0.95rem;">Statement</th>${cols.map(c => `<th class="border border-slate-300 px-2 py-2 text-center min-w-[40px] font-bold text-slate-700" style="font-size: 0.95rem;">${displayOption(c)}</th>`).join('')}</tr></thead><tbody>`;
            statements.forEach((stmt, sIdx) => {
               const id = q.ids[sIdx];
               if(!id) return;
               let stmtTxt = pt(stmt);
               table += `<tr><td class="border border-slate-300 px-3 py-2 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.4;">${stmtTxt}</td>`;
               cols.forEach(c => {
-                 table += `<td class="border border-slate-300 p-1.5 text-center bg-white"><input type="radio" name="q-${id}" value="${c.replace(/'/g,"\\'")}" ${answers[id]===c?'checked':''} onchange="handleAns(${id}, this.value)" class="w-4 h-4 text-blue-600 cursor-pointer"></td>`;
+                 table += `<td class="border border-slate-300 p-1.5 text-center bg-white"><input type="radio" name="q-${id}" value="${optionAttribute(c)}" ${answers[id]===c?'checked':''} onchange="handleAns(${id}, this.value)" class="w-4 h-4 text-blue-600 cursor-pointer"></td>`;
               });
               table += `</tr>`;
            });
@@ -18075,6 +18076,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           let qImageHtml = '';
           let qTextHtml = '';
           let qOptsHtml = '';
+          const displayResultOption = value => q.latexSource
+              ? String(value).replace(/[&<>"']/g, char => ({
+                  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+              })[char])
+              : value;
 
           // 1. Instructions
           const cleanInst = (q.instruction || '').trim();
@@ -18146,7 +18152,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                   qOptsHtml = `<div class="mt-4 p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
                       <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Options Bank</p>
                       <div class="flex flex-wrap gap-2">
-                          ${(q.options || []).map(o => `<span class="bg-slate-50 border border-slate-300 text-slate-600 px-3 py-1.5 rounded font-medium shadow-sm">${o}</span>`).join('')}
+                          ${(q.options || []).map(o => `<span class="bg-slate-50 border border-slate-300 text-slate-600 px-3 py-1.5 rounded font-medium shadow-sm">${displayResultOption(o)}</span>`).join('')}
                       </div>
                   </div>`;
               }
@@ -18156,14 +18162,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               qOptsHtml = `<div class="mt-4 p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
                   <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Options Bank (Headings)</p>
                   <div class="flex flex-col gap-2">
-                      ${(q.options || []).map(o => `<span class="bg-slate-50 border border-slate-300 text-slate-700 px-4 py-2.5 rounded font-medium shadow-sm leading-snug">${o}</span>`).join('')}
+                      ${(q.options || []).map(o => `<span class="bg-slate-50 border border-slate-300 text-slate-700 px-4 py-2.5 rounded font-medium shadow-sm leading-snug">${displayResultOption(o)}</span>`).join('')}
                   </div>
               </div>`;
           }
           else if (q.type === 'matching_info') {
               const statements = (q.text || '').split('\n').filter(Boolean);
               const cols = q.options || [];
-              let table = `<div class="overflow-x-auto mb-4 rounded-xl border border-slate-300 shadow-sm"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-slate-100"><th class="border-b border-r border-slate-300 px-4 py-3 font-bold text-slate-800 text-[15px]">Statement</th>${cols.map(c => `<th class="border-b border-r border-slate-300 px-3 py-3 text-center min-w-[50px] font-bold text-slate-800 text-[15px]">${c}</th>`).join('')}</tr></thead><tbody>`;
+              let table = `<div class="overflow-x-auto mb-4 rounded-xl border border-slate-300 shadow-sm"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-slate-100"><th class="border-b border-r border-slate-300 px-4 py-3 font-bold text-slate-800 text-[15px]">Statement</th>${cols.map(c => `<th class="border-b border-r border-slate-300 px-3 py-3 text-center min-w-[50px] font-bold text-slate-800 text-[15px]">${displayResultOption(c)}</th>`).join('')}</tr></thead><tbody>`;
               
               statements.forEach((stmt, sIdx) => {
                   const id = q.ids[sIdx];
@@ -18219,7 +18225,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
               let table = `<div class="overflow-x-auto shadow-sm rounded-xl border border-slate-300 w-full"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-slate-100"><th class="border-b border-r border-slate-300 px-4 py-3 font-bold text-slate-800 text-[15px] min-w-[150px]"></th>`;
               opts.forEach(c => {
-                  table += `<th class="border-b border-r border-slate-300 px-3 py-3 text-center font-bold text-slate-800 text-sm whitespace-nowrap min-w-[50px]">${c}</th>`;
+                  table += `<th class="border-b border-r border-slate-300 px-3 py-3 text-center font-bold text-slate-800 text-sm whitespace-nowrap min-w-[50px]">${displayResultOption(c)}</th>`;
               });
               table += `</tr></thead><tbody>`;
               
@@ -18287,7 +18293,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               qOptsHtml = `<div class="mt-4 p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
                   <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Options Bank</p>
                   <div class="flex flex-wrap gap-2">
-                      ${(q.options || []).map(o => `<span class="bg-slate-50 border border-slate-300 text-slate-600 px-3 py-1.5 rounded font-medium shadow-sm">${o}</span>`).join('')}
+                      ${(q.options || []).map(o => `<span class="bg-slate-50 border border-slate-300 text-slate-600 px-3 py-1.5 rounded font-medium shadow-sm">${displayResultOption(o)}</span>`).join('')}
                   </div>
               </div>`;
           }
@@ -23167,6 +23173,18 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             if (nodes.some(node => node.type !== 'text')) fail(`${label} must contain plain text`);
             return nodes.map(node => node.value).join('').trim();
         };
+        const readMacroList = (macro, argumentCount) => {
+            const nodes = readRequiredNodes();
+            const entries = nodes.filter(node => node.type === macro);
+            if (nodes.some(node => node.type !== 'text' && node.type !== macro)) {
+                fail(`Only \\${macro} macros are allowed in this list`);
+            }
+            const values = entry => entry.values || (entry.value !== undefined ? [entry.value] : []);
+            if (entries.some(entry => values(entry).length !== argumentCount || values(entry).some(value => !value))) {
+                fail(`Each \\${macro} must have ${argumentCount} non-empty argument${argumentCount === 1 ? '' : 's'}`);
+            }
+            return entries.map(entry => ({ ...entry, values: values(entry) }));
+        };
         const parseGapOptions = (raw) => {
             const result = { alternatives: [], time: null };
             if (raw === null || raw.trim() === '') return result;
@@ -23232,8 +23250,25 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     const answer = readRequiredText('Gap answer');
                     if (!answer) fail('Gap answer cannot be empty', slashAt);
                     nodes.push({ type: 'gap', answer, alternatives: options.alternatives, time: options.time });
+                } else if (command === 'drop') {
+                    const options = parseGapOptions(readOptionalBracket());
+                    const answer = readRequiredText('Drag/drop answer');
+                    if (!answer) fail('Drag/drop answer cannot be empty', slashAt);
+                    nodes.push({ type: 'drop', answer, alternatives: options.alternatives, time: options.time });
                 } else if (command === 'choice' || command === 'correct') {
                     nodes.push({ type: command, value: readRequiredText('Choice') });
+                } else if (command === 'option') {
+                    nodes.push({ type: 'option', value: readRequiredText('Option') });
+                } else if (command === 'item') {
+                    nodes.push({ type: 'item', values: [readRequiredText('Item text'), readRequiredText('Item answer')] });
+                } else if (command === 'hotspot') {
+                    nodes.push({ type: 'hotspot', values: [
+                        readRequiredText('Hotspot x position'),
+                        readRequiredText('Hotspot y position'),
+                        readRequiredText('Hotspot answer')
+                    ] });
+                } else if (command === 'question') {
+                    nodes.push({ type: 'question', value: readRequiredText('Speaking follow-up question') });
                 } else if (command === 'mcq') {
                     const question = readRequiredText('Multiple-choice question');
                     if (!question) fail('Multiple-choice question text cannot be empty', slashAt);
@@ -23252,6 +23287,82 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         question,
                         options: options.map(option => ({ text: option.value, correct: option.type === 'correct' }))
                     });
+                } else if (command === 'matchingheadings' || command === 'matchinginfo') {
+                    const instruction = readRequiredText('Matching instruction');
+                    const items = readMacroList('item', 2);
+                    const options = readMacroList('option', 1);
+                    if (!items.length || !options.length) fail('Matching questions need at least one item and one option', slashAt);
+                    const allowedOptions = new Set(options.map(option => option.values[0].trim().toLowerCase()));
+                    if (items.some(item => !allowedOptions.has(item.values[1].trim().toLowerCase()))) {
+                        fail('Every matching answer must match one of the listed options', slashAt);
+                    }
+                    nodes.push({
+                        type: command === 'matchingheadings' ? 'matching_headings' : 'matching_info',
+                        instruction,
+                        items: items.map(item => ({ text: item.values[0], answer: item.values[1] })),
+                        options: options.map(option => option.values[0])
+                    });
+                } else if (command === 'mapgrid') {
+                    const imageOptions = readOptionalBracket() || '';
+                    const image = imageOptions.match(/(?:^|;)\s*image=(.+?)(?:;|$)/i)?.[1]?.trim() || '';
+                    if (!/^https?:\/\//i.test(image)) fail('\\mapgrid requires [image=https://...]', slashAt);
+                    const instruction = readRequiredText('Map-grid instruction');
+                    const items = readMacroList('item', 2);
+                    const options = readMacroList('option', 1);
+                    if (!items.length || !options.length) fail('Map-grid questions need at least one location and one map option', slashAt);
+                    const allowedOptions = new Set(options.map(option => option.values[0].trim().toLowerCase()));
+                    if (items.some(item => !allowedOptions.has(item.values[1].trim().toLowerCase()))) {
+                        fail('Every map-grid answer must match one of the listed options', slashAt);
+                    }
+                    nodes.push({
+                        type: 'map_labelling_grid',
+                        image,
+                        instruction,
+                        items: items.map(item => ({ text: item.values[0], answer: item.values[1] })),
+                        options: options.map(option => option.values[0])
+                    });
+                } else if (command === 'maphotspots') {
+                    const imageOptions = readOptionalBracket() || '';
+                    const image = imageOptions.match(/(?:^|;)\s*image=(.+?)(?:;|$)/i)?.[1]?.trim() || '';
+                    if (!/^https?:\/\//i.test(image)) fail('\\maphotspots requires [image=https://...]', slashAt);
+                    const instruction = readRequiredText('Map-hotspot instruction');
+                    const hotspots = readMacroList('hotspot', 3).map(hotspot => {
+                        const x = Number(hotspot.values[0]);
+                        const y = Number(hotspot.values[1]);
+                        if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 100 || y < 0 || y > 100) {
+                            fail('Hotspot coordinates must be percentages between 0 and 100', slashAt);
+                        }
+                        return { x, y, answer: hotspot.values[2] };
+                    });
+                    const options = readMacroList('option', 1).map(option => option.values[0]);
+                    if (!hotspots.length || !options.length) fail('Map-hotspot questions need at least one hotspot and one option', slashAt);
+                    const allowedOptions = new Set(options.map(option => option.trim().toLowerCase()));
+                    if (hotspots.some(hotspot => !allowedOptions.has(hotspot.answer.trim().toLowerCase()))) {
+                        fail('Every hotspot answer must match one of the listed options', slashAt);
+                    }
+                    nodes.push({ type: 'map_labelling_hotspots', image, instruction, hotspots, options });
+                } else if (command === 'writingtask') {
+                    const taskOption = readOptionalBracket() || '';
+                    const taskMatch = taskOption.match(/^task\s*=\s*([12])$/i);
+                    if (!taskMatch) fail('\\writingtask requires [task=1] or [task=2]', slashAt);
+                    const title = readRequiredText('Writing task title');
+                    const prompt = readRequiredText('Writing task prompt');
+                    if (!title || !prompt) fail('Writing task title and prompt cannot be empty', slashAt);
+                    nodes.push({ type: 'writingtask', task: `task${taskMatch[1]}`, title, prompt });
+                } else if (command === 'speaking') {
+                    const title = readRequiredText('Speaking topic');
+                    const cueCard = readRequiredText('Speaking cue card');
+                    const followUps = readMacroList('question', 1).map(question => question.value);
+                    if (!title || !cueCard) fail('Speaking topic and cue card cannot be empty', slashAt);
+                    nodes.push({ type: 'speaking', title, cueCard, followUps });
+                } else if (command === 'notes') {
+                    const text = readRequiredText('Notes text');
+                    if (!text) fail('Notes text cannot be empty', slashAt);
+                    nodes.push({ type: 'notes', text });
+                } else if (command === 'audio') {
+                    const url = readRequiredText('Audio URL');
+                    if (!/^https?:\/\//i.test(url)) fail('\\audio URL must begin with http:// or https://', slashAt);
+                    nodes.push({ type: 'audio', url });
                 } else if (command === 'tfng') {
                     const statement = readRequiredText('TFNG statement');
                     const answer = readRequiredText('TFNG answer').toUpperCase().replace(/\s+/g, ' ');
@@ -23264,7 +23375,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 } else if (command === 'passage') {
                     const title = readRequiredText('Passage title');
                     const content = readRequiredNodes();
-                    if (content.some(node => node.type === 'mcq' || node.type === 'tfng' || node.type === 'passage')) {
+                    if (content.some(node => !['text', 'gap', 'drop'].includes(node.type))) {
                         fail('A passage may contain text and gaps, but not nested questions or passages', slashAt);
                     }
                     nodes.push({ type: 'passage', title, content });
@@ -23278,18 +23389,38 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         const nodes = parseSequence();
         let passageTitle = '';
+        let audioUrl = '';
+        let writingTask = '';
+        let speakingQuestions = '';
+        let hasSpeaking = false;
         const passageNodes = [];
         const questionNodes = [];
         let passageCount = 0;
         nodes.forEach(node => {
-            if (node.type === 'text' || node.type === 'gap') {
+            if (node.type === 'text' || node.type === 'gap' || node.type === 'drop') {
                 passageNodes.push(node);
             } else if (node.type === 'passage') {
                 passageCount++;
                 if (passageCount > 1) fail('Only one \\passage is allowed per imported part', 0);
                 passageTitle = node.title;
                 passageNodes.push(...node.content);
-            } else if (node.type === 'mcq' || node.type === 'tfng') {
+            } else if (node.type === 'audio') {
+                if (audioUrl) fail('Only one \\audio source is allowed', 0);
+                audioUrl = node.url;
+            } else if (node.type === 'writingtask') {
+                if (writingTask) fail('Only one \\writingtask is allowed per import', 0);
+                writingTask = node.task;
+                passageTitle = node.title;
+                questionNodes.push({ type: 'essay', instruction: node.prompt, task: node.task });
+            } else if (node.type === 'speaking') {
+                if (hasSpeaking) fail('Only one \\speaking macro is allowed per import', 0);
+                hasSpeaking = true;
+                passageTitle = node.title;
+                speakingQuestions = node.followUps.join('\n');
+                questionNodes.push({ type: 'audio_record', instruction: node.cueCard });
+            } else if (node.type === 'notes') {
+                questionNodes.push({ type: 'essay', instruction: node.text, text: '' });
+            } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'].includes(node.type)) {
                 questionNodes.push(node);
             } else {
                 fail(`\\${node.type} must be inside an appropriate question macro`, 0);
@@ -23297,17 +23428,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         });
 
         const gaps = [];
+        const gapModes = new Set();
         let nextPreviewId = 1;
         const passageHtmlSource = passageNodes.map(node => {
             if (node.type === 'text') return node.value;
             const gap = { ...node, id: nextPreviewId++ };
             gaps.push(gap);
+            gapModes.add(node.type);
             return `{blank:${gap.id}}`;
         }).join('');
+        if (gapModes.size > 1) fail('Do not mix \\gap and \\drop in the same passage import', 0);
         const questions = [];
         if (gaps.length) {
             questions.push({
-                type: 'fill_blanks',
+                type: gapModes.has('drop') ? 'dnd_list' : 'fill_blanks',
                 text: passageHtmlSource,
                 gaps
             });
@@ -23323,6 +23457,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 text: passageHtmlSource,
                 hasGaps: gaps.length > 0
             },
+            audioUrl,
+            writingTask,
+            hasSpeaking,
+            speakingQuestions,
             questions,
             gapCount: gaps.length
         };
@@ -23357,7 +23495,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             if (parsed.passage.title) html += `<h3 class="font-black text-lg text-slate-900">${escapeHtml(parsed.passage.title)}</h3>`;
             if (parsed.passage.text.trim()) {
                 const gapTimes = new Map();
-                parsed.questions.filter(question => question.type === 'fill_blanks').forEach(question => {
+                parsed.questions.filter(question => question.type === 'fill_blanks' || question.type === 'dnd_list').forEach(question => {
                     question.gaps.forEach(gap => gapTimes.set(String(gap.id), gap.time));
                 });
                 let body = '';
@@ -23376,7 +23514,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
             let questionNumber = parsed.gapCount;
             parsed.questions.forEach(question => {
-                if (question.type === 'fill_blanks') return;
+                if (question.type === 'fill_blanks' || question.type === 'dnd_list') return;
                 questionNumber++;
                 if (question.type === 'mcq') {
                     html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold mb-2">${questionNumber}. ${escapeHtml(question.question)}</p>`;
@@ -23385,7 +23523,17 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     });
                     html += '</section>';
                 } else {
-                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.statement)}</p><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<p class="text-sm text-purple-700 mt-1">${escapeHtml(question.explanation)}</p>` : ''}</section>`;
+                    if (question.type === 'tfng') {
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.statement)}</p><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<p class="text-sm text-purple-700 mt-1">${escapeHtml(question.explanation)}</p>` : ''}</section>`;
+                    } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') {
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.instruction)}</p>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map(item => `${escapeHtml(item.text)} → ${escapeHtml(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                    } else if (question.type === 'map_labelling_hotspots') {
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.instruction)}</p><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Hotspot ${index + 1} (${spot.x}%, ${spot.y}%) → ${escapeHtml(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                    } else if (question.type === 'essay') {
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${escapeHtml(question.instruction)}</p>${question.text ? `<div class="text-sm mt-1">${escapeHtml(question.text)}</div>` : ''}</section>`;
+                    } else if (question.type === 'audio_record') {
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">Speaking: ${escapeHtml(question.instruction)}</p>${parsed.speakingQuestions ? `<div class="text-sm mt-1">${escapeHtml(parsed.speakingQuestions).replace(/\n/g, '<br>')}</div>` : ''}</section>`;
+                    }
                 }
             });
             if (parsed.passage.hasGaps) {
@@ -23410,6 +23558,26 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             return;
         }
 
+        const allowedTypes = {
+            reading: ['fill_blanks', 'dnd_list', 'multiple_choice', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'],
+            listening: ['fill_blanks', 'dnd_list', 'multiple_choice', 'map_labelling_grid', 'map_labelling_hotspots'],
+            writing: ['essay'],
+            speaking: ['essay', 'audio_record']
+        };
+        const skillTypes = allowedTypes[APP_DATA.module] || [];
+        const unsupported = parsed.questions.find(question => {
+            const nativeType = question.type === 'mcq' ? 'multiple_choice' : question.type;
+            return !skillTypes.includes(nativeType);
+        });
+        if (unsupported || (parsed.writingTask && APP_DATA.module !== 'writing') || (parsed.hasSpeaking && APP_DATA.module !== 'speaking') || (parsed.audioUrl && APP_DATA.module !== 'listening')) {
+            const wrongMacro = parsed.writingTask ? 'writingtask' : parsed.hasSpeaking ? 'speaking' : parsed.audioUrl ? 'audio' : unsupported.type.replace(/_/g, ' ');
+            const message = `The ${wrongMacro} macro is not available for the ${APP_DATA.module || 'current'} skill.`;
+            const error = document.getElementById('ielts-latex-error');
+            error.textContent = message;
+            error.classList.remove('hidden');
+            return;
+        }
+
         const part = APP_DATA.parts[currentEditorPartIdx];
         const hasImportedPassage = !!(parsed.passage.title || parsed.passage.text.trim());
         if (hasImportedPassage && (part.text || part.title) &&
@@ -23427,8 +23595,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const newBlocks = [];
         const gapIds = {};
 
+        const allocateIds = count => Array.from({ length: count }, () => nextId++);
         if (parsed.gapCount) {
-            const gapBlock = parsed.questions.find(question => question.type === 'fill_blanks');
+            const gapBlock = parsed.questions.find(question => question.type === 'fill_blanks' || question.type === 'dnd_list');
             const ids = gapBlock.gaps.map(gap => {
                 const id = nextId++;
                 gapIds[gap.id] = id;
@@ -23444,22 +23613,25 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             });
             const block = {
                 blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
-                type: 'fill_blanks',
+                type: gapBlock.type,
                 ids,
                 points: ids.length,
-                instruction: 'Fill in the blanks.',
+                instruction: gapBlock.type === 'dnd_list' ? 'Complete the sentences using the options.' : 'Fill in the blanks.',
                 text: formatText(text),
-                options: [],
-                correctAnswers
+                options: gapBlock.type === 'dnd_list' ? [...new Set(gapBlock.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]))] : [],
+                correctAnswers,
+                reusable: false,
+                ...(gapBlock.type === 'dnd_list' ? { latexSource: true } : {})
             };
             if (Object.keys(timestamps).length) block.timestamps = timestamps;
             newBlocks.push(block);
         }
 
         parsed.questions.forEach(question => {
-            if (question.type === 'fill_blanks') return;
-            const id = nextId++;
+            if (question.type === 'fill_blanks' || question.type === 'dnd_list') return;
+            let id;
             if (question.type === 'mcq') {
+                id = nextId++;
                 const options = question.options.map(option => option.text);
                 newBlocks.push({
                     blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
@@ -23473,7 +23645,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     multi: false,
                     latexSource: true
                 });
-            } else {
+            } else if (question.type === 'tfng') {
+                id = nextId++;
                 const isYesNo = question.answer === 'YES' || question.answer === 'NO';
                 const answer = question.answer === 'TRUE' ? 'True'
                     : question.answer === 'FALSE' ? 'False'
@@ -23491,12 +23664,86 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     correctAnswers: { [id]: answer },
                     explanation: formatText(question.explanation || '')
                 });
+            } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') {
+                const ids = allocateIds(question.items.length);
+                const text = question.type === 'matching_headings'
+                    ? question.items.map((item, index) => `${ids[index]}. ${item.text}`).join('\n')
+                    : question.items.map(item => escapeHtml(item.text)).join('\n');
+                const correctAnswers = {};
+                question.items.forEach((item, index) => { correctAnswers[ids[index]] = item.answer; });
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: question.type,
+                    ids,
+                    points: ids.length,
+                    instruction: formatText(question.instruction),
+                    text: question.type === 'matching_headings' ? formatText(text) : text,
+                    options: question.options,
+                    correctAnswers,
+                    reusable: question.type === 'matching_headings' ? false : true,
+                    latexSource: true,
+                    ...(question.type === 'map_labelling_grid' ? { image: question.image } : {})
+                });
+            } else if (question.type === 'map_labelling_hotspots') {
+                const ids = allocateIds(question.hotspots.length);
+                const correctAnswers = {};
+                question.hotspots.forEach((hotspot, index) => { correctAnswers[ids[index]] = hotspot.answer; });
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: question.type,
+                    ids,
+                    points: ids.length,
+                    instruction: formatText(question.instruction),
+                    text: '',
+                    options: question.options,
+                    correctAnswers,
+                    reusable: false,
+                    image: question.image,
+                    latexSource: true,
+                    hotspots: question.hotspots.map((hotspot, index) => ({ id: ids[index], x: hotspot.x, y: hotspot.y }))
+                });
+            } else if (question.type === 'essay') {
+                id = nextId++;
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: 'essay',
+                    ids: [id],
+                    points: 1,
+                    instruction: formatText(question.instruction),
+                    text: formatText(question.text || ''),
+                    options: [],
+                    correctAnswers: {}
+                });
+            } else if (question.type === 'audio_record') {
+                id = nextId++;
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: 'audio_record',
+                    ids: [id],
+                    points: 1,
+                    instruction: formatText(question.instruction),
+                    text: '',
+                    options: [],
+                    correctAnswers: {}
+                });
             }
         });
 
         if (hasImportedPassage) {
             part.title = parsed.passage.title ? escapeHtml(parsed.passage.title) : part.title;
             part.text = parsed.gapCount ? '' : formatText(parsed.passage.text);
+        }
+        if (parsed.writingTask) part.writingTask = parsed.writingTask;
+        if (parsed.hasSpeaking) part.speakingQuestions = formatText(parsed.speakingQuestions);
+        if (parsed.audioUrl) {
+            part.audioUrl = parsed.audioUrl;
+            const audioInput = document.getElementById('edit-audio-url');
+            if (audioInput) audioInput.value = parsed.audioUrl;
+            if (typeof window.updateListeningEditorAudio === 'function') {
+                window.updateListeningEditorAudio(parsed.audioUrl);
+            }
+        }
+        if (hasImportedPassage) {
             const titleEl = document.getElementById('edit-passage-title');
             if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = part.title;
             else titleEl.innerHTML = part.title;
