@@ -23468,6 +23468,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const questions = questionOrder
             .map(question => question.type === 'passage_questions' ? gapQuestion : question)
             .filter(Boolean);
+        const previewOrder = questionOrder.flatMap(question => question.type === 'passage_questions'
+            ? [{ type: 'passage_preview' }, ...(gapQuestion ? [gapQuestion] : [])]
+            : [question]);
 
         if (!passageNodes.some(node => node.type === 'text' && node.value.trim()) && !questions.length) {
             fail('Enter passage text or at least one question', 0);
@@ -23483,6 +23486,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             hasSpeaking,
             speakingQuestions,
             questions,
+            previewOrder,
             gapCount: gaps.length
         };
     };
@@ -23639,10 +23643,13 @@ Write the transcript here. The answer is \drop{correct option}.
             error.classList.add('hidden');
             error.textContent = '';
             let html = '';
-            if (parsed.passage.title) html += `<h3 class="font-black text-lg text-slate-900">${escapeHtml(parsed.passage.title)}</h3>`;
+            let passageHtml = parsed.passage.title
+                ? `<h3 class="font-black text-lg text-slate-900">${escapeHtml(parsed.passage.title)}</h3>`
+                : '';
             const gapQuestionNumbers = new Map();
             let questionNumber = 0;
-            parsed.questions.forEach(question => {
+            parsed.previewOrder.forEach(question => {
+                if (question.type === 'passage_preview') return;
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
                     question.gaps.forEach(gap => gapQuestionNumbers.set(String(gap.id), ++questionNumber));
                 } else {
@@ -23651,7 +23658,7 @@ Write the transcript here. The answer is \drop{correct option}.
             });
             if (parsed.passage.text.trim()) {
                 const gapTimes = new Map();
-                parsed.questions.filter(question => question.type === 'fill_blanks' || question.type === 'dnd_list').forEach(question => {
+                parsed.previewOrder.filter(question => question.type === 'fill_blanks' || question.type === 'dnd_list').forEach(question => {
                     question.gaps.forEach(gap => gapTimes.set(String(gap.id), gap.time));
                 });
                 let body = '';
@@ -23667,10 +23674,16 @@ Write the transcript here. The answer is \drop{correct option}.
                     offset = gapPattern.lastIndex;
                 }
                 body += escapeHtml(parsed.passage.text.slice(offset));
-                html += `<div class="leading-relaxed whitespace-pre-wrap">${body.replace(/\n/g, '<br>')}</div>`;
+                passageHtml += `<div class="leading-relaxed whitespace-pre-wrap">${body.replace(/\n/g, '<br>')}</div>`;
             }
             questionNumber = 0;
-            parsed.questions.forEach(question => {
+            let renderedPassage = false;
+            parsed.previewOrder.forEach(question => {
+                if (question.type === 'passage_preview') {
+                    html += passageHtml;
+                    renderedPassage = true;
+                    return;
+                }
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
                     const firstNumber = questionNumber + 1;
                     questionNumber += question.gaps.length;
@@ -23700,6 +23713,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     }
                 }
             });
+            if (!renderedPassage && passageHtml) html = passageHtml + html;
             if (parsed.passage.hasGaps) {
                 html = `<div class="text-xs font-black uppercase tracking-wider text-blue-700">Passage with ${parsed.gapCount} inline gap${parsed.gapCount === 1 ? '' : 's'}</div>${html}`;
             }
