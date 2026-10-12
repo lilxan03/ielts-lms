@@ -1622,6 +1622,45 @@
     </div>
   </div>
 
+  <div id="latex-import-modal" class="hidden fixed inset-0 bg-slate-900/80 z-[410] flex items-center justify-center backdrop-blur-md md:p-6">
+    <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-7xl h-full md:h-[95vh] overflow-hidden border border-slate-200">
+      <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-900 text-white shrink-0">
+        <div>
+          <h2 class="text-xl font-black">IELTS LaTeX Import</h2>
+          <p class="text-xs text-slate-300 mt-1">Compose with macros and see a live preview before adding native LMS questions.</p>
+        </div>
+        <button type="button" onclick="document.getElementById('latex-import-modal').classList.add('hidden')" class="text-slate-400 hover:text-white font-bold text-2xl" aria-label="Close">&times;</button>
+      </div>
+      <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2">
+        <div class="p-5 flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-slate-200">
+          <label for="ielts-latex-input" class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">LaTeX-style source</label>
+          <textarea id="ielts-latex-input" spellcheck="false" oninput="window.updateIeltsLatexPreview()" class="flex-1 min-h-[220px] resize-none border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" placeholder="\passage{The Evolution of Language}{
+The system relies on \gap{photosynthesis}.
+If the user inputs \gap[colour]{color}, both are accepted.
+}
+
+\mcq{What is the main advantage of the new system?}{
+  \choice{It is cheaper.}
+  \correct{It is faster.}
+  \choice{It is easier to maintain.}
+}
+
+\tfng{The study was conducted in 2026.}{NOT GIVEN}[The passage does not mention the study date.]"></textarea>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> accepts alternatives; <code>\gap[time=01:23]{answer}</code> stores a listening timestamp. Use <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code>, and <code>\tfng{statement}{TRUE|FALSE|NOT GIVEN}[explanation]</code>. A passage containing gaps becomes one inline fill-in-the-blanks block; passage text/title replace the current part's content when compiled.</p>
+        </div>
+        <div class="p-5 flex flex-col min-h-0 bg-slate-50">
+          <div class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Live preview</div>
+          <div id="ielts-latex-error" class="hidden mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700" role="alert"></div>
+          <div id="ielts-latex-preview" class="flex-1 min-h-[220px] overflow-y-auto rounded-xl border border-slate-200 bg-white p-5 space-y-4 text-slate-800"></div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-slate-200 bg-white flex justify-between items-center gap-3 shrink-0">
+        <button type="button" onclick="document.getElementById('latex-import-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
+        <button type="button" onclick="window.compileIeltsLatex()" class="px-7 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-black shadow-md transition">Parse & Add to Test</button>
+      </div>
+    </div>
+  </div>
+
   <!-- BULK TEST IMPORT MODAL (TEST BANK) -->
   <div id="bulk-test-import-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm md:p-6">
     <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] animate-scale-up overflow-hidden border border-slate-200">
@@ -3297,6 +3336,7 @@
             <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
             <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5" title="Grid/Excel Paste">📥 Grid Import</button>
             <button onclick="window.openMarkupImport()" class="bg-slate-800 text-white px-4 py-2.5 rounded-lg font-black shadow hover:bg-black text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:-translate-y-0.5" title="Compile from Plain Text">⚡ Text-to-Test</button>
+            <button onclick="window.openIeltsLatexImport()" class="bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-black shadow hover:bg-indigo-800 text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:-translate-y-0.5" title="Compose with IELTS LaTeX-style macros">∑ LaTeX Import</button>
                      <label class="bg-amber-500 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-amber-600 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5 cursor-pointer" title="Auto-create a test from a text PDF">
                          📄 PDF Auto Test
                          <input id="test-pdf-import" type="file" accept="application/pdf" class="hidden" onchange="window.handleTestPdfImport(event)">
@@ -4657,11 +4697,28 @@
         }
     }
 
+    function updateLatexGapHighlight(audio) {
+        if (!audio || !Number.isFinite(Number(audio.currentTime))) return;
+        const gaps = Array.from(document.querySelectorAll('.latex-timed-gap'))
+            .map(element => ({ element, time: Number(element.dataset.latexGapTime) }))
+            .filter(gap => Number.isFinite(gap.time))
+            .sort((left, right) => left.time - right.time);
+        const currentTime = Number(audio.currentTime);
+        gaps.forEach((gap, index) => {
+            const nextTime = gaps.slice(index + 1).find(next => next.time > gap.time)?.time ?? Infinity;
+            const active = currentTime >= gap.time && currentTime < nextTime;
+            gap.element.classList.toggle('ring-4', active);
+            gap.element.classList.toggle('ring-amber-400', active);
+            gap.element.classList.toggle('bg-amber-100', active);
+        });
+    }
+
     function wireKaraokeAudio(audio, root) {
         if (!audio || !root) return;
         if (audio._karaokeCleanup) audio._karaokeCleanup();
         const tick = () => {
             updateKaraokeHighlight(audio, root);
+            updateLatexGapHighlight(audio);
             if (!audio.paused && !audio.ended) audio._karaokeFrame = requestAnimationFrame(tick);
         };
         const start = () => {
@@ -4672,6 +4729,7 @@
             if (audio._karaokeFrame) cancelAnimationFrame(audio._karaokeFrame);
             audio._karaokeFrame = null;
             updateKaraokeHighlight(audio, root);
+            updateLatexGapHighlight(audio);
         };
         if (audio.isYouTube) {
             audio.setKaraokeStateListener(playing => playing ? start() : stop());
@@ -10850,7 +10908,7 @@
       part.questions.forEach((q, i) => {
         const div = document.createElement('div'); 
         div.className = 'bg-white rounded-xl border border-slate-200 shadow-sm relative transition-all hover:shadow-md overflow-hidden';
-        const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).join('\n');
+        const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).map(value => q.latexSource ? String(value).replace(/[&<>]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[char])) : value).join('\n');
         const mkLbl = (t) => `<label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mt-4 first:mt-0">${t}</label>`;
         
         const mkStandardToolbar = () => `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
@@ -11618,6 +11676,8 @@
             if (old.locateIndex !== undefined) res.locateIndex = old.locateIndex;
         }
         
+        if (old.timestamps) res.timestamps = old.timestamps;
+        if (old.latexSource) res.latexSource = true;
         if (old.image) res.image = old.image;
         if (old.hotspots) res.hotspots = old.hotspots;
         
@@ -16731,6 +16791,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         };
 
         let content = '';
+        const escapeLatexOption = value => String(value).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+        const displayOption = value => q.latexSource ? escapeLatexOption(value) : pt(value);
+        const optionAttribute = value => q.latexSource ? escapeLatexOption(value) : value.replace(/'/g, "\\'");
         
         if(q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
            const opts = q.type === 'tfng' ? ['True','False','Not Given'] : (q.type === 'ynng' ? ['Yes','No','Not Given'] : q.options);
@@ -16740,14 +16805,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
            if (q.type === 'multiple_choice' && q.multi) {
                const selectedVals = q.ids.map(id => answers[id]).filter(Boolean);
                content = `<div class="mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
-                  let oText = pt(o); 
+                  let oText = displayOption(o); 
                   const isChecked = selectedVals.includes(o);
-                  return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="checkbox" value="${o.replace(/'/g,"\\'")}" ${isChecked?'checked':''} onchange="handleMultiAns('${q.ids.join(',')}', this)" class="w-4 h-4 text-blue-600 rounded border-slate-300"><span>${oText}</span></label>`
+                  return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="checkbox" value="${optionAttribute(o)}" ${isChecked?'checked':''} onchange="handleMultiAns('${q.ids.join(',')}', this)" class="w-4 h-4 text-blue-600 rounded border-slate-300"><span>${oText}</span></label>`
                }).join('')}</div>`;
            } else {
                content = `<div class="mb-4 flex items-start">${remainingInlineBadges}<div class="pt-1">${qText}</div></div><div class="space-y-2">${opts.map(o => {
-                  let oText = pt(o); 
-                  return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${o.replace(/'/g,"\\'")}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${oText}</span></label>`
+                  let oText = displayOption(o); 
+                  return `<label class="flex items-center space-x-3 cursor-pointer p-2 rounded hover:bg-slate-50"><input type="radio" name="q-${q.ids[0]}" value="${optionAttribute(o)}" ${answers[q.ids[0]]===o?'checked':''} onchange="handleAns(${q.ids[0]}, this.value)" class="w-4 h-4 text-blue-600"><span>${oText}</span></label>`
                }).join('')}</div>`;
            }
         } else if(q.type === 'fill_blanks') {
@@ -16755,7 +16820,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
            q.ids.forEach(id => {
                unplacedIds.delete(id);
                const ans = answers[id]||'';
-               const inputHtml = `<span class="inline-flex items-center align-middle border border-slate-400 rounded bg-white h-[36px] p-0.5 mx-1 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all max-w-[calc(100%-8px)]">
+               const gapTime = Number(q.timestamps?.[id]);
+               const timedGapAttrs = Number.isFinite(gapTime) ? `data-latex-gap-time="${gapTime}"` : '';
+               const inputHtml = `<span ${timedGapAttrs} class="${Number.isFinite(gapTime) ? 'latex-timed-gap ' : ''}inline-flex items-center align-middle border border-slate-400 rounded bg-white h-[36px] p-0.5 mx-1 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600 transition-all max-w-[calc(100%-8px)]">
                    <span onclick="window.toggleReviewByIds([${id}]); event.stopPropagation();" title="Click to mark Q${id} for review" class="q-badge-single-${id} flex items-center justify-center min-w-[26px] h-[26px] bg-white border border-slate-800 text-slate-800 text-base font-bold rounded-sm cursor-pointer hover:bg-slate-100 transition shrink-0 select-none">${id}</span>
                    <input type="text" value="${ans.replace(/"/g, '&quot;')}" oninput="handleAns(${id}, this.value)" placeholder="" class="px-2 w-20 sm:w-28 flex-1 text-base font-bold text-blue-900 bg-transparent outline-none">
                </span>`;
@@ -17709,9 +17776,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         
         const tid = APP_DATA?.id;
         
-        const isAdminEmail = [currentUser.email, currentUser.user, window.auth?.currentUser?.email]
-            .some(email => typeof email === 'string' && email.trim().toLowerCase() === 'lyquockhanh03@gmail.com');
-        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator' || isAdminEmail) {
+        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator') {
             document.getElementById('editor-ui').classList.remove('hidden');
             if (tid && TEST_BANK.find(t=>t.id === tid)) {
                 editTest(tid);
@@ -23060,6 +23125,392 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     // ✨ TEXT-TO-TEST (IELTS MARKDOWN) COMPILER
     // ==========================================
     
+    window.parseIeltsLatex = function(source) {
+        const input = String(source || '');
+        let cursor = 0;
+
+        const fail = (message, at = cursor) => {
+            const line = input.slice(0, at).split('\n').length;
+            throw new Error(`${message} (line ${line})`);
+        };
+        const skipWhitespace = () => {
+            while (/\s/.test(input[cursor] || '') && cursor < input.length) cursor++;
+        };
+        const readGroup = (open, close, parseContents) => {
+            skipWhitespace();
+            if (input[cursor] !== open) fail(`Expected "${open}"`);
+            cursor++;
+            if (!parseContents) {
+                let value = '';
+                while (cursor < input.length) {
+                    const char = input[cursor++];
+                    if (char === '\\' && cursor < input.length) {
+                        value += input[cursor++];
+                    } else if (char === close) {
+                        return value;
+                    } else {
+                        value += char;
+                    }
+                }
+                fail(`Unclosed "${open}" group`);
+            }
+
+            const nodes = parseSequence(true);
+            if (input[cursor] !== close) fail(`Unclosed "${open}" group`);
+            cursor++;
+            return nodes;
+        };
+        const readOptionalBracket = () => input[cursor] === '[' ? readGroup('[', ']', false) : null;
+        const readRequiredNodes = () => readGroup('{', '}', true);
+        const readRequiredText = (label) => {
+            const nodes = readRequiredNodes();
+            if (nodes.some(node => node.type !== 'text')) fail(`${label} must contain plain text`);
+            return nodes.map(node => node.value).join('').trim();
+        };
+        const parseGapOptions = (raw) => {
+            const result = { alternatives: [], time: null };
+            if (raw === null || raw.trim() === '') return result;
+            const fields = raw.split(';').map(field => field.trim()).filter(Boolean);
+            if (fields.some(field => /^(?:time|alt)=/i.test(field))) {
+                fields.forEach(field => {
+                    const timeMatch = field.match(/^time=(.+)$/i);
+                    const altMatch = field.match(/^alt=(.+)$/i);
+                    if (timeMatch) {
+                        const parts = timeMatch[1].trim().split(':').map(Number);
+                        if (!/^\d+(?::\d{1,2}){1,2}$/.test(timeMatch[1].trim()) || parts.some(part => !Number.isFinite(part))) {
+                            fail(`Invalid gap timestamp "${timeMatch[1]}"`);
+                        }
+                        if (parts.length === 2 && parts[1] > 59 || parts.length === 3 && (parts[1] > 59 || parts[2] > 59)) {
+                            fail(`Invalid gap timestamp "${timeMatch[1]}"`);
+                        }
+                        result.time = parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : parts[0] * 60 + parts[1];
+                    } else if (altMatch) {
+                        result.alternatives.push(...altMatch[1].split('|').map(value => value.trim()).filter(Boolean));
+                    } else {
+                        fail(`Unknown gap option "${field}"`);
+                    }
+                });
+            } else {
+                result.alternatives = raw.split('|').map(value => value.trim()).filter(Boolean);
+            }
+            return result;
+        };
+        const parseSequence = (stopAtClose = false) => {
+            const nodes = [];
+            let text = '';
+            const flushText = () => {
+                if (text) nodes.push({ type: 'text', value: text });
+                text = '';
+            };
+
+            while (cursor < input.length) {
+                const char = input[cursor];
+                if (char === '}') {
+                    if (!stopAtClose) fail(`Unexpected "${char}"`);
+                    break;
+                }
+                if (char !== '\\') {
+                    text += char;
+                    cursor++;
+                    continue;
+                }
+
+                const slashAt = cursor++;
+                if (cursor >= input.length) fail('Unexpected end after backslash', slashAt);
+                if ('\\{}[]%'.includes(input[cursor])) {
+                    text += input[cursor++];
+                    continue;
+                }
+                const commandMatch = input.slice(cursor).match(/^[A-Za-z]+/);
+                if (!commandMatch) fail('Expected a macro name after backslash', slashAt);
+                const command = commandMatch[0];
+                cursor += command.length;
+                flushText();
+
+                if (command === 'gap') {
+                    const options = parseGapOptions(readOptionalBracket());
+                    const answer = readRequiredText('Gap answer');
+                    if (!answer) fail('Gap answer cannot be empty', slashAt);
+                    nodes.push({ type: 'gap', answer, alternatives: options.alternatives, time: options.time });
+                } else if (command === 'choice' || command === 'correct') {
+                    nodes.push({ type: command, value: readRequiredText('Choice') });
+                } else if (command === 'mcq') {
+                    const question = readRequiredText('Multiple-choice question');
+                    if (!question) fail('Multiple-choice question text cannot be empty', slashAt);
+                    const optionNodes = readRequiredNodes();
+                    const options = optionNodes.filter(node => node.type === 'choice' || node.type === 'correct');
+                    if (optionNodes.some(node => node.type !== 'text' && node.type !== 'choice' && node.type !== 'correct')) {
+                        fail('Only \\choice and \\correct are allowed inside \\mcq options', slashAt);
+                    }
+                    if (options.length < 2) fail('A multiple-choice question needs at least two options', slashAt);
+                    if (options.some(option => !option.value.trim())) fail('Multiple-choice options cannot be empty', slashAt);
+                    if (options.filter(option => option.type === 'correct').length !== 1) {
+                        fail('A multiple-choice question needs exactly one \\correct option', slashAt);
+                    }
+                    nodes.push({
+                        type: 'mcq',
+                        question,
+                        options: options.map(option => ({ text: option.value, correct: option.type === 'correct' }))
+                    });
+                } else if (command === 'tfng') {
+                    const statement = readRequiredText('TFNG statement');
+                    const answer = readRequiredText('TFNG answer').toUpperCase().replace(/\s+/g, ' ');
+                    const explanation = readOptionalBracket();
+                    if (!statement) fail('TFNG statement cannot be empty', slashAt);
+                    if (!['TRUE', 'FALSE', 'NOT GIVEN', 'YES', 'NO'].includes(answer)) {
+                        fail('TFNG answer must be TRUE, FALSE, NOT GIVEN, YES, or NO', slashAt);
+                    }
+                    nodes.push({ type: 'tfng', statement, answer, explanation: explanation ? explanation.trim() : '' });
+                } else if (command === 'passage') {
+                    const title = readRequiredText('Passage title');
+                    const content = readRequiredNodes();
+                    if (content.some(node => node.type === 'mcq' || node.type === 'tfng' || node.type === 'passage')) {
+                        fail('A passage may contain text and gaps, but not nested questions or passages', slashAt);
+                    }
+                    nodes.push({ type: 'passage', title, content });
+                } else {
+                    fail(`Unknown macro "\\${command}"`, slashAt);
+                }
+            }
+            flushText();
+            return nodes;
+        };
+
+        const nodes = parseSequence();
+        let passageTitle = '';
+        const passageNodes = [];
+        const questionNodes = [];
+        let passageCount = 0;
+        nodes.forEach(node => {
+            if (node.type === 'text' || node.type === 'gap') {
+                passageNodes.push(node);
+            } else if (node.type === 'passage') {
+                passageCount++;
+                if (passageCount > 1) fail('Only one \\passage is allowed per imported part', 0);
+                passageTitle = node.title;
+                passageNodes.push(...node.content);
+            } else if (node.type === 'mcq' || node.type === 'tfng') {
+                questionNodes.push(node);
+            } else {
+                fail(`\\${node.type} must be inside an appropriate question macro`, 0);
+            }
+        });
+
+        const gaps = [];
+        let nextPreviewId = 1;
+        const passageHtmlSource = passageNodes.map(node => {
+            if (node.type === 'text') return node.value;
+            const gap = { ...node, id: nextPreviewId++ };
+            gaps.push(gap);
+            return `{blank:${gap.id}}`;
+        }).join('');
+        const questions = [];
+        if (gaps.length) {
+            questions.push({
+                type: 'fill_blanks',
+                text: passageHtmlSource,
+                gaps
+            });
+        }
+        questionNodes.forEach(node => questions.push(node));
+
+        if (!passageNodes.some(node => node.type === 'text' && node.value.trim()) && !questions.length) {
+            fail('Enter passage text or at least one question', 0);
+        }
+        return {
+            passage: {
+                title: passageTitle,
+                text: passageHtmlSource,
+                hasGaps: gaps.length > 0
+            },
+            questions,
+            gapCount: gaps.length
+        };
+    };
+
+    window.openIeltsLatexImport = function() {
+        const input = document.getElementById('ielts-latex-input');
+        input.value = '';
+        document.getElementById('latex-import-modal').classList.remove('hidden');
+        window.updateIeltsLatexPreview();
+        input.focus();
+    };
+
+    window.updateIeltsLatexPreview = function() {
+        const input = document.getElementById('ielts-latex-input');
+        const preview = document.getElementById('ielts-latex-preview');
+        const error = document.getElementById('ielts-latex-error');
+        const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+        if (!input.value.trim()) {
+            error.classList.add('hidden');
+            error.textContent = '';
+            preview.innerHTML = '<p class="text-sm text-slate-400">Start typing a passage or IELTS question macro to preview it.</p>';
+            return null;
+        }
+        try {
+            const parsed = window.parseIeltsLatex(input.value);
+            error.classList.add('hidden');
+            error.textContent = '';
+            let html = '';
+            if (parsed.passage.title) html += `<h3 class="font-black text-lg text-slate-900">${escapeHtml(parsed.passage.title)}</h3>`;
+            if (parsed.passage.text.trim()) {
+                const gapTimes = new Map();
+                parsed.questions.filter(question => question.type === 'fill_blanks').forEach(question => {
+                    question.gaps.forEach(gap => gapTimes.set(String(gap.id), gap.time));
+                });
+                let body = '';
+                let offset = 0;
+                const gapPattern = /\{blank:(\d+)\}/g;
+                let gapMatch;
+                while ((gapMatch = gapPattern.exec(parsed.passage.text)) !== null) {
+                    body += escapeHtml(parsed.passage.text.slice(offset, gapMatch.index));
+                    const time = gapTimes.get(gapMatch[1]);
+                    const timestamp = time === null || time === undefined ? '' : ` title="Audio timestamp ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')}"`;
+                    body += `<input type="text" disabled aria-label="Gap ${gapMatch[1]}"${timestamp} class="inline-block align-middle w-24 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Gap ${gapMatch[1]}">`;
+                    offset = gapPattern.lastIndex;
+                }
+                body += escapeHtml(parsed.passage.text.slice(offset));
+                html += `<div class="leading-relaxed whitespace-pre-wrap">${body.replace(/\n/g, '<br>')}</div>`;
+            }
+            let questionNumber = parsed.gapCount;
+            parsed.questions.forEach(question => {
+                if (question.type === 'fill_blanks') return;
+                questionNumber++;
+                if (question.type === 'mcq') {
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold mb-2">${questionNumber}. ${escapeHtml(question.question)}</p>`;
+                    question.options.forEach(option => {
+                        html += `<div class="py-1 text-sm">${option.correct ? '◉' : '○'} ${escapeHtml(option.text)}${option.correct ? ' <span class="text-emerald-700 text-xs font-bold">(answer)</span>' : ''}</div>`;
+                    });
+                    html += '</section>';
+                } else {
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.statement)}</p><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<p class="text-sm text-purple-700 mt-1">${escapeHtml(question.explanation)}</p>` : ''}</section>`;
+                }
+            });
+            if (parsed.passage.hasGaps) {
+                html = `<div class="text-xs font-black uppercase tracking-wider text-blue-700">Passage with ${parsed.gapCount} inline gap${parsed.gapCount === 1 ? '' : 's'}</div>${html}`;
+            }
+            preview.innerHTML = html || '<p class="text-sm text-slate-400">Start typing a passage or IELTS question macro to preview it.</p>';
+            return parsed;
+        } catch (parseError) {
+            preview.innerHTML = '<p class="text-sm text-slate-400">Correct the syntax error to see a preview.</p>';
+            error.textContent = parseError.message;
+            error.classList.remove('hidden');
+            return null;
+        }
+    };
+
+    window.compileIeltsLatex = function() {
+        const parsed = window.updateIeltsLatexPreview();
+        if (!parsed) {
+            if (!document.getElementById('ielts-latex-input').value.trim()) {
+                showModalMsg('Empty source', 'Enter a passage or question before importing.');
+            }
+            return;
+        }
+
+        const part = APP_DATA.parts[currentEditorPartIdx];
+        const hasImportedPassage = !!(parsed.passage.title || parsed.passage.text.trim());
+        if (hasImportedPassage && (part.text || part.title) &&
+            !confirm('This import will replace the current part title and passage text, then append the parsed questions. Continue?')) {
+            return;
+        }
+        saveCurrentEditorPart();
+        const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+        const formatText = value => window.formatIELTSMarkdown(escapeHtml(value));
+        let nextId = 1;
+        APP_DATA.parts.forEach(item => (item.questions || []).forEach(question =>
+            (question.ids || []).forEach(id => { nextId = Math.max(nextId, Number(id) + 1 || 1); })));
+        const newBlocks = [];
+        const gapIds = {};
+
+        if (parsed.gapCount) {
+            const gapBlock = parsed.questions.find(question => question.type === 'fill_blanks');
+            const ids = gapBlock.gaps.map(gap => {
+                const id = nextId++;
+                gapIds[gap.id] = id;
+                return id;
+            });
+            let text = gapBlock.text.replace(/\{blank:(\d+)\}/g, (_, id) => `{blank:${gapIds[id]}}`);
+            const correctAnswers = {};
+            const timestamps = {};
+            gapBlock.gaps.forEach(gap => {
+                const id = gapIds[gap.id];
+                correctAnswers[id] = [gap.answer, ...gap.alternatives].join('/');
+                if (gap.time !== null) timestamps[id] = gap.time;
+            });
+            const block = {
+                blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                type: 'fill_blanks',
+                ids,
+                points: ids.length,
+                instruction: 'Fill in the blanks.',
+                text: formatText(text),
+                options: [],
+                correctAnswers
+            };
+            if (Object.keys(timestamps).length) block.timestamps = timestamps;
+            newBlocks.push(block);
+        }
+
+        parsed.questions.forEach(question => {
+            if (question.type === 'fill_blanks') return;
+            const id = nextId++;
+            if (question.type === 'mcq') {
+                const options = question.options.map(option => option.text);
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: 'multiple_choice',
+                    ids: [id],
+                    points: 1,
+                    instruction: 'Choose the correct answer.',
+                    text: formatText(question.question),
+                    options,
+                    correctAnswers: { [id]: question.options.find(option => option.correct).text },
+                    multi: false,
+                    latexSource: true
+                });
+            } else {
+                const isYesNo = question.answer === 'YES' || question.answer === 'NO';
+                const answer = question.answer === 'TRUE' ? 'True'
+                    : question.answer === 'FALSE' ? 'False'
+                    : question.answer === 'YES' ? 'Yes'
+                    : question.answer === 'NO' ? 'No'
+                    : 'Not Given';
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: isYesNo ? 'ynng' : 'tfng',
+                    ids: [id],
+                    points: 1,
+                    instruction: isYesNo ? 'Do the statements agree with the claims?' : 'Do the statements agree with the information?',
+                    text: formatText(question.statement),
+                    options: isYesNo ? ['Yes', 'No', 'Not Given'] : ['True', 'False', 'Not Given'],
+                    correctAnswers: { [id]: answer },
+                    explanation: formatText(question.explanation || '')
+                });
+            }
+        });
+
+        if (hasImportedPassage) {
+            part.title = parsed.passage.title ? escapeHtml(parsed.passage.title) : part.title;
+            part.text = parsed.gapCount ? '' : formatText(parsed.passage.text);
+            const titleEl = document.getElementById('edit-passage-title');
+            if (titleEl.tagName === 'INPUT' || titleEl.tagName === 'TEXTAREA') titleEl.value = part.title;
+            else titleEl.innerHTML = part.title;
+            const passageEl = document.getElementById('edit-passage-text');
+            if (passageEl.isContentEditable) passageEl.innerHTML = part.text;
+            else passageEl.value = part.text;
+        }
+        part.questions.push(...newBlocks);
+        document.getElementById('latex-import-modal').classList.add('hidden');
+        loadEditorPart(currentEditorPartIdx);
+        triggerEditorAutosave();
+        showModalMsg('LaTeX import complete', `Added ${newBlocks.length} native question block${newBlocks.length === 1 ? '' : 's'} to this part.`);
+    };
+
     window.openMarkupImport = function() {
         const el = document.getElementById('iml-editor');
         if (el.tagName === 'TEXTAREA') el.value = ''; else el.innerHTML = '';
