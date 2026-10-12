@@ -7036,7 +7036,9 @@
         const savedTheme = localStorage.getItem('ielts_theme') || 'standard';
         if (typeof window.applyTheme === 'function') window.applyTheme(savedTheme);
 
-        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator') {
+        const isAdminEmail = [currentUser.email, currentUser.user, window.auth?.currentUser?.email]
+            .some(email => typeof email === 'string' && email.trim().toLowerCase() === 'lyquockhanh03@gmail.com');
+        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator' || isAdminEmail) {
             openEditor();
         } else { 
             // ✨ SMART RESTORE: Did the student refresh while reviewing a test?
