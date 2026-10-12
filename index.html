@@ -17709,7 +17709,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         
         const tid = APP_DATA?.id;
         
-        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator') {
+        const isAdminEmail = [currentUser.email, currentUser.user, window.auth?.currentUser?.email]
+            .some(email => typeof email === 'string' && email.trim().toLowerCase() === 'lyquockhanh03@gmail.com');
+        if (currentUser.role === 'teacher' || currentUser.role === 'collaborator' || isAdminEmail) {
             document.getElementById('editor-ui').classList.remove('hidden');
             if (tid && TEST_BANK.find(t=>t.id === tid)) {
                 editTest(tid);
