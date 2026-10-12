@@ -23401,14 +23401,23 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         let speakingQuestions = '';
         let hasSpeaking = false;
         const passageNodes = [];
-        const questionNodes = [];
+        const questionOrder = [];
+        let passageOrderAdded = false;
+        const addPassageOrder = () => {
+            if (!passageOrderAdded) {
+                questionOrder.push({ type: 'passage_questions' });
+                passageOrderAdded = true;
+            }
+        };
         let passageCount = 0;
         nodes.forEach(node => {
             if (node.type === 'text' || node.type === 'gap' || node.type === 'drop') {
+                addPassageOrder();
                 passageNodes.push(node);
             } else if (node.type === 'passage') {
                 passageCount++;
                 if (passageCount > 1) fail('Only one \\passage is allowed per imported part', 0);
+                addPassageOrder();
                 passageTitle = node.title;
                 passageNodes.push(...node.content);
             } else if (node.type === 'audio') {
@@ -23418,17 +23427,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 if (writingTask) fail('Only one \\writingtask is allowed per import', 0);
                 writingTask = node.task;
                 passageTitle = node.title;
-                questionNodes.push({ type: 'essay', instruction: node.prompt, task: node.task });
+                const question = { type: 'essay', instruction: node.prompt, task: node.task };
+                questionOrder.push(question);
             } else if (node.type === 'speaking') {
                 if (hasSpeaking) fail('Only one \\speaking macro is allowed per import', 0);
                 hasSpeaking = true;
                 passageTitle = node.title;
                 speakingQuestions = node.followUps.join('\n');
-                questionNodes.push({ type: 'audio_record', instruction: node.cueCard });
+                const question = { type: 'audio_record', instruction: node.cueCard };
+                questionOrder.push(question);
             } else if (node.type === 'notes') {
-                questionNodes.push({ type: 'essay', instruction: node.text, text: '' });
+                const question = { type: 'essay', instruction: node.text, text: '' };
+                questionOrder.push(question);
             } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'].includes(node.type)) {
-                questionNodes.push(node);
+                questionOrder.push(node);
             } else {
                 fail(`\\${node.type} must be inside an appropriate question macro`, 0);
             }
@@ -23445,15 +23457,17 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             return `{blank:${gap.id}}`;
         }).join('');
         if (gapModes.size > 1) fail('Do not mix \\gap and \\drop in the same passage import', 0);
-        const questions = [];
+        let gapQuestion = null;
         if (gaps.length) {
-            questions.push({
+            gapQuestion = {
                 type: gapModes.has('drop') ? 'dnd_list' : 'fill_blanks',
                 text: passageHtmlSource,
                 gaps
-            });
+            };
         }
-        questionNodes.forEach(node => questions.push(node));
+        const questions = questionOrder
+            .map(question => question.type === 'passage_questions' ? gapQuestion : question)
+            .filter(Boolean);
 
         if (!passageNodes.some(node => node.type === 'text' && node.value.trim()) && !questions.length) {
             fail('Enter passage text or at least one question', 0);
@@ -23626,6 +23640,15 @@ Write the transcript here. The answer is \drop{correct option}.
             error.textContent = '';
             let html = '';
             if (parsed.passage.title) html += `<h3 class="font-black text-lg text-slate-900">${escapeHtml(parsed.passage.title)}</h3>`;
+            const gapQuestionNumbers = new Map();
+            let questionNumber = 0;
+            parsed.questions.forEach(question => {
+                if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
+                    question.gaps.forEach(gap => gapQuestionNumbers.set(String(gap.id), ++questionNumber));
+                } else {
+                    questionNumber++;
+                }
+            });
             if (parsed.passage.text.trim()) {
                 const gapTimes = new Map();
                 parsed.questions.filter(question => question.type === 'fill_blanks' || question.type === 'dnd_list').forEach(question => {
@@ -23639,15 +23662,23 @@ Write the transcript here. The answer is \drop{correct option}.
                     body += escapeHtml(parsed.passage.text.slice(offset, gapMatch.index));
                     const time = gapTimes.get(gapMatch[1]);
                     const timestamp = time === null || time === undefined ? '' : ` title="Audio timestamp ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')}"`;
-                    body += `<input type="text" disabled aria-label="Gap ${gapMatch[1]}"${timestamp} class="inline-block align-middle w-24 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Gap ${gapMatch[1]}">`;
+                    const number = gapQuestionNumbers.get(gapMatch[1]);
+                    body += `<input type="text" disabled aria-label="Question ${number}"${timestamp} class="inline-block align-middle w-24 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${number}">`;
                     offset = gapPattern.lastIndex;
                 }
                 body += escapeHtml(parsed.passage.text.slice(offset));
                 html += `<div class="leading-relaxed whitespace-pre-wrap">${body.replace(/\n/g, '<br>')}</div>`;
             }
-            let questionNumber = parsed.gapCount;
+            questionNumber = 0;
             parsed.questions.forEach(question => {
-                if (question.type === 'fill_blanks' || question.type === 'dnd_list') return;
+                if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
+                    const firstNumber = questionNumber + 1;
+                    questionNumber += question.gaps.length;
+                    const lastNumber = questionNumber;
+                    const questionLabel = firstNumber === lastNumber ? `${firstNumber}` : `${firstNumber}-${lastNumber}`;
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p></section>`;
+                    return;
+                }
                 questionNumber++;
                 if (question.type === 'mcq') {
                     html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold mb-2">${questionNumber}. ${escapeHtml(question.question)}</p>`;
@@ -23726,17 +23757,15 @@ Write the transcript here. The answer is \drop{correct option}.
         APP_DATA.parts.forEach(item => (item.questions || []).forEach(question =>
             (question.ids || []).forEach(id => { nextId = Math.max(nextId, Number(id) + 1 || 1); })));
         const newBlocks = [];
-        const gapIds = {};
 
         const allocateIds = count => Array.from({ length: count }, () => nextId++);
-        if (parsed.gapCount) {
-            const gapBlock = parsed.questions.find(question => question.type === 'fill_blanks' || question.type === 'dnd_list');
+        const compileGapQuestion = gapBlock => {
             const ids = gapBlock.gaps.map(gap => {
                 const id = nextId++;
-                gapIds[gap.id] = id;
                 return id;
             });
-            let text = gapBlock.text.replace(/\{blank:(\d+)\}/g, (_, id) => `{blank:${gapIds[id]}}`);
+            const gapIds = Object.fromEntries(gapBlock.gaps.map((gap, index) => [gap.id, ids[index]]));
+            const text = gapBlock.text.replace(/\{blank:(\d+)\}/g, (_, id) => `{blank:${gapIds[id]}}`);
             const correctAnswers = {};
             const timestamps = {};
             gapBlock.gaps.forEach(gap => {
@@ -23757,11 +23786,14 @@ Write the transcript here. The answer is \drop{correct option}.
                 ...(gapBlock.type === 'dnd_list' ? { latexSource: true } : {})
             };
             if (Object.keys(timestamps).length) block.timestamps = timestamps;
-            newBlocks.push(block);
-        }
+            return block;
+        };
 
         parsed.questions.forEach(question => {
-            if (question.type === 'fill_blanks' || question.type === 'dnd_list') return;
+            if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
+                newBlocks.push(compileGapQuestion(question));
+                return;
+            }
             let id;
             if (question.type === 'mcq') {
                 id = nextId++;
