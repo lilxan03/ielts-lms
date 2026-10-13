@@ -3624,71 +3624,87 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 }
 
                 if (user) {
+                    if (window.authenticatedUserHandled === user.uid) return;
+                    
                     const loaderText = document.getElementById('cloud-loader-text');
                     if (loaderText) loaderText.innerHTML = "Verifying account status...";
                     
                     try {
-                        // 1. Tải Profile của User từ Firestore
-                        // Thử tìm bằng UID trước (chuẩn mới)
+                        // 1. TÌM HỒ SƠ FIRESTORE (Check cả UID và Email để tương thích ngược)
                         let userDocRef = window.fsDoc(window.db, window.fPath('users'), user.uid);
                         let userDocSnap = await window.fsGetDoc(userDocRef);
                         
-                        // Nếu không thấy, thử tìm bằng Email (chuẩn cũ của luồng Google)
                         if (!userDocSnap.exists() && user.email) {
                             userDocRef = window.fsDoc(window.db, window.fPath('users'), user.email);
                             userDocSnap = await window.fsGetDoc(userDocRef);
                         }
                         
-                        let isApproved = false;
-                        
                         if (userDocSnap.exists()) {
-                            // Cập nhật biến toàn cục currentUser với dữ liệu MỚI NHẤT từ database
                             currentUser = userDocSnap.data();
-                            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-                            
-                            const status = typeof currentUser.status === 'string' ? currentUser.status.trim().toLowerCase() : '';
-                            // 2. Kiểm tra điều kiện duyệt:
-                            // - Là Admin/Teacher
-                            // - Hoặc trạng thái là approved/active
-                            // - Hoặc tài khoản cũ không có trường status
-                            if (currentUser.role === 'teacher' || 
-                                currentUser.role === 'collaborator' || 
-                                status === 'approved' || 
-                                status === 'active' || 
-                                !status) {
-                                isApproved = true;
+                        } else {
+                            currentUser = {
+                                user: user.email || user.uid,
+                                uid: user.uid,
+                                email: user.email || '',
+                                role: 'student',
+                                status: 'unpaid',
+                                createdAt: new Date().toISOString()
+                            };
+                            await window.fsSetDoc(userDocRef, currentUser);
+                        }
+
+                        sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+
+                        if (typeof window.bootLMS === 'function') await window.bootLMS();
+
+                        const role = currentUser.role || 'student';
+                        const status = currentUser.status || 'unpaid';
+
+                        document.getElementById('cloud-loader')?.classList.add('hidden');
+                        document.getElementById('auth-ui')?.classList.add('hidden');
+                        document.getElementById('public-landing-ui')?.classList.add('hidden');
+
+                        if (role === 'teacher' || role === 'collaborator' || user.email === 'lyquockhanh03@gmail.com') {
+                            document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+                            document.getElementById('student-payment-warning')?.classList.add('hidden');
+                            document.getElementById('start-screen')?.classList.remove('hidden');
+                        } else {
+                            if (status === 'approved' || status === 'active' || currentUser.access === 'paid') {
+                                document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+                                document.getElementById('start-screen')?.classList.remove('hidden');
+                                document.getElementById('student-payment-warning')?.classList.add('hidden');
+                                document.getElementById('student-main-content')?.classList.remove('hidden');
+                            } 
+                            else if (status === 'pending') {
+                                document.getElementById('start-screen')?.classList.add('hidden');
+                                document.getElementById('awaiting-approval-ui')?.classList.remove('hidden');
+                            } 
+                            else {
+                                document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+                                document.getElementById('start-screen')?.classList.remove('hidden');
+                                document.getElementById('student-main-content')?.classList.add('hidden');
+                                
+                                const paymentWall = document.getElementById('student-payment-warning');
+                                if (paymentWall) {
+                                    paymentWall.classList.remove('hidden');
+                                    paymentWall.classList.add('flex');
+                                }
                             }
                         }
 
-                        // 3. Phân luồng Học viên dựa trên trạng thái
-                        if (isApproved || user.email === 'lyquockhanh03@gmail.com') {
-                            if (loaderText) loaderText.innerHTML = "Fetching Data from Firestore...";
-                            
-                            document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
-                            
-                            if (typeof window.bootLMS === 'function') await window.bootLMS();
-                            window.authenticatedUserHandled = user.uid;
-                        } else {
-                            // NHỐT Ở MÀN HÌNH CHỜ DUYỆT
-                            document.getElementById('cloud-loader')?.classList.add('hidden');
-                            document.getElementById('public-landing-ui')?.classList.add('hidden');
-                            document.getElementById('auth-ui')?.classList.add('hidden');
-                            document.getElementById('start-screen')?.classList.add('hidden');
-                            document.getElementById('editor-ui')?.classList.add('hidden');
-                            
-                            document.getElementById('awaiting-approval-ui')?.classList.remove('hidden');
-                            window.authenticatedUserHandled = user.uid;
-                        }
+                        window.authenticatedUserHandled = user.uid;
 
                     } catch (error) {
-                        console.error("Lỗi xác thực và tải profile:", error);
-                        if (loaderText) loaderText.innerHTML = "Connection Error. Please refresh the page.";
+                        console.error("Lỗi xác thực:", error);
+                        if (loaderText) loaderText.innerHTML = "Lỗi kết nối. Vui lòng F5 lại trang.";
                     }
                 } else {
                     window.authenticatedUserHandled = null;
                     document.getElementById('cloud-loader')?.classList.add('hidden');
                     document.getElementById('auth-ui')?.classList.add('hidden');
                     document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+                    document.getElementById('start-screen')?.classList.add('hidden');
+                    document.getElementById('editor-ui')?.classList.add('hidden');
                     document.getElementById('public-landing-ui')?.classList.remove('hidden');
                 }
             });
@@ -7553,64 +7569,21 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const btn = document.getElementById('auth-google-btn');
         const originalText = btn.innerHTML;
         
-        err.classList.add('hidden');
+        if (err) err.classList.add('hidden');
         btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Connecting...`;
         btn.disabled = true;
         
-        window.authFlowInProgress = true;
         try {
-            const result = await window.fsSignInWithPopup(window.auth, window.fsGoogleProvider);
-            const gUser = result.user;
-            
-            // We use their email as a completely safe database ID
-            const uniqueUsername = gUser.email; 
-            
-            const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername));
-            
-            if (userDoc.exists()) {
-                currentUser = userDoc.data();
-                // Fetch their latest Google profile picture if they don't have one set
-                if (!currentUser.avatar && gUser.photoURL) {
-                    currentUser.avatar = gUser.photoURL;
-                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
-                }
-            } else {
-                // Completely new student registration via Google!
-                currentUser = { 
-                    user: uniqueUsername, 
-                    displayName: gUser.displayName || gUser.email.split('@')[0], // Store their real name for the UI!
-                    avatar: gUser.photoURL,
-                    role: 'student', 
-                    status: 'pending',
-                    isPaid: false, 
-                    paymentStatus: 'unpaid', 
-                    createdAt: new Date().toLocaleDateString() 
-                };
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
-            }
-
-            if (!window.isAccountApproved(currentUser, gUser)) {
-                window.showAwaitingApproval(currentUser);
-                window.authenticatedUserHandled = gUser.uid;
-                return;
-            }
-
-            const referralResult = await tryEnsureStudentReferralIdentity(currentUser);
-            currentUser = referralResult.user;
-            
-            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-            await window.bootLMS();
-            window.authenticatedUserHandled = gUser.uid;
-            if (referralResult.error && typeof window.showToast === 'function') {
-                window.showToast("Referral code unavailable", "You are signed in, but the referral code could not be created. Ask the teacher to check Firestore permissions.");
-            }
-            
-        } catch (e) {
-            console.error("Google Auth Error:", e);
-            err.textContent = e.message || 'Google Sign-In failed or was cancelled.'; 
-            err.classList.remove('hidden');
-        } finally {
             window.authFlowInProgress = false;
+            await window.fsSignInWithPopup(window.auth, window.fsGoogleProvider);
+            
+        } catch (error) {
+            console.error("Lỗi đăng nhập Google:", error);
+            if (err) {
+                err.textContent = 'Đăng nhập Google thất bại: ' + error.message;
+                err.classList.remove('hidden');
+            }
+        } finally {
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
