@@ -1182,6 +1182,16 @@
     </div>
   </div>
 
+  <!-- AWAITING APPROVAL UI -->
+  <div id="awaiting-approval-ui" class="hidden h-screen w-full flex flex-col items-center justify-center bg-[#f4f7fb] absolute z-[300]">
+    <div class="text-center p-8 max-w-md bg-white rounded-3xl shadow-xl border border-blue-100 animate-scale-up">
+      <div class="text-6xl mb-4 animate-float" aria-hidden="true">⏳</div>
+      <h2 class="text-3xl font-black text-slate-800 mb-3">Account Pending</h2>
+      <p class="text-slate-500 font-medium mb-8 leading-relaxed">Tài khoản của bạn đang chờ Admin phê duyệt. Vui lòng liên hệ với giáo viên hoặc quay lại sau nhé!</p>
+      <button type="button" onclick="window.signOutAwaitingApproval()" class="px-8 py-3 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-700 rounded-xl font-bold transition shadow-sm border border-slate-200 w-full">Đăng xuất</button>
+    </div>
+  </div>
+
   <!-- SHARED MODALS -->
   <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
@@ -3565,6 +3575,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
         
             // Expose Real Authentication methods
             window.auth = auth;
+            window.fsAuthSignOut = signOut;
             window.fsAuthSignIn = signInWithEmailAndPassword;
             window.fsAuthCreate = createUserWithEmailAndPassword;
             window.onAuthStateChanged = onAuthStateChanged;
@@ -3601,6 +3612,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
             // Theo dõi trạng thái đăng nhập chính thức (Email hoặc Google) và chặn anonymous access hoàn toàn
             onAuthStateChanged(auth, async (user) => {
+                if (window.authFlowInProgress) return;
+
                 if (user?.isAnonymous) {
                     try {
                         await signOut(auth);
@@ -3623,10 +3636,21 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 }
 
                 if (user) {
+                    if (window.authenticatedUserHandled === user.uid) return;
+
+                    if (typeof window.isAccountApproved === 'function' &&
+                        !window.isAccountApproved(currentUser, user)) {
+                        window.showAwaitingApproval(currentUser);
+                        window.authenticatedUserHandled = user.uid;
+                        return;
+                    }
+
                     // Đã có tài khoản đăng nhập -> Tải dữ liệu vào hệ thống
                     loaderText.innerHTML = "Fetching Data from Firestore...";
                     if (typeof window.bootLMS === 'function') await window.bootLMS();
+                    window.authenticatedUserHandled = user.uid;
                 } else {
+                    window.authenticatedUserHandled = null;
                     // Chưa đăng nhập -> Ẩn màn hình loading màu xanh
                     const loader = document.getElementById('cloud-loader');
                     if (loader) loader.classList.add('hidden');
@@ -3634,6 +3658,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     // Hiện màn hình Landing Page (hoặc màn hình Đăng nhập tùy bạn thiết lập)
                     const landingUi = document.getElementById('public-landing-ui');
                     if (landingUi) landingUi.classList.remove('hidden');
+                    const awaitingApprovalUi = document.getElementById('awaiting-approval-ui');
+                    if (awaitingApprovalUi) awaitingApprovalUi.classList.add('hidden');
                 }
             });
             
@@ -3818,6 +3844,45 @@ If the user inputs \gap[colour]{color}, both are accepted.
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
+    window.authFlowInProgress = false;
+    window.authenticatedUserHandled = null;
+
+    window.isAccountApproved = function(profile, firebaseUser = window.auth?.currentUser) {
+      const email = firebaseUser?.email?.trim().toLowerCase();
+      if (email === 'lyquockhanh03@gmail.com' || ['teacher', 'collaborator'].includes(profile?.role)) return true;
+
+      const status = typeof profile?.status === 'string' ? profile.status.trim().toLowerCase() : '';
+      // Existing accounts without an approval field remain usable; newly created accounts are marked pending.
+      return !status || status === 'approved' || status === 'active';
+    };
+
+    window.showAwaitingApproval = function(profile) {
+      if (profile) {
+        currentUser = profile;
+        sessionStorage.setItem('ielts_session', JSON.stringify(profile));
+      }
+
+      document.getElementById('cloud-loader')?.classList.add('hidden');
+      document.getElementById('public-landing-ui')?.classList.add('hidden');
+      document.getElementById('auth-ui')?.classList.add('hidden');
+      document.getElementById('start-screen')?.classList.add('hidden');
+      document.getElementById('editor-ui')?.classList.add('hidden');
+      document.getElementById('awaiting-approval-ui')?.classList.remove('hidden');
+    };
+
+    window.signOutAwaitingApproval = async function() {
+      try {
+        await window.fsAuthSignOut(window.auth);
+        sessionStorage.removeItem('ielts_session');
+        currentUser = null;
+        window.authenticatedUserHandled = null;
+        document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+        document.getElementById('public-landing-ui')?.classList.remove('hidden');
+      } catch (error) {
+        console.error('Sign-out failed:', error);
+        window.showToast?.('Sign-out failed', error.message || 'Please try again.');
+      }
+    };
 
     let APP_DATA = { module: 'reading', parts: [], vocab: [], grammar: [] };
     let editingTestId = null;
@@ -6788,11 +6853,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
         try {
             document.getElementById('cloud-loader-text').textContent = "Initializing App...";
             
-            // 1. Initial check to seed data if empty (Only fetches 1 document to save bandwidth)
-            const firstUserQuery = window.fsQuery(window.fsCollection(window.db, window.fPath('users')), window.fsLimit(1));
-            const uSnap = await window.fsGetDocs(firstUserQuery);
-            if (uSnap.empty) {
-                await seedCloudData();
+            // Only teachers can seed initial data; student Rules do not allow querying users.
+            if (currentUser?.role === 'teacher') {
+                const firstUserQuery = window.fsQuery(window.fsCollection(window.db, window.fPath('users')), window.fsLimit(1));
+                const uSnap = await window.fsGetDocs(firstUserQuery);
+                if (uSnap.empty) await seedCloudData();
             }
 
             document.getElementById('cloud-loader-text').textContent = "Establishing Secure Connections...";
@@ -7348,6 +7413,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
       const safeEmailPrefix = encodeURIComponent(u).replace(/%/g, '').toLowerCase();
       const mappedEmail = `${safeEmailPrefix}@khanhlms.com`;
 
+      window.authFlowInProgress = true;
       try {
           if (authMode === 'register') {
             const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
@@ -7361,7 +7427,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
             }
             
             // Create user profile in Firestore
-            currentUser = { user: u, pass: p, role: 'student', isPaid: false, paymentStatus: 'unpaid', createdAt: new Date().toLocaleDateString() };
+            currentUser = { user: u, pass: p, role: 'student', status: 'pending', isPaid: false, paymentStatus: 'unpaid', createdAt: new Date().toLocaleDateString() };
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u), currentUser);
           } else {
             // LOGIN MODE
@@ -7420,6 +7486,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
             currentUser = userDoc.data();
           }
 
+          if (!window.isAccountApproved(currentUser, window.auth?.currentUser)) {
+              window.showAwaitingApproval(currentUser);
+              return;
+          }
+
           let referralSetupError = null;
           if (currentUser.role === 'student') {
               const referralResult = await tryEnsureStudentReferralIdentity(currentUser);
@@ -7429,10 +7500,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
           
           sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
           
-          // Trigger the private data download now that we are securely logged in
-          await window.attachPrivateListeners();
-          
-          checkAuth();
+          await window.bootLMS();
+          if (window.auth?.currentUser) window.authenticatedUserHandled = window.auth.currentUser.uid;
           if (referralSetupError && typeof window.showToast === 'function') {
               window.showToast("Referral code unavailable", "You are signed in, but the referral code could not be created. Ask the teacher to check Firestore permissions.");
           }
@@ -7441,8 +7510,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
           // ✨ FIX: Show the exact error message so we know what broke!
           err.textContent = e.message || 'Cloud network error. Try again.'; 
           err.classList.remove('hidden');
+      } finally {
+          window.authFlowInProgress = false;
+          btn.textContent = authMode === 'register' ? 'Sign Up as Student' : 'Log In';
+          btn.disabled = false;
       }
-      btn.textContent = authMode === 'register' ? 'Sign Up as Student' : 'Log In'; btn.disabled = false;
     }
     
     // ✨ NEW: Google Sign-In Handler
@@ -7454,7 +7526,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
         err.classList.add('hidden');
         btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Connecting...`;
         btn.disabled = true;
-
+        
+        window.authFlowInProgress = true;
         try {
             const result = await window.fsSignInWithPopup(window.auth, window.fsGoogleProvider);
             const gUser = result.user;
@@ -7478,6 +7551,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     displayName: gUser.displayName || gUser.email.split('@')[0], // Store their real name for the UI!
                     avatar: gUser.photoURL,
                     role: 'student', 
+                    status: 'pending',
                     isPaid: false, 
                     paymentStatus: 'unpaid', 
                     createdAt: new Date().toLocaleDateString() 
@@ -7485,12 +7559,18 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), uniqueUsername), currentUser);
             }
 
+            if (!window.isAccountApproved(currentUser, gUser)) {
+                window.showAwaitingApproval(currentUser);
+                window.authenticatedUserHandled = gUser.uid;
+                return;
+            }
+
             const referralResult = await tryEnsureStudentReferralIdentity(currentUser);
             currentUser = referralResult.user;
             
             sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-            await window.attachPrivateListeners();
-            checkAuth();
+            await window.bootLMS();
+            window.authenticatedUserHandled = gUser.uid;
             if (referralResult.error && typeof window.showToast === 'function') {
                 window.showToast("Referral code unavailable", "You are signed in, but the referral code could not be created. Ask the teacher to check Firestore permissions.");
             }
@@ -7499,10 +7579,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
             console.error("Google Auth Error:", e);
             err.textContent = e.message || 'Google Sign-In failed or was cancelled.'; 
             err.classList.remove('hidden');
+        } finally {
+            window.authFlowInProgress = false;
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
-        
-        btn.innerHTML = originalText;
-        btn.disabled = false;
     };
 
     function logout() {
