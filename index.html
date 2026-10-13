@@ -3239,7 +3239,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex justify-between items-center">
                                     <span>Listening Audio URL</span>
               </label>
-                            <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-2 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Paste a direct audio URL, YouTube watch URL, or YouTube embed link..." onchange="window.updateListeningEditorAudio(this.value)" oninput="window.updateListeningEditorAudio(this.value)" onpaste="setTimeout(() => window.updateListeningEditorAudio(document.getElementById('edit-audio-url').value), 50)">
+                            <input type="text" id="edit-audio-url" class="w-full border-2 border-slate-200 p-3 rounded-lg mb-2 text-sm text-blue-600 font-mono focus:border-blue-500 transition-colors shadow-sm outline-none" placeholder="Paste a direct audio URL, YouTube/SoundCloud link, or embedded iframe src..." onchange="window.updateListeningEditorAudio(this.value)" oninput="window.updateListeningEditorAudio(this.value)" onpaste="setTimeout(() => window.updateListeningEditorAudio(document.getElementById('edit-audio-url').value), 50)">
                             <p id="edit-audio-preview-status" class="text-xs text-slate-500 mb-3" aria-live="polite"></p>
                             <div class="mt-3 mb-5 p-3 rounded-lg border border-blue-200 bg-blue-50">
                                 <div id="edit-listening-youtube-player" class="hidden w-full aspect-video mb-2"></div>
@@ -4350,6 +4350,30 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
     };
 
+    window.getListeningSoundCloudEmbedUrl = function(rawUrl) {
+        try {
+            let value = String(rawUrl || '').trim();
+            if (!value) return '';
+
+            const iframeMatch = value.match(/src\s*=\s*["']([^"']+)["']/i);
+            if (iframeMatch && iframeMatch[1]) value = iframeMatch[1];
+
+            const urlMatch = value.match(/https?:\/\/[^\s"'<>]+/i);
+            if (urlMatch && urlMatch[0]) value = urlMatch[0].replace(/&amp;/g, '&');
+
+            if (value && !/^[a-z][a-z\d+.-]*:/i.test(value)) value = `https://${value}`;
+            const parsedUrl = new URL(value);
+            const host = parsedUrl.hostname.replace(/^www\./, '').toLowerCase();
+            if (!host.includes('soundcloud.com') && !host.includes('snd.sc')) return '';
+            const target = host === 'w.soundcloud.com' && /\/player\//i.test(parsedUrl.pathname)
+                ? value
+                : `https://w.soundcloud.com/player/?url=${encodeURIComponent(value)}`;
+            return target;
+        } catch (error) {
+            return '';
+        }
+    };
+
     function loadListeningYoutubeApi() {
         if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
         if (listeningYoutubeApiPromise) return listeningYoutubeApiPromise;
@@ -4433,32 +4457,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
     window.configureListeningMedia = function(rawUrl, audioId, youtubeContainerId, callbacks = {}) {
         const url = (rawUrl || '').trim();
         const videoId = window.getListeningYoutubeVideoId(url);
+        const soundcloudEmbedUrl = window.getListeningSoundCloudEmbedUrl(url);
         const audio = document.getElementById(audioId);
         const youtubeContainer = document.getElementById(youtubeContainerId);
 
-        if (videoId && youtubeContainer) {
-            if (window.location.protocol === 'file:') {
-                if (audio) {
-                    audio.pause();
-                    audio.removeAttribute('src');
-                    audio.load();
-                    audio.classList.add('hidden');
-                }
-                youtubeContainer.classList.remove('hidden');
-                youtubeContainer.innerHTML = `
-                    <div class="flex h-full w-full items-center justify-center bg-[#0b0b0d] text-white p-6 text-center">
-                        <div>
-                            <div class="text-3xl font-black mb-3">▶</div>
-                            <div class="text-xl font-bold mb-2">YouTube video</div>
-                            <div class="text-sm text-slate-300 mb-4">Open this video in a browser tab because embedded YouTube playback is blocked on local files.</div>
-                            <button type="button" onclick="window.openListeningVideoFallback('${url.replace(/'/g, "\\'")}')" class="bg-white text-slate-900 font-black px-5 py-2 rounded-full shadow">Open video</button>
-                        </div>
-                    </div>
-                `;
-                if (callbacks.onError) callbacks.onError('Embedded YouTube playback is blocked on local files. Opening the video in a new tab instead.');
-                window.openListeningVideoFallback(url);
-                return null;
-            }
+        if ((soundcloudEmbedUrl || videoId) && youtubeContainer) {
             if (audio) {
                 audio.pause();
                 audio.removeAttribute('src');
@@ -4466,98 +4469,159 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 audio.classList.add('hidden');
             }
             youtubeContainer.classList.remove('hidden');
-            const existing = listeningYoutubePlayers.get(youtubeContainerId);
-            if (existing && existing.videoId === videoId) {
-                existing.callbacks = callbacks;
-                if (existing.ready && callbacks.onReady) callbacks.onReady();
-                return existing.facade;
-            }
-            destroyListeningYoutubePlayer(youtubeContainerId);
 
-            const mountId = `${youtubeContainerId}-mount`;
-            youtubeContainer.innerHTML = `<div id="${mountId}" class="w-full h-full"></div>`;
-            youtubeContainer.dataset.videoId = videoId;
-            const record = { videoId, player: null, state: -1, onStateChange: null, timeTimer: null, callbacks };
-            record.facade = {
-                isYouTube: true,
-                get currentTime() {
-                    try { return record.player ? record.player.getCurrentTime() || 0 : 0; } catch (error) { return 0; }
-                },
-                get duration() {
-                    try { return record.player ? record.player.getDuration() || 0 : 0; } catch (error) { return 0; }
-                },
-                set currentTime(value) {
-                    const time = Math.max(0, Number(value) || 0);
-                    if (record.player) record.player.seekTo(time, true);
-                },
-                get paused() { return record.state !== 1; },
-                get ended() { return record.state === 0; },
-                play() {
-                    if (record.player) record.player.playVideo();
-                    else record.pendingPlay = true;
-                    return Promise.resolve();
-                },
-                pause() { if (record.player) record.player.pauseVideo(); },
-                setKaraokeStateListener(listener) { record.onStateChange = listener; }
-            };
-            listeningYoutubePlayers.set(youtubeContainerId, record);
-            loadListeningYoutubeApi().then(YT => {
-                if (listeningYoutubePlayers.get(youtubeContainerId) !== record) return;
-                const playerVars = {
-                    controls: callbacks.controls === false ? 0 : 1,
-                    disablekb: callbacks.controls === false ? 1 : 0,
-                    fs: callbacks.controls === false ? 0 : 1,
-                    playsinline: 1,
-                    rel: 0,
-                    enablejsapi: 1
-                };
-                if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
-                    playerVars.origin = window.location.origin;
+            if (soundcloudEmbedUrl && !videoId) {
+                const existing = listeningYoutubePlayers.get(youtubeContainerId);
+                if (existing && existing.embedUrl === soundcloudEmbedUrl) {
+                    existing.callbacks = callbacks;
+                    if (callbacks.onReady) callbacks.onReady();
+                    return existing.facade;
                 }
-                record.player = new YT.Player(mountId, {
-                    videoId,
-                    width: '100%',
-                    height: '100%',
-                    playerVars,
-                    events: {
-                        onReady: () => {
-                            record.ready = true;
-                            if (record.callbacks.onReady) record.callbacks.onReady();
-                            if (record.pendingPlay) record.player.playVideo();
-                        },
-                        onStateChange: event => {
-                            record.state = event.data;
-                            if (record.onStateChange) record.onStateChange(event.data === 1);
-                            if (event.data === 1 && !record.timeTimer) {
-                                record.timeTimer = setInterval(() => {
-                                    if (youtubeContainerId === 'edit-listening-youtube-player') {
-                                        const timeLabel = document.getElementById('karaoke-editor-time');
-                                        if (timeLabel) timeLabel.textContent = formatKaraokeEditorTime(record.facade.currentTime);
-                                    }
-                                }, 100);
-                            } else if (event.data !== 1 && record.timeTimer) {
-                                clearInterval(record.timeTimer);
-                                record.timeTimer = null;
-                            }
-                        },
-                        onError: event => {
-                            const message = event.data === 153
-                                ? 'This YouTube video does not allow embedded playback (error 153). Use a different YouTube link that allows embedding, or open the original video in a browser. Opening from file:// can also block embedded playback.'
-                                : event.data === 101 || event.data === 150
-                                    ? 'This YouTube video does not allow embedded playback.'
-                                    : `YouTube player error (${event.data}).`;
-                            if (record.callbacks.onError) record.callbacks.onError(message);
-                            renderListeningYoutubeFallback(youtubeContainer, videoId, message);
-                        }
+                destroyListeningYoutubePlayer(youtubeContainerId);
+                const iframe = document.createElement('iframe');
+                iframe.src = soundcloudEmbedUrl;
+                iframe.title = 'SoundCloud player';
+                iframe.allow = 'autoplay; encrypted-media';
+                iframe.loading = 'lazy';
+                iframe.frameBorder = '0';
+                iframe.className = 'w-full h-full rounded-xl';
+                iframe.style.border = '0';
+                youtubeContainer.innerHTML = '';
+                youtubeContainer.appendChild(iframe);
+
+                const record = { embedUrl: soundcloudEmbedUrl, player: iframe, state: 1, callbacks };
+                record.facade = {
+                    isSoundCloud: true,
+                    get currentTime() { return 0; },
+                    get duration() { return 0; },
+                    set currentTime(value) {},
+                    get paused() { return false; },
+                    get ended() { return false; },
+                    play() { return Promise.resolve(); },
+                    pause() {},
+                    setKaraokeStateListener(listener) {}
+                };
+                listeningYoutubePlayers.set(youtubeContainerId, record);
+                if (callbacks.onReady) callbacks.onReady();
+                return record.facade;
+            }
+
+            if (videoId) {
+                if (window.location.protocol === 'file:') {
+                    if (audio) {
+                        audio.pause();
+                        audio.removeAttribute('src');
+                        audio.load();
+                        audio.classList.add('hidden');
                     }
+                    youtubeContainer.classList.remove('hidden');
+                    youtubeContainer.innerHTML = `
+                        <div class="flex h-full w-full items-center justify-center bg-[#0b0b0d] text-white p-6 text-center">
+                            <div>
+                                <div class="text-3xl font-black mb-3">▶</div>
+                                <div class="text-xl font-bold mb-2">YouTube video</div>
+                                <div class="text-sm text-slate-300 mb-4">Open this video in a browser tab because embedded YouTube playback is blocked on local files.</div>
+                                <button type="button" onclick="window.openListeningVideoFallback('${url.replace(/'/g, "\\'")}' )" class="bg-white text-slate-900 font-black px-5 py-2 rounded-full shadow">Open video</button>
+                            </div>
+                        </div>
+                    `;
+                    if (callbacks.onError) callbacks.onError('Embedded YouTube playback is blocked on local files. Opening the video in a new tab instead.');
+                    window.openListeningVideoFallback(url);
+                    return null;
+                }
+                const existing = listeningYoutubePlayers.get(youtubeContainerId);
+                if (existing && existing.videoId === videoId) {
+                    existing.callbacks = callbacks;
+                    if (existing.ready && callbacks.onReady) callbacks.onReady();
+                    return existing.facade;
+                }
+                destroyListeningYoutubePlayer(youtubeContainerId);
+
+                const mountId = `${youtubeContainerId}-mount`;
+                youtubeContainer.innerHTML = `<div id="${mountId}" class="w-full h-full"></div>`;
+                youtubeContainer.dataset.videoId = videoId;
+                const record = { videoId, player: null, state: -1, onStateChange: null, timeTimer: null, callbacks };
+                record.facade = {
+                    isYouTube: true,
+                    get currentTime() {
+                        try { return record.player ? record.player.getCurrentTime() || 0 : 0; } catch (error) { return 0; }
+                    },
+                    get duration() {
+                        try { return record.player ? record.player.getDuration() || 0 : 0; } catch (error) { return 0; }
+                    },
+                    set currentTime(value) {
+                        const time = Math.max(0, Number(value) || 0);
+                        if (record.player) record.player.seekTo(time, true);
+                    },
+                    get paused() { return record.state !== 1; },
+                    get ended() { return record.state === 0; },
+                    play() {
+                        if (record.player) record.player.playVideo();
+                        else record.pendingPlay = true;
+                        return Promise.resolve();
+                    },
+                    pause() { if (record.player) record.player.pauseVideo(); },
+                    setKaraokeStateListener(listener) { record.onStateChange = listener; }
+                };
+                listeningYoutubePlayers.set(youtubeContainerId, record);
+                loadListeningYoutubeApi().then(YT => {
+                    if (listeningYoutubePlayers.get(youtubeContainerId) !== record) return;
+                    const playerVars = {
+                        controls: callbacks.controls === false ? 0 : 1,
+                        disablekb: callbacks.controls === false ? 1 : 0,
+                        fs: callbacks.controls === false ? 0 : 1,
+                        playsinline: 1,
+                        rel: 0,
+                        enablejsapi: 1
+                    };
+                    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+                        playerVars.origin = window.location.origin;
+                    }
+                    record.player = new YT.Player(mountId, {
+                        videoId,
+                        width: '100%',
+                        height: '100%',
+                        playerVars,
+                        events: {
+                            onReady: () => {
+                                record.ready = true;
+                                if (record.callbacks.onReady) record.callbacks.onReady();
+                                if (record.pendingPlay) record.player.playVideo();
+                            },
+                            onStateChange: event => {
+                                record.state = event.data;
+                                if (record.onStateChange) record.onStateChange(event.data === 1);
+                                if (event.data === 1 && !record.timeTimer) {
+                                    record.timeTimer = setInterval(() => {
+                                        if (youtubeContainerId === 'edit-listening-youtube-player') {
+                                            const timeLabel = document.getElementById('karaoke-editor-time');
+                                            if (timeLabel) timeLabel.textContent = formatKaraokeEditorTime(record.facade.currentTime);
+                                        }
+                                    }, 100);
+                                } else if (event.data !== 1 && record.timeTimer) {
+                                    clearInterval(record.timeTimer);
+                                    record.timeTimer = null;
+                                }
+                            },
+                            onError: event => {
+                                const message = event.data === 153
+                                    ? 'This YouTube video does not allow embedded playback (error 153). Use a different YouTube link that allows embedding, or open the original video in a browser. Opening from file:// can also block embedded playback.'
+                                    : event.data === 101 || event.data === 150
+                                        ? 'This YouTube video does not allow embedded playback.'
+                                        : `YouTube player error (${event.data}).`;
+                                if (record.callbacks.onError) record.callbacks.onError(message);
+                                renderListeningYoutubeFallback(youtubeContainer, videoId, message);
+                            }
+                        }
+                    });
+                }).catch(error => {
+                    const message = 'The embedded player could not load. Open the video directly on YouTube.';
+                    if (record.callbacks.onError) record.callbacks.onError(message);
+                    renderListeningYoutubeFallback(youtubeContainer, videoId, message);
+                    console.error('YouTube player API failed:', error);
                 });
-            }).catch(error => {
-                const message = 'The embedded player could not load. Open the video directly on YouTube.';
-                if (record.callbacks.onError) record.callbacks.onError(message);
-                renderListeningYoutubeFallback(youtubeContainer, videoId, message);
-                console.error('YouTube player API failed:', error);
-            });
-            return record.facade;
+                return record.facade;
+            }
         }
 
         destroyListeningYoutubePlayer(youtubeContainerId);
@@ -4585,10 +4649,19 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const audioEl = document.getElementById('edit-listening-audio');
         const status = document.getElementById('edit-audio-preview-status');
         const youtubeVideoId = window.getListeningYoutubeVideoId(rawUrl);
+        const soundcloudEmbedUrl = window.getListeningSoundCloudEmbedUrl(rawUrl);
         if (youtubeVideoId) {
             if (status) status.textContent = 'Loading YouTube preview...';
             window.configureListeningMedia(rawUrl, 'edit-listening-audio', 'edit-listening-youtube-player', {
                 onReady: () => { if (status) status.textContent = `YouTube preview ready for Part ${currentEditorPartIdx + 1}.`; },
+                onError: message => { if (status) status.textContent = message; }
+            });
+            return;
+        }
+        if (soundcloudEmbedUrl) {
+            if (status) status.textContent = 'Loading SoundCloud preview...';
+            window.configureListeningMedia(rawUrl, 'edit-listening-audio', 'edit-listening-youtube-player', {
+                onReady: () => { if (status) status.textContent = `SoundCloud preview ready for Part ${currentEditorPartIdx + 1}.`; },
                 onError: message => { if (status) status.textContent = message; }
             });
             return;
@@ -16293,6 +16366,19 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           const transcriptButton = showTranscriptButton
               ? '<button onclick="toggleTranscript()" class="youtube-embed-transcript-btn" title="Show/Hide Transcript">👁️ Transcript</button>'
               : '';
+          const soundcloudEmbedUrl = window.getListeningSoundCloudEmbedUrl(videoUrl);
+          if (soundcloudEmbedUrl) {
+              return `
+                  <div class="youtube-embed-shell">
+                      <div class="youtube-embed-card">
+                          <iframe id="${playerId}" src="${soundcloudEmbedUrl}" title="SoundCloud player" class="youtube-player-frame" style="border:0;" allow="autoplay; encrypted-media" loading="lazy"></iframe>
+                      </div>
+                      <div class="youtube-embed-actions">
+                          ${transcriptButton}
+                      </div>
+                  </div>
+              `;
+          }
           return `
               <div class="youtube-embed-shell">
                   <div class="youtube-embed-card">
@@ -16308,20 +16394,23 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if (APP_DATA.module === 'listening') {
         const listeningAudioUrl = (p.audioUrl || '').trim();
                     const listeningYoutubeVideoId = window.getListeningYoutubeVideoId(p.audioUrl || '');
+                    const listeningSoundCloudEmbedUrl = window.getListeningSoundCloudEmbedUrl(p.audioUrl || '');
                     window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
           const notice = document.getElementById('listening-exam-notice');
           const instruction = document.getElementById('listening-exam-instruction');
           const buttonLabel = document.getElementById('listening-exam-button-label');
                     if (notice) notice.textContent = listeningYoutubeVideoId
                             ? 'You will watch and listen to this YouTube clip. Playback is synchronized with the transcript.'
-                            : 'You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.';
+                            : listeningSoundCloudEmbedUrl
+                                ? 'You will listen to this SoundCloud track. The embedded player is enabled for the transcript section.'
+                                : 'You will be listening to an audio clip during this test. You will not be permitted to pause or rewind the audio while answering the questions.';
           if (instruction) instruction.textContent = 'To continue, click Play.';
           if (buttonLabel) buttonLabel.textContent = 'Play';
           passageContainer.classList.remove('hidden');
           resizer.classList.remove('hidden');
           
           if (listeningAudioUrl) {
-              if (listeningYoutubeVideoId) {
+              if (listeningYoutubeVideoId || listeningSoundCloudEmbedUrl) {
                   window.listeningMediaInjection = window.createListeningVideoCard('practice-youtube-player', listeningAudioUrl, Boolean(isTimeFree));
                   window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
                   if (listeningOverlay) {
@@ -23632,6 +23721,13 @@ Write the transcript here. The answer is \drop{correct option}.
         const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         })[char]);
+        const questionCount = question => {
+            if (question.type === 'fill_blanks' || question.type === 'dnd_list') return question.gaps.length;
+            if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') return question.items.length;
+            if (question.type === 'map_labelling_hotspots') return question.hotspots.length;
+            return 1;
+        };
+        const questionRange = (first, count) => count > 1 ? `${first}-${first + count - 1}` : String(first);
         if (!input.value.trim()) {
             error.classList.add('hidden');
             error.textContent = '';
@@ -23653,7 +23749,7 @@ Write the transcript here. The answer is \drop{correct option}.
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
                     question.gaps.forEach(gap => gapQuestionNumbers.set(String(gap.id), ++questionNumber));
                 } else {
-                    questionNumber++;
+                    questionNumber += questionCount(question);
                 }
             });
             if (parsed.passage.text.trim()) {
@@ -23684,32 +23780,32 @@ Write the transcript here. The answer is \drop{correct option}.
                     renderedPassage = true;
                     return;
                 }
+                const firstQuestionNumber = questionNumber + 1;
+                const count = questionCount(question);
+                questionNumber += count;
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
-                    const firstNumber = questionNumber + 1;
-                    questionNumber += question.gaps.length;
-                    const lastNumber = questionNumber;
-                    const questionLabel = firstNumber === lastNumber ? `${firstNumber}` : `${firstNumber}-${lastNumber}`;
+                    const questionLabel = questionRange(firstQuestionNumber, count);
                     html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p></section>`;
                     return;
                 }
-                questionNumber++;
+                const questionLabel = questionRange(firstQuestionNumber, count);
                 if (question.type === 'mcq') {
-                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold mb-2">${questionNumber}. ${escapeHtml(question.question)}</p>`;
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold mb-2">${questionLabel}. ${escapeHtml(question.question)}</p>`;
                     question.options.forEach(option => {
                         html += `<div class="py-1 text-sm">${option.correct ? '◉' : '○'} ${escapeHtml(option.text)}${option.correct ? ' <span class="text-emerald-700 text-xs font-bold">(answer)</span>' : ''}</div>`;
                     });
                     html += '</section>';
                 } else {
                     if (question.type === 'tfng') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.statement)}</p><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<p class="text-sm text-purple-700 mt-1">${escapeHtml(question.explanation)}</p>` : ''}</section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.statement)}</p><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<p class="text-sm text-purple-700 mt-1">${escapeHtml(question.explanation)}</p>` : ''}</section>`;
                     } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.instruction)}</p>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map(item => `${escapeHtml(item.text)} → ${escapeHtml(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.instruction)}</p>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map((item, index) => `${firstQuestionNumber + index}. ${escapeHtml(item.text)} → ${escapeHtml(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
                     } else if (question.type === 'map_labelling_hotspots') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionNumber}. ${escapeHtml(question.instruction)}</p><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Hotspot ${index + 1} (${spot.x}%, ${spot.y}%) → ${escapeHtml(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.instruction)}</p><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Q${firstQuestionNumber + index} Hotspot (${spot.x}%, ${spot.y}%) → ${escapeHtml(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
                     } else if (question.type === 'essay') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${escapeHtml(question.instruction)}</p>${question.text ? `<div class="text-sm mt-1">${escapeHtml(question.text)}</div>` : ''}</section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.instruction)}</p>${question.text ? `<div class="text-sm mt-1">${escapeHtml(question.text)}</div>` : ''}</section>`;
                     } else if (question.type === 'audio_record') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">Speaking: ${escapeHtml(question.instruction)}</p>${parsed.speakingQuestions ? `<div class="text-sm mt-1">${escapeHtml(parsed.speakingQuestions).replace(/\n/g, '<br>')}</div>` : ''}</section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. Speaking: ${escapeHtml(question.instruction)}</p>${parsed.speakingQuestions ? `<div class="text-sm mt-1">${escapeHtml(parsed.speakingQuestions).replace(/\n/g, '<br>')}</div>` : ''}</section>`;
                     }
                 }
             });
