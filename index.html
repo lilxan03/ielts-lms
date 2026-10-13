@@ -1065,6 +1065,7 @@
 
   <!-- NEW: PUBLIC STOREFRONT (LANDING PAGE) -->
   <div id="public-landing-ui" class="hidden h-screen w-full bg-[#f4f7fb] overflow-y-auto font-sans relative z-[150] animate-fade-in">
+      <div id="public-data-error" class="hidden p-3 text-center text-sm font-bold text-rose-800 bg-rose-100 border-b border-rose-200" role="alert"></div>
       
       <!-- Hero Section -->
       <div class="bg-blue-900 pt-20 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden text-center">
@@ -3610,6 +3611,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 return Promise.race([uploadTask(), timeoutTask]);
             };
 
+            if (typeof window.loadPublicLandingData === 'function') {
+                window.loadPublicLandingData();
+            }
+
             // Theo dõi trạng thái đăng nhập chính thức
             onAuthStateChanged(auth, async (user) => {
                 if (window.authFlowInProgress) return;
@@ -3630,6 +3635,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     if (loaderText) loaderText.innerHTML = "Verifying account status...";
                     
                     try {
+                        if (typeof window.loadPublicLandingData === 'function' &&
+                            !(await window.loadPublicLandingData())) {
+                            await window.loadPublicLandingData();
+                        }
+
                         // 1. TÌM HỒ SƠ FIRESTORE (Check cả UID và Email để tương thích ngược)
                         let userDocRef = window.fsDoc(window.db, window.fPath('users'), user.uid);
                         let userDocSnap = await window.fsGetDoc(userDocRef);
@@ -3655,10 +3665,18 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
                         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
 
-                        if (typeof window.bootLMS === 'function') await window.bootLMS();
-
                         const role = currentUser.role || 'student';
                         const status = currentUser.status || 'unpaid';
+                        const canEnterLms = role === 'teacher' ||
+                            role === 'collaborator' ||
+                            user.email?.trim().toLowerCase() === 'lyquockhanh03@gmail.com' ||
+                            status === 'approved' ||
+                            status === 'active' ||
+                            currentUser.access === 'paid';
+
+                        if (canEnterLms && typeof window.bootLMS === 'function') {
+                            await window.bootLMS();
+                        }
 
                         document.getElementById('cloud-loader')?.classList.add('hidden');
                         document.getElementById('auth-ui')?.classList.add('hidden');
@@ -3697,9 +3715,19 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     } catch (error) {
                         console.error("Lỗi xác thực:", error);
                         if (loaderText) loaderText.innerHTML = "Lỗi kết nối. Vui lòng F5 lại trang.";
+                        document.getElementById('cloud-loader')?.classList.add('hidden');
+                        document.getElementById('auth-ui')?.classList.add('hidden');
+                        document.getElementById('public-landing-ui')?.classList.remove('hidden');
+                        const publicDataError = document.getElementById('public-data-error');
+                        if (publicDataError) {
+                            publicDataError.textContent = 'Could not load your account profile. The public page is shown; check Firestore access for this account.';
+                            publicDataError.classList.remove('hidden');
+                        }
                     }
                 } else {
                     window.authenticatedUserHandled = null;
+                    currentUser = null;
+                    sessionStorage.removeItem('ielts_session');
                     document.getElementById('cloud-loader')?.classList.add('hidden');
                     document.getElementById('auth-ui')?.classList.add('hidden');
                     document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
@@ -13867,6 +13895,58 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }]
     });
 };
+
+    window.loadPublicLandingData = function() {
+        if (window.publicLandingDataPromise) return window.publicLandingDataPromise;
+
+        window.renderPublicProfile();
+        window.publicLandingDataPromise = (async () => {
+            const [profileResult, packagesResult, hallOfFameResult] = await Promise.allSettled([
+                window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'public_profile')),
+                window.fsGetDocs(window.fsCollection(window.db, window.fPath('packages'))),
+                window.fsGetDocs(window.fsCollection(window.db, window.fPath('hall_of_fame')))
+            ]);
+            const failures = [];
+
+            if (profileResult.status === 'fulfilled') {
+                if (profileResult.value.exists()) PUBLIC_PROFILE = profileResult.value.data();
+                if (typeof window.cacheStartupBranding === 'function') window.cacheStartupBranding(PUBLIC_PROFILE);
+                if (typeof window.applyGlobalLogo === 'function') window.applyGlobalLogo();
+            } else {
+                failures.push(['settings/public_profile', profileResult.reason]);
+            }
+
+            if (packagesResult.status === 'fulfilled') {
+                PACKAGES = packagesResult.value.docs.map(doc => doc.data());
+            } else {
+                failures.push(['packages', packagesResult.reason]);
+            }
+
+            if (hallOfFameResult.status === 'fulfilled') {
+                HOF_STUDENTS = hallOfFameResult.value.docs.map(doc => doc.data());
+            } else {
+                failures.push(['hall_of_fame', hallOfFameResult.reason]);
+            }
+
+            const errorBanner = document.getElementById('public-data-error');
+            if (failures.length) {
+                failures.forEach(([path, error]) => console.error(`Unable to load public landing data (${path}):`, error));
+                if (errorBanner) {
+                    errorBanner.textContent = 'Some public page information could not be loaded. Check the Firestore public read rules and refresh the page.';
+                    errorBanner.classList.remove('hidden');
+                }
+                window.publicLandingDataPromise = null;
+            } else if (errorBanner) {
+                errorBanner.classList.add('hidden');
+                errorBanner.textContent = '';
+            }
+
+            window.renderPublicProfile();
+            return failures.length === 0;
+        })();
+
+        return window.publicLandingDataPromise;
+    };
 
     window.renderPublicProfile = function() {
         const c = document.getElementById('public-profile-content');
