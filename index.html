@@ -3610,56 +3610,86 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 return Promise.race([uploadTask(), timeoutTask]);
             };
 
-            // Theo dõi trạng thái đăng nhập chính thức (Email hoặc Google) và chặn anonymous access hoàn toàn
+            // Theo dõi trạng thái đăng nhập chính thức
             onAuthStateChanged(auth, async (user) => {
                 if (window.authFlowInProgress) return;
 
                 if (user?.isAnonymous) {
-                    try {
-                        await signOut(auth);
-                    } catch (signOutError) {
-                        console.warn('Anonymous access cleanup failed:', signOutError);
-                    }
-
+                    try { await signOut(auth); } catch (e) {}
                     const err = document.getElementById('auth-error');
-                    if (err) {
-                        err.textContent = 'Anonymous login is disabled for security reasons.';
-                        err.classList.remove('hidden');
-                    }
-
-                    const loader = document.getElementById('cloud-loader');
-                    if (loader) loader.classList.add('hidden');
-
-                    const landingUi = document.getElementById('public-landing-ui');
-                    if (landingUi) landingUi.classList.remove('hidden');
+                    if (err) { err.textContent = 'Anonymous login is disabled.'; err.classList.remove('hidden'); }
+                    document.getElementById('cloud-loader')?.classList.add('hidden');
+                    document.getElementById('public-landing-ui')?.classList.remove('hidden');
                     return;
                 }
 
                 if (user) {
-                    if (window.authenticatedUserHandled === user.uid) return;
+                    const loaderText = document.getElementById('cloud-loader-text');
+                    if (loaderText) loaderText.innerHTML = "Verifying account status...";
+                    
+                    try {
+                        // 1. Tải Profile của User từ Firestore
+                        // Thử tìm bằng UID trước (chuẩn mới)
+                        let userDocRef = window.fsDoc(window.db, window.fPath('users'), user.uid);
+                        let userDocSnap = await window.fsGetDoc(userDocRef);
+                        
+                        // Nếu không thấy, thử tìm bằng Email (chuẩn cũ của luồng Google)
+                        if (!userDocSnap.exists() && user.email) {
+                            userDocRef = window.fsDoc(window.db, window.fPath('users'), user.email);
+                            userDocSnap = await window.fsGetDoc(userDocRef);
+                        }
+                        
+                        let isApproved = false;
+                        
+                        if (userDocSnap.exists()) {
+                            // Cập nhật biến toàn cục currentUser với dữ liệu MỚI NHẤT từ database
+                            currentUser = userDocSnap.data();
+                            sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                            
+                            const status = typeof currentUser.status === 'string' ? currentUser.status.trim().toLowerCase() : '';
+                            // 2. Kiểm tra điều kiện duyệt:
+                            // - Là Admin/Teacher
+                            // - Hoặc trạng thái là approved/active
+                            // - Hoặc tài khoản cũ không có trường status
+                            if (currentUser.role === 'teacher' || 
+                                currentUser.role === 'collaborator' || 
+                                status === 'approved' || 
+                                status === 'active' || 
+                                !status) {
+                                isApproved = true;
+                            }
+                        }
 
-                    if (typeof window.isAccountApproved === 'function' &&
-                        !window.isAccountApproved(currentUser, user)) {
-                        window.showAwaitingApproval(currentUser);
-                        window.authenticatedUserHandled = user.uid;
-                        return;
+                        // 3. Phân luồng Học viên dựa trên trạng thái
+                        if (isApproved || user.email === 'lyquockhanh03@gmail.com') {
+                            if (loaderText) loaderText.innerHTML = "Fetching Data from Firestore...";
+                            
+                            document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+                            
+                            if (typeof window.bootLMS === 'function') await window.bootLMS();
+                            window.authenticatedUserHandled = user.uid;
+                        } else {
+                            // NHỐT Ở MÀN HÌNH CHỜ DUYỆT
+                            document.getElementById('cloud-loader')?.classList.add('hidden');
+                            document.getElementById('public-landing-ui')?.classList.add('hidden');
+                            document.getElementById('auth-ui')?.classList.add('hidden');
+                            document.getElementById('start-screen')?.classList.add('hidden');
+                            document.getElementById('editor-ui')?.classList.add('hidden');
+                            
+                            document.getElementById('awaiting-approval-ui')?.classList.remove('hidden');
+                            window.authenticatedUserHandled = user.uid;
+                        }
+
+                    } catch (error) {
+                        console.error("Lỗi xác thực và tải profile:", error);
+                        if (loaderText) loaderText.innerHTML = "Connection Error. Please refresh the page.";
                     }
-
-                    // Đã có tài khoản đăng nhập -> Tải dữ liệu vào hệ thống
-                    loaderText.innerHTML = "Fetching Data from Firestore...";
-                    if (typeof window.bootLMS === 'function') await window.bootLMS();
-                    window.authenticatedUserHandled = user.uid;
                 } else {
                     window.authenticatedUserHandled = null;
-                    // Chưa đăng nhập -> Ẩn màn hình loading màu xanh
-                    const loader = document.getElementById('cloud-loader');
-                    if (loader) loader.classList.add('hidden');
-                    
-                    // Hiện màn hình Landing Page (hoặc màn hình Đăng nhập tùy bạn thiết lập)
-                    const landingUi = document.getElementById('public-landing-ui');
-                    if (landingUi) landingUi.classList.remove('hidden');
-                    const awaitingApprovalUi = document.getElementById('awaiting-approval-ui');
-                    if (awaitingApprovalUi) awaitingApprovalUi.classList.add('hidden');
+                    document.getElementById('cloud-loader')?.classList.add('hidden');
+                    document.getElementById('auth-ui')?.classList.add('hidden');
+                    document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+                    document.getElementById('public-landing-ui')?.classList.remove('hidden');
                 }
             });
             
