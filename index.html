@@ -3663,6 +3663,14 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             await window.fsSetDoc(userDocRef, currentUser);
                         }
 
+                        if (currentUser.disabled === true) {
+                            await signOut(auth);
+                            if (typeof window.showModalMsg === 'function') {
+                                window.showModalMsg("Account Disabled", "This account has been removed from the LMS. Contact the administrator if you think this is a mistake.");
+                            }
+                            return;
+                        }
+
                         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
 
                         const role = currentUser.role || 'student';
@@ -6985,7 +6993,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
         
         if (currentUser.role === 'teacher') {
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => { USERS = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => { USERS = snap.docs.map(d => d.data()).filter(user => user.disabled !== true); window.triggerUIRefresh(); resolve(); }); }));
             
             // TEACHER SUBMISSION LISTENER WITH NATIVE OS NOTIFICATIONS
             let isSubInitial = true;
@@ -7558,6 +7566,15 @@ If the user inputs \gap[colour]{color}, both are accepted.
             }
             
             currentUser = userDoc.data();
+          }
+
+          if (currentUser.disabled === true) {
+              if (window.auth?.currentUser) await window.fsAuthSignOut(window.auth);
+              currentUser = null;
+              sessionStorage.removeItem('ielts_session');
+              err.textContent = 'This account has been removed from the LMS. Contact the administrator if you think this is a mistake.';
+              err.classList.remove('hidden');
+              return;
           }
 
           if (!window.isAccountApproved(currentUser, window.auth?.currentUser)) {
@@ -9288,9 +9305,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const cls = CLASSES.find(c => c.id === window.currentCollabClassId);
         if (!cls) return;
 
-        cls.collaborators = cls.collaborators.filter(c => c !== username);
+        const updatedClass = { ...cls, collaborators: (cls.collaborators || []).filter(c => c !== username) };
         try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), updatedClass);
+            const classIndex = CLASSES.findIndex(item => item.id === cls.id);
+            if (classIndex >= 0) CLASSES[classIndex] = updatedClass;
             window.openClassCollaborators(cls.id); // Refresh dropdown and list instantly
             renderClasses();
         } catch(e) {
@@ -9383,9 +9402,22 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const cls = CLASSES.find(c => c.id === cid);
         if(!cls) return;
         showConfirm("Remove Student", `Remove ${student} from ${cls.name}?`, async () => {
-            cls.enrolledStudents = cls.enrolledStudents.filter(s => s !== student);
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
-            renderClasses();
+            const updatedClass = { ...cls };
+            updatedClass.enrolledStudents = (cls.enrolledStudents || []).filter(name => name !== student);
+            if (updatedClass.miniClasses) {
+                updatedClass.miniClasses = { ...updatedClass.miniClasses };
+                delete updatedClass.miniClasses[student];
+            }
+            try {
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), updatedClass);
+                const classIndex = CLASSES.findIndex(item => item.id === cls.id);
+                if (classIndex >= 0) CLASSES[classIndex] = updatedClass;
+                renderClasses();
+                window.showToast?.("Student Removed", `${student} has been removed from ${cls.name}.`);
+            } catch (error) {
+                console.error(`Could not remove ${student} from class ${cls.id}:`, error);
+                showModalMsg("Error", `Could not remove ${student} from this class. Check Firestore permissions and try again.`);
+            }
         });
     }
 
@@ -20042,22 +20074,94 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         renderStudentsList();
     };
 
-    window.deleteStaff = function(username) {
-        showConfirm("Delete Staff", `Are you sure you want to permanently delete the account for <b>${username}</b>? They will lose all access.`, async () => {
-            USERS = USERS.filter(u => u.user !== username);
-            await window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('users'), username));
-            
-            // Clean up from any class collaborator lists
-            for (let c of CLASSES) {
-                if (c.collaborators && c.collaborators.includes(username)) {
-                    c.collaborators = c.collaborators.filter(col => col !== username);
-                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), c.id), c);
+    window.removeUserFromSystem = function(username) {
+        const account = USERS.find(user => user.user === username);
+        if (!account || !['student', 'collaborator'].includes(account.role)) {
+            showModalMsg("Cannot Remove Account", "Only student and collaborator accounts can be removed here.");
+            return;
+        }
+        if (account.user === currentUser?.user) {
+            showModalMsg("Cannot Remove Account", "You cannot remove the account currently in use.");
+            return;
+        }
+
+        showConfirm(
+            "Remove Account from LMS",
+            `Remove <b>${username}</b> from the LMS? This blocks future LMS sign-ins and removes their class memberships. Historical submissions and attendance are retained.`,
+            async () => {
+                try {
+                    const profileIds = [...new Set([account.uid, account.user, account.email].filter(Boolean))];
+                    let profileRef = null;
+                    let profileSnap = null;
+                    for (const id of profileIds) {
+                        const candidateRef = window.fsDoc(window.db, window.fPath('users'), id);
+                        const candidateSnap = await window.fsGetDoc(candidateRef);
+                        if (candidateSnap.exists()) {
+                            profileRef = candidateRef;
+                            profileSnap = candidateSnap;
+                            break;
+                        }
+                    }
+                    if (!profileRef || !profileSnap) {
+                        throw new Error(`Could not find the Firestore profile for ${username}.`);
+                    }
+
+                    const disabledProfile = {
+                        ...profileSnap.data(),
+                        disabled: true,
+                        disabledAt: new Date().toISOString(),
+                        disabledBy: currentUser.user
+                    };
+                    await window.fsSetDoc(profileRef, disabledProfile);
+                    USERS = USERS.filter(user => user.user !== username);
+
+                    const updatedClasses = CLASSES.filter(cls =>
+                        (cls.enrolledStudents || []).includes(username) ||
+                        (cls.collaborators || []).includes(username) ||
+                        Object.prototype.hasOwnProperty.call(cls.miniClasses || {}, username)
+                    ).map(cls => {
+                        const updated = { ...cls };
+                        if (Array.isArray(updated.enrolledStudents)) {
+                            updated.enrolledStudents = updated.enrolledStudents.filter(student => student !== username);
+                        }
+                        if (Array.isArray(updated.collaborators)) {
+                            updated.collaborators = updated.collaborators.filter(collaborator => collaborator !== username);
+                        }
+                        if (updated.miniClasses) {
+                            updated.miniClasses = { ...updated.miniClasses };
+                            delete updated.miniClasses[username];
+                        }
+                        return updated;
+                    });
+                    const classErrors = [];
+                    for (const cls of updatedClasses) {
+                        try {
+                            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+                            const classIndex = CLASSES.findIndex(item => item.id === cls.id);
+                            if (classIndex >= 0) CLASSES[classIndex] = cls;
+                        } catch (error) {
+                            console.error(`Could not remove ${username} from class ${cls.id}:`, error);
+                            classErrors.push(cls.name || cls.id);
+                        }
+                    }
+
+                    renderClasses();
+                    renderStudentsList();
+                    if (classErrors.length) {
+                        showModalMsg("Account Disabled; Class Cleanup Incomplete", `${username} is disabled, but could not be removed from: ${classErrors.join(', ')}. Check Firestore permissions and retry.`);
+                        return;
+                    }
+                    window.showToast?.("Account Removed", `${username} is disabled and removed from LMS classes.`);
+                } catch (error) {
+                    console.error(`Could not remove LMS account ${username}:`, error);
+                    showModalMsg("Removal Failed", `Could not disable <b>${username}</b>. Check Firestore permissions and try again.<br><span class="text-xs text-rose-600">${error.message}</span>`);
                 }
             }
-            renderClasses();
-            renderStudentsList();
-            window.showToast("Deleted", `${username} has been removed from the platform.`);
-        });
+        );
+    };
+
+    window.deleteStaff = function(username) {
+        window.removeUserFromSystem(username);
     };
 
     function renderStudentsList() {
@@ -20139,6 +20243,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             <button onclick="window.promptEditStudentContact('${s.user}')" class="bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Contact Info">✏️</button>
                             <button onclick="window.openRadarEditor('${s.user}')" class="bg-white border border-slate-200 hover:border-purple-400 hover:text-purple-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Radar Chart">📊</button>
                             <button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Reset Password">🔑</button>
+                            <button onclick="window.removeUserFromSystem('${s.user}')" class="bg-white border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-600 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Remove student from LMS">🗑️</button>
                         </td>
                     </tr>
                     `;
@@ -20176,7 +20281,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     let actions = `<button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold" title="Reset Password">🔑 Reset Pass</button>`;
                     
                     if (s.role !== 'teacher' && !isMe) {
-                        actions += `<button onclick="window.deleteStaff('${s.user}')" class="bg-rose-50 border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold ml-2">🗑️ Delete</button>`;
+                        actions += `<button onclick="window.deleteStaff('${s.user}')" class="bg-rose-50 border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold ml-2">🗑️ Disable</button>`;
                     }
 
                     // ✨ Calculate Earnings for Collaborators
