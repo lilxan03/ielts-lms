@@ -7589,13 +7589,22 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
     };
 
-    function logout() {
-      sessionStorage.removeItem('ielts_session');
-      sessionStorage.removeItem('lms_pending_test_route');
-      currentUser = null;
-      window.history.replaceState({ lmsRoute: 'landing' }, '', '#/landing');
-      // Forces a browser refresh to completely purge private memory state arrays
-      window.location.reload();
+    async function logout() {
+      try {
+        if (window.auth?.currentUser) {
+          await window.fsAuthSignOut(window.auth);
+        }
+
+        sessionStorage.removeItem('ielts_session');
+        sessionStorage.removeItem('lms_pending_test_route');
+        currentUser = null;
+        window.authenticatedUserHandled = null;
+        window.history.replaceState({ lmsRoute: 'landing' }, '', '#/landing');
+        window.location.reload();
+      } catch (error) {
+        console.error('Sign-out failed:', error);
+        window.showToast?.('Sign-out failed', error.message || 'Please try again.');
+      }
     }
 
     // ✨ NEW: Forgot Password Handler at Login Stage
