@@ -3950,6 +3950,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
     let SCHEDULES = [];
     let ATTENDANCE = [];
     let PACKAGES = []; 
+    let paymentCatalogUnsubscribe = null;
+    let paymentPackagesUnsubscribe = null;
     let TEACHER_TEMPLATES = [];
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
     let HOF_STUDENTS = []; // ✨ NEW: Dedicated Collection for Hall of Fame
@@ -4072,14 +4074,32 @@ If the user inputs \gap[colour]{color}, both are accepted.
     };
 
     window.bootPaymentPortal = async function() {
-      const [billingSnapshot, catalogSnapshot, packagesSnapshot] = await Promise.all([
-        window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing')),
-        window.fsGetDocs(window.fsCollection(window.db, window.fPath('course_catalog'))),
-        window.fsGetDocs(window.fsCollection(window.db, window.fPath('packages')))
-      ]);
+      paymentCatalogUnsubscribe?.();
+      paymentPackagesUnsubscribe?.();
+      const billingSnapshot = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'));
       if (billingSnapshot.exists()) BILLING_SETTINGS = billingSnapshot.data();
-      CLASSES = catalogSnapshot.docs.map(doc => doc.data());
-      PACKAGES = packagesSnapshot.docs.map(doc => doc.data());
+      paymentCatalogUnsubscribe = window.fsOnSnapshot(
+        window.fsCollection(window.db, window.fPath('course_catalog')),
+        snapshot => {
+          CLASSES = snapshot.docs.map(doc => doc.data());
+          if (document.getElementById('checkout-course')) window.renderStudentCheckout();
+        },
+        error => {
+          console.error('Unable to load the public course catalog:', error);
+          window.showToast?.('Could not load courses', 'Refresh the page or contact your teacher.', 'error');
+        }
+      );
+      paymentPackagesUnsubscribe = window.fsOnSnapshot(
+        window.fsCollection(window.db, window.fPath('packages')),
+        snapshot => {
+          PACKAGES = snapshot.docs.map(doc => doc.data());
+          if (document.getElementById('checkout-course')) window.renderStudentCheckout();
+        },
+        error => {
+          console.error('Unable to load public course packages:', error);
+          window.showToast?.('Could not load bundles', 'Refresh the page or contact your teacher.', 'error');
+        }
+      );
       window.renderAccountGate();
       if (currentUser?.role === 'student' && !window.trustedAccountAccess?.paid) {
         window.initStudentDashboard();
@@ -7141,7 +7161,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => {
                         CLASSES = snap.docs.map(d => d.data());
                         if (['teacher', 'collaborator'].includes(currentUser?.role)) {
-                            window.syncPublicCourseCatalog(CLASSES).catch(error => console.error('Unable to synchronize the public course catalog:', error));
+                            window.syncPublicCourseCatalog(CLASSES).catch(error => {
+                                console.error('Unable to synchronize the public course catalog:', error);
+                                window.showToast?.('Course catalog sync failed', 'Deploy the latest Firestore rules and check staff access.', 'error');
+                            });
                         }
                         if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners();
                         if (currentUser?.role === 'student' && window.refreshStudentPresenceListeners) window.refreshStudentPresenceListeners();
