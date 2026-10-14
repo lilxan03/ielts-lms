@@ -119,7 +119,7 @@ service cloud.firestore {
 
     match /course_catalog/{classId} {
       allow read: if signedIn();
-      allow write: if isAdmin();
+      allow write: if isStaff();
     }
 
     match /hall_of_fame/{entryId} {

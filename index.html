@@ -4072,12 +4072,14 @@ If the user inputs \gap[colour]{color}, both are accepted.
     };
 
     window.bootPaymentPortal = async function() {
-      const [billingSnapshot, catalogSnapshot] = await Promise.all([
+      const [billingSnapshot, catalogSnapshot, packagesSnapshot] = await Promise.all([
         window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing')),
-        window.fsGetDocs(window.fsCollection(window.db, window.fPath('course_catalog')))
+        window.fsGetDocs(window.fsCollection(window.db, window.fPath('course_catalog'))),
+        window.fsGetDocs(window.fsCollection(window.db, window.fPath('packages')))
       ]);
       if (billingSnapshot.exists()) BILLING_SETTINGS = billingSnapshot.data();
       CLASSES = catalogSnapshot.docs.map(doc => doc.data());
+      PACKAGES = packagesSnapshot.docs.map(doc => doc.data());
       window.renderAccountGate();
       if (currentUser?.role === 'student' && !window.trustedAccountAccess?.paid) {
         window.initStudentDashboard();
@@ -4085,20 +4087,26 @@ If the user inputs \gap[colour]{color}, both are accepted.
     };
 
     window.syncPublicCourseCatalog = async function(classes) {
-      if (window.auth?.currentUser?.email?.trim().toLowerCase() !== window.ADMIN_EMAIL) return;
+      if (!['teacher', 'collaborator'].includes(currentUser?.role)) return;
       const entries = classes.map(cls => ({
         id: cls.id,
         name: cls.name || '',
         parentClassId: cls.parentClassId || null,
+        feePerLesson: Number(cls.feePerLesson) || Number(BILLING_SETTINGS.feePerLesson) || 100000,
         isTemplate: window.isTemplateClass(cls)
       }));
-      await Promise.all(entries.map(async entry => {
-        const ref = window.fsDoc(window.db, window.fPath('course_catalog'), entry.id);
-        const previous = await window.fsGetDoc(ref);
-        if (!previous.exists() || JSON.stringify(previous.data()) !== JSON.stringify(entry)) {
-          await window.fsSetDoc(ref, entry);
+      const catalogSnapshot = await window.fsGetDocs(window.fsCollection(window.db, window.fPath('course_catalog')));
+      const entryIds = new Set(entries.map(entry => entry.id));
+      const writes = entries.map(async entry => {
+        const previous = catalogSnapshot.docs.find(doc => doc.id === entry.id);
+        if (!previous || JSON.stringify(previous.data()) !== JSON.stringify(entry)) {
+          await window.fsSetDoc(window.fsDoc(window.db, window.fPath('course_catalog'), entry.id), entry);
         }
-      }));
+      });
+      const deletions = catalogSnapshot.docs
+        .filter(doc => !entryIds.has(doc.id))
+        .map(doc => window.fsDeleteDoc(window.fsDoc(window.db, window.fPath('course_catalog'), doc.id)));
+      await Promise.all([...writes, ...deletions]);
     };
 
     window.syncTrustedAccountAccess = async function(profile) {
@@ -7132,7 +7140,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 new Promise(resolve => {
                     window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => {
                         CLASSES = snap.docs.map(d => d.data());
-                        if (currentUser?.role === 'teacher' && window.auth?.currentUser?.email?.trim().toLowerCase() === window.ADMIN_EMAIL) {
+                        if (['teacher', 'collaborator'].includes(currentUser?.role)) {
                             window.syncPublicCourseCatalog(CLASSES).catch(error => console.error('Unable to synchronize the public course catalog:', error));
                         }
                         if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners();

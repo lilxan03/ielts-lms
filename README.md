@@ -32,7 +32,7 @@ Firestore Rules allow an authenticated user to read only their own profile and o
 
 ### Deploy access controls
 
-The client reads public course names from `course_catalog`; the administrator's LMS load synchronizes that limited catalog from the private `classes` collection. The `account_access/{uid}` document is the only source of truth for staff role and student access. Students can create only an unpaid student access record for themselves; only the administrator account below can grant or revoke paid access. New usernames are normalized to lowercase and must contain 1-40 ASCII letters, numbers, underscores, or hyphens.
+The checkout reads public course names and lesson fees from `course_catalog`; a staff LMS session synchronizes this limited catalog from the private `classes` collection. Packages are loaded from the public-readable `packages` collection. The `account_access/{uid}` document is the only source of truth for staff role and student access. Students can create only an unpaid student access record for themselves; only the administrator account below can grant or revoke paid access. New usernames are normalized to lowercase and must contain 1-40 ASCII letters, numbers, underscores, or hyphens.
 
 The Firestore rules use the administrator email already configured in the application (`lyquockhanh03@gmail.com`) and the Firebase project ID in the web app configuration (`khanh-ielts-v2`). Review both values before deployment. From this directory, deploy with:
 
