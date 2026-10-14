@@ -3527,6 +3527,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
   <!-- FIREBASE INITIALIZATION -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
     import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     // ✨ NEW: Added sendPasswordResetEmail
     import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -3550,6 +3551,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
         try {
             loaderText.innerHTML = "Initializing App...";
             const app = initializeApp(firebaseConfig);
+            const appCheck = initializeAppCheck(app, {
+              provider: new ReCaptchaEnterpriseProvider('6LdQU-4tAAAAAE3le0IPyzgPufRryWx9ncBw5lna'),
+              isTokenAutoRefreshEnabled: true
+            });
             window.firebaseApp = app; // Expose globally for messaging
             const db = getFirestore(app);
             const auth = getAuth(app);
