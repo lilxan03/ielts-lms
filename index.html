@@ -3743,13 +3743,13 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
                     } catch (error) {
                         console.error("Lỗi xác thực:", error);
-                        if (loaderText) loaderText.innerHTML = "Lỗi kết nối. Vui lòng F5 lại trang.";
+                        if (loaderText) loaderText.textContent = `Không thể kết nối dữ liệu LMS: ${error.message || error}`;
                         document.getElementById('cloud-loader')?.classList.add('hidden');
                         document.getElementById('auth-ui')?.classList.add('hidden');
                         document.getElementById('public-landing-ui')?.classList.remove('hidden');
                         const publicDataError = document.getElementById('public-data-error');
                         if (publicDataError) {
-                            publicDataError.textContent = 'Could not load your account profile. The public page is shown; check Firestore access for this account.';
+                            publicDataError.textContent = `Không thể tải dữ liệu LMS: ${error.message || error}`;
                             publicDataError.classList.remove('hidden');
                         }
                     }
@@ -7141,6 +7141,43 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }, 100);
     };
 
+    function waitForInitialSnapshot(label, reference, onSnapshot) {
+        return new Promise((resolve, reject) => {
+            let unsubscribe;
+            let initialized = false;
+            const timeout = setTimeout(() => {
+                handleError(new Error('Timed out waiting for the first database response.'));
+            }, 20000);
+            const handleError = error => {
+                if (initialized) {
+                    console.error(`Firestore listener failed for ${label}:`, error);
+                    return;
+                }
+                initialized = true;
+                clearTimeout(timeout);
+                if (typeof unsubscribe === 'function') unsubscribe();
+                reject(new Error(`Unable to load ${label}: ${error.message || error}`));
+            };
+
+            try {
+                unsubscribe = window.fsOnSnapshot(reference, snapshot => {
+                    try {
+                        onSnapshot(snapshot);
+                        if (!initialized) {
+                            initialized = true;
+                            clearTimeout(timeout);
+                            resolve();
+                        }
+                    } catch (error) {
+                        handleError(error);
+                    }
+                }, handleError);
+            } catch (error) {
+                handleError(error);
+            }
+        });
+    }
+
     window.bootLMS = async function() {
         try {
             document.getElementById('cloud-loader-text').textContent = "Initializing App...";
@@ -7156,9 +7193,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
             // 2. Attach PUBLIC real-time listeners (Safe data everyone needs to see)
             await Promise.all([
-                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), snap => { TEST_BANK = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => {
+                waitForInitialSnapshot('tests', window.fsCollection(window.db, window.fPath('tests')), snap => {
+                    TEST_BANK = snap.docs.map(d => d.data());
+                    window.triggerUIRefresh();
+                }),
+                waitForInitialSnapshot('classes', window.fsCollection(window.db, window.fPath('classes')), snap => {
                         CLASSES = snap.docs.map(d => d.data());
                         if (['teacher', 'collaborator'].includes(currentUser?.role)) {
                             window.syncPublicCourseCatalog(CLASSES).catch(error => {
@@ -7169,23 +7208,31 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners();
                         if (currentUser?.role === 'student' && window.refreshStudentPresenceListeners) window.refreshStudentPresenceListeners();
                         window.triggerUIRefresh();
-                        resolve();
-                    });
                 }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => { if (snap.exists()) BILLING_SETTINGS = snap.data(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => { if (snap.exists()) AVAILABILITY = snap.data(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => { PACKAGES = snap.docs.map(d => d.data()); if(currentUser?.role === 'teacher') renderStudentsList(); resolve(); }); }),
-                new Promise(resolve => {
-                    window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => {
+                waitForInitialSnapshot('billing settings', window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => {
+                    if (snap.exists()) BILLING_SETTINGS = snap.data();
+                }),
+                waitForInitialSnapshot('availability settings', window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => {
+                    if (snap.exists()) AVAILABILITY = snap.data();
+                }),
+                waitForInitialSnapshot('packages', window.fsCollection(window.db, window.fPath('packages')), snap => {
+                    PACKAGES = snap.docs.map(d => d.data());
+                    if(currentUser?.role === 'teacher') renderStudentsList();
+                }),
+                waitForInitialSnapshot('public profile settings', window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => {
                         if (snap.exists()) PUBLIC_PROFILE = snap.data();
                         if (typeof window.cacheStartupBranding === 'function') window.cacheStartupBranding(PUBLIC_PROFILE);
                         if (typeof window.applyGlobalLogo === 'function') window.applyGlobalLogo();
                         if (document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
-                        resolve();
-                    });
                 }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => { HOF_STUDENTS = snap.docs.map(d => d.data()); if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid(); if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => { if (snap.exists()) TEACHER_TEMPLATES = snap.data().items || []; resolve(); }); })
+                waitForInitialSnapshot('hall of fame', window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => {
+                    HOF_STUDENTS = snap.docs.map(d => d.data());
+                    if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid();
+                    if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
+                }),
+                waitForInitialSnapshot('teacher templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
+                    if (snap.exists()) TEACHER_TEMPLATES = snap.data().items || [];
+                })
             ]);
 
             // 3. Attach RESTRICTED listeners based on role
@@ -7198,13 +7245,13 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
         } catch (err) {
             console.error("Cloud Boot Error:", err);
-            document.getElementById('loader-spinner').classList.add('hidden');
-            document.getElementById('cloud-loader-text').innerHTML = `
-              <div class='bg-rose-900/50 border border-rose-500 p-4 rounded text-left'>
-                 <b class='text-rose-400'>Database Permission Error:</b><br>
-                 <span class='text-rose-200 text-xs font-mono'>${err.message}</span>
-              </div>
-            `;
+            document.getElementById('loader-spinner')?.classList.add('hidden');
+            const loaderText = document.getElementById('cloud-loader-text');
+            if (loaderText) {
+                loaderText.textContent = `Database connection failed: ${err.message || err}`;
+                loaderText.classList.add('text-rose-200');
+            }
+            throw err;
         }
     };
 
@@ -7217,8 +7264,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
         
         if (currentUser.role === 'teacher') {
-            promises.push(new Promise(resolve => {
-                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => {
+            promises.push(waitForInitialSnapshot('users', window.fsCollection(window.db, window.fPath('users')), snap => {
                     USERS = snap.docs.map(userDoc => {
                         const data = userDoc.data();
                         if (Object.prototype.hasOwnProperty.call(data, 'pass')) {
@@ -7228,14 +7274,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         return sanitizeUserProfile(data);
                     }).filter(user => user.disabled !== true);
                     window.triggerUIRefresh();
-                    resolve();
-                });
             }));
             
             // TEACHER SUBMISSION LISTENER WITH NATIVE OS NOTIFICATIONS
             let isSubInitial = true;
-            promises.push(new Promise(resolve => { 
-                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('submissions')), snap => { 
+            promises.push(waitForInitialSnapshot('submissions', window.fsCollection(window.db, window.fPath('submissions')), snap => { 
                     SUBMISSIONS = snap.docs.map(d => d.data()); 
                     window.triggerUIRefresh(); 
                     
@@ -7252,16 +7295,16 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         });
                     }
                     isSubInitial = false;
-                    resolve(); 
-                }); 
             }));
             
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('attendance')), snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(waitForInitialSnapshot('attendance', window.fsCollection(window.db, window.fPath('attendance')), snap => {
+                ATTENDANCE = snap.docs.map(d => d.data());
+                window.triggerUIRefresh();
+            }));
             
             // TEACHER SCHEDULE LISTENER WITH NATIVE OS NOTIFICATIONS
             let isSchedInitial = true;
-            promises.push(new Promise(resolve => { 
-                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('schedules')), snap => { 
+            promises.push(waitForInitialSnapshot('schedules', window.fsCollection(window.db, window.fPath('schedules')), snap => { 
                     SCHEDULES = snap.docs.map(d => d.data()); 
                     window.triggerUIRefresh(); 
                     
@@ -7274,14 +7317,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         });
                     }
                     isSchedInitial = false;
-                    resolve(); 
-                }); 
             }));
 
             // TEACHER FORUM LISTENER
             let isMsgInitial = true;
-            promises.push(new Promise(resolve => { 
-                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => { 
+            promises.push(waitForInitialSnapshot('messages', window.fsCollection(window.db, window.fPath('messages')), snap => { 
                     CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); 
                     if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); 
                     
@@ -7294,37 +7334,41 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         });
                     }
                     isMsgInitial = false;
-                    resolve(); 
-                }); 
             }));
 
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { const temp = FLASHCARDS['temp_test_deck']; FLASHCARDS = {}; if(temp) FLASHCARDS['temp_test_deck'] = temp; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('hidden')) { window.renderFlashcardPanel(); } resolve(); }); }));
+            promises.push(waitForInitialSnapshot('notes', window.fsCollection(window.db, window.fPath('notes')), snap => {
+                ALL_NOTES = {};
+                snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data);
+            }));
+            promises.push(waitForInitialSnapshot('flashcards', window.fsCollection(window.db, window.fPath('flashcards')), snap => {
+                const temp = FLASHCARDS['temp_test_deck'];
+                FLASHCARDS = {};
+                if(temp) FLASHCARDS['temp_test_deck'] = temp;
+                snap.docs.forEach(d => {
+                    if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data;
+                });
+                if (!document.getElementById('student-fc-panel')?.classList.contains('hidden')) window.renderFlashcardPanel();
+            }));
         } else if (currentUser.role === 'collaborator') {
-            promises.push(new Promise(resolve => { 
-                window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
+            promises.push(waitForInitialSnapshot('current user profile', window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
                         const me = sanitizeUserProfile(snap.data()); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
                     } 
-                    window.triggerUIRefresh(); resolve(); 
-                }); 
+                    window.triggerUIRefresh();
             }));
         } else {
             // STUDENT: Restricted queries. ONLY downloads their own private data.
-            promises.push(new Promise(resolve => { 
-                window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
+            promises.push(waitForInitialSnapshot('current user profile', window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
                         const me = sanitizeUserProfile(snap.data()); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
                     } 
-                    window.triggerUIRefresh(); resolve(); 
-                }); 
+                    window.triggerUIRefresh();
             }));
             
             // STUDENT SUBMISSION LISTENER WITH NATIVE OS NOTIFICATIONS
             const subQ = window.fsQuery(window.fsCollection(window.db, window.fPath('submissions')), window.fsWhere('student', '==', currentUser.user));
             let isMySubInitial = true;
-            promises.push(new Promise(resolve => { 
-                window.fsOnSnapshot(subQ, snap => { 
+            promises.push(waitForInitialSnapshot('your submissions', subQ, snap => { 
                     SUBMISSIONS = snap.docs.map(d => d.data()); 
                     window.triggerUIRefresh(); 
                     
@@ -7337,12 +7381,13 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         });
                     }
                     isMySubInitial = false;
-                    resolve(); 
-                }); 
             }));
             
             const attQ = window.fsQuery(window.fsCollection(window.db, window.fPath('attendance')), window.fsWhere('student', '==', currentUser.user));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(attQ, snap => { ATTENDANCE = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(waitForInitialSnapshot('your attendance', attQ, snap => {
+                ATTENDANCE = snap.docs.map(d => d.data());
+                window.triggerUIRefresh();
+            }));
 
             const myClasses = CLASSES.filter(c => !window.isTemplateClass(c) && (c.enrolledStudents || []).includes(currentUser.user));
             const myClassNames = [...new Set(myClasses.map(c => c.name).filter(Boolean))];
@@ -7350,8 +7395,17 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
             const safeClassIds = myClassIds.slice(0, 10);
             let resolveInitialScheduleLoad;
-            const initialScheduleLoad = new Promise(resolve => { resolveInitialScheduleLoad = resolve; });
+            let rejectInitialScheduleLoad;
+            const initialScheduleLoad = new Promise((resolve, reject) => {
+                resolveInitialScheduleLoad = resolve;
+                rejectInitialScheduleLoad = reject;
+            });
             promises.push(initialScheduleLoad);
+            const initialScheduleTimeout = setTimeout(() => {
+                if (initialScheduleLoadResolved) return;
+                initialScheduleLoadResolved = true;
+                rejectInitialScheduleLoad(new Error('Timed out waiting for your schedules.'));
+            }, 20000);
             let initialScheduleBatchesRemaining = 0;
             let initialScheduleLoadResolved = false;
             let scheduleListenerGeneration = 0;
@@ -7369,6 +7423,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     SCHEDULES = [];
                     if (!initialScheduleLoadResolved) {
                         initialScheduleLoadResolved = true;
+                        clearTimeout(initialScheduleTimeout);
                         resolveInitialScheduleLoad();
                     }
                     window.triggerUIRefresh();
@@ -7390,8 +7445,17 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             initialScheduleBatchesRemaining--;
                             if (!initialScheduleLoadResolved && initialScheduleBatchesRemaining === 0) {
                                 initialScheduleLoadResolved = true;
+                                clearTimeout(initialScheduleTimeout);
                                 resolveInitialScheduleLoad();
                             }
+                        }
+                    }, error => {
+                        if (generation !== scheduleListenerGeneration) return;
+                        console.error('Unable to load student schedules:', error);
+                        if (!initialScheduleLoadResolved) {
+                            initialScheduleLoadResolved = true;
+                            clearTimeout(initialScheduleTimeout);
+                            rejectInitialScheduleLoad(new Error(`Unable to load your schedules: ${error.message || error}`));
                         }
                     });
                     if (typeof unsubscribe === 'function') window.studentScheduleUnsubscribes.push(unsubscribe);
@@ -7486,8 +7550,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 // STUDENT FORUM LISTENER WITH NATIVE OS NOTIFICATIONS
                 const msgQ = window.fsQuery(window.fsCollection(window.db, window.fPath('messages')), window.fsWhere('classId', 'in', safeClassIds));
                 let isMyMsgInitial = true;
-                promises.push(new Promise(resolve => { 
-                    window.fsOnSnapshot(msgQ, snap => { 
+                promises.push(waitForInitialSnapshot('your class messages', msgQ, snap => { 
                         CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); 
                         if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) window.renderChatMessages(); 
                         
@@ -7500,15 +7563,26 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             });
                         }
                         isMyMsgInitial = false;
-                        resolve(); 
-                    }); 
                 }));
             } else {
                 CHAT_MESSAGES = [];
             }
             
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('notes')), snap => { ALL_NOTES = {}; snap.docs.forEach(d => { if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data; }); resolve(); }); }));
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('flashcards')), snap => { const temp = FLASHCARDS['temp_test_deck']; FLASHCARDS = {}; if(temp) FLASHCARDS['temp_test_deck'] = temp; snap.docs.forEach(d => { if (d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data; }); if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) { window.renderFlashcardPanel(); } resolve(); }); }));
+            promises.push(waitForInitialSnapshot('notes', window.fsCollection(window.db, window.fPath('notes')), snap => {
+                ALL_NOTES = {};
+                snap.docs.forEach(d => {
+                    if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data;
+                });
+            }));
+            promises.push(waitForInitialSnapshot('flashcards', window.fsCollection(window.db, window.fPath('flashcards')), snap => {
+                const temp = FLASHCARDS['temp_test_deck'];
+                FLASHCARDS = {};
+                if(temp) FLASHCARDS['temp_test_deck'] = temp;
+                snap.docs.forEach(d => {
+                    if (d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data;
+                });
+                if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) window.renderFlashcardPanel();
+            }));
         }
 
         await Promise.all(promises);
