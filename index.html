@@ -3679,13 +3679,20 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
 
                         const role = currentUser.role || 'student';
-                        const status = currentUser.status || 'unpaid';
+                        const rawStatus = currentUser.status || currentUser.paymentStatus || 'unpaid';
+                        const status = String(rawStatus).toLowerCase();
+                        const isPaidStudent = Boolean(
+                            currentUser.isPaid === true ||
+                            currentUser.paymentStatus === 'paid' ||
+                            currentUser.access === 'paid' ||
+                            status === 'paid' ||
+                            status === 'approved' ||
+                            status === 'active'
+                        );
                         const canEnterLms = role === 'teacher' ||
                             role === 'collaborator' ||
                             user.email?.trim().toLowerCase() === 'lyquockhanh03@gmail.com' ||
-                            status === 'approved' ||
-                            status === 'active' ||
-                            currentUser.access === 'paid';
+                            isPaidStudent;
 
                         if (canEnterLms && typeof window.bootLMS === 'function') {
                             await window.bootLMS();
@@ -3700,7 +3707,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             document.getElementById('student-payment-warning')?.classList.add('hidden');
                             document.getElementById('start-screen')?.classList.remove('hidden');
                         } else {
-                            if (status === 'approved' || status === 'active' || currentUser.access === 'paid') {
+                            if (isPaidStudent) {
                                 document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
                                 document.getElementById('start-screen')?.classList.remove('hidden');
                                 document.getElementById('student-payment-warning')?.classList.add('hidden');
