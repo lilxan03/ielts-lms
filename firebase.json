@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "source": ".",
+    "codebase": "default",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**",
+      "index.html",
+      "README.md",
+      "firestore.rules",
+      "firebase-messaging-sw.js"
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}

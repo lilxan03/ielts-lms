@@ -1,0 +1,205 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'lyquockhanh03@gmail.com';
+    }
+
+    function accessPath(uid) {
+      return /databases/$(database)/documents/account_access/$(uid);
+    }
+
+    function hasAccessRecord() {
+      return signedIn() && exists(accessPath(request.auth.uid));
+    }
+
+    function accountAccess() {
+      return get(accessPath(request.auth.uid)).data;
+    }
+
+    function isStaff() {
+      return isAdmin()
+        || (hasAccessRecord() && accountAccess().role in ['teacher', 'collaborator']);
+    }
+
+    function hasPaidAccess() {
+      return isStaff()
+        || (hasAccessRecord()
+          && accountAccess().role == 'student'
+          && accountAccess().paid == true
+          && (!('billingExpiresAt' in accountAccess())
+            || accountAccess().billingExpiresAt == null
+            || accountAccess().billingExpiresAt > request.time));
+    }
+
+    function ownAccount(username) {
+      return signedIn()
+        && resource.data.uid == request.auth.uid
+        && resource.data.user == username;
+    }
+
+    function safeStudentProfileUpdate() {
+      return !('pass' in request.resource.data)
+        && request.resource.data.get('uid', null) == resource.data.get('uid', null)
+        && request.resource.data.get('user', null) == resource.data.get('user', null)
+        && request.resource.data.get('role', null) == resource.data.get('role', null)
+        && request.resource.data.get('isPaid', null) == resource.data.get('isPaid', null)
+        && request.resource.data.get('status', null) == resource.data.get('status', null)
+        && request.resource.data.get('disabled', null) == resource.data.get('disabled', null)
+        && request.resource.data.get('billingExpiresAt', null) == resource.data.get('billingExpiresAt', null)
+        && request.resource.data.get('billingAccessOverride', null) == resource.data.get('billingAccessOverride', null);
+    }
+
+    match /account_access/{uid} {
+      allow get: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow list: if isStaff();
+      allow create: if isAdmin()
+        || (signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.uid == uid
+          && request.resource.data.role == 'student'
+          && request.resource.data.paid == false
+          && request.resource.data.username.matches('^[A-Za-z0-9_-]{1,40}$')
+          && getAfter(/databases/$(database)/documents/users/$(request.resource.data.username)).data.uid == uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /users/{username} {
+      allow get: if isAdmin() || ownAccount(username);
+      allow list: if isStaff()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if !('pass' in request.resource.data)
+        && (isAdmin()
+        || (signedIn()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.user == username
+          && username.matches('^[A-Za-z0-9_-]{1,40}$')
+          && request.resource.data.role == 'student'
+          && request.resource.data.isPaid == false
+          && request.resource.data.paymentStatus == 'unpaid'
+          && request.resource.data.status == 'unpaid'));
+      allow update: if !('pass' in request.resource.data)
+        && (isAdmin() || (ownAccount(username) && safeStudentProfileUpdate()));
+      allow delete: if isAdmin();
+    }
+
+    match /settings/public_profile {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/billing {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /settings/availability {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff();
+    }
+
+    match /settings/templates {
+      allow read, write: if isStaff();
+    }
+
+    match /settings/{documentId} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /course_catalog/{classId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /hall_of_fame/{entryId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /tests/{testId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff();
+    }
+
+    match /classes/{classId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff();
+    }
+
+    match /schedules/{scheduleId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isStaff()
+        || (hasPaidAccess() && resource.data.student == accountAccess().username);
+      allow write: if isStaff();
+    }
+
+    match /class_presence/{presenceId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff()
+        || (hasPaidAccess() && request.resource.data.student == accountAccess().username);
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isStaff()
+        || (hasPaidAccess() && resource.data.student == accountAccess().username);
+      allow create: if isStaff()
+        || (hasPaidAccess() && request.resource.data.student == accountAccess().username);
+      allow update: if isStaff()
+        || (hasPaidAccess() && resource.data.student == accountAccess().username
+          && request.resource.data.student == resource.data.student);
+      allow delete: if isStaff();
+    }
+
+    match /messages/{messageId} {
+      allow read: if hasPaidAccess();
+      allow create: if isStaff()
+        || (hasPaidAccess() && request.resource.data.author == accountAccess().username);
+      allow update, delete: if isStaff()
+        || (hasPaidAccess() && resource.data.author == accountAccess().username);
+    }
+
+    match /notes/{noteId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff()
+        || (hasPaidAccess() && noteId.matches('^' + accountAccess().username + '(_.*)?$'));
+    }
+
+    match /flashcards/{deckId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff()
+        || (hasPaidAccess() && deckId.matches('^' + accountAccess().username + '(_.*)?$'));
+    }
+
+    match /referral_codes/{code} {
+      allow read: if signedIn();
+      allow create, update: if isStaff()
+        || (hasAccessRecord() && request.resource.data.user == accountAccess().username);
+      allow delete: if isStaff();
+    }
+
+    match /game_leaderboards/{recordId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff()
+        || (hasPaidAccess() && request.resource.data.student == accountAccess().username);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

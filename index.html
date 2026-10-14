@@ -3528,7 +3528,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, updateDoc, deleteField, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, updateDoc, deleteField, onSnapshot, query, where, limit, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     // ✨ NEW: Added sendPasswordResetEmail
     import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
@@ -3575,6 +3575,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
             window.fsGetDoc = getDoc;
             window.fsUpdateDoc = updateDoc;
             window.fsDeleteField = deleteField;
+            window.fsTimestamp = Timestamp;
+            window.fsWriteBatch = writeBatch;
             window.fsCollection = collection;
             window.fsGetDocs = getDocs;
             window.fsDeleteDoc = deleteDoc;
@@ -3655,16 +3657,16 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             await window.loadPublicLandingData();
                         }
 
-                        // 1. TÌM HỒ SƠ FIRESTORE (Check cả UID và Email để tương thích ngược)
-                        let userDocRef = window.fsDoc(window.db, window.fPath('users'), user.uid);
-                        let userDocSnap = await window.fsGetDoc(userDocRef);
-                        
-                        if (!userDocSnap.exists() && user.email) {
-                            userDocRef = window.fsDoc(window.db, window.fPath('users'), user.email);
+                        const cachedUsername = currentUser?.uid === user.uid ? currentUser.user : null;
+                        let userDocRef = window.fsDoc(window.db, window.fPath('users'), cachedUsername || user.uid);
+                        let userDocSnap = null;
+                        try {
                             userDocSnap = await window.fsGetDoc(userDocRef);
+                        } catch (profileLookupError) {
+                            if (cachedUsername) throw profileLookupError;
                         }
 
-                        if (!userDocSnap.exists()) {
+                        if (!userDocSnap?.exists() && !cachedUsername) {
                             const ownedProfileQuery = window.fsQuery(
                                 window.fsCollection(window.db, window.fPath('users')),
                                 window.fsWhere('uid', '==', user.uid),
@@ -3677,19 +3679,30 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             }
                         }
                         
-                        if (userDocSnap.exists()) {
+                        if (userDocSnap?.exists()) {
                             currentUser = userDocSnap.data();
+                            if (currentUser.uid && currentUser.uid !== user.uid) {
+                                throw new Error('This profile belongs to a different Firebase Authentication account.');
+                            }
+                            currentUser.uid = user.uid;
                             delete currentUser.pass;
                         } else {
+                            if (cachedUsername) throw new Error('Your account profile could not be loaded. Ask the administrator to check the account UID.');
                             currentUser = {
-                                user: user.email || user.uid,
+                                user: user.uid,
                                 uid: user.uid,
                                 email: user.email || '',
                                 role: 'student',
                                 status: 'unpaid',
+                                isPaid: false,
+                                paymentStatus: 'unpaid',
                                 createdAt: new Date().toISOString()
                             };
-                            await window.fsSetDoc(userDocRef, currentUser);
+                            const accessRef = window.fsDoc(window.db, window.fPath('account_access'), user.uid);
+                            const accountBatch = window.fsWriteBatch(window.db);
+                            accountBatch.set(userDocRef, currentUser);
+                            accountBatch.set(accessRef, { uid: user.uid, username: user.uid, role: 'student', paid: false });
+                            await accountBatch.commit();
                         }
 
                         if (currentUser.disabled === true) {
@@ -3700,26 +3713,19 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             return;
                         }
 
+                        const access = await window.loadTrustedAccountAccess(user.uid, user.email);
+                        currentUser.accountAccess = access;
+                        currentUser.role = access.role;
                         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
 
-                        const role = currentUser.role || 'student';
-                        const rawStatus = currentUser.status || currentUser.paymentStatus || 'unpaid';
-                        const status = String(rawStatus).toLowerCase();
-                        const isPaidStudent = Boolean(
-                            currentUser.isPaid === true ||
-                            currentUser.paymentStatus === 'paid' ||
-                            currentUser.access === 'paid' ||
-                            status === 'paid' ||
-                            status === 'approved' ||
-                            status === 'active'
-                        );
-                        const canEnterLms = role === 'teacher' ||
-                            role === 'collaborator' ||
-                            user.email?.trim().toLowerCase() === 'lyquockhanh03@gmail.com' ||
-                            isPaidStudent;
+                        const role = access.role;
+                        const canEnterLms = window.canAccessLMS(currentUser, user);
 
                         if (canEnterLms && typeof window.bootLMS === 'function') {
+                            window.lmsBootedUid = user.uid;
                             await window.bootLMS();
+                        } else {
+                            await window.bootPaymentPortal();
                         }
 
                         document.getElementById('cloud-loader')?.classList.add('hidden');
@@ -3730,31 +3736,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
                             document.getElementById('student-payment-warning')?.classList.add('hidden');
                             document.getElementById('start-screen')?.classList.remove('hidden');
-                        } else {
-                            if (isPaidStudent) {
-                                document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
-                                document.getElementById('start-screen')?.classList.remove('hidden');
-                                document.getElementById('student-payment-warning')?.classList.add('hidden');
-                                document.getElementById('student-main-content')?.classList.remove('hidden');
-                            } 
-                            else if (status === 'pending') {
-                                document.getElementById('start-screen')?.classList.add('hidden');
-                                document.getElementById('awaiting-approval-ui')?.classList.remove('hidden');
-                            } 
-                            else {
-                                document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
-                                document.getElementById('start-screen')?.classList.remove('hidden');
-                                document.getElementById('student-main-content')?.classList.add('hidden');
-                                
-                                const paymentWall = document.getElementById('student-payment-warning');
-                                if (paymentWall) {
-                                    paymentWall.classList.remove('hidden');
-                                    paymentWall.classList.add('flex');
-                                }
-                            }
-                        }
+                        } else window.renderAccountGate();
 
                         window.authenticatedUserHandled = user.uid;
+                        window.watchTrustedAccountAccess(user.uid, user.email);
 
                     } catch (error) {
                         console.error("Lỗi xác thực:", error);
@@ -3770,6 +3755,16 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     }
                 } else {
                     window.authenticatedUserHandled = null;
+                    window.accountAccessUnsubscribe?.();
+                    window.accountAccessUnsubscribe = null;
+                    window.trustedAccountAccess = null;
+                    window.lmsBootedUid = null;
+                    TEST_BANK = [];
+                    CLASSES = [];
+                    SCHEDULES = [];
+                    ATTENDANCE = [];
+                    SUBMISSIONS = [];
+                    CHAT_MESSAGES = [];
                     currentUser = null;
                     sessionStorage.removeItem('ielts_session');
                     document.getElementById('cloud-loader')?.classList.add('hidden');
@@ -3968,14 +3963,161 @@ If the user inputs \gap[colour]{color}, both are accepted.
     }
     window.authFlowInProgress = false;
     window.authenticatedUserHandled = null;
+    window.trustedAccountAccess = null;
+    window.accountAccessUnsubscribe = null;
+    window.lmsBootedUid = null;
+    window.ADMIN_EMAIL = 'lyquockhanh03@gmail.com';
 
     window.isAccountApproved = function(profile, firebaseUser = window.auth?.currentUser) {
       const email = firebaseUser?.email?.trim().toLowerCase();
-      if (email === 'lyquockhanh03@gmail.com' || ['teacher', 'collaborator'].includes(profile?.role)) return true;
+      return email === window.ADMIN_EMAIL || profile?.disabled !== true;
+    };
 
-      const status = typeof profile?.status === 'string' ? profile.status.trim().toLowerCase() : '';
-      // Existing accounts without an approval field remain usable; newly created accounts are marked pending.
-      return !status || status === 'approved' || status === 'active';
+    window.loadTrustedAccountAccess = async function(uid, email) {
+      if (email?.trim().toLowerCase() === window.ADMIN_EMAIL) {
+        window.trustedAccountAccess = { uid, username: currentUser?.user, role: 'teacher', paid: true, admin: true };
+        return window.trustedAccountAccess;
+      }
+
+      const accessRef = window.fsDoc(window.db, window.fPath('account_access'), uid);
+      let accessSnapshot = await window.fsGetDoc(accessRef);
+      if (!accessSnapshot.exists()) {
+        const username = currentUser?.uid === uid ? currentUser.user : null;
+        if (username) {
+          const profileRef = window.fsDoc(window.db, window.fPath('users'), username);
+          await window.fsSetDoc(accessRef, { uid, username, role: 'student', paid: false });
+          accessSnapshot = await window.fsGetDoc(accessRef);
+        }
+      }
+      const data = accessSnapshot.exists() ? accessSnapshot.data() : {};
+      const role = ['teacher', 'collaborator', 'student'].includes(data.role) ? data.role : 'student';
+      window.trustedAccountAccess = { ...data, uid, role, paid: data.paid === true };
+      return window.trustedAccountAccess;
+    };
+
+    window.canAccessLMS = function(profile, firebaseUser = window.auth?.currentUser) {
+      const access = window.trustedAccountAccess;
+      if (firebaseUser?.email?.trim().toLowerCase() === window.ADMIN_EMAIL) return true;
+      if (access?.uid !== firebaseUser?.uid) return false;
+      if (['teacher', 'collaborator'].includes(access.role)) return true;
+      if (access.role !== 'student' || access.paid !== true) return false;
+      const expiry = access.billingExpiresAt;
+      if (!expiry) return true;
+      const expiryMillis = typeof expiry.toMillis === 'function' ? expiry.toMillis() : Number(expiry);
+      return Number.isFinite(expiryMillis) && expiryMillis > Date.now();
+    };
+
+    window.watchTrustedAccountAccess = function(uid, email) {
+      window.accountAccessUnsubscribe?.();
+      if (email?.trim().toLowerCase() === window.ADMIN_EMAIL) return;
+
+      const accessRef = window.fsDoc(window.db, window.fPath('account_access'), uid);
+      window.accountAccessUnsubscribe = window.fsOnSnapshot(accessRef, async snapshot => {
+        if (window.auth?.currentUser?.uid !== uid) return;
+        const data = snapshot.exists() ? snapshot.data() : { uid, role: 'student', paid: false };
+        window.trustedAccountAccess = { ...data, uid };
+        if (currentUser) currentUser.role = data.role || 'student';
+        if (window.canAccessLMS(currentUser, window.auth.currentUser)) {
+          if (window.lmsBootedUid !== uid) {
+            window.lmsBootedUid = uid;
+            try {
+              await window.bootLMS();
+            } catch (error) {
+              window.lmsBootedUid = null;
+              console.error('Unable to load the paid student LMS:', error);
+              window.showToast?.('Could not unlock LMS', error.message || 'Please refresh and try again.', 'error');
+            }
+          }
+          window.renderAccountGate();
+        } else {
+          window.lmsBootedUid = null;
+          TEST_BANK = [];
+          CLASSES = [];
+          SCHEDULES = [];
+          ATTENDANCE = [];
+          SUBMISSIONS = [];
+          CHAT_MESSAGES = [];
+          window.renderAccountGate();
+        }
+      }, error => {
+        console.error('Unable to watch trusted account access:', error);
+        window.showToast?.('Account access check failed', 'Refresh the page or contact the administrator.', 'error');
+      });
+    };
+
+    window.renderAccountGate = function() {
+      const hasAccess = window.canAccessLMS(currentUser, window.auth?.currentUser);
+      const startScreen = document.getElementById('start-screen');
+      const paymentWall = document.getElementById('student-payment-warning');
+      document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
+      if (currentUser?.role !== 'student') return;
+
+      document.getElementById('auth-ui')?.classList.add('hidden');
+      document.getElementById('public-landing-ui')?.classList.add('hidden');
+      startScreen?.classList.remove('hidden');
+      document.getElementById('editor-ui')?.classList.add('hidden');
+      document.getElementById('exam-ui')?.classList.add('hidden');
+      startScreen?.querySelector(':scope > header')?.classList.toggle('hidden', !hasAccess);
+      document.getElementById('student-sidebar')?.classList.toggle('hidden', !hasAccess);
+      document.getElementById('student-sidebar-backdrop')?.classList.toggle('hidden', !hasAccess);
+      document.getElementById('student-target-widget')?.classList.toggle('hidden', !hasAccess);
+      document.getElementById('student-main-content')?.classList.toggle('hidden', !hasAccess);
+      paymentWall?.classList.toggle('hidden', hasAccess);
+      if (!hasAccess) {
+        window.closeAppSidebar('student');
+        window.initStudentDashboard();
+      } else {
+        window.initStudentDashboard();
+      }
+    };
+
+    window.bootPaymentPortal = async function() {
+      const [billingSnapshot, catalogSnapshot] = await Promise.all([
+        window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing')),
+        window.fsGetDocs(window.fsCollection(window.db, window.fPath('course_catalog')))
+      ]);
+      if (billingSnapshot.exists()) BILLING_SETTINGS = billingSnapshot.data();
+      CLASSES = catalogSnapshot.docs.map(doc => doc.data());
+      window.renderAccountGate();
+      if (currentUser?.role === 'student' && !window.trustedAccountAccess?.paid) {
+        window.initStudentDashboard();
+      }
+    };
+
+    window.syncPublicCourseCatalog = async function(classes) {
+      if (window.auth?.currentUser?.email?.trim().toLowerCase() !== window.ADMIN_EMAIL) return;
+      const entries = classes.map(cls => ({
+        id: cls.id,
+        name: cls.name || '',
+        parentClassId: cls.parentClassId || null,
+        isTemplate: window.isTemplateClass(cls)
+      }));
+      await Promise.all(entries.map(async entry => {
+        const ref = window.fsDoc(window.db, window.fPath('course_catalog'), entry.id);
+        const previous = await window.fsGetDoc(ref);
+        if (!previous.exists() || JSON.stringify(previous.data()) !== JSON.stringify(entry)) {
+          await window.fsSetDoc(ref, entry);
+        }
+      }));
+    };
+
+    window.syncTrustedAccountAccess = async function(profile) {
+      if (!profile?.uid || window.auth?.currentUser?.email?.trim().toLowerCase() !== window.ADMIN_EMAIL) {
+        throw new Error('Only the administrator can update trusted account access.');
+      }
+      const expiryMillis = getBillingExpiryMillis(profile);
+      const paid = profile.role === 'student' && profile.isPaid === true &&
+        (profile.billingAccessOverride === true || expiryMillis === null || expiryMillis > Date.now());
+      await window.fsSetDoc(
+        window.fsDoc(window.db, window.fPath('account_access'), profile.uid),
+        {
+          uid: profile.uid,
+          username: profile.user,
+          role: profile.role || 'student',
+          paid,
+          billingExpiresAt: expiryMillis === null ? null : window.fsTimestamp.fromMillis(expiryMillis)
+        }
+      );
     };
 
     window.showAwaitingApproval = function(profile) {
@@ -6987,7 +7129,18 @@ If the user inputs \gap[colour]{color}, both are accepted.
             // 2. Attach PUBLIC real-time listeners (Safe data everyone needs to see)
             await Promise.all([
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('tests')), snap => { TEST_BANK = snap.docs.map(d => d.data()); window.triggerUIRefresh(); resolve(); }); }),
-                new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => { CLASSES = snap.docs.map(d => d.data()); if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners(); if (currentUser?.role === 'student' && window.refreshStudentPresenceListeners) window.refreshStudentPresenceListeners(); window.triggerUIRefresh(); resolve(); }); }),
+                new Promise(resolve => {
+                    window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('classes')), snap => {
+                        CLASSES = snap.docs.map(d => d.data());
+                        if (currentUser?.role === 'teacher' && window.auth?.currentUser?.email?.trim().toLowerCase() === window.ADMIN_EMAIL) {
+                            window.syncPublicCourseCatalog(CLASSES).catch(error => console.error('Unable to synchronize the public course catalog:', error));
+                        }
+                        if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners();
+                        if (currentUser?.role === 'student' && window.refreshStudentPresenceListeners) window.refreshStudentPresenceListeners();
+                        window.triggerUIRefresh();
+                        resolve();
+                    });
+                }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => { if (snap.exists()) BILLING_SETTINGS = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => { if (snap.exists()) AVAILABILITY = snap.data(); resolve(); }); }),
                 new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('packages')), snap => { PACKAGES = snap.docs.map(d => d.data()); if(currentUser?.role === 'teacher') renderStudentsList(); resolve(); }); }),
@@ -7386,8 +7539,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     return; 
                 }
             }
-            initStudentDashboard(); 
-            document.getElementById('start-screen').classList.remove('hidden'); 
+            window.renderAccountGate();
         }
         handleAppRouteNavigation(true);
       }
@@ -7481,30 +7633,59 @@ If the user inputs \gap[colour]{color}, both are accepted.
       return `${safeEmailPrefix}@khanhlms.com`;
     }
 
-    async function createAuthBackedProfile(username, password, profile) {
+    async function createAuthBackedProfile(username, password, profile, allowLegacyUsername = false) {
+      if (window.auth?.currentUser?.email?.trim().toLowerCase() !== window.ADMIN_EMAIL) {
+        throw new Error('Only the administrator account can create Authentication accounts from this dashboard.');
+      }
+      const accountUsername = allowLegacyUsername ? username : username.toLowerCase();
+      if (!allowLegacyUsername && !/^[a-z0-9_-]{1,40}$/.test(accountUsername)) {
+        throw new Error('Username must use 1-40 letters, numbers, underscores, or hyphens.');
+      }
       if (password.length < 6) throw new Error('Password must be at least 6 characters.');
 
       const secondaryAuth = window.secondaryAuth;
       if (!secondaryAuth) throw new Error('Firebase secondary authentication is not initialized.');
 
       let createdUser = null;
+      let previousProfile = null;
+      const profileRef = window.fsDoc(window.db, window.fPath('users'), accountUsername);
+      let createdAccessRef = null;
       try {
         const credential = await window.fsAuthCreateSecondary(
           secondaryAuth,
-          usernameToAuthEmail(username),
+          usernameToAuthEmail(accountUsername),
           password
         );
         createdUser = credential.user;
 
-        const savedProfile = { ...sanitizeUserProfile(profile), uid: createdUser.uid };
-        await window.fsSetDoc(
-          window.fsDoc(window.db, window.fPath('users'), username),
-          savedProfile
-        );
+        const savedProfile = { ...sanitizeUserProfile(profile), user: accountUsername, uid: createdUser.uid };
+        const existingSnapshot = await window.fsGetDoc(profileRef);
+        previousProfile = existingSnapshot.exists() ? existingSnapshot.data() : null;
+        const trustedAccessRef = window.fsDoc(window.db, window.fPath('account_access'), createdUser.uid);
+        createdAccessRef = trustedAccessRef;
+        const expiryMillis = getBillingExpiryMillis(savedProfile);
+        const access = {
+          uid: createdUser.uid,
+          username: accountUsername,
+          role: savedProfile.role || 'student',
+          paid: savedProfile.role === 'student' && savedProfile.isPaid === true &&
+            (savedProfile.paymentStatus === 'paid' || savedProfile.status === 'approved'),
+          billingExpiresAt: expiryMillis === null ? null : window.fsTimestamp.fromMillis(expiryMillis)
+        };
+        const batch = window.fsWriteBatch(window.db);
+        batch.set(profileRef, savedProfile);
+        batch.set(trustedAccessRef, access);
+        await batch.commit();
         return savedProfile;
       } catch (error) {
         if (createdUser) {
           try {
+            const existingSnapshot = await window.fsGetDoc(profileRef);
+            if (existingSnapshot.exists()) {
+              if (previousProfile) await window.fsSetDoc(profileRef, sanitizeUserProfile(previousProfile));
+              else await window.fsDeleteDoc(profileRef);
+            }
+            if (createdAccessRef) await window.fsDeleteDoc(createdAccessRef);
             await window.fsAuthDeleteUser(createdUser);
           } catch (cleanupError) {
             console.error('Unable to roll back the newly created Firebase Authentication account:', cleanupError);
@@ -7586,9 +7767,16 @@ If the user inputs \gap[colour]{color}, both are accepted.
     }
 
     async function handleAuthSubmit() {
-      const u = document.getElementById('auth-user').value.trim(), p = document.getElementById('auth-pass').value.trim();
+      const enteredUsername = document.getElementById('auth-user').value.trim();
+      const u = authMode === 'register' ? enteredUsername.toLowerCase() : enteredUsername;
+      const p = document.getElementById('auth-pass').value.trim();
       const err = document.getElementById('auth-error');
       if (!u || !p) { err.textContent = 'Enter username and password'; err.classList.remove('hidden'); return; }
+      if (authMode === 'register' && !/^[A-Za-z0-9_-]{1,40}$/.test(u)) {
+        err.textContent = 'Username must use 1-40 letters, numbers, underscores, or hyphens.';
+        err.classList.remove('hidden');
+        return;
+      }
       if (p.length < 6) { err.textContent = 'Password must be at least 6 characters'; err.classList.remove('hidden'); return; }
       
       const btn = document.getElementById('auth-submit-btn');
@@ -7600,21 +7788,23 @@ If the user inputs \gap[colour]{color}, both are accepted.
       window.authFlowInProgress = true;
       try {
           if (authMode === 'register') {
-            const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
-            if (userDoc.exists()) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up as Student"; btn.disabled=false; return; }
-            
             const credential = await window.fsAuthCreate(window.auth, mappedEmail, p);
             currentUser = {
                 user: u,
                 uid: credential.user.uid,
                 role: 'student',
-                status: 'pending',
+                status: 'unpaid',
                 isPaid: false,
                 paymentStatus: 'unpaid',
                 createdAt: new Date().toLocaleDateString()
             };
             try {
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u), currentUser);
+                const profileRef = window.fsDoc(window.db, window.fPath('users'), u);
+                const accessRef = window.fsDoc(window.db, window.fPath('account_access'), credential.user.uid);
+                const batch = window.fsWriteBatch(window.db);
+                batch.set(profileRef, currentUser);
+                batch.set(accessRef, { uid: credential.user.uid, username: u, role: 'student', paid: false });
+                await batch.commit();
             } catch (profileError) {
                 try {
                     await window.fsAuthDeleteUser(credential.user);
@@ -7641,6 +7831,15 @@ If the user inputs \gap[colour]{color}, both are accepted.
             let userDoc;
             try {
                 userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
+                if (!userDoc.exists()) {
+                    const ownedProfileQuery = window.fsQuery(
+                        window.fsCollection(window.db, window.fPath('users')),
+                        window.fsWhere('uid', '==', credential.user.uid),
+                        window.fsLimit(1)
+                    );
+                    const ownedProfileSnapshot = await window.fsGetDocs(ownedProfileQuery);
+                    if (!ownedProfileSnapshot.empty) userDoc = ownedProfileSnapshot.docs[0];
+                }
             } catch (profileError) {
                 console.error('Unable to read the account profile after login attempt:', profileError);
                 if (profileError.code === 'permission-denied' || /missing or insufficient permissions/i.test(profileError.message || '')) {
@@ -7667,7 +7866,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
             if (Object.keys(profileUpdates).length) {
                 try {
                     await window.fsUpdateDoc(
-                        window.fsDoc(window.db, window.fPath('users'), u),
+                        userDoc.ref,
                         profileUpdates
                     );
                 } catch (profileUpdateError) {
@@ -7686,6 +7885,13 @@ If the user inputs \gap[colour]{color}, both are accepted.
               return;
           }
 
+          const access = await window.loadTrustedAccountAccess(window.auth.currentUser.uid, window.auth.currentUser.email);
+          currentUser.role = access.role;
+          if (currentUser.role === 'student') {
+              currentUser.status = currentUser.status || 'unpaid';
+              if (access.paid !== true) currentUser.isPaid = false;
+          }
+
           if (!window.isAccountApproved(currentUser, window.auth?.currentUser)) {
               window.showAwaitingApproval(currentUser);
               return;
@@ -7700,8 +7906,15 @@ If the user inputs \gap[colour]{color}, both are accepted.
           
           sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
           
-          await window.bootLMS();
+          if (window.canAccessLMS(currentUser, window.auth?.currentUser)) {
+              window.lmsBootedUid = window.auth.currentUser.uid;
+              await window.bootLMS();
+          } else {
+              await window.bootPaymentPortal();
+              window.renderAccountGate();
+          }
           if (window.auth?.currentUser) window.authenticatedUserHandled = window.auth.currentUser.uid;
+          if (window.auth?.currentUser) window.watchTrustedAccountAccess(window.auth.currentUser.uid, window.auth.currentUser.email);
           if (referralSetupError && typeof window.showToast === 'function') {
               window.showToast("Referral code unavailable", "You are signed in, but the referral code could not be created. Ask the teacher to check Firestore permissions.");
           }
@@ -12059,6 +12272,14 @@ If the user inputs \gap[colour]{color}, both are accepted.
     }
 
     function hasActiveStudentAccess(user, now = Date.now()) {
+      if (user?.uid && user.uid === window.auth?.currentUser?.uid && window.trustedAccountAccess?.uid === user.uid) {
+        const access = window.trustedAccountAccess;
+        if (access.role !== 'student' || access.paid !== true) return false;
+        const expiry = access.billingExpiresAt;
+        if (!expiry) return true;
+        const expiryMillis = typeof expiry.toMillis === 'function' ? expiry.toMillis() : Number(expiry);
+        return Number.isFinite(expiryMillis) && expiryMillis > now;
+      }
       if (!user || user.isPaid !== true) return false;
       if (user.billingAccessOverride === true) return true;
       const expiry = getBillingExpiryMillis(user);
@@ -15149,6 +15370,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     };
 
     function applyAppRoute(route = normalizeAppRoute()) {
+      if (currentUser?.role === 'student' && !window.canAccessLMS(currentUser, window.auth?.currentUser) &&
+          (route?.role === 'student' || route?.section === 'test' || parseTestHashRoute())) {
+        route = { role: 'student', section: 'dashboard' };
+        window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/dashboard');
+        window.renderAccountGate();
+        return;
+      }
       if (route.section === 'test' || !route) return;
       if (route.role && ['student', 'teacher'].includes(route.role)) {
         setSidebarRoute(route.role, window.location.hash);
@@ -15301,6 +15529,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     }
 
     window.navigateAppRoute = function(path, replace = false) {
+      if (currentUser?.role === 'student' && !window.canAccessLMS(currentUser, window.auth?.currentUser) &&
+          !path.replace(/^#?\/?/, '').startsWith('student/dashboard')) {
+        path = 'student/dashboard';
+        replace = true;
+      }
       const hash = `#/${path.replace(/^#?\/?/, '')}`;
       if (window.location.hash === hash) {
         applyAppRoute(normalizeAppRoute(hash));
@@ -18944,7 +19177,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 const prompt = test?.parts?.map(part => `${part.title}: ${part.text || ''}`).join('\n\n') || '';
                 const token = await window.auth.currentUser.getIdToken();
                 const payload = { module, prompt, responseText: module === 'writing' ? response : '', audioUrl: module === 'speaking' ? response : '' };
-                const result = await fetch('https://us-central1-khanh-ielts.cloudfunctions.net/gradeIELTSSubmission', {
+                const result = await fetch('https://us-central1-khanh-ielts-v2.cloudfunctions.net/gradeIELTSSubmission', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                     body: JSON.stringify(payload)
@@ -19968,6 +20201,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const updatedStudent = { ...student, billingExpiresAt: deadline, billingAccessOverride: false, billingDeadlineSetByEditor: true };
             try {
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), updatedStudent);
+                await window.syncTrustedAccountAccess(updatedStudent);
                 Object.assign(student, updatedStudent);
                 modal.classList.add('hidden');
                 confirm.textContent = 'OK';
@@ -19997,6 +20231,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         updatedStudent.billingAccessOverride = false;
         try {
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), updatedStudent);
+            await window.syncTrustedAccountAccess(updatedStudent);
             Object.assign(student, updatedStudent);
             document.getElementById('custom-modal').classList.add('hidden');
             const confirm = document.getElementById('modal-confirm');
@@ -20608,7 +20843,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     window.promptCreateTeacher = function() {
         showInputPrompt("Add Teacher", "Enter new teacher username:", async (username) => {
-            if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
+            if(USERS.find(u => String(u.user).toLowerCase() === username.trim().toLowerCase())) { showModalMsg("Error", "Username taken."); return; }
             showInputPrompt("Password", `Enter password for teacher ${username}:`, async (password) => {
                 try {
                     const newTeacher = await createAuthBackedProfile(username, password, {
@@ -20628,7 +20863,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     window.promptCreateCollaborator = function() {
         showInputPrompt("Add Collaborator", "Enter new collaborator username:", async (username) => {
-            if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
+            if(USERS.find(u => String(u.user).toLowerCase() === username.trim().toLowerCase())) { showModalMsg("Error", "Username taken."); return; }
             showInputPrompt("Password", `Enter password for collaborator ${username}:`, async (password) => {
                 try {
                     const newCollab = await createAuthBackedProfile(username, password, {
@@ -20648,7 +20883,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     function promptCreateStudent() {
         showInputPrompt("Add Student", "Enter new student username:", async (username) => {
-            const existingStudent = USERS.find(user => user.user === username);
+            const existingStudent = USERS.find(user => String(user.user).toLowerCase() === username.trim().toLowerCase());
             if (existingStudent && (existingStudent.role !== 'student' || existingStudent.uid)) {
                 showModalMsg("Error", existingStudent.role !== 'student'
                     ? "That username already belongs to another account type."
@@ -20670,10 +20905,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             pendingClasses: null,
                             createdAt: new Date().toLocaleDateString()
                         };
-                        let newStudent = await createAuthBackedProfile(username, password, profile);
+                        let newStudent = await createAuthBackedProfile(existingStudent?.user || username, password, profile, Boolean(existingStudent));
                         const referralResult = await tryEnsureStudentReferralIdentity(newStudent);
                         newStudent = referralResult.user;
-                        USERS.push(newStudent);
+                        const studentIndex = USERS.findIndex(user => String(user.user).toLowerCase() === username.trim().toLowerCase());
+                        if (studentIndex === -1) USERS.push(newStudent);
+                        else USERS[studentIndex] = newStudent;
                         renderStudentsList();
                         if (referralResult.error) {
                             window.showToast("Referral code unavailable", "The account was created, but its referral code could not be assigned.", "error");
@@ -20720,7 +20957,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     const password = parts[1].trim();
                     const className = parts[2] ? parts[2].trim() : null;
 
-                    if (USERS.find(u => u.user === username)) {
+                    if (USERS.find(u => String(u.user).toLowerCase() === username.toLowerCase())) {
                         console.warn(`Skipping duplicate student username during import: ${username}`);
                         failures.push(`${username}: username already exists`);
                         continue;
@@ -20747,8 +20984,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             const cls = CLASSES.find(c => c.name.toLowerCase() === className.toLowerCase());
                             if (cls) {
                                 if (!cls.enrolledStudents) cls.enrolledStudents = [];
-                                if (!cls.enrolledStudents.includes(username)) {
-                                    cls.enrolledStudents.push(username);
+                                if (!cls.enrolledStudents.includes(newStudent.user)) {
+                                    cls.enrolledStudents.push(newStudent.user);
                                     classUpdates.add(cls);
                                 }
                             }
@@ -20902,6 +21139,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
 
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), user);
+            await window.syncTrustedAccountAccess(user);
             renderStudentsList();
             renderPaymentAccessList();
             renderClasses(); 

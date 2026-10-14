@@ -19,6 +19,32 @@ function sendJson(res, status, body) {
   res.status(status).json(body);
 }
 
+async function authorizeLearningRequest(req) {
+  const authHeader = req.get('Authorization') || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    return { allowed: false, status: 401, error: 'Authentication required' };
+  }
+
+  let identity;
+  try {
+    identity = await admin.auth().verifyIdToken(authHeader.slice(7));
+  } catch (error) {
+    return { allowed: false, status: 401, error: 'Valid authentication required' };
+  }
+
+  if (identity.email === 'lyquockhanh03@gmail.com') return { allowed: true };
+
+  const accessSnapshot = await admin.firestore().collection('account_access').doc(identity.uid).get();
+  const access = accessSnapshot.data();
+  const staff = access && ['teacher', 'collaborator'].includes(access.role);
+  const expiry = access?.billingExpiresAt;
+  const active = !expiry || (typeof expiry.toDate === 'function' && expiry.toDate() > new Date());
+  const paidStudent = access?.role === 'student' && access.paid === true && active;
+
+  if (staff || paidStudent) return { allowed: true };
+  return { allowed: false, status: 403, error: 'Active learning access required' };
+}
+
 function cleanHtml(value) {
   return String(value || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
@@ -51,7 +77,7 @@ function normalizeGrade(raw, module) {
 const driveAudioCorsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-  'Access-Control-Allow-Headers': 'Range, Content-Type',
+  'Access-Control-Allow-Headers': 'Range, Content-Type, Authorization',
   'Access-Control-Expose-Headers': 'Accept-Ranges, Content-Length, Content-Range, Content-Type',
   'Cache-Control': 'no-store'
 };
@@ -104,6 +130,14 @@ exports.streamDriveAudio = onRequest({
   Object.entries(driveAudioCorsHeaders).forEach(([key, value]) => res.set(key, value));
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (req.method !== 'GET' && req.method !== 'HEAD') return res.status(405).send('GET or HEAD required');
+
+  try {
+    const authorization = await authorizeLearningRequest(req);
+    if (!authorization.allowed) return res.status(authorization.status).send(authorization.error);
+  } catch (error) {
+    console.error('Learning access authorization failed:', error);
+    return res.status(500).send('Could not verify learning access.');
+  }
 
   const fileId = String(req.query.id || '');
   if (!/^[A-Za-z0-9_-]{10,200}$/.test(fileId)) return res.status(400).send('Invalid Google Drive file ID');
@@ -195,9 +229,8 @@ exports.gradeIELTSSubmission = onRequest({
   if (req.method !== 'POST') return sendJson(res, 405, { error: 'POST required' });
 
   try {
-    const authHeader = req.get('Authorization') || '';
-    if (!authHeader.startsWith('Bearer ')) return sendJson(res, 401, { error: 'Authentication required' });
-    await admin.auth().verifyIdToken(authHeader.slice(7));
+    const authorization = await authorizeLearningRequest(req);
+    if (!authorization.allowed) return sendJson(res, authorization.status, { error: authorization.error });
 
     const body = req.body || {};
     const module = body.module === 'speaking' ? 'speaking' : body.module === 'writing' ? 'writing' : null;
