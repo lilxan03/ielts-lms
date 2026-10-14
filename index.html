@@ -3526,11 +3526,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
   <!-- FIREBASE INITIALIZATION -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, updateDoc, deleteField, onSnapshot, query, where, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     // ✨ NEW: Added sendPasswordResetEmail
-    import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
     // ✨ NEW: Web Push Notifications SDK
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
@@ -3559,6 +3559,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
             const db = getFirestore(app);
             const auth = getAuth(app);
             const storage = getStorage(app);
+            const accountCreatorAppName = 'admin-account-creator';
+            const accountCreatorApp = getApps().find(existingApp => existingApp.name === accountCreatorAppName)
+                || initializeApp(firebaseConfig, accountCreatorAppName);
+            const accountCreatorAuth = getAuth(accountCreatorApp);
             
             // Expose globally
             window.db = db;
@@ -3569,6 +3573,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
             window.fsDoc = doc;
             window.fsSetDoc = setDoc;
             window.fsGetDoc = getDoc;
+            window.fsUpdateDoc = updateDoc;
+            window.fsDeleteField = deleteField;
             window.fsCollection = collection;
             window.fsGetDocs = getDocs;
             window.fsDeleteDoc = deleteDoc;
@@ -3584,6 +3590,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
             window.fsAuthSignOut = signOut;
             window.fsAuthSignIn = signInWithEmailAndPassword;
             window.fsAuthCreate = createUserWithEmailAndPassword;
+            window.fsAuthCreateSecondary = createUserWithEmailAndPassword;
+            window.fsAuthDeleteUser = deleteUser;
+            window.fsAuthSecondarySignOut = signOut;
+            window.secondaryAuth = accountCreatorAuth;
             window.onAuthStateChanged = onAuthStateChanged;
             window.fsUpdatePassword = updatePassword;
             window.fsSendPasswordResetEmail = sendPasswordResetEmail;
@@ -3653,9 +3663,23 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             userDocRef = window.fsDoc(window.db, window.fPath('users'), user.email);
                             userDocSnap = await window.fsGetDoc(userDocRef);
                         }
+
+                        if (!userDocSnap.exists()) {
+                            const ownedProfileQuery = window.fsQuery(
+                                window.fsCollection(window.db, window.fPath('users')),
+                                window.fsWhere('uid', '==', user.uid),
+                                window.fsLimit(1)
+                            );
+                            const ownedProfileSnapshot = await window.fsGetDocs(ownedProfileQuery);
+                            if (!ownedProfileSnapshot.empty) {
+                                userDocSnap = ownedProfileSnapshot.docs[0];
+                                userDocRef = userDocSnap.ref;
+                            }
+                        }
                         
                         if (userDocSnap.exists()) {
                             currentUser = userDocSnap.data();
+                            delete currentUser.pass;
                         } else {
                             currentUser = {
                                 user: user.email || user.uid,
@@ -3938,6 +3962,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
+    if (currentUser) {
+        delete currentUser.pass;
+        sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+    }
     window.authFlowInProgress = false;
     window.authenticatedUserHandled = null;
 
@@ -7005,7 +7033,20 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
         
         if (currentUser.role === 'teacher') {
-            promises.push(new Promise(resolve => { window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => { USERS = snap.docs.map(d => d.data()).filter(user => user.disabled !== true); window.triggerUIRefresh(); resolve(); }); }));
+            promises.push(new Promise(resolve => {
+                window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('users')), snap => {
+                    USERS = snap.docs.map(userDoc => {
+                        const data = userDoc.data();
+                        if (Object.prototype.hasOwnProperty.call(data, 'pass')) {
+                            window.fsUpdateDoc(userDoc.ref, { pass: window.fsDeleteField() })
+                                .catch(error => console.error(`Unable to remove a legacy password field from users/${userDoc.id}:`, error));
+                        }
+                        return sanitizeUserProfile(data);
+                    }).filter(user => user.disabled !== true);
+                    window.triggerUIRefresh();
+                    resolve();
+                });
+            }));
             
             // TEACHER SUBMISSION LISTENER WITH NATIVE OS NOTIFICATIONS
             let isSubInitial = true;
@@ -7079,7 +7120,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
             promises.push(new Promise(resolve => { 
                 window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
-                        const me = snap.data(); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
+                        const me = sanitizeUserProfile(snap.data()); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
                     } 
                     window.triggerUIRefresh(); resolve(); 
                 }); 
@@ -7089,7 +7130,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
             promises.push(new Promise(resolve => { 
                 window.fsOnSnapshot(window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
-                        const me = snap.data(); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
+                        const me = sanitizeUserProfile(snap.data()); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
                     } 
                     window.triggerUIRefresh(); resolve(); 
                 }); 
@@ -7291,11 +7332,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
     async function seedCloudData() {
         document.getElementById('cloud-loader-text').textContent = "Generating Initial Cloud Data...";
-        USERS = [
-          { user: 'teacher', pass: '123', role: 'teacher' },
-          { user: 'student', pass: '123', role: 'student' }
-        ];
-        for(let u of USERS) await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u.user), u);
+        USERS = [];
         
         TEST_BANK = [
           { id: "t_read_1", title: "Week 1 Reading: Bicycle Evolution", module: "reading", topics: ["History"], vocab: [{term: "magnificent", eng: "Extremely beautiful or impressive", vi: "Tráng lệ, tuyệt vời"}], grammar: [{term: "lacked pedals", type: "Simple Past", expl: "Used to describe a state in the past."}], parts: [{ title: "The Evolution", text: "The bicycle is a magnificent invention.\n\nIn the early 19th century, the 'dandy horse' lacked pedals. {drop:1}\n\nJohn Kemp Starley invented the Rover Safety Bicycle in 1885.", questions: [{ blockId: "b1", type: "tfng", ids: [2], instruction: "Agree?", text: "The dandy horse had pedals.", correctAnswers: {2: "False"}, explanation: "It lacked pedals." }, { blockId: "b2", type: "matching_headings", ids: [1], instruction: "Match heading", options: ["i. First concepts", "ii. The danger"], correctAnswers: {1: "i. First concepts"} }] }] },
@@ -7433,6 +7470,60 @@ If the user inputs \gap[colour]{color}, both are accepted.
       throw new Error('Could not allocate a unique referral code.');
     }
 
+    function sanitizeUserProfile(user) {
+      const profile = { ...user };
+      delete profile.pass;
+      return profile;
+    }
+
+    function usernameToAuthEmail(username) {
+      const safeEmailPrefix = encodeURIComponent(username).replace(/%/g, '').toLowerCase();
+      return `${safeEmailPrefix}@khanhlms.com`;
+    }
+
+    async function createAuthBackedProfile(username, password, profile) {
+      if (password.length < 6) throw new Error('Password must be at least 6 characters.');
+
+      const secondaryAuth = window.secondaryAuth;
+      if (!secondaryAuth) throw new Error('Firebase secondary authentication is not initialized.');
+
+      let createdUser = null;
+      try {
+        const credential = await window.fsAuthCreateSecondary(
+          secondaryAuth,
+          usernameToAuthEmail(username),
+          password
+        );
+        createdUser = credential.user;
+
+        const savedProfile = { ...sanitizeUserProfile(profile), uid: createdUser.uid };
+        await window.fsSetDoc(
+          window.fsDoc(window.db, window.fPath('users'), username),
+          savedProfile
+        );
+        return savedProfile;
+      } catch (error) {
+        if (createdUser) {
+          try {
+            await window.fsAuthDeleteUser(createdUser);
+          } catch (cleanupError) {
+            console.error('Unable to roll back the newly created Firebase Authentication account:', cleanupError);
+            throw new Error(`${error.message} The Authentication account was created but could not be rolled back; remove it in Firebase Console.`);
+          }
+        }
+        throw error;
+      } finally {
+        if (secondaryAuth.currentUser) {
+          try {
+            await window.fsAuthSecondarySignOut(secondaryAuth);
+          } catch (signOutError) {
+            console.error('Unable to sign out the Firebase secondary account creator:', signOutError);
+            window.showToast?.('Secondary sign-out failed', 'The account operation completed, but the secondary Firebase session could not be signed out.', 'error');
+          }
+        }
+      }
+    }
+
     async function tryEnsureStudentReferralIdentity(user) {
       try {
         return { user: await ensureStudentReferralIdentity(user), error: null };
@@ -7504,8 +7595,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
       btn.textContent = "Connecting..."; btn.disabled = true;
 
       // ✨ FIX: 100% safe email generation even for names with spaces and accents (e.g. "Khanh Lý")
-      const safeEmailPrefix = encodeURIComponent(u).replace(/%/g, '').toLowerCase();
-      const mappedEmail = `${safeEmailPrefix}@khanhlms.com`;
+      const mappedEmail = usernameToAuthEmail(u);
 
       window.authFlowInProgress = true;
       try {
@@ -7513,27 +7603,39 @@ If the user inputs \gap[colour]{color}, both are accepted.
             const userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
             if (userDoc.exists()) { err.textContent = 'Username taken'; err.classList.remove('hidden'); btn.textContent="Sign Up as Student"; btn.disabled=false; return; }
             
-            // Try to create in Firebase Auth (Fail-safe if not enabled in console yet)
+            const credential = await window.fsAuthCreate(window.auth, mappedEmail, p);
+            currentUser = {
+                user: u,
+                uid: credential.user.uid,
+                role: 'student',
+                status: 'pending',
+                isPaid: false,
+                paymentStatus: 'unpaid',
+                createdAt: new Date().toLocaleDateString()
+            };
             try {
-                await window.fsAuthCreate(window.auth, mappedEmail, p);
-            } catch (fbErr) {
-                console.warn("Firebase Auth disabled. Using legacy creation.", fbErr);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u), currentUser);
+            } catch (profileError) {
+                try {
+                    await window.fsAuthDeleteUser(credential.user);
+                    await window.fsAuthSignOut(window.auth);
+                } catch (cleanupError) {
+                    console.error('Unable to roll back the student account after profile creation failed:', cleanupError);
+                    throw new Error(`${profileError.message} The Authentication account could not be rolled back; remove it in Firebase Console.`);
+                }
+                throw profileError;
             }
-            
-            // Create user profile in Firestore
-            currentUser = { user: u, pass: p, role: 'student', status: 'pending', isPaid: false, paymentStatus: 'unpaid', createdAt: new Date().toLocaleDateString() };
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), u), currentUser);
           } else {
             // LOGIN MODE
-            let isAuthenticated = false;
-            let authError = null;
-
-            // Authenticate first so profile reads do not run under anonymous access.
+            let credential;
             try {
-                await window.fsAuthSignIn(window.auth, mappedEmail, p);
-                isAuthenticated = true;
+                credential = await window.fsAuthSignIn(window.auth, mappedEmail, p);
             } catch (error) {
-                authError = error;
+                err.textContent = error.code === 'auth/invalid-credential'
+                    ? 'Invalid username or password. Older accounts that were only stored in Firestore must first be created in Firebase Authentication.'
+                    : error.message || 'Invalid username or password';
+                err.classList.remove('hidden');
+                return;
             }
 
             let userDoc;
@@ -7541,43 +7643,38 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
             } catch (profileError) {
                 console.error('Unable to read the account profile after login attempt:', profileError);
-                if (isAuthenticated && (profileError.code === 'permission-denied' || /missing or insufficient permissions/i.test(profileError.message || ''))) {
+                if (profileError.code === 'permission-denied' || /missing or insufficient permissions/i.test(profileError.message || '')) {
                     throw new Error('Password accepted, but Firestore denied access to this student profile. The Firestore rules must allow the signed-in student to read their own users document.');
                 }
                 throw profileError;
             }
 
-            if (isAuthenticated && !userDoc.exists()) {
+            if (!userDoc.exists()) {
                 throw new Error('The password was accepted, but the student profile is missing in Firestore. Ask the teacher to restore this account profile.');
             }
-
-            if (!isAuthenticated) {
-                // Legacy accounts store a password in the profile and can only migrate
-                // when Firestore rules still permit reading that legacy profile.
-                if (userDoc.exists() && userDoc.data().pass === p) {
-                    try {
-                        console.log("Upgrading legacy account to secure Firebase Auth...");
-                        await window.fsAuthCreate(window.auth, mappedEmail, p);
-                    } catch (migrateErr) {
-                        console.warn("Silent migration failed. Logging in via legacy mode.", migrateErr);
-                    }
-                    isAuthenticated = true; // ✨ FIX: Let you in no matter what!
-                } else if (!userDoc.exists()) {
-                    err.textContent = authError?.code === 'auth/invalid-credential'
-                        ? 'Invalid username or password'
-                        : authError?.message || 'Invalid username or password';
-                    err.classList.remove('hidden');
-                    btn.textContent = "Log In";
-                    btn.disabled = false;
-                    return;
+            currentUser = sanitizeUserProfile(userDoc.data());
+            if (currentUser.uid && currentUser.uid !== credential.user.uid) {
+                throw new Error('This account profile is linked to a different Firebase Authentication user. Ask the administrator to correct the account link.');
+            }
+            const profileUpdates = {};
+            if (!currentUser.uid) {
+                currentUser.uid = credential.user.uid;
+                profileUpdates.uid = credential.user.uid;
+            }
+            if (Object.prototype.hasOwnProperty.call(userDoc.data(), 'pass')) {
+                profileUpdates.pass = window.fsDeleteField();
+            }
+            if (Object.keys(profileUpdates).length) {
+                try {
+                    await window.fsUpdateDoc(
+                        window.fsDoc(window.db, window.fPath('users'), u),
+                        profileUpdates
+                    );
+                } catch (profileUpdateError) {
+                    console.error('Unable to update the student profile UID or remove its legacy credential field:', profileUpdateError);
+                    window.showToast?.('Profile migration incomplete', 'You are signed in, but the profile update was denied. Ask the administrator to check Firestore permissions.', 'error');
                 }
             }
-
-            if (!isAuthenticated) {
-                err.textContent = 'Invalid username or password'; err.classList.remove('hidden'); btn.textContent="Log In"; btn.disabled=false; return;
-            }
-            
-            currentUser = userDoc.data();
           }
 
           if (currentUser.disabled === true) {
@@ -7672,13 +7769,12 @@ If the user inputs \gap[colour]{color}, both are accepted.
             
             let emailToReset = u;
             if (!u.includes('@')) {
-                const safeEmailPrefix = encodeURIComponent(u).replace(/%/g, '').toLowerCase();
-                emailToReset = `${safeEmailPrefix}@khanhlms.com`;
+                emailToReset = usernameToAuthEmail(u);
             }
             
             if (emailToReset.endsWith('@khanhlms.com')) {
                 // Mapped internal emails cannot actually receive real emails.
-                showModalMsg("Teacher Assistance Required", "Since you are using a standard student username, we cannot send a reset link to an email inbox. Please ask your Teacher to reset your password from their dashboard.");
+                showModalMsg("Teacher Assistance Required", "Since this username maps to an internal address, a reset email cannot be delivered. Ask the administrator to reset it in Firebase Console > Authentication > Users.");
             } else {
                 try {
                     await window.fsSendPasswordResetEmail(window.auth, emailToReset);
@@ -7699,17 +7795,13 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 return;
             }
             try {
-                // 1. Update Firebase Auth (if current user is an email/pass user)
-                if (window.auth && window.auth.currentUser) {
-                    const user = window.auth.currentUser;
-                    if (user.providerData.some(p => p.providerId === 'password')) {
-                        await window.fsUpdatePassword(user, newPass);
-                    }
+                const user = window.auth?.currentUser;
+                if (!user || !user.providerData.some(p => p.providerId === 'password')) {
+                    throw new Error('This account does not have a password-based Firebase Authentication credential.');
                 }
+                await window.fsUpdatePassword(user, newPass);
                 
-                // 2. Update Firestore DB
-                currentUser.pass = newPass;
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
+                currentUser = sanitizeUserProfile(currentUser);
                 sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
                 
                 showModalMsg("Success", "Your password has been changed successfully!");
@@ -7726,15 +7818,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
     // ✨ NEW: Allow Teachers to reset a student's password
     window.promptResetStudentPassword = function(studentUsername) {
-        showInputPrompt("Reset Student Password", `Enter new password for ${studentUsername} (min 6 chars):`, async (newPass) => {
-            if(newPass.length < 6) { showModalMsg("Error", "Password must be at least 6 characters."); return; }
-            const userObj = USERS.find(u => u.user === studentUsername);
-            if(userObj) {
-                userObj.pass = newPass;
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), studentUsername), userObj);
-                showModalMsg("Success", `Password for ${studentUsername} has been reset. They can now log in using the new password.`);
-            }
-        });
+        showModalMsg(
+            "Reset Student Password",
+            `Passwords are managed by Firebase Authentication and are not stored in Firestore. Reset ${studentUsername}'s password from Firebase Console > Authentication > Users.`
+        );
     };
 
         // ✨ NEW: Dynamic Toast Notification Generator
@@ -20523,10 +20610,18 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         showInputPrompt("Add Teacher", "Enter new teacher username:", async (username) => {
             if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
             showInputPrompt("Password", `Enter password for teacher ${username}:`, async (password) => {
-                const newTeacher = { user: username, pass: password, role: 'teacher', createdAt: new Date().toLocaleDateString() };
-                USERS.push(newTeacher);
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newTeacher);
-                showModalMsg("Success", `Teacher account '${username}' created successfully.`);
+                try {
+                    const newTeacher = await createAuthBackedProfile(username, password, {
+                        user: username,
+                        role: 'teacher',
+                        createdAt: new Date().toLocaleDateString()
+                    });
+                    USERS.push(newTeacher);
+                    showModalMsg("Success", `Teacher account '${username}' created successfully.`);
+                } catch (error) {
+                    console.error('Unable to create teacher account:', error);
+                    showModalMsg("Error", `Could not create teacher account: ${error.message}`);
+                }
             });
         });
     };
@@ -20535,24 +20630,64 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         showInputPrompt("Add Collaborator", "Enter new collaborator username:", async (username) => {
             if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
             showInputPrompt("Password", `Enter password for collaborator ${username}:`, async (password) => {
-                const newCollab = { user: username, pass: password, role: 'collaborator', createdAt: new Date().toLocaleDateString() };
-                USERS.push(newCollab);
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newCollab);
-                showModalMsg("Success", `Collaborator account '${username}' created successfully. They can login to create and modify tests.`);
+                try {
+                    const newCollab = await createAuthBackedProfile(username, password, {
+                        user: username,
+                        role: 'collaborator',
+                        createdAt: new Date().toLocaleDateString()
+                    });
+                    USERS.push(newCollab);
+                    showModalMsg("Success", `Collaborator account '${username}' created successfully. They can login to create and modify tests.`);
+                } catch (error) {
+                    console.error('Unable to create collaborator account:', error);
+                    showModalMsg("Error", `Could not create collaborator account: ${error.message}`);
+                }
             });
         });
     };
 
     function promptCreateStudent() {
         showInputPrompt("Add Student", "Enter new student username:", async (username) => {
-            if(USERS.find(u => u.user === username)) { showModalMsg("Error", "Username taken."); return; }
-            showInputPrompt("Password", `Enter password for ${username}:`, async (password) => {
-                let newStudent = { user: username, pass: password, role: 'student', isPaid: true, paymentStatus: 'paid', pendingClasses: null, createdAt: new Date().toLocaleDateString() };
-                newStudent = await ensureStudentReferralIdentity(newStudent);
-                USERS.push(newStudent);
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newStudent);
-                renderStudentsList();
-            });
+            const existingStudent = USERS.find(user => user.user === username);
+            if (existingStudent && (existingStudent.role !== 'student' || existingStudent.uid)) {
+                showModalMsg("Error", existingStudent.role !== 'student'
+                    ? "That username already belongs to another account type."
+                    : "This student profile is already linked to a Firebase UID. Check Firebase Console > Authentication > Users.");
+                return;
+            }
+            showInputPrompt(
+                existingStudent ? "Set Firebase Password" : "Password",
+                existingStudent
+                    ? `This existing student profile is not linked to Firebase Authentication. Set a new password for ${username}:`
+                    : `Enter password for ${username}:`,
+                async (password) => {
+                    try {
+                        const profile = existingStudent || {
+                            user: username,
+                            role: 'student',
+                            isPaid: true,
+                            paymentStatus: 'paid',
+                            pendingClasses: null,
+                            createdAt: new Date().toLocaleDateString()
+                        };
+                        let newStudent = await createAuthBackedProfile(username, password, profile);
+                        const referralResult = await tryEnsureStudentReferralIdentity(newStudent);
+                        newStudent = referralResult.user;
+                        USERS.push(newStudent);
+                        renderStudentsList();
+                        if (referralResult.error) {
+                            window.showToast("Referral code unavailable", "The account was created, but its referral code could not be assigned.", "error");
+                        } else {
+                            showModalMsg("Success", existingStudent
+                                ? `Student '${username}' is now linked to Firebase Authentication.`
+                                : `Student account '${username}' was created in Firebase Authentication.`);
+                        }
+                    } catch (error) {
+                        console.error('Unable to create student account:', error);
+                        showModalMsg("Error", `Could not create student account: ${error.message}`);
+                    }
+                }
+            );
         });
     }
 
@@ -20570,61 +20705,80 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         const lines = text.split('\n');
         let count = 0;
+        const failures = [];
         let classUpdates = new Set();
         
         // Show loading state
         const btn = document.querySelector('button[onclick="window.processBulkStudentImport()"]');
         if (btn) { btn.textContent = "Importing..."; btn.disabled = true; }
         
-        for (let line of lines) {
-            const parts = line.split('\t');
-            if (parts[0] && parts[0].trim() && parts[1] && parts[1].trim()) {
-                const username = parts[0].trim();
-                const password = parts[1].trim();
-                const className = parts[2] ? parts[2].trim() : null;
+        try {
+            for (let line of lines) {
+                const parts = line.split('\t');
+                if (parts[0] && parts[0].trim() && parts[1] && parts[1].trim()) {
+                    const username = parts[0].trim();
+                    const password = parts[1].trim();
+                    const className = parts[2] ? parts[2].trim() : null;
 
-                // Check if user already exists to prevent overwriting
-                if (!USERS.find(u => u.user === username)) {
-                    let newStudent = { 
-                        user: username, 
-                        pass: password, 
-                        role: 'student', 
-                        isPaid: true, 
-                        paymentStatus: 'paid', 
-                        pendingClasses: null, 
-                        createdAt: new Date().toLocaleDateString() 
-                    };
-                    newStudent = await ensureStudentReferralIdentity(newStudent);
-                    USERS.push(newStudent);
-                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), newStudent);
-                    count++;
-                    
-                    // Auto-enroll if class is specified and exists
-                    if (className) {
-                        const cls = CLASSES.find(c => c.name.toLowerCase() === className.toLowerCase());
-                        if (cls) {
-                            if (!cls.enrolledStudents) cls.enrolledStudents = [];
-                            if (!cls.enrolledStudents.includes(username)) {
-                                cls.enrolledStudents.push(username);
-                                classUpdates.add(cls);
+                    if (USERS.find(u => u.user === username)) {
+                        console.warn(`Skipping duplicate student username during import: ${username}`);
+                        failures.push(`${username}: username already exists`);
+                        continue;
+                    }
+
+                    try {
+                        let newStudent = await createAuthBackedProfile(username, password, {
+                            user: username,
+                            role: 'student',
+                            isPaid: true,
+                            paymentStatus: 'paid',
+                            pendingClasses: null,
+                            createdAt: new Date().toLocaleDateString()
+                        });
+                        const referralResult = await tryEnsureStudentReferralIdentity(newStudent);
+                        newStudent = referralResult.user;
+                        USERS.push(newStudent);
+                        count++;
+                        if (referralResult.error) {
+                            console.error(`Referral code setup failed for ${username}:`, referralResult.error);
+                        }
+
+                        if (className) {
+                            const cls = CLASSES.find(c => c.name.toLowerCase() === className.toLowerCase());
+                            if (cls) {
+                                if (!cls.enrolledStudents) cls.enrolledStudents = [];
+                                if (!cls.enrolledStudents.includes(username)) {
+                                    cls.enrolledStudents.push(username);
+                                    classUpdates.add(cls);
+                                }
                             }
                         }
+                    } catch (error) {
+                        console.error(`Unable to create student account ${username}:`, error);
+                        failures.push(`${username}: ${error.message}`);
                     }
                 }
             }
-        }
 
-        // Save any modified classes to Firestore
-        for (let cls of classUpdates) {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+            for (let cls of classUpdates) {
+                try {
+                    await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+                } catch (error) {
+                    console.error(`Unable to save enrollment changes for class ${cls.name}:`, error);
+                    failures.push(`Class ${cls.name}: ${error.message}`);
+                }
+            }
+        } finally {
+            document.getElementById('bulk-student-import-modal').classList.add('hidden');
+            renderStudentsList();
+            renderClasses();
+            if (btn) { btn.textContent = "Import Students"; btn.disabled = false; }
         }
         
-        document.getElementById('bulk-student-import-modal').classList.add('hidden');
-        renderStudentsList();
-        renderClasses(); // Refresh class view in case enrollments changed
-        
-        if (btn) { btn.textContent = "Import Students"; btn.disabled = false; }
-        showModalMsg("Success", `Created and imported ${count} new student accounts!`);
+        const failureMessage = failures.length
+            ? ` ${failures.length} account or class update(s) failed. See the browser console for details.`
+            : '';
+        showModalMsg(failures.length ? "Import Completed with Errors" : "Success", `Created and imported ${count} new student accounts.${failureMessage}`);
     };
 
     async function togglePaymentStatus(username, status) {
