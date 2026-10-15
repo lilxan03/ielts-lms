@@ -358,7 +358,8 @@
         margin-right: auto;
         position: relative;
     }
-    .teacher-section-width-resizer {
+    .teacher-section-width-resizer,
+    .student-section-width-resizer {
         position: fixed;
         z-index: 35;
         top: 50%;
@@ -378,7 +379,14 @@
         user-select: none;
         box-shadow: 0 2px 8px rgb(15 23 42 / 12%);
     }
-    .teacher-section-width-resizer::after {
+    .student-section-width-resizer {
+        z-index: 900;
+    }
+    .student-section-width-resizer[hidden] {
+        display: none;
+    }
+    .teacher-section-width-resizer::after,
+    .student-section-width-resizer::after {
         content: "";
         display: block;
         width: 4px;
@@ -387,13 +395,17 @@
         background: #94a3b8;
     }
     .teacher-section-width-resizer:hover,
-    .teacher-section-width-resizer:focus-visible {
+    .teacher-section-width-resizer:focus-visible,
+    .student-section-width-resizer:hover,
+    .student-section-width-resizer:focus-visible {
         border-color: #93c5fd;
         outline: 2px solid #3b82f6;
         outline-offset: 2px;
     }
     .teacher-section-width-resizer:hover::after,
-    .teacher-section-width-resizer:focus-visible::after {
+    .teacher-section-width-resizer:focus-visible::after,
+    .student-section-width-resizer:hover::after,
+    .student-section-width-resizer:focus-visible::after {
         background: #2563eb;
     }
     #start-screen.sidebar-collapsed #student-sidebar,
@@ -482,6 +494,9 @@
             margin-left: 0;
         }
         .teacher-section-width-resizer {
+            display: none;
+        }
+        .student-section-width-resizer {
             display: none;
         }
         #start-screen.sidebar-collapsed #student-sidebar,
@@ -2609,7 +2624,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
     </aside>
 
     <!-- Main Dashboard Container -->
-    <div id="student-dashboard-content" class="max-w-[1400px] mx-auto -mt-20 relative z-20 px-4 lg:px-8 space-y-6 pb-20">
+    <div id="student-dashboard-content" class="w-full mx-auto -mt-20 relative z-20 px-4 lg:px-8 space-y-6 pb-20">
 
       <!-- TARGET GOALS WIDGET -->
       <div id="student-target-widget" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-blue-100 flex-col md:flex-row justify-between items-center gap-6 overflow-hidden relative">
@@ -15954,6 +15969,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           collapseButton.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
           collapseButton.setAttribute('aria-label', collapseButton.title);
         }
+        if (role === 'student' && typeof studentSectionResizeStates !== 'undefined') {
+          studentSectionResizeStates.forEach(updateStudentSectionResize);
+        }
       }
     };
 
@@ -16128,29 +16146,37 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         studentUi?.classList.remove('hidden');
         reviewUi?.classList.add('hidden');
         if (route.section === 'timetable') {
+          enableStudentSectionResizing('timetable', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
           requestAnimationFrame(() => document.getElementById('student-schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
         } else if (route.section === 'dashboard' || !['history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review', 'timetable'].includes(route.section)) {
           route = { role: 'student', section: 'dashboard' };
+          enableStudentSectionResizing('dashboard', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
         } else if (route.section === 'history') {
           window.openStudentHistory();
+          enableStudentSectionResizing('history', '#student-history-modal > div');
         } else if (route.section === 'flashcards') {
           window.toggleStudentFlashcardPanel(true);
+          enableStudentSectionResizing('flashcards', '#student-fc-panel > div');
         } else if (route.section === 'peer-review') {
           if (route.detail && getPeerReviewCandidatesForCurrentStudent().some(sub => String(sub.id) === route.detail)) {
             window.openPeerReviewModal(Number(route.detail));
+            enableStudentSectionResizing('peer-review-detail', '#custom-modal > div');
           } else {
             if (route.detail) {
               route = { role: 'student', section: 'peer-review', detail: '' };
               window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/peer-review');
             }
             window.showPeerReviewList();
+            enableStudentSectionResizing('peer-review', '#custom-modal > div');
           }
         } else if (route.section === 'leaderboard') {
           window.showLeaderboardModal();
+          enableStudentSectionResizing('leaderboard', '#custom-modal > div');
         } else if (route.section === 'forum') {
           window.toggleForumPanel(true);
+          enableStudentSectionResizing('forum', '#chat-panel > div');
         } else if (route.section === 'review') {
           const submissionId = Number(route.detail);
           if (Number.isFinite(submissionId) && SUBMISSIONS.some(sub => Number(sub.id) === submissionId)) reviewPastSubmission(submissionId);
@@ -16158,6 +16184,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             route = { role: 'student', section: 'history' };
             window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/history');
             window.openStudentHistory();
+            enableStudentSectionResizing('history', '#student-history-modal > div');
           }
         }
         lastAppliedAppRoute = route;
@@ -20838,6 +20865,97 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             handle.addEventListener('pointerup', finishResize, { once: true });
             handle.addEventListener('pointercancel', finishResize, { once: true });
         });
+    }
+
+    const studentSectionResizeStates = new Map();
+    let studentSectionResizeRefreshReady = false;
+
+    function enableStudentSectionResizing(section, targetSelector) {
+        const target = document.querySelector(targetSelector);
+        const studentRoot = document.getElementById('start-screen');
+        if (!target || !studentRoot) return;
+
+        const storageKey = `lms_student_section_width_${section}`;
+        let state = studentSectionResizeStates.get(section);
+        if (!state || state.target !== target) {
+            state?.handle.remove();
+            let ratio = 1;
+            try {
+                const savedRatio = Number(localStorage.getItem(storageKey));
+                if (Number.isFinite(savedRatio) && savedRatio >= 0.55 && savedRatio <= 1) ratio = savedRatio;
+            } catch (error) {
+                console.error(`Unable to restore student ${section} width:`, error);
+            }
+            const handle = document.createElement('button');
+            handle.type = 'button';
+            handle.id = `student-section-width-resizer-${section}`;
+            handle.className = 'student-section-width-resizer';
+            handle.setAttribute('aria-label', `Resize student ${section} section width`);
+            handle.title = `Drag to resize the ${section} section`;
+            handle.hidden = true;
+            document.body.appendChild(handle);
+            state = { target, handle, ratio, storageKey };
+            studentSectionResizeStates.set(section, state);
+
+            handle.addEventListener('pointerdown', event => {
+                if (window.matchMedia('(max-width: 1024px)').matches) return;
+                event.preventDefault();
+                const startX = event.clientX;
+                const availableWidth = state.availableWidth;
+                const startRatio = state.ratio;
+                handle.setPointerCapture(event.pointerId);
+                const resize = moveEvent => {
+                    if (availableWidth <= 0) return;
+                    state.ratio = Math.max(0.55, Math.min(1, startRatio + (moveEvent.clientX - startX) / availableWidth));
+                    updateStudentSectionResize(state);
+                };
+                const finishResize = () => {
+                    handle.removeEventListener('pointermove', resize);
+                    handle.removeEventListener('pointerup', finishResize);
+                    handle.removeEventListener('pointercancel', finishResize);
+                    try {
+                        localStorage.setItem(state.storageKey, String(state.ratio));
+                    } catch (error) {
+                        console.error(`Unable to save student ${section} width:`, error);
+                    }
+                };
+                handle.addEventListener('pointermove', resize);
+                handle.addEventListener('pointerup', finishResize, { once: true });
+                handle.addEventListener('pointercancel', finishResize, { once: true });
+            });
+        }
+
+        for (const existingState of studentSectionResizeStates.values()) {
+            existingState.handle.hidden = existingState !== state;
+        }
+        state.handle.hidden = false;
+        updateStudentSectionResize(state);
+        if (!studentSectionResizeRefreshReady) {
+            window.addEventListener('resize', () => {
+                studentSectionResizeStates.forEach(updateStudentSectionResize);
+            });
+            studentSectionResizeRefreshReady = true;
+        }
+    }
+
+    function updateStudentSectionResize(state) {
+        const { target, handle, ratio } = state;
+        const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+        const isDashboard = target.id === 'student-dashboard-content';
+        const sidebarWidth = studentRootSidebarWidth();
+        const availableWidth = isDashboard && !isMobile
+            ? Math.max(0, document.getElementById('start-screen').clientWidth - sidebarWidth)
+            : Math.max(0, window.innerWidth - (isMobile ? 0 : 48));
+        state.availableWidth = availableWidth;
+        target.style.maxWidth = 'none';
+        target.style.width = isMobile ? '100%' : `${availableWidth * ratio}px`;
+        handle.style.right = `${Math.max(0, window.innerWidth - target.getBoundingClientRect().right)}px`;
+    }
+
+    function studentRootSidebarWidth() {
+        const root = document.getElementById('start-screen');
+        if (window.matchMedia('(max-width: 1024px)').matches) return 0;
+        return root?.classList.contains('sidebar-collapsed') ? 76 : 256;
     }
 
     function enableTeacherSectionResizing(tab) {
