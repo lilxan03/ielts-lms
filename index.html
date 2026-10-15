@@ -3684,12 +3684,21 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         }
                         
                         if (userDocSnap?.exists()) {
+                            const profileData = userDocSnap.data();
                             currentUser = userDocSnap.data();
                             if (currentUser.uid && currentUser.uid !== user.uid) {
                                 throw new Error('This profile belongs to a different Firebase Authentication account.');
                             }
                             currentUser.uid = user.uid;
+                            if (user.email) currentUser.email = user.email;
                             delete currentUser.pass;
+                            if (user.email && profileData.email !== user.email) {
+                                try {
+                                    await window.fsUpdateDoc(userDocRef, { email: user.email });
+                                } catch (emailSyncError) {
+                                    console.error('Unable to sync the verified account email to the student profile:', emailSyncError);
+                                }
+                            }
                         } else {
                             if (cachedUsername || linkedUsername) throw new Error('Your account profile could not be loaded. Ask the administrator to check the account UID and access record.');
                             currentUser = {
@@ -20646,6 +20655,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
                     const isPending = s.paymentStatus === 'pending';
                     const billing = getStudentBillingStatus(s);
+                    const accountLabel = s.email && !s.email.toLowerCase().endsWith('@khanhlms.com')
+                        ? s.email
+                        : s.user;
                     
                     let statusBadge = '';
                     if (isPending) {
@@ -20668,9 +20680,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     <tr class="hover:bg-blue-50/40 transition-colors ${isPending ? 'bg-rose-50/20' : ''}">
                         <td class="p-4">
                             <div class="flex items-center gap-3">
-                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${s.user}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
+                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(accountLabel)}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-slate-800 text-sm leading-tight">${s.user}</span>
+                                    <span class="font-bold text-slate-800 text-sm leading-tight">${accountLabel}</span>
                                     <span class="text-[10px] text-slate-400 font-bold mt-0.5">${s.realName || '<span class="italic font-medium">No real name set</span>'}</span>
                                 </div>
                             </div>
