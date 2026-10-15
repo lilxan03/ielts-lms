@@ -8796,7 +8796,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
           try { window.toggleDashboardView(savedDashView); }
           finally { appRouterApplying = wasApplying; }
       }
-      if (tab === 'overview') window.renderTeacherOverview();
+      if (tab === 'overview') {
+          document.getElementById('editor-view-overview')?.classList.remove('hidden');
+          window.renderTeacherOverview();
+      }
       if (tab === 'classes') { 
           const classView = document.getElementById('editor-view-classes');
           if(classView) classView.classList.remove('hidden'); 
