@@ -2437,6 +2437,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
       </div>
       <nav class="flex flex-col gap-1 p-3">
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label">Dashboard</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-timetable" onclick="window.navigateFromSidebar('student','student/timetable')"><span>📅</span><span class="sidebar-label">Timetable</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-history" onclick="window.navigateFromSidebar('student','student/history')"><span>📜</span><span class="sidebar-label">Learning History</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label">Flashcards</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-peer-review" onclick="window.navigateFromSidebar('student','student/peer-review')"><span>🤝</span><span class="sidebar-label">Peer Review</span></button>
@@ -2556,7 +2557,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
           <!-- Upcoming Classes -->
               <div id="student-schedule-section" class="order-1 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden hidden flex-col h-[420px]">
                  <div class="bg-slate-50/50 px-4 py-4 border-b border-slate-100 flex justify-between items-center flex-wrap gap-3 shrink-0">
-               <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-indigo-500">📅</span> Upcoming Classes</h2>
+               <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-indigo-500">📅</span> Class Timetable</h2>
                <div class="flex items-center gap-3">
                  <div class="flex items-center bg-white border border-slate-200 rounded-xl shadow-sm p-1">
                    <button onclick="window.navigateCalendar(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&larr;</button>
@@ -2570,6 +2571,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                  <button id="btn-student-book-slot" onclick="window.openStudentBooking()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-bold whitespace-nowrap hidden">＋ Book Slot</button>
                </div>
              </div>
+             <div id="student-schedule-empty-state" class="hidden px-4 py-3 text-sm font-medium text-slate-600 bg-indigo-50 border-b border-indigo-100"></div>
              <div id="student-cal-container" class="flex-1 overflow-hidden flex flex-col relative w-full p-2 sm:p-4 bg-white"></div>
           </div>
 
@@ -2832,10 +2834,6 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
     <div id="editor-view-bank" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-7xl mx-auto pb-20">
-        
-        <!-- ✨ NEW: TEACHER AT-A-GLANCE WIDGETS -->
-        <div id="teacher-quick-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-fade-in hidden"></div>
-
         <div id="dash-view-tests" class="flex flex-col gap-6 animate-fade-in-up">
           <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
             <div class="mb-5 border-b border-slate-100 pb-4">
@@ -7052,6 +7050,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
             window.editTest(testId); 
             window.toggleDashboardView('tests');
         } else {
+            if (currentUser.role !== 'student' || !studentCanOpenTestRoute(testId)) {
+                if (typeof window.showToast === 'function') window.showToast("Access denied", "This test is not assigned to your class or schedule.", "error");
+                return;
+            }
+
             // Student Launch Sequence
             const m = document.getElementById('student-day-modal');
             if (m) m.classList.add('hidden');
@@ -8425,47 +8428,6 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const testsPendingReview = TEST_BANK.filter(t => t.status === 'review_ready').length;
 
         const totalNots = pendingStudents + pendingSubs + newBookings + newReplies + testsPendingReview;
-
-        // ✨ NEW: Update Teacher Dashboard Quick Stats Widgets
-        const statsContainer = document.getElementById('teacher-quick-stats');
-        if (statsContainer) {
-            const activeStudents = USERS.filter(u => u.role === 'student' && hasActiveStudentAccess(u)).length;
-            const d = new Date();
-            const localToday = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-            const classesToday = SCHEDULES.filter(s => s.date === localToday).length;
-
-            statsContainer.classList.remove('hidden');
-            statsContainer.innerHTML = `
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-default">
-                    <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl font-black shrink-0">👨‍🎓</div>
-                    <div>
-                        <div class="text-2xl font-black text-slate-800 leading-none">${activeStudents}</div>
-                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Active Students</div>
-                    </div>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-pointer" onclick="toggleDashboardView('classes'); toggleEditorTab('bank');">
-                    <div class="w-12 h-12 rounded-full ${pendingSubs > 0 ? 'bg-amber-100 text-amber-600 animate-pulse' : 'bg-blue-100 text-blue-600'} flex items-center justify-center text-2xl font-black shrink-0">📝</div>
-                    <div>
-                        <div class="text-2xl font-black text-slate-800 leading-none">${pendingSubs}</div>
-                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Ungraded Tests</div>
-                    </div>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-pointer" onclick="toggleEditorTab('timetable')">
-                    <div class="w-12 h-12 rounded-full ${classesToday > 0 ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-2xl font-black shrink-0">📅</div>
-                    <div>
-                        <div class="text-2xl font-black text-slate-800 leading-none">${classesToday}</div>
-                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Classes Today</div>
-                    </div>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-50 flex items-center gap-4 transition hover:shadow-md cursor-pointer" onclick="toggleEditorTab('students')">
-                    <div class="w-12 h-12 rounded-full ${pendingStudents > 0 ? 'bg-rose-100 text-rose-600 animate-pulse' : 'bg-purple-100 text-purple-600'} flex items-center justify-center text-2xl font-black shrink-0">💸</div>
-                    <div>
-                        <div class="text-2xl font-black text-slate-800 leading-none">${pendingStudents}</div>
-                        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Pending Pays</div>
-                    </div>
-                </div>
-            `;
-        }
 
         const el = document.getElementById('badge-global-notifications');
         if (el) {
@@ -15176,13 +15138,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const bottomSec = document.getElementById('bottom-student-sections');
       const quickActions = document.getElementById('student-quick-actions');
       const mainContent = document.getElementById('student-main-content');
+      const isTimetableRoute = normalizeAppRoute().section === 'timetable';
+      const scheduleEmptyState = document.getElementById('student-schedule-empty-state');
       
       if(mainContent) mainContent.classList.remove('hidden');
       
       if(!cid) { 
           if(list) list.innerHTML = '<div class="p-6 text-slate-500 col-span-full">Please select a class to view materials.</div>'; 
-          if(bottomSec) { bottomSec.classList.add('hidden'); bottomSec.classList.remove('flex'); }
-          if(schedSec) { schedSec.classList.add('hidden'); schedSec.classList.remove('flex'); }
+          if(bottomSec) { bottomSec.classList.toggle('hidden', !isTimetableRoute); bottomSec.classList.toggle('flex', isTimetableRoute); }
+          if(schedSec) { schedSec.classList.toggle('hidden', !isTimetableRoute); schedSec.classList.toggle('flex', isTimetableRoute); }
+          if(scheduleEmptyState) {
+              scheduleEmptyState.textContent = 'No class is enrolled yet. Please contact your teacher to be added to a class timetable.';
+              scheduleEmptyState.classList.toggle('hidden', !isTimetableRoute);
+          }
+          if(isTimetableRoute) window.renderCalendar('student');
           if(quickActions) { quickActions.classList.add('hidden'); quickActions.classList.remove('flex'); }
           if(prog) { prog.classList.add('hidden'); prog.classList.remove('flex'); }
           return; 
@@ -15333,8 +15302,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
       const classSchedules = SCHEDULES.filter(s => window.scheduleBelongsToClass(s, cls) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
       if (schedSec) {
-          // Show the Timetable if they have classes OR if they are allowed to book them!
-          if (classSchedules.length || cls.allowBooking) {
+          if (classSchedules.length || cls.allowBooking || isTimetableRoute) {
               schedSec.classList.remove('hidden');
               schedSec.classList.add('flex');
               window.renderCalendar('student');
@@ -15342,6 +15310,15 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               schedSec.classList.add('hidden');
               schedSec.classList.remove('flex');
           }
+      }
+      if (scheduleEmptyState) {
+          const hasSchedule = classSchedules.length > 0;
+          scheduleEmptyState.textContent = hasSchedule
+              ? ''
+              : cls.allowBooking
+                  ? 'No lessons are scheduled yet. You can use “Book Slot” to request an available lesson.'
+                  : 'No lessons have been scheduled for this class yet. Check back later or contact your teacher.';
+          scheduleEmptyState.classList.toggle('hidden', !isTimetableRoute || hasSchedule);
       }
       
       const bookBtn = document.getElementById('btn-student-book-slot');
@@ -15850,7 +15827,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         editorUi?.classList.add('hidden');
         studentUi?.classList.remove('hidden');
         reviewUi?.classList.add('hidden');
-        if (route.section === 'dashboard' || !['history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review'].includes(route.section)) {
+        if (route.section === 'timetable') {
+          if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
+          requestAnimationFrame(() => document.getElementById('student-schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        } else if (route.section === 'dashboard' || !['history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review', 'timetable'].includes(route.section)) {
           route = { role: 'student', section: 'dashboard' };
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
         } else if (route.section === 'history') {
@@ -15933,7 +15913,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const scheduled = SCHEDULES.some(schedule =>
         window.scheduleBelongsToClass(schedule, cls) &&
         (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)) &&
-        [...(schedule.assignedTests || []), ...(schedule.materialIds || [])].includes(testId)
+        [...(schedule.assignedTests || []), ...(schedule.materialIds || []), ...(schedule.homeworkTests || [])].includes(testId)
       );
       const test = TEST_BANK.find(item => item.id === testId);
       const price = Number(test?.price) || 0;
@@ -21831,7 +21811,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         return `
                         <div class="flex justify-between items-center p-3 border border-slate-200 bg-white shadow-sm mb-2 rounded-md hover:border-indigo-300 transition">
                           <div class="truncate pr-2"><span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-${modColors[t.module]}-100 text-${modColors[t.module]}-800 uppercase mr-2">${t.module}</span><span class="font-bold text-slate-800 text-sm truncate">${t.title}</span></div>
-                          <button onclick="document.getElementById('student-day-modal').classList.add('hidden'); openModeSelection('${t.id}')" class="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-4 rounded text-xs shadow transition">Start</button>
+                          <button onclick="window.launchScheduledTest('${t.id}')" class="shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-1.5 px-4 rounded text-xs shadow transition">Start</button>
                         </div>`;
                     };
                     const lessonTests = lessonTestIds.map(tid => renderTestItem(tid)).join('');
@@ -21861,7 +21841,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             ${s.recordingLink ? `
                             <div class="border-t border-indigo-100 pt-4 mt-4">
                                 <p class="text-[10px] font-black uppercase tracking-wider text-emerald-600 mb-2">Class Recording & Feedback</p>
-                                <a href="${s.recordingLink}" target="_blank" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-3 flex justify-center items-center gap-1">▶️ Watch Recording</a>
+                                <a href="${s.recordingLink}" target="_blank" rel="noopener noreferrer" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-3 flex justify-center items-center gap-1">▶️ Watch Recording</a>
                                 
                                 <textarea id="feedback-${s.id}" class="w-full border border-indigo-200 rounded p-2 text-xs outline-none focus:border-indigo-400 mb-2 resize-none" rows="2" placeholder="What did you learn today? Any feedback?">${(s.studentFeedback && s.studentFeedback[currentUser.user]) || ''}</textarea>
                                 <button onclick="window.submitClassFeedback('${s.id}')" class="w-full bg-slate-800 hover:bg-black text-white font-bold py-1.5 rounded-md text-xs shadow transition">Submit Feedback</button>
@@ -24111,15 +24091,45 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.joinLiveClass = function(scheduleId, topic) {
         const sched = SCHEDULES.find(s => s.id === scheduleId);
         if (!sched) return;
-        
-        const cls = CLASSES.find(c => c.name === sched.className);
-        if (!cls || !cls.meetLink) {
+
+        const cls = CLASSES.find(c => window.scheduleBelongsToClass(sched, c));
+        if (!cls) {
             showModalMsg("No Meeting Link", "Your teacher hasn't set a Google Meet link for this class yet.");
             return;
         }
-        
-        let roomUrl = cls.meetLink.trim();
-        if (!roomUrl.startsWith('http')) roomUrl = 'https://' + roomUrl;
+
+        if (currentUser?.role === 'student') {
+            const isEnrolled = hasActiveStudentAccess(currentUser) &&
+                (cls.enrolledStudents || []).includes(currentUser.user);
+            const isAttending = !sched.attendingStudents ||
+                sched.attendingStudents.includes(currentUser.user);
+            if (!isEnrolled || !isAttending) {
+                showModalMsg("Access denied", "This class is not assigned to your account.");
+                return;
+            }
+        } else if (!['teacher', 'collaborator'].includes(currentUser?.role)) {
+            showModalMsg("Access denied", "Please sign in with an authorized account to join this class.");
+            return;
+        }
+
+        const meetingLink = sched.link || cls.meetLink;
+        if (!meetingLink) {
+            showModalMsg("No Meeting Link", "Your teacher hasn't set a Google Meet link for this class yet.");
+            return;
+        }
+
+        let roomUrl;
+        try {
+            roomUrl = new URL(meetingLink.trim().match(/^https?:\/\//i) ? meetingLink.trim() : `https://${meetingLink.trim()}`);
+        } catch (error) {
+            showModalMsg("Invalid Meeting Link", "The meeting link set by your teacher is invalid.");
+            return;
+        }
+        if (!['http:', 'https:'].includes(roomUrl.protocol)) {
+            showModalMsg("Invalid Meeting Link", "The meeting link must use HTTP or HTTPS.");
+            return;
+        }
+        roomUrl = roomUrl.href;
         
         const newWindow = window.open(roomUrl, '_blank');
         
