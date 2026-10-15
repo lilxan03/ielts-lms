@@ -11458,8 +11458,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
       const editor = document.getElementById('editor-ui');
       const exam = document.getElementById('exam-ui');
+      const studentDashboard = document.getElementById('start-screen');
       editor.classList.remove('hidden');
       editor.style.display = 'flex';
+      studentDashboard.classList.add('hidden');
       exam.classList.add('hidden');
       exam.style.display = 'none';
       document.getElementById('exam-preview-badge').classList.add('hidden');
@@ -11491,6 +11493,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
       const editor = document.getElementById('editor-ui');
       const exam = document.getElementById('exam-ui');
+      ['start-screen', 'public-landing-ui', 'auth-ui', 'awaiting-approval-ui', 'review-ui'].forEach(id => {
+        const screen = document.getElementById(id);
+        screen?.classList.add('hidden');
+      });
       editor.classList.add('hidden');
       editor.style.display = 'none';
       exam.classList.remove('hidden');
