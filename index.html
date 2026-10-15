@@ -12103,14 +12103,26 @@ If the user inputs \gap[colour]{color}, both are accepted.
         </div>`;
 
         const mkTemplateToolbar = (editorId) => {
-            const tplOpts = TEACHER_TEMPLATES.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            const defaultTemplate = getDefaultTeacherTemplate(APP_DATA.module, q.type);
+            const templateOptionLabel = t => {
+                const scope = `${getTeacherTemplateModuleLabel(t.module)} · ${getTeacherTemplateTypeLabel(t.module, t.questionType)}`;
+                return `${t.name} (${scope})`;
+            };
+            const defaultOption = defaultTemplate
+                ? `<option value="${defaultTemplate.id}">✨ Auto template: ${templateOptionLabel(defaultTemplate)}</option>`
+                : '';
+            const tplOpts = TEACHER_TEMPLATES
+                .filter(t => t.id !== defaultTemplate?.id)
+                .map(t => `<option value="${t.id}">${templateOptionLabel(t)}</option>`)
+                .join('');
             return `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
                 <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
                 <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
                 <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
                 <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
                 <select onchange="window.insertCustomTemplate('${editorId}', this.value); this.value='';" class="border border-slate-300 rounded-lg px-2 py-1 text-xs outline-none bg-white font-bold text-emerald-700 shadow-sm cursor-pointer hover:border-emerald-500 transition flex-1 sm:flex-none">
-                    <option value="">+ Chèn Form Mẫu...</option>
+                    <option value="">+ Insert template...</option>
+                    ${defaultOption}
                     ${tplOpts}
                 </select>
                 <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
@@ -12272,6 +12284,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
     function addEditorQuestion() {
       const type = document.getElementById('new-q-type').value;
+      const defaultTemplate = getDefaultTeacherTemplate(APP_DATA.module, type);
       const qtyInput = document.getElementById('new-q-qty');
       const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
       
@@ -12329,7 +12342,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
           text,
           options,
           correctAnswers,
-          reusable
+          reusable,
+          hint: defaultTemplate?.html || ''
       };
       
       APP_DATA.parts[currentEditorPartIdx].questions.push(newQ); 
@@ -24892,6 +24906,56 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     // ✨ SMART TEMPLATE MANAGER & UNIFIED EDITOR
     // ==========================================
 
+    const teacherTemplateQuestionTypes = {
+        reading: [
+            ['multiple_choice', 'Multiple Choice'],
+            ['fill_blanks', 'Gap Fill'],
+            ['dnd_list', 'Drag & Drop'],
+            ['tfng', 'True / False / Not Given'],
+            ['ynng', 'Yes / No / Not Given'],
+            ['matching_headings', 'Matching Headings'],
+            ['matching_info', 'Matching Information'],
+            ['map_labelling_hotspots', 'Map Labelling (Hotspots)'],
+            ['map_labelling_grid', 'Map Labelling (Grid)']
+        ],
+        listening: [
+            ['multiple_choice', 'Multiple Choice'],
+            ['fill_blanks', 'Gap Fill'],
+            ['dnd_list', 'Drag & Drop'],
+            ['map_labelling_hotspots', 'Map Labelling (Hotspots)'],
+            ['map_labelling_grid', 'Map Labelling (Grid)']
+        ],
+        writing: [['essay', 'Writing Essay']],
+        speaking: [['audio_record', 'Speaking Recording'], ['essay', 'Speaking Notes']]
+    };
+    const teacherTemplateModules = [
+        ['all', 'All skills'],
+        ['reading', 'Reading'],
+        ['listening', 'Listening'],
+        ['writing', 'Writing'],
+        ['speaking', 'Speaking']
+    ];
+
+    function getTeacherTemplateModuleLabel(module) {
+        return teacherTemplateModules.find(([value]) => value === module)?.[1] || 'All skills';
+    }
+
+    function getTeacherTemplateTypeLabel(module, questionType) {
+        if (!questionType || questionType === 'all') return 'All question types';
+        return (teacherTemplateQuestionTypes[module] || Object.values(teacherTemplateQuestionTypes).flat())
+            .find(([value]) => value === questionType)?.[1] || questionType.replace(/_/g, ' ');
+    }
+
+    function getDefaultTeacherTemplate(module, questionType) {
+        return TEACHER_TEMPLATES.find(template =>
+            template.isDefault && template.module === module && template.questionType === questionType
+        ) || TEACHER_TEMPLATES.find(template =>
+            template.isDefault && template.module === module && (!template.questionType || template.questionType === 'all')
+        ) || TEACHER_TEMPLATES.find(template =>
+            template.isDefault && (!template.module || template.module === 'all') && (!template.questionType || template.questionType === 'all')
+        ) || null;
+    }
+
     window.currentTemplateId = null;
 
     window.openTemplateManager = function() {
@@ -24904,16 +24968,19 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.renderTemplateList = function() {
         const container = document.getElementById('template-list-container');
         container.innerHTML = TEACHER_TEMPLATES.map(t => `
-            <div class="p-3 rounded-lg border ${window.currentTemplateId === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300'} transition cursor-pointer flex justify-between items-center group" onclick="window.editTemplate('${t.id}')">
-                <span class="font-bold text-sm text-slate-700 truncate pr-2">${t.name}</span>
-                <button onclick="event.stopPropagation(); window.deleteTemplate('${t.id}')" class="text-rose-400 hover:text-white hover:bg-rose-500 px-1.5 py-0.5 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition">&times;</button>
+            <div class="p-3 rounded-lg border ${window.currentTemplateId === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300'} transition cursor-pointer flex justify-between items-center gap-2 group" onclick="window.editTemplate('${t.id}')">
+                <span class="min-w-0">
+                    <span class="block font-bold text-sm text-slate-700 truncate pr-2">${t.name}</span>
+                    <span class="block mt-1 text-[10px] font-bold text-slate-400 truncate">${getTeacherTemplateModuleLabel(t.module)} · ${getTeacherTemplateTypeLabel(t.module, t.questionType)}${t.isDefault ? ' · DEFAULT' : ''}</span>
+                </span>
+                <button onclick="event.stopPropagation(); window.deleteTemplate('${t.id}')" class="shrink-0 text-rose-400 hover:text-white hover:bg-rose-500 px-1.5 py-0.5 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition">&times;</button>
             </div>
         `).join('');
     };
 
     window.createNewTemplate = function() {
         const id = 'tpl_' + Date.now();
-        TEACHER_TEMPLATES.push({ id, name: 'New Strategy / Explanation', html: '<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Tiêu đề</strong><br><b>Nội dung:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Điểm 1.</li><li>Điểm 2.</li></ul></div><p><br></p>' });
+        TEACHER_TEMPLATES.push({ id, name: 'New Strategy / Explanation', html: '<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Tiêu đề</strong><br><b>Nội dung:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Điểm 1.</li><li>Điểm 2.</li></ul></div><p><br></p>', module: 'all', questionType: 'all', isDefault: false });
         window.saveTemplatesToCloud();
         window.editTemplate(id);
     };
@@ -24927,6 +24994,25 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.getElementById('template-editor-area').innerHTML = `
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Template Name (Dropdown Label)</label>
             <input type="text" value="${t.name.replace(/"/g, '&quot;')}" oninput="window.updateTemplateName('${id}', this.value)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-colors mb-5">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="template-module-${id}" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Skill</label>
+                    <select id="template-module-${id}" onchange="window.updateTemplateAssignment('${id}', 'module', this.value)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-blue-500">
+                        ${teacherTemplateModules.map(([value, label]) => `<option value="${value}" ${(t.module || 'all') === value ? 'selected' : ''}>${label}</option>`).join('')}
+                    </select>
+                </div>
+                <div>
+                    <label for="template-question-type-${id}" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Question type</label>
+                    <select id="template-question-type-${id}" onchange="window.updateTemplateAssignment('${id}', 'questionType', this.value)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-blue-500">
+                        ${[['all', 'All question types'], ...(teacherTemplateQuestionTypes[t.module] || [])].map(([value, label]) => `<option value="${value}" ${(t.questionType || 'all') === value ? 'selected' : ''}>${label}</option>`).join('')}
+                    </select>
+                </div>
+            </div>
+            <label class="flex items-start gap-3 p-3 mb-5 rounded-xl border border-blue-200 bg-blue-50 text-sm text-blue-900 cursor-pointer">
+                <input type="checkbox" class="mt-0.5" ${t.isDefault ? 'checked' : ''} onchange="window.updateTemplateAssignment('${id}', 'isDefault', this.checked)">
+                <span><strong>Use as the default for this skill and question type.</strong><br><span class="text-xs text-blue-700">New questions will automatically receive this template in the Hint field. You can still edit it or insert another template.</span></span>
+            </label>
             
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">HTML Design / Content</label>
             <div class="flex gap-1.5 bg-slate-100 p-2 rounded-t-lg border border-slate-300 shadow-sm">
@@ -24941,6 +25027,32 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.updateTemplateName = function(id, val) {
         const t = TEACHER_TEMPLATES.find(x => x.id === id);
         if(t) { t.name = val; window.saveTemplatesToCloud(); window.renderTemplateList(); }
+    };
+    window.updateTemplateAssignment = function(id, field, value) {
+        const template = TEACHER_TEMPLATES.find(item => item.id === id);
+        if (!template || !['module', 'questionType', 'isDefault'].includes(field)) return;
+
+        if (field === 'module') {
+            template.module = value;
+            const availableTypes = teacherTemplateQuestionTypes[value] || [];
+            if (template.questionType !== 'all' && !availableTypes.some(([type]) => type === template.questionType)) {
+                template.questionType = 'all';
+            }
+        } else {
+            template[field] = value;
+        }
+        if (template.isDefault) {
+            TEACHER_TEMPLATES.forEach(other => {
+                if (other.id !== id && other.isDefault &&
+                    (other.module || 'all') === (template.module || 'all') &&
+                    (other.questionType || 'all') === (template.questionType || 'all')) {
+                    other.isDefault = false;
+                }
+            });
+        }
+        window.saveTemplatesToCloud();
+        window.renderTemplateList();
+        if (field === 'module' || field === 'questionType') window.editTemplate(id);
     };
     window.updateTemplateContent = function(id) {
         const t = TEACHER_TEMPLATES.find(x => x.id === id);
