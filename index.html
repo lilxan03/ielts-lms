@@ -305,12 +305,6 @@
         align-items: center;
         justify-content: center;
     }
-    #start-screen.hidden,
-    #editor-ui.hidden,
-    #exam-ui.hidden,
-    #review-ui.hidden {
-        display: none !important;
-    }
     #start-screen > #student-banner-bg,
     #start-screen > #student-dashboard-content {
         width: calc(100% - 256px);
@@ -348,6 +342,71 @@
     #editor-ui.sidebar-collapsed > #editor-view-landing,
     #editor-ui.sidebar-collapsed > #editor-view-builder {
         margin-left: 76px;
+    }
+    #editor-ui {
+        --teacher-sidebar-width: 256px;
+    }
+    #editor-ui.sidebar-collapsed {
+        --teacher-sidebar-width: 76px;
+    }
+    #editor-ui.sidebar-focus {
+        --teacher-sidebar-width: 0px;
+    }
+    #editor-ui > .teacher-section-resizable {
+        flex: 1 1 0% !important;
+        width: var(--teacher-section-width, 100%);
+        margin-right: auto;
+        position: relative;
+    }
+    .teacher-section-width-resizer,
+    .student-section-width-resizer {
+        position: fixed;
+        z-index: 35;
+        top: 50%;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 72px;
+        padding: 0;
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        background: #fff;
+        color: #64748b;
+        cursor: col-resize;
+        touch-action: none;
+        user-select: none;
+        box-shadow: 0 2px 8px rgb(15 23 42 / 12%);
+    }
+    .student-section-width-resizer {
+        z-index: 900;
+    }
+    .student-section-width-resizer[hidden] {
+        display: none;
+    }
+    .teacher-section-width-resizer::after,
+    .student-section-width-resizer::after {
+        content: "";
+        display: block;
+        width: 4px;
+        height: 36px;
+        border-radius: 999px;
+        background: #94a3b8;
+    }
+    .teacher-section-width-resizer:hover,
+    .teacher-section-width-resizer:focus-visible,
+    .student-section-width-resizer:hover,
+    .student-section-width-resizer:focus-visible {
+        border-color: #93c5fd;
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+    .teacher-section-width-resizer:hover::after,
+    .teacher-section-width-resizer:focus-visible::after,
+    .student-section-width-resizer:hover::after,
+    .student-section-width-resizer:focus-visible::after {
+        background: #2563eb;
     }
     #start-screen.sidebar-collapsed #student-sidebar,
     #editor-ui.sidebar-collapsed #editor-sidebar {
@@ -428,6 +487,17 @@
         #editor-ui > header,
         #editor-ui.sidebar-collapsed > header {
             padding-left: 1.5rem;
+        }
+        #editor-ui > .teacher-section-resizable,
+        #editor-ui.sidebar-collapsed > .teacher-section-resizable {
+            width: 100%;
+            margin-left: 0;
+        }
+        .teacher-section-width-resizer {
+            display: none;
+        }
+        .student-section-width-resizer {
+            display: none;
         }
         #start-screen.sidebar-collapsed #student-sidebar,
         #editor-ui.sidebar-collapsed #editor-sidebar {
@@ -553,6 +623,79 @@
     .forum-thread-content {
         grid-column: 3;
         min-width: 0;
+    }
+    #template-manager-modal > .template-manager-window {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+    }
+    #template-manager-layout {
+        display: grid;
+        grid-template-columns: minmax(240px, var(--template-sidebar-width, 34%)) 10px minmax(0, 1fr);
+    }
+    #template-manager-sidebar {
+        grid-column: 1;
+        min-width: 0;
+    }
+    #template-manager-resizer {
+        grid-column: 2;
+        grid-row: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 0;
+        background: #f8fafc;
+        cursor: col-resize;
+        touch-action: none;
+        user-select: none;
+    }
+    #template-manager-resizer::after {
+        content: "";
+        width: 4px;
+        height: 64px;
+        border-radius: 999px;
+        background: #cbd5e1;
+        transition: background-color 120ms ease, width 120ms ease;
+    }
+    #template-manager-resizer:hover::after,
+    #template-manager-resizer:focus-visible::after {
+        width: 6px;
+        background: #3b82f6;
+    }
+    #template-editor-area {
+        grid-column: 3;
+        min-width: 0;
+    }
+    @media (max-width: 767px) {
+        #template-manager-layout {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: minmax(180px, var(--template-sidebar-ratio, 35%)) 10px minmax(0, 1fr);
+        }
+        #template-manager-sidebar {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        #template-manager-resizer {
+            grid-column: 1;
+            grid-row: 2;
+            cursor: row-resize;
+        }
+        #template-manager-resizer::after {
+            width: 64px;
+            height: 4px;
+        }
+        #template-manager-resizer:hover::after,
+        #template-manager-resizer:focus-visible::after {
+            width: 72px;
+            height: 6px;
+        }
+        #template-editor-area {
+            grid-column: 1;
+            grid-row: 3;
+        }
     }
     @media (max-width: 767px) {
         #teacher-timetable-workspace {
@@ -2261,22 +2404,23 @@ If the user inputs \gap[colour]{color}, both are accepted.
   </div>
 
   <!-- TEMPLATE MANAGER MODAL -->
-  <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm md:p-6">
-      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-7xl h-full md:h-[95vh] animate-scale-up overflow-hidden border border-slate-200">
+  <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
+      <div class="template-manager-window bg-white shadow-2xl flex flex-col animate-scale-up overflow-hidden border border-slate-200">
           <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50 shrink-0">
               <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">📝 Manage Teacher Templates</h2>
               <button onclick="document.getElementById('template-manager-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">&times;</button>
           </div>
-          <div class="flex flex-1 overflow-hidden">
+          <div id="template-manager-layout" class="flex-1 overflow-hidden">
               <!-- Template List Sidebar -->
-              <div class="w-1/3 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0">
+              <div id="template-manager-sidebar" class="border-r border-slate-200 bg-slate-50 flex flex-col overflow-hidden">
                   <div class="p-4 border-b border-slate-200">
                       <button onclick="window.createNewTemplate()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-sm transition text-sm">+ New Template</button>
                   </div>
                   <div id="template-list-container" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
               </div>
+              <button type="button" id="template-manager-resizer" aria-label="Resize template list and editor panels" title="Drag to resize template list and editor panels"></button>
               <!-- Template Editor Area -->
-              <div class="w-2/3 p-6 flex flex-col bg-white overflow-y-auto" id="template-editor-area">
+              <div class="p-6 flex flex-col bg-white overflow-y-auto" id="template-editor-area">
                   <div class="text-center text-slate-400 mt-20 italic font-medium">Select a template from the left or create a new one.</div>
               </div>
           </div>
@@ -4207,6 +4351,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
     let paymentCatalogUnsubscribe = null;
     let paymentPackagesUnsubscribe = null;
     let TEACHER_TEMPLATES = [];
+    let TEACHER_TEMPLATE_ASSIGNMENTS = {};
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
     let HOF_STUDENTS = []; // ✨ NEW: Dedicated Collection for Hall of Fame
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
@@ -4493,7 +4638,6 @@ If the user inputs \gap[colour]{color}, both are accepted.
     let testMode = 'restricted'; 
     let isTimeFree = false;
     let isPreviewMode = false;
-    let previewReturnState = null;
     let answers = {};
     let reviewStatus = {}; 
     let currentPartIdx = 0;
@@ -7492,9 +7636,14 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 }),
                 ...(['teacher', 'collaborator'].includes(currentUser?.role)
                   ? [waitForInitialSnapshot('teacher templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
-                    if (snap.exists()) TEACHER_TEMPLATES = snap.data().items || [];
+                    TEACHER_TEMPLATES = [];
+                    TEACHER_TEMPLATE_ASSIGNMENTS = {};
+                    if (snap.exists()) {
+                      TEACHER_TEMPLATES = snap.data().items || [];
+                      TEACHER_TEMPLATE_ASSIGNMENTS = snap.data().assignments || {};
+                    }
                   })]
-                  : (TEACHER_TEMPLATES = [], []))
+                  : (TEACHER_TEMPLATES = [], TEACHER_TEMPLATE_ASSIGNMENTS = {}, []))
             ]);
 
             // 3. Attach RESTRICTED listeners based on role
@@ -8860,6 +9009,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
       if (tab === 'bank') { 
           const bankView = document.getElementById('editor-view-bank');
           if(bankView) bankView.classList.remove('hidden'); 
+          enableTeacherSectionResizing('bank');
           renderTestBank(); 
           renderClasses();
           
@@ -8872,6 +9022,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
       }
       if (tab === 'overview') {
           document.getElementById('editor-view-overview')?.classList.remove('hidden');
+          enableTeacherSectionResizing('overview');
           window.renderTeacherOverview();
       }
       if (tab === 'classes') { 
@@ -8879,11 +9030,12 @@ If the user inputs \gap[colour]{color}, both are accepted.
           if(classView) classView.classList.remove('hidden'); 
           renderClasses(); 
       }
-      if (tab === 'students') { document.getElementById('editor-view-students').classList.remove('hidden'); renderStudentsList(); }
-      if (tab === 'payments') { document.getElementById('editor-view-payments').classList.remove('hidden'); window.renderPaymentsView(); }
-      if (tab === 'timetable') { document.getElementById('editor-view-timetable').classList.remove('hidden'); enableTeacherTimetableResizing(); renderTimetable(); }
+      if (tab === 'students') { document.getElementById('editor-view-students').classList.remove('hidden'); enableTeacherSectionResizing('students'); renderStudentsList(); }
+      if (tab === 'payments') { document.getElementById('editor-view-payments').classList.remove('hidden'); enableTeacherSectionResizing('payments'); window.renderPaymentsView(); }
+      if (tab === 'timetable') { document.getElementById('editor-view-timetable').classList.remove('hidden'); enableTeacherSectionResizing('timetable'); enableTeacherTimetableResizing(); renderTimetable(); }
       if (tab === 'landing') { 
           document.getElementById('editor-view-landing').classList.remove('hidden'); 
+          enableTeacherSectionResizing('landing');
           window.populateLandingPageEditor(); 
       }
     }
@@ -10800,6 +10952,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         ids: [newId],
                         points: 1,
                         instruction: q.instruction || "Answer the question.",
+                        hint: getAssignedQuestionTemplateHtml(APP_DATA.module, qType),
                         explanation: q.explanation || "",
                         correctAnswers: {}
                     };
@@ -11447,39 +11600,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
       btn.textContent = "Save Test Data"; btn.disabled = false;
     }
 
-    function restoreTestBuilderAfterPreview() {
-      clearInterval(timerInterval);
-      isPreviewMode = false;
-      if (previewReturnState) {
-        testMode = previewReturnState.testMode;
-        isTimeFree = previewReturnState.isTimeFree;
-        previewReturnState = null;
-      }
-
-      const editor = document.getElementById('editor-ui');
-      const exam = document.getElementById('exam-ui');
-      const studentDashboard = document.getElementById('start-screen');
-      editor.classList.remove('hidden');
-      editor.style.display = 'flex';
-      studentDashboard.classList.add('hidden');
-      exam.classList.add('hidden');
-      exam.style.display = 'none';
-      document.getElementById('exam-preview-badge').classList.add('hidden');
-
-      const wasApplyingRoute = appRouterApplying;
-      appRouterApplying = true;
-      try {
-        toggleEditorTab('builder');
-      } finally {
-        appRouterApplying = wasApplyingRoute;
-      }
-    }
-
     function previewActiveTest() {
       saveCurrentEditorPart();
-      if (!isPreviewMode) {
-        previewReturnState = { testMode, isTimeFree };
-      }
       isPreviewMode = true;
 
       answers = {};
@@ -11491,16 +11613,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
       document.getElementById('notes-panel').classList.add('hidden');
       document.getElementById('questions-container').innerHTML = '';
 
-      const editor = document.getElementById('editor-ui');
-      const exam = document.getElementById('exam-ui');
-      ['start-screen', 'public-landing-ui', 'auth-ui', 'awaiting-approval-ui', 'review-ui'].forEach(id => {
-        const screen = document.getElementById(id);
-        screen?.classList.add('hidden');
-      });
-      editor.classList.add('hidden');
-      editor.style.display = 'none';
-      exam.classList.remove('hidden');
-      exam.style.display = 'flex';
+      document.getElementById('editor-ui').classList.add('hidden');
+      document.getElementById('exam-ui').classList.remove('hidden');
       
       document.getElementById('exam-candidate-name').textContent = "Teacher (Preview)";
       document.getElementById('exam-preview-badge').classList.remove('hidden');
@@ -12070,26 +12184,16 @@ If the user inputs \gap[colour]{color}, both are accepted.
         </div>`;
 
         const mkTemplateToolbar = (editorId) => {
-            const defaultTemplate = getDefaultTeacherTemplate(APP_DATA.module, q.type);
-            const templateOptionLabel = t => {
-                const scope = `${getTeacherTemplateModuleLabel(t.module)} · ${getTeacherTemplateTypeLabel(t.module, t.questionType)}`;
-                return `${t.name} (${scope})`;
-            };
-            const defaultOption = defaultTemplate
-                ? `<option value="${defaultTemplate.id}">✨ Auto template: ${templateOptionLabel(defaultTemplate)}</option>`
-                : '';
-            const tplOpts = TEACHER_TEMPLATES
-                .filter(t => t.id !== defaultTemplate?.id)
-                .map(t => `<option value="${t.id}">${templateOptionLabel(t)}</option>`)
-                .join('');
+            const defaultTemplateId = TEACHER_TEMPLATE_ASSIGNMENTS[getTemplateAssignmentKey(APP_DATA.module, q.type)];
+            const tplOpts = TEACHER_TEMPLATES.map(t => `<option value="${t.id}">${t.name}${t.id === defaultTemplateId ? ' (Assigned default)' : ''}</option>`).join('');
+            const defaultTemplate = TEACHER_TEMPLATES.find(t => t.id === defaultTemplateId);
             return `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
                 <button type="button" onmousedown="event.preventDefault(); window.execCmd('bold')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs font-bold rounded transition">B</button>
                 <button type="button" onmousedown="event.preventDefault(); window.execCmd('italic')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs italic rounded transition">I</button>
                 <button type="button" onmousedown="event.preventDefault(); window.execCmd('underline')" class="px-2.5 py-1 bg-white hover:bg-slate-200 text-slate-700 border border-slate-200 shadow-sm text-xs underline rounded transition">U</button>
                 <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
                 <select onchange="window.insertCustomTemplate('${editorId}', this.value); this.value='';" class="border border-slate-300 rounded-lg px-2 py-1 text-xs outline-none bg-white font-bold text-emerald-700 shadow-sm cursor-pointer hover:border-emerald-500 transition flex-1 sm:flex-none">
-                    <option value="">+ Insert template...</option>
-                    ${defaultOption}
+                    <option value="">+ Chèn Form Mẫu...${defaultTemplate ? ` (Default: ${defaultTemplate.name})` : ''}</option>
                     ${tplOpts}
                 </select>
                 <div class="w-px h-5 bg-slate-300 mx-1 self-center"></div>
@@ -12251,7 +12355,6 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
     function addEditorQuestion() {
       const type = document.getElementById('new-q-type').value;
-      const defaultTemplate = getDefaultTeacherTemplate(APP_DATA.module, type);
       const qtyInput = document.getElementById('new-q-qty');
       const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
       
@@ -12310,7 +12413,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
           options,
           correctAnswers,
           reusable,
-          hint: defaultTemplate?.html || ''
+          hint: getAssignedQuestionTemplateHtml(APP_DATA.module, type)
       };
       
       APP_DATA.parts[currentEditorPartIdx].questions.push(newQ); 
@@ -12598,6 +12701,14 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const rows = document.querySelectorAll('.import-row');
         let importedCount = 0;
         let newQuestions = [];
+        const rapidMode = window.isRapidTestImport
+            ? (document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new')
+            : '';
+        const templateSkill = window.isRapidTestImport
+            ? (rapidMode === 'new'
+                ? document.getElementById('rapid-test-mod')?.value
+                : TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test')?.value)?.module)
+            : APP_DATA.module;
         
         // Find highest existing ID to prevent question number conflicts
         let currentMaxId = 0;
@@ -12609,8 +12720,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 });
             });
         } else {
-            const rapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
-            if (rapidMode === 'existing') {
+            const currentRapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+            if (currentRapidMode === 'existing') {
                 const tid = document.getElementById('rapid-existing-test').value;
                 const test = TEST_BANK.find(t => t.id === tid);
                 if (test) {
@@ -12694,7 +12805,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     instruction: inst || "Answer the question.",
                     text: processedText,
                     options: options,
-                    hint: hint,
+                    hint: hint || getAssignedQuestionTemplateHtml(templateSkill, type),
                     explanation: expl,
                     correctAnswers: {}
                 };
@@ -12712,9 +12823,9 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
 
         if (window.isRapidTestImport) {
-            const rapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+            const currentRapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
             
-            if (rapidMode === 'new') {
+            if (currentRapidMode === 'new') {
                 // Create New Test Workflow
                 const title = document.getElementById('rapid-test-title').value.trim() || 'Untitled Rapid Test';
                 const mod = document.getElementById('rapid-test-mod').value;
@@ -12756,7 +12867,10 @@ If the user inputs \gap[colour]{color}, both are accepted.
             }
         } else {
             // STANDARD EDITOR WORKFLOW: Inject into current part
-            APP_DATA.parts[currentEditorPartIdx].questions.push(...newQuestions);
+        newQuestions.forEach(question => {
+            if (!question.hint) question.hint = getAssignedQuestionTemplateHtml(APP_DATA.module, question.type);
+        });
+        APP_DATA.parts[currentEditorPartIdx].questions.push(...newQuestions);
             document.getElementById('csv-import-modal').classList.add('hidden');
             renderEditorQuestions();
             triggerEditorAutosave();
@@ -15950,6 +16064,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           collapseButton.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
           collapseButton.setAttribute('aria-label', collapseButton.title);
         }
+        if (role === 'student' && typeof studentSectionResizeStates !== 'undefined') {
+          studentSectionResizeStates.forEach(updateStudentSectionResize);
+        }
       }
     };
 
@@ -16124,29 +16241,37 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         studentUi?.classList.remove('hidden');
         reviewUi?.classList.add('hidden');
         if (route.section === 'timetable') {
+          enableStudentSectionResizing('timetable', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
           requestAnimationFrame(() => document.getElementById('student-schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
         } else if (route.section === 'dashboard' || !['history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review', 'timetable'].includes(route.section)) {
           route = { role: 'student', section: 'dashboard' };
+          enableStudentSectionResizing('dashboard', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
         } else if (route.section === 'history') {
           window.openStudentHistory();
+          enableStudentSectionResizing('history', '#student-history-modal > div');
         } else if (route.section === 'flashcards') {
           window.toggleStudentFlashcardPanel(true);
+          enableStudentSectionResizing('flashcards', '#student-fc-panel > div');
         } else if (route.section === 'peer-review') {
           if (route.detail && getPeerReviewCandidatesForCurrentStudent().some(sub => String(sub.id) === route.detail)) {
             window.openPeerReviewModal(Number(route.detail));
+            enableStudentSectionResizing('peer-review-detail', '#custom-modal > div');
           } else {
             if (route.detail) {
               route = { role: 'student', section: 'peer-review', detail: '' };
               window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/peer-review');
             }
             window.showPeerReviewList();
+            enableStudentSectionResizing('peer-review', '#custom-modal > div');
           }
         } else if (route.section === 'leaderboard') {
           window.showLeaderboardModal();
+          enableStudentSectionResizing('leaderboard', '#custom-modal > div');
         } else if (route.section === 'forum') {
           window.toggleForumPanel(true);
+          enableStudentSectionResizing('forum', '#chat-panel > div');
         } else if (route.section === 'review') {
           const submissionId = Number(route.detail);
           if (Number.isFinite(submissionId) && SUBMISSIONS.some(sub => Number(sub.id) === submissionId)) reviewPastSubmission(submissionId);
@@ -16154,6 +16279,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             route = { role: 'student', section: 'history' };
             window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/history');
             window.openStudentHistory();
+            enableStudentSectionResizing('history', '#student-history-modal > div');
           }
         }
         lastAppliedAppRoute = route;
@@ -18829,7 +18955,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         window.clearListeningMedia('practice-listening-audio', 'practice-youtube-player');
         
         if (isPreviewMode) {
-           restoreTestBuilderAfterPreview();
+           isPreviewMode = false;
+           document.getElementById('editor-ui').classList.remove('hidden');
+           toggleEditorTab('builder');
         } else {
            document.getElementById('start-screen').classList.remove('hidden'); 
            window.renderStudentDashboard(); 
@@ -19080,7 +19208,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     function exitToDashboard() { 
       document.getElementById('results-modal').classList.add('hidden'); 
       if (isPreviewMode) {
-         restoreTestBuilderAfterPreview();
+         isPreviewMode = false;
+         document.getElementById('editor-ui').classList.remove('hidden');
+         toggleEditorTab('builder');
       } else {
          document.getElementById('start-screen').classList.remove('hidden'); 
          renderStudentDashboard(); 
@@ -19111,7 +19241,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       sessionStorage.removeItem('lms_grading_mode');
       document.getElementById('review-ui').classList.add('hidden');
       if (isPreviewMode) {
-         restoreTestBuilderAfterPreview();
+         isPreviewMode = false;
+         document.getElementById('editor-ui').classList.remove('hidden');
+         toggleEditorTab('builder');
       }
       else if (currentUser && currentUser.role === 'teacher') {
          document.getElementById('editor-ui').classList.remove('hidden');
@@ -20822,6 +20954,170 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     localStorage.setItem('lms_teacher_timetable_split', String(ratio));
                 } catch (error) {
                     console.error('Unable to save timetable panel widths:', error);
+                }
+            };
+            handle.addEventListener('pointermove', resize);
+            handle.addEventListener('pointerup', finishResize, { once: true });
+            handle.addEventListener('pointercancel', finishResize, { once: true });
+        });
+    }
+
+    const studentSectionResizeStates = new Map();
+    let studentSectionResizeRefreshReady = false;
+
+    function enableStudentSectionResizing(section, targetSelector) {
+        const target = document.querySelector(targetSelector);
+        const studentRoot = document.getElementById('start-screen');
+        if (!target || !studentRoot) return;
+
+        const storageKey = `lms_student_section_width_${section}`;
+        let state = studentSectionResizeStates.get(section);
+        if (!state || state.target !== target) {
+            state?.handle.remove();
+            let ratio = 1;
+            try {
+                const savedRatio = Number(localStorage.getItem(storageKey));
+                if (Number.isFinite(savedRatio) && savedRatio >= 0.55 && savedRatio <= 1) ratio = savedRatio;
+            } catch (error) {
+                console.error(`Unable to restore student ${section} width:`, error);
+            }
+            const handle = document.createElement('button');
+            handle.type = 'button';
+            handle.id = `student-section-width-resizer-${section}`;
+            handle.className = 'student-section-width-resizer';
+            handle.setAttribute('aria-label', `Resize student ${section} section width`);
+            handle.title = `Drag to resize the ${section} section`;
+            handle.hidden = true;
+            document.body.appendChild(handle);
+            state = { target, handle, ratio, storageKey };
+            studentSectionResizeStates.set(section, state);
+
+            handle.addEventListener('pointerdown', event => {
+                if (window.matchMedia('(max-width: 1024px)').matches) return;
+                event.preventDefault();
+                const startX = event.clientX;
+                const availableWidth = state.availableWidth;
+                const startRatio = state.ratio;
+                handle.setPointerCapture(event.pointerId);
+                const resize = moveEvent => {
+                    if (availableWidth <= 0) return;
+                    state.ratio = Math.max(0.55, Math.min(1, startRatio + (moveEvent.clientX - startX) / availableWidth));
+                    updateStudentSectionResize(state);
+                };
+                const finishResize = () => {
+                    handle.removeEventListener('pointermove', resize);
+                    handle.removeEventListener('pointerup', finishResize);
+                    handle.removeEventListener('pointercancel', finishResize);
+                    try {
+                        localStorage.setItem(state.storageKey, String(state.ratio));
+                    } catch (error) {
+                        console.error(`Unable to save student ${section} width:`, error);
+                    }
+                };
+                handle.addEventListener('pointermove', resize);
+                handle.addEventListener('pointerup', finishResize, { once: true });
+                handle.addEventListener('pointercancel', finishResize, { once: true });
+            });
+        }
+
+        for (const existingState of studentSectionResizeStates.values()) {
+            existingState.handle.hidden = existingState !== state;
+        }
+        state.handle.hidden = false;
+        updateStudentSectionResize(state);
+        if (!studentSectionResizeRefreshReady) {
+            window.addEventListener('resize', () => {
+                studentSectionResizeStates.forEach(updateStudentSectionResize);
+            });
+            studentSectionResizeRefreshReady = true;
+        }
+    }
+
+    function updateStudentSectionResize(state) {
+        const { target, handle, ratio } = state;
+        const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+        const isDashboard = target.id === 'student-dashboard-content';
+        const sidebarWidth = studentRootSidebarWidth();
+        const availableWidth = isDashboard && !isMobile
+            ? Math.max(0, document.getElementById('start-screen').clientWidth - sidebarWidth)
+            : Math.max(0, window.innerWidth - (isMobile ? 0 : 48));
+        state.availableWidth = availableWidth;
+        target.style.maxWidth = 'none';
+        target.style.width = isMobile ? '100%' : `${availableWidth * ratio}px`;
+        handle.style.right = `${Math.max(0, window.innerWidth - target.getBoundingClientRect().right)}px`;
+    }
+
+    function studentRootSidebarWidth() {
+        const root = document.getElementById('start-screen');
+        if (window.matchMedia('(max-width: 1024px)').matches) return 0;
+        return root?.classList.contains('sidebar-collapsed') ? 76 : 256;
+    }
+
+    function enableTeacherSectionResizing(tab) {
+        const view = document.getElementById(`editor-view-${tab}`);
+        if (!view) return;
+
+        view.classList.add('teacher-section-resizable');
+        const storageKey = `lms_teacher_section_width_${tab}`;
+        const handleId = `teacher-section-width-resizer-${tab}`;
+        const editorRoot = document.getElementById('editor-ui');
+        let ratio = 1;
+        try {
+            const savedRatio = Number(localStorage.getItem(storageKey));
+            if (Number.isFinite(savedRatio) && savedRatio >= 0.55 && savedRatio <= 1) ratio = savedRatio;
+        } catch (error) {
+            console.error(`Unable to restore ${tab} section width:`, error);
+        }
+        const applyRatio = () => {
+            const isMobile = window.matchMedia('(max-width: 1024px)').matches;
+            const sidebarWidth = parseFloat(getComputedStyle(editorRoot).getPropertyValue('--teacher-sidebar-width')) || 0;
+            const availableWidth = Math.max(0, editorRoot.clientWidth - sidebarWidth);
+            view.style.setProperty('--teacher-section-width', isMobile ? '100%' : `${availableWidth * ratio}px`);
+        };
+        applyRatio();
+
+        let handle = document.getElementById(handleId);
+        if (!handle) {
+            handle = document.createElement('button');
+            handle.type = 'button';
+            handle.id = handleId;
+            handle.className = 'teacher-section-width-resizer';
+            handle.setAttribute('aria-label', `Resize ${tab} section width`);
+            handle.title = `Drag to resize the ${tab} section`;
+            view.appendChild(handle);
+        }
+        handle._teacherSectionWidthRatio = ratio;
+        const updateHandlePosition = () => {
+            applyRatio();
+            handle.style.right = `${Math.max(0, window.innerWidth - view.getBoundingClientRect().right)}px`;
+        };
+        updateHandlePosition();
+        if (handle.dataset.resizerReady) return;
+        handle.dataset.resizerReady = 'true';
+        window.addEventListener('resize', updateHandlePosition);
+        new MutationObserver(updateHandlePosition).observe(editorRoot, { attributes: true, attributeFilter: ['class'] });
+        handle.addEventListener('pointerdown', event => {
+            if (window.matchMedia('(max-width: 1024px)').matches) return;
+            event.preventDefault();
+            const startX = event.clientX;
+            const sidebarWidth = parseFloat(getComputedStyle(editorRoot).getPropertyValue('--teacher-sidebar-width')) || 0;
+            const availableWidth = editorRoot.clientWidth - sidebarWidth;
+            const startRatio = handle._teacherSectionWidthRatio;
+            handle.setPointerCapture(event.pointerId);
+            const resize = moveEvent => {
+                if (availableWidth <= 0) return;
+                ratio = Math.max(0.55, Math.min(1, startRatio + (moveEvent.clientX - startX) / availableWidth));
+                handle._teacherSectionWidthRatio = ratio;
+                updateHandlePosition();
+            };
+            const finishResize = () => {
+                handle.removeEventListener('pointermove', resize);
+                handle.removeEventListener('pointerup', finishResize);
+                handle.removeEventListener('pointercancel', finishResize);
+                try {
+                    localStorage.setItem(storageKey, String(handle._teacherSectionWidthRatio));
+                } catch (error) {
+                    console.error(`Unable to save ${tab} section width:`, error);
                 }
             };
             handle.addEventListener('pointermove', resize);
@@ -24691,7 +24987,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     // ✨ SMART TEMPLATE MANAGER & UNIFIED EDITOR
     // ==========================================
 
-    const teacherTemplateQuestionTypes = {
+    window.currentTemplateId = null;
+    const TEMPLATE_QUESTION_TYPES = {
         reading: [
             ['multiple_choice', 'Multiple Choice'],
             ['fill_blanks', 'Gap Fill'],
@@ -24711,40 +25008,115 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             ['map_labelling_grid', 'Map Labelling (Grid)']
         ],
         writing: [['essay', 'Writing Essay']],
-        speaking: [['audio_record', 'Speaking Recording'], ['essay', 'Speaking Notes']]
+        speaking: [['audio_record', 'Audio Recording'], ['essay', 'Notes / Text Box']]
     };
-    const teacherTemplateModules = [
-        ['all', 'All skills'],
-        ['reading', 'Reading'],
-        ['listening', 'Listening'],
-        ['writing', 'Writing'],
-        ['speaking', 'Speaking']
-    ];
-
-    function getTeacherTemplateModuleLabel(module) {
-        return teacherTemplateModules.find(([value]) => value === module)?.[1] || 'All skills';
+    const getTemplateAssignmentKey = (skill, type) => `${skill}:${type}`;
+    function getAssignedQuestionTemplateHtml(skill, type) {
+        const templateId = TEACHER_TEMPLATE_ASSIGNMENTS[getTemplateAssignmentKey(skill, type)];
+        return TEACHER_TEMPLATES.find(template => template.id === templateId)?.html || '';
     }
 
-    function getTeacherTemplateTypeLabel(module, questionType) {
-        if (!questionType || questionType === 'all') return 'All question types';
-        return (teacherTemplateQuestionTypes[module] || Object.values(teacherTemplateQuestionTypes).flat())
-            .find(([value]) => value === questionType)?.[1] || questionType.replace(/_/g, ' ');
+    function renderTemplateAssignmentSettings(templateId) {
+        const targetOptions = Object.entries(TEMPLATE_QUESTION_TYPES).map(([skill, types]) =>
+            `<optgroup label="${skill.charAt(0).toUpperCase() + skill.slice(1)}">${types.map(([type, label]) =>
+                `<option value="${skill}:${type}">${label}</option>`
+            ).join('')}</optgroup>`
+        ).join('');
+        const assignedCount = Object.values(TEACHER_TEMPLATE_ASSIGNMENTS).filter(assignedId => assignedId === templateId).length;
+        const assignedTypes = Object.entries(TEACHER_TEMPLATE_ASSIGNMENTS)
+            .filter(([, assignedId]) => assignedId === templateId)
+            .map(([key]) => {
+                const [skill, type] = key.split(':');
+                const match = TEMPLATE_QUESTION_TYPES[skill]?.find(([questionType]) => questionType === type);
+                return match ? { key, label: `${skill.charAt(0).toUpperCase() + skill.slice(1)} — ${match[1]}` } : null;
+            })
+            .filter(Boolean);
+        const assignedMarkup = assignedTypes.length
+            ? assignedTypes.map(({ key, label }) => `<div class="flex items-center justify-between gap-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2"><span class="text-xs font-bold text-blue-900">${label}</span><button type="button" onclick="window.unassignTemplateFromQuestionType('${templateId}', '${key}')" class="shrink-0 rounded px-2 py-1 text-xs font-bold text-rose-600 hover:bg-rose-100" aria-label="Remove ${label} assignment">Remove</button></div>`).join('')
+            : '<p class="text-xs text-slate-500">No question types use this template as their default yet.</p>';
+        return `<section class="mt-6 rounded-xl border border-blue-100 bg-slate-50 p-4">
+            <h3 class="font-black text-sm text-slate-800">Auto-assign by skill and question type</h3>
+            <p class="mt-1 text-xs text-slate-500">New question blocks of an assigned type will start with this template in the Hint field. You can still edit it or insert another template later.</p>
+            <p id="template-assignment-count" class="mt-2 text-xs font-bold text-blue-700">${assignedCount} question type${assignedCount === 1 ? '' : 's'} assigned to this template.</p>
+            <div class="mt-3 flex flex-col sm:flex-row gap-2">
+                <select id="template-question-type" class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-bold text-slate-700">${targetOptions}</select>
+                <button type="button" onclick="window.assignTemplateToQuestionType('${templateId}')" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">Assign type</button>
+            </div>
+            <div id="template-assignment-list" class="mt-3 space-y-2">${assignedMarkup}</div>
+        </section>`;
     }
 
-    function getDefaultTeacherTemplate(module, questionType) {
-        return TEACHER_TEMPLATES.find(template =>
-            template.isDefault && template.module === module && template.questionType === questionType
-        ) || TEACHER_TEMPLATES.find(template =>
-            template.isDefault && template.module === module && (!template.questionType || template.questionType === 'all')
-        ) || TEACHER_TEMPLATES.find(template =>
-            template.isDefault && (!template.module || template.module === 'all') && (!template.questionType || template.questionType === 'all')
-        ) || null;
+    function refreshTemplateAssignmentSettings(templateId) {
+        const settings = document.getElementById('template-assignment-list');
+        const selector = document.getElementById('template-question-type');
+        const count = document.getElementById('template-assignment-count');
+        if (!settings || !selector || !count) return;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = renderTemplateAssignmentSettings(templateId);
+        const newSettings = wrapper.querySelector('#template-assignment-list');
+        const newSelector = wrapper.querySelector('#template-question-type');
+        const newCount = wrapper.querySelector('#template-assignment-count');
+        settings.replaceWith(newSettings);
+        selector.replaceWith(newSelector);
+        count.replaceWith(newCount);
     }
 
-    window.currentTemplateId = null;
+    function enableTemplateManagerResizing() {
+        const layout = document.getElementById('template-manager-layout');
+        const handle = document.getElementById('template-manager-resizer');
+        if (!layout || !handle || handle.dataset.resizerReady) return;
+        let ratio = 34;
+        try {
+            const savedRatio = Number(localStorage.getItem('lms_teacher_template_manager_split'));
+            if (Number.isFinite(savedRatio) && savedRatio >= 25 && savedRatio <= 50) ratio = savedRatio;
+        } catch (error) {
+            console.error('Unable to restore template manager panel widths:', error);
+        }
+        const applyRatio = () => {
+            const vertical = window.matchMedia('(max-width: 767px)').matches;
+            layout.style.gridTemplateColumns = vertical
+                ? 'minmax(0, 1fr)'
+                : `minmax(240px, ${ratio}fr) 10px minmax(0, ${100 - ratio}fr)`;
+            layout.style.setProperty('--template-sidebar-ratio', `${Math.min(55, Math.max(25, ratio))}%`);
+        };
+        applyRatio();
+        handle.dataset.resizerReady = 'true';
+        window.addEventListener('resize', applyRatio);
+        handle.addEventListener('pointerdown', event => {
+            event.preventDefault();
+            const vertical = window.matchMedia('(max-width: 767px)').matches;
+            const startPosition = vertical ? event.clientY : event.clientX;
+            const bounds = layout.getBoundingClientRect();
+            const availableSize = vertical
+                ? bounds.height - handle.offsetHeight
+                : bounds.width - handle.offsetWidth;
+            const startRatio = ratio;
+            handle.setPointerCapture(event.pointerId);
+            const resize = moveEvent => {
+                if (availableSize <= 0) return;
+                const currentPosition = vertical ? moveEvent.clientY : moveEvent.clientX;
+                ratio = Math.min(50, Math.max(25, startRatio + (currentPosition - startPosition) / availableSize * 100));
+                applyRatio();
+            };
+            const finishResize = () => {
+                handle.removeEventListener('pointermove', resize);
+                handle.removeEventListener('pointerup', finishResize);
+                handle.removeEventListener('pointercancel', finishResize);
+                try {
+                    localStorage.setItem('lms_teacher_template_manager_split', String(ratio));
+                } catch (error) {
+                    console.error('Unable to save template manager panel widths:', error);
+                }
+            };
+            handle.addEventListener('pointermove', resize);
+            handle.addEventListener('pointerup', finishResize, { once: true });
+            handle.addEventListener('pointercancel', finishResize, { once: true });
+        });
+    }
 
     window.openTemplateManager = function() {
         document.getElementById('template-manager-modal').classList.remove('hidden');
+        enableTemplateManagerResizing();
         window.renderTemplateList();
         document.getElementById('template-editor-area').innerHTML = '<div class="text-center text-slate-400 mt-20 italic font-medium">Select a template from the left or create a new one.</div>';
         window.currentTemplateId = null;
@@ -24753,19 +25125,16 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.renderTemplateList = function() {
         const container = document.getElementById('template-list-container');
         container.innerHTML = TEACHER_TEMPLATES.map(t => `
-            <div class="p-3 rounded-lg border ${window.currentTemplateId === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300'} transition cursor-pointer flex justify-between items-center gap-2 group" onclick="window.editTemplate('${t.id}')">
-                <span class="min-w-0">
-                    <span class="block font-bold text-sm text-slate-700 truncate pr-2">${t.name}</span>
-                    <span class="block mt-1 text-[10px] font-bold text-slate-400 truncate">${getTeacherTemplateModuleLabel(t.module)} · ${getTeacherTemplateTypeLabel(t.module, t.questionType)}${t.isDefault ? ' · DEFAULT' : ''}</span>
-                </span>
-                <button onclick="event.stopPropagation(); window.deleteTemplate('${t.id}')" class="shrink-0 text-rose-400 hover:text-white hover:bg-rose-500 px-1.5 py-0.5 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition">&times;</button>
+            <div class="p-3 rounded-lg border ${window.currentTemplateId === t.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white hover:border-blue-300'} transition cursor-pointer flex justify-between items-center group" onclick="window.editTemplate('${t.id}')">
+                <span class="font-bold text-sm text-slate-700 truncate pr-2">${t.name}</span>
+                <button onclick="event.stopPropagation(); window.deleteTemplate('${t.id}')" class="text-rose-400 hover:text-white hover:bg-rose-500 px-1.5 py-0.5 rounded text-xs font-bold opacity-0 group-hover:opacity-100 transition">&times;</button>
             </div>
         `).join('');
     };
 
     window.createNewTemplate = function() {
         const id = 'tpl_' + Date.now();
-        TEACHER_TEMPLATES.push({ id, name: 'New Strategy / Explanation', html: '<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Tiêu đề</strong><br><b>Nội dung:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Điểm 1.</li><li>Điểm 2.</li></ul></div><p><br></p>', module: 'all', questionType: 'all', isDefault: false });
+        TEACHER_TEMPLATES.push({ id, name: 'New Strategy / Explanation', html: '<div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-2 text-sm text-blue-900 shadow-sm"><strong class="text-blue-700 uppercase tracking-widest text-[10px]">Tiêu đề</strong><br><b>Nội dung:</b><ul class="list-decimal pl-5 mt-1.5 space-y-1"><li>Điểm 1.</li><li>Điểm 2.</li></ul></div><p><br></p>' });
         window.saveTemplatesToCloud();
         window.editTemplate(id);
     };
@@ -24779,25 +25148,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.getElementById('template-editor-area').innerHTML = `
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Template Name (Dropdown Label)</label>
             <input type="text" value="${t.name.replace(/"/g, '&quot;')}" oninput="window.updateTemplateName('${id}', this.value)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-colors mb-5">
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="template-module-${id}" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Skill</label>
-                    <select id="template-module-${id}" onchange="window.updateTemplateAssignment('${id}', 'module', this.value)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-blue-500">
-                        ${teacherTemplateModules.map(([value, label]) => `<option value="${value}" ${(t.module || 'all') === value ? 'selected' : ''}>${label}</option>`).join('')}
-                    </select>
-                </div>
-                <div>
-                    <label for="template-question-type-${id}" class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Question type</label>
-                    <select id="template-question-type-${id}" onchange="window.updateTemplateAssignment('${id}', 'questionType', this.value)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg text-sm font-bold text-slate-800 outline-none focus:border-blue-500">
-                        ${[['all', 'All question types'], ...(teacherTemplateQuestionTypes[t.module] || [])].map(([value, label]) => `<option value="${value}" ${(t.questionType || 'all') === value ? 'selected' : ''}>${label}</option>`).join('')}
-                    </select>
-                </div>
-            </div>
-            <label class="flex items-start gap-3 p-3 mb-5 rounded-xl border border-blue-200 bg-blue-50 text-sm text-blue-900 cursor-pointer">
-                <input type="checkbox" class="mt-0.5" ${t.isDefault ? 'checked' : ''} onchange="window.updateTemplateAssignment('${id}', 'isDefault', this.checked)">
-                <span><strong>Use as the default for this skill and question type.</strong><br><span class="text-xs text-blue-700">New questions will automatically receive this template in the Hint field. You can still edit it or insert another template.</span></span>
-            </label>
             
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">HTML Design / Content</label>
             <div class="flex gap-1.5 bg-slate-100 p-2 rounded-t-lg border border-slate-300 shadow-sm">
@@ -24806,38 +25156,30 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 <button onmousedown="event.preventDefault(); document.execCommand('underline')" class="px-3 py-1 bg-white border border-slate-200 rounded text-xs underline shadow-sm hover:bg-slate-50">U</button>
             </div>
             <div id="tpl-edit-html" contenteditable="true" class="rich-editor flex-1 border border-slate-300 rounded-b-lg p-5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white overflow-y-auto leading-relaxed" oninput="window.updateTemplateContent('${id}')">${t.html}</div>
+            ${renderTemplateAssignmentSettings(id)}
         `;
+    };
+
+    window.assignTemplateToQuestionType = function(templateId) {
+        if (!TEACHER_TEMPLATES.some(template => template.id === templateId)) return;
+        const target = document.getElementById('template-question-type')?.value || '';
+        const [skill, type] = target.split(':');
+        if (!TEMPLATE_QUESTION_TYPES[skill]?.some(([questionType]) => questionType === type)) return;
+        TEACHER_TEMPLATE_ASSIGNMENTS[getTemplateAssignmentKey(skill, type)] = templateId;
+        refreshTemplateAssignmentSettings(templateId);
+        window.saveTemplatesToCloud();
+    };
+
+    window.unassignTemplateFromQuestionType = function(templateId, key) {
+        if (TEACHER_TEMPLATE_ASSIGNMENTS[key] !== templateId) return;
+        delete TEACHER_TEMPLATE_ASSIGNMENTS[key];
+        refreshTemplateAssignmentSettings(templateId);
+        window.saveTemplatesToCloud();
     };
 
     window.updateTemplateName = function(id, val) {
         const t = TEACHER_TEMPLATES.find(x => x.id === id);
         if(t) { t.name = val; window.saveTemplatesToCloud(); window.renderTemplateList(); }
-    };
-    window.updateTemplateAssignment = function(id, field, value) {
-        const template = TEACHER_TEMPLATES.find(item => item.id === id);
-        if (!template || !['module', 'questionType', 'isDefault'].includes(field)) return;
-
-        if (field === 'module') {
-            template.module = value;
-            const availableTypes = teacherTemplateQuestionTypes[value] || [];
-            if (template.questionType !== 'all' && !availableTypes.some(([type]) => type === template.questionType)) {
-                template.questionType = 'all';
-            }
-        } else {
-            template[field] = value;
-        }
-        if (template.isDefault) {
-            TEACHER_TEMPLATES.forEach(other => {
-                if (other.id !== id && other.isDefault &&
-                    (other.module || 'all') === (template.module || 'all') &&
-                    (other.questionType || 'all') === (template.questionType || 'all')) {
-                    other.isDefault = false;
-                }
-            });
-        }
-        window.saveTemplatesToCloud();
-        window.renderTemplateList();
-        if (field === 'module' || field === 'questionType') window.editTemplate(id);
     };
     window.updateTemplateContent = function(id) {
         const t = TEACHER_TEMPLATES.find(x => x.id === id);
@@ -24846,13 +25188,23 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.deleteTemplate = function(id) {
         if(confirm('Permanently delete this template?')) {
             TEACHER_TEMPLATES = TEACHER_TEMPLATES.filter(x => x.id !== id);
+            Object.keys(TEACHER_TEMPLATE_ASSIGNMENTS).forEach(key => {
+                if (TEACHER_TEMPLATE_ASSIGNMENTS[key] === id) delete TEACHER_TEMPLATE_ASSIGNMENTS[key];
+            });
             window.saveTemplatesToCloud();
             if(window.currentTemplateId === id) window.currentTemplateId = null;
             window.openTemplateManager(); 
         }
     };
     window.saveTemplatesToCloud = async function() {
-        try { await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'templates'), { items: TEACHER_TEMPLATES }); } catch(e) { console.error(e); }
+        try {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'templates'), {
+                items: TEACHER_TEMPLATES,
+                assignments: TEACHER_TEMPLATE_ASSIGNMENTS
+            });
+        } catch(e) {
+            console.error('Unable to save teacher templates and question type assignments:', e);
+        }
     };
 
     window.insertCustomTemplate = function(editorId, templateId) {
