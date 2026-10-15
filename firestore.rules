@@ -39,8 +39,11 @@ service cloud.firestore {
 
     function ownAccount(username) {
       return signedIn()
-        && resource.data.uid == request.auth.uid
-        && resource.data.user == username;
+        && resource.data.user == username
+        && (resource.data.get('uid', null) == request.auth.uid
+          || (resource.data.get('uid', null) == null
+            && hasAccessRecord()
+            && accountAccess().username == username));
     }
 
     function safeStudentProfileUpdate() {
@@ -53,6 +56,17 @@ service cloud.firestore {
         && request.resource.data.get('disabled', null) == resource.data.get('disabled', null)
         && request.resource.data.get('billingExpiresAt', null) == resource.data.get('billingExpiresAt', null)
         && request.resource.data.get('billingAccessOverride', null) == resource.data.get('billingAccessOverride', null);
+    }
+
+    function safeLegacyProfileMigration(username) {
+      return signedIn()
+        && resource.data.get('uid', null) == null
+        && resource.data.user == username
+        && hasAccessRecord()
+        && accountAccess().username == username
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.user == username
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'pass']);
     }
 
     match /account_access/{uid} {
@@ -84,7 +98,9 @@ service cloud.firestore {
           && request.resource.data.paymentStatus == 'unpaid'
           && request.resource.data.status == 'unpaid'));
       allow update: if !('pass' in request.resource.data)
-        && (isAdmin() || (ownAccount(username) && safeStudentProfileUpdate()));
+        && (isAdmin()
+          || (ownAccount(username) && safeStudentProfileUpdate())
+          || safeLegacyProfileMigration(username));
       allow delete: if isAdmin();
     }
 

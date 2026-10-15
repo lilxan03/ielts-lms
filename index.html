@@ -3530,7 +3530,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
     import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
     import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, updateDoc, deleteField, onSnapshot, query, where, limit, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     // ✨ NEW: Added sendPasswordResetEmail
-    import { getAuth, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, setPersistence, browserLocalPersistence, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
     // ✨ NEW: Web Push Notifications SDK
     import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
@@ -3558,6 +3558,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
             window.firebaseApp = app; // Expose globally for messaging
             const db = getFirestore(app);
             const auth = getAuth(app);
+            await setPersistence(auth, browserLocalPersistence);
             const storage = getStorage(app);
             const accountCreatorAppName = 'admin-account-creator';
             const accountCreatorApp = getApps().find(existingApp => existingApp.name === accountCreatorAppName)
@@ -3658,15 +3659,18 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         }
 
                         const cachedUsername = currentUser?.uid === user.uid ? currentUser.user : null;
-                        let userDocRef = window.fsDoc(window.db, window.fPath('users'), cachedUsername || user.uid);
+                        const accessRef = window.fsDoc(window.db, window.fPath('account_access'), user.uid);
+                        const accessSnapshot = await window.fsGetDoc(accessRef);
+                        const linkedUsername = accessSnapshot.exists() ? accessSnapshot.data().username : null;
+                        let userDocRef = window.fsDoc(window.db, window.fPath('users'), cachedUsername || linkedUsername || user.uid);
                         let userDocSnap = null;
                         try {
                             userDocSnap = await window.fsGetDoc(userDocRef);
                         } catch (profileLookupError) {
-                            if (cachedUsername) throw profileLookupError;
+                            if (cachedUsername || linkedUsername) throw profileLookupError;
                         }
 
-                        if (!userDocSnap?.exists() && !cachedUsername) {
+                        if (!userDocSnap?.exists() && !cachedUsername && !linkedUsername) {
                             const ownedProfileQuery = window.fsQuery(
                                 window.fsCollection(window.db, window.fPath('users')),
                                 window.fsWhere('uid', '==', user.uid),
@@ -3687,7 +3691,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                             currentUser.uid = user.uid;
                             delete currentUser.pass;
                         } else {
-                            if (cachedUsername) throw new Error('Your account profile could not be loaded. Ask the administrator to check the account UID.');
+                            if (cachedUsername || linkedUsername) throw new Error('Your account profile could not be loaded. Ask the administrator to check the account UID and access record.');
                             currentUser = {
                                 user: user.uid,
                                 uid: user.uid,
