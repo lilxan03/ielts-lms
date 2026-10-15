@@ -313,6 +313,7 @@
         margin-right: 0;
     }
     #editor-ui > #editor-view-bank,
+    #editor-ui > #editor-view-overview,
     #editor-ui > #editor-view-subs,
     #editor-ui > #editor-view-students,
     #editor-ui > #editor-view-payments,
@@ -333,6 +334,7 @@
         margin-left: 76px;
     }
     #editor-ui.sidebar-collapsed > #editor-view-bank,
+    #editor-ui.sidebar-collapsed > #editor-view-overview,
     #editor-ui.sidebar-collapsed > #editor-view-subs,
     #editor-ui.sidebar-collapsed > #editor-view-students,
     #editor-ui.sidebar-collapsed > #editor-view-payments,
@@ -400,6 +402,7 @@
             margin-right: auto;
         }
         #editor-ui > #editor-view-bank,
+        #editor-ui > #editor-view-overview,
         #editor-ui > #editor-view-subs,
         #editor-ui > #editor-view-students,
         #editor-ui > #editor-view-payments,
@@ -407,6 +410,7 @@
         #editor-ui > #editor-view-landing,
         #editor-ui > #editor-view-builder,
         #editor-ui.sidebar-collapsed > #editor-view-bank,
+        #editor-ui.sidebar-collapsed > #editor-view-overview,
         #editor-ui.sidebar-collapsed > #editor-view-subs,
         #editor-ui.sidebar-collapsed > #editor-view-students,
         #editor-ui.sidebar-collapsed > #editor-view-payments,
@@ -1108,6 +1112,7 @@
             font-size: 0.75rem;
         }
         #editor-view-bank,
+        #editor-view-overview,
         #editor-view-classes,
         #editor-view-students,
         #editor-view-payments,
@@ -2755,6 +2760,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
         <button type="button" class="app-sidebar-toggle w-9 h-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" onclick="window.closeAppSidebar('teacher')" aria-label="Close navigation menu">✕</button>
       </div>
       <nav class="flex flex-col gap-1 p-3">
+        <button type="button" id="tab-btn-overview" class="app-sidebar-link" data-sidebar-item="teacher-overview" onclick="window.navigateFromSidebar('teacher','teacher/overview')"><span>📊</span><span class="sidebar-label">Overview</span></button>
         <button type="button" id="tab-btn-bank" class="app-sidebar-link is-active" data-sidebar-item="teacher-bank" onclick="window.navigateFromSidebar('teacher','teacher/bank/tests')"><span>📚</span><span class="sidebar-label">Test Bank</span></button>
         <button type="button" id="sidebar-btn-classes" class="app-sidebar-link" data-sidebar-item="teacher-classes" onclick="window.navigateFromSidebar('teacher','teacher/bank/classes')"><span>👥</span><span class="sidebar-label">Classes & Subs</span></button>
         <button type="button" id="tab-btn-students" class="app-sidebar-link" data-sidebar-item="teacher-students" onclick="window.navigateFromSidebar('teacher','teacher/students')"><span>🎓</span><span class="sidebar-label">Students</span></button>
@@ -2765,24 +2771,70 @@ If the user inputs \gap[colour]{color}, both are accepted.
       </nav>
     </aside>
 
+    <div id="editor-view-overview" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
+      <div class="max-w-7xl mx-auto pb-20 space-y-6">
+        <section class="rounded-3xl bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-900 p-6 md:p-8 text-white shadow-lg">
+          <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p class="text-xs font-black uppercase tracking-[0.22em] text-blue-200">Teacher workspace</p>
+              <h1 class="mt-2 text-3xl md:text-4xl font-black tracking-tight">Overview</h1>
+              <p class="mt-2 max-w-2xl text-sm md:text-base text-blue-100/80">A quick read on learning activity, student access, and what needs your attention.</p>
+            </div>
+            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm">
+              <span class="text-blue-200">Today</span>
+              <span id="teacher-overview-date" class="ml-2 font-bold text-white"></span>
+            </div>
+          </div>
+        </section>
+
+        <section id="teacher-overview-stats" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" aria-live="polite"></section>
+
+        <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+          <section class="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-black text-slate-900">Needs attention</h2>
+                <p class="mt-1 text-xs font-medium text-slate-500">Items that may need a teacher follow-up</p>
+              </div>
+              <span id="teacher-overview-attention-count" class="rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-700">0</span>
+            </div>
+            <div id="teacher-overview-attention" class="divide-y divide-slate-100"></div>
+          </section>
+
+          <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100">
+              <h2 class="text-lg font-black text-slate-900">Upcoming classes</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Next scheduled lessons</p>
+            </div>
+            <div id="teacher-overview-upcoming" class="divide-y divide-slate-100"></div>
+          </section>
+        </div>
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div>
+              <h2 class="text-lg font-black text-slate-900">Recent student sign-ins</h2>
+              <p class="mt-1 text-xs font-medium text-slate-500">Latest recorded LMS sign-in activity</p>
+            </div>
+            <span id="teacher-overview-login-summary" class="text-xs font-bold text-slate-500"></span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[620px] text-left">
+              <thead class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400">
+                <tr><th class="px-5 py-3 font-black">Student</th><th class="px-5 py-3 font-black">Access</th><th class="px-5 py-3 font-black text-right">Last sign-in</th></tr>
+              </thead>
+              <tbody id="teacher-overview-logins" class="divide-y divide-slate-100 text-sm"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+
     <div id="editor-view-bank" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
       <div class="max-w-7xl mx-auto pb-20">
         
         <!-- ✨ NEW: TEACHER AT-A-GLANCE WIDGETS -->
         <div id="teacher-quick-stats" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-fade-in hidden"></div>
-
-        <div class="flex justify-center mb-8">
-            <div class="bg-white p-1.5 rounded-2xl flex space-x-2 shadow-sm border border-blue-50">
-                <button onclick="toggleDashboardView('tests')" id="dash-btn-tests" class="px-8 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl shadow-sm transition duration-200 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-                    Test Bank
-                </button>
-                <button onclick="toggleDashboardView('classes')" id="dash-btn-classes" class="px-8 py-2.5 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition duration-200 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    Classes & Subs
-                </button>
-            </div>
-        </div>
 
         <div id="dash-view-tests" class="flex flex-col gap-6 animate-fade-in-up">
           <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50">
@@ -3801,6 +3853,14 @@ If the user inputs \gap[colour]{color}, both are accepted.
                         const access = await window.loadTrustedAccountAccess(user.uid, user.email);
                         currentUser.accountAccess = access;
                         currentUser.role = access.role;
+                        if (currentUser.role === 'student') {
+                            currentUser.lastLoginAt = new Date().toISOString();
+                            try {
+                                await window.fsUpdateDoc(userDocRef, { lastLoginAt: currentUser.lastLoginAt });
+                            } catch (loginTrackingError) {
+                                console.error('Unable to record student sign-in activity:', loginTrackingError);
+                            }
+                        }
                         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
 
                         const role = access.role;
@@ -8455,6 +8515,102 @@ If the user inputs \gap[colour]{color}, both are accepted.
             if (html === '') html = `<div class="p-4 text-center text-sm text-slate-500 italic">You're all caught up!</div>`;
             list.innerHTML = html;
         }
+        window.renderTeacherOverview();
+    };
+
+    window.renderTeacherOverview = function() {
+        const stats = document.getElementById('teacher-overview-stats');
+        const attention = document.getElementById('teacher-overview-attention');
+        const upcoming = document.getElementById('teacher-overview-upcoming');
+        const logins = document.getElementById('teacher-overview-logins');
+        if (!stats || !attention || !upcoming || !logins) return;
+
+        const escapeText = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+        const studentUsers = USERS.filter(user => user.role === 'student' && user.disabled !== true);
+        const activeStudents = studentUsers.filter(user => hasActiveStudentAccess(user)).length;
+        const pendingSubs = SUBMISSIONS.filter(submission => submission.score === 'Pending Grade');
+        const pendingStudents = studentUsers.filter(user => user.paymentStatus === 'pending');
+        const pendingTests = TEST_BANK.filter(test => test.status === 'review_ready');
+        const today = new Date();
+        const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const todayClasses = SCHEDULES.filter(schedule => schedule.date === todayKey).length;
+        const upcomingClasses = SCHEDULES
+            .filter(schedule => schedule.date && schedule.date >= todayKey)
+            .sort((a, b) => `${a.date} ${a.time || ''}`.localeCompare(`${b.date} ${b.time || ''}`))
+            .slice(0, 5);
+        const now = Date.now();
+        const recentSignIns = studentUsers
+            .filter(user => user.lastLoginAt)
+            .map(user => {
+                const date = typeof user.lastLoginAt?.toDate === 'function'
+                    ? user.lastLoginAt.toDate()
+                    : new Date(user.lastLoginAt);
+                return { user, date };
+            })
+            .filter(item => Number.isFinite(item.date.getTime()))
+            .sort((a, b) => b.date - a.date);
+        const signInsThisWeek = recentSignIns.filter(item => {
+            const age = now - item.date.getTime();
+            return age >= 0 && age <= 7 * 24 * 60 * 60 * 1000;
+        }).length;
+
+        document.getElementById('teacher-overview-date').textContent = today.toLocaleDateString(undefined, {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        const statCards = [
+            { label: 'Students with access', value: `${activeStudents} / ${studentUsers.length}`, note: 'Active access / total students', icon: '🎓', iconBg: 'bg-emerald-50', route: 'teacher/students' },
+            { label: 'Tests in bank', value: TEST_BANK.length, note: `${pendingTests.length} ready for review`, icon: '📚', iconBg: 'bg-blue-50', route: 'teacher/bank/tests' },
+            { label: 'Ungraded submissions', value: pendingSubs.length, note: 'Waiting for teacher review', icon: '📝', iconBg: 'bg-amber-50', route: 'teacher/bank/classes' },
+            { label: 'Classes today', value: todayClasses, note: `${upcomingClasses.length} next scheduled shown below`, icon: '📅', iconBg: 'bg-indigo-50', route: 'teacher/timetable' }
+        ];
+        stats.innerHTML = statCards.map(card => `
+            <button type="button" onclick="window.navigateAppRoute('${card.route}')" class="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <div class="flex items-start justify-between gap-3">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">${card.label}</span>
+                    <span class="flex h-10 w-10 items-center justify-center rounded-xl ${card.iconBg} text-xl">${card.icon}</span>
+                </div>
+                <div class="mt-4 text-3xl font-black tracking-tight text-slate-900">${card.value}</div>
+                <div class="mt-1 text-xs font-medium text-slate-500">${card.note}</div>
+            </button>`).join('');
+
+        const attentionItems = [
+            { count: pendingSubs.length, label: 'Submissions need grading', detail: 'Review learner work and send feedback.', icon: '📝', route: 'teacher/bank/classes', iconBg: 'bg-amber-50' },
+            { count: pendingStudents.length, label: 'Payment requests to review', detail: 'Confirm payment and update student access.', icon: '💳', route: 'teacher/payments', iconBg: 'bg-rose-50' },
+            { count: pendingTests.length, label: 'Tests ready for review', detail: 'Check tests submitted by collaborators.', icon: '📚', route: 'teacher/bank/tests', iconBg: 'bg-purple-50' },
+            { count: SCHEDULES.filter(schedule => schedule.isNewBooking).length, label: 'New class bookings', detail: 'Check new student booking requests.', icon: '🗓️', route: 'teacher/timetable', iconBg: 'bg-indigo-50' },
+            { count: SUBMISSIONS.filter(submission => submission.studentReply && !submission.teacherReadReply).length, label: 'Student replies to read', detail: 'Follow up on learner questions.', icon: '💬', route: 'teacher/bank/classes', iconBg: 'bg-emerald-50' }
+        ].filter(item => item.count > 0);
+        document.getElementById('teacher-overview-attention-count').textContent = attentionItems.reduce((sum, item) => sum + item.count, 0);
+        attention.innerHTML = attentionItems.length
+            ? attentionItems.map(item => `<button type="button" onclick="window.navigateAppRoute('${item.route}')" class="flex w-full items-center gap-4 p-4 text-left transition hover:bg-slate-50">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.iconBg} text-xl">${item.icon}</span>
+                <span class="min-w-0 flex-1"><span class="block text-sm font-bold text-slate-800">${item.label}</span><span class="mt-0.5 block text-xs text-slate-500">${item.detail}</span></span>
+                <span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-700">${item.count}</span><span class="text-slate-300" aria-hidden="true">›</span>
+              </button>`).join('')
+            : '<div class="p-6 text-sm font-medium text-slate-500">All caught up. There are no urgent items right now.</div>';
+
+        upcoming.innerHTML = upcomingClasses.length
+            ? upcomingClasses.map(schedule => {
+                const attending = Array.isArray(schedule.attendingStudents) ? schedule.attendingStudents.length : 0;
+                return `<button type="button" onclick="window.navigateAppRoute('teacher/timetable')" class="flex w-full items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50">
+                    <span class="min-w-0"><span class="block truncate text-sm font-bold text-slate-800">${escapeText(schedule.className || schedule.topic || 'Scheduled lesson')}</span><span class="mt-1 block text-xs text-slate-500">${escapeText(schedule.date)}${schedule.time ? ` · ${escapeText(schedule.time)}` : ''}</span></span>
+                    <span class="shrink-0 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-bold text-blue-700">${attending} learner${attending === 1 ? '' : 's'}</span>
+                  </button>`;
+              }).join('')
+            : '<div class="p-6 text-sm font-medium text-slate-500">No upcoming classes are scheduled.</div>';
+
+        document.getElementById('teacher-overview-login-summary').textContent =
+            `${signInsThisWeek} student${signInsThisWeek === 1 ? '' : 's'} signed in during the last 7 days`;
+        logins.innerHTML = recentSignIns.length
+            ? recentSignIns.slice(0, 8).map(({ user, date }) => `<tr>
+                <td class="px-5 py-3"><span class="block font-bold text-slate-800">${escapeText(user.email && !user.email.toLowerCase().endsWith('@khanhlms.com') ? user.email : user.user)}</span><span class="mt-0.5 block text-xs text-slate-500">${escapeText(user.realName || 'No name set')}</span></td>
+                <td class="px-5 py-3"><span class="rounded-full ${hasActiveStudentAccess(user) ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'} px-2.5 py-1 text-[10px] font-black uppercase">${hasActiveStudentAccess(user) ? 'Active' : 'Locked'}</span></td>
+                <td class="px-5 py-3 text-right text-xs font-medium text-slate-500">${escapeText(date.toLocaleString())}</td>
+              </tr>`).join('')
+            : '<tr><td colspan="3" class="px-5 py-6 text-center text-sm text-slate-500">Sign-in activity will appear here after students next sign in.</td></tr>';
     };
     
     // ✨ NEW: Helper to clear booking notifications when clicked
@@ -8499,7 +8655,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
       // ✨ ROLE RESTRICTIONS FOR COLLABORATORS
       if (currentUser.role === 'collaborator') {
-          document.getElementById('tab-btn-students')?.classList.add('hidden');
+        document.getElementById('tab-btn-overview')?.classList.add('hidden');
+        document.getElementById('tab-btn-students')?.classList.add('hidden');
           document.getElementById('tab-btn-timetable')?.classList.add('hidden');
           document.getElementById('tab-btn-landing')?.classList.add('hidden');
           
@@ -8524,7 +8681,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
       // ✨ SMART RESTORE: Read memory to see where the teacher was before refreshing
       const savedSub = sessionStorage.getItem('lms_grading_sub');
       const savedTest = sessionStorage.getItem('lms_editing_test');
-      let savedTab = sessionStorage.getItem('lms_teacher_tab') || 'bank';
+      let savedTab = sessionStorage.getItem('lms_teacher_tab') || 'overview';
 
       // Secure route override for collaborators
       if (currentUser.role === 'collaborator') {
@@ -8566,12 +8723,16 @@ If the user inputs \gap[colour]{color}, both are accepted.
           window.navigateAppRoute(`teacher/${tab}${view ? `/${view}` : ''}`);
           return;
       }
-      ['bank', 'classes', 'builder', 'students', 'payments', 'timetable', 'landing'].forEach(t => {
+      ['overview', 'bank', 'classes', 'builder', 'students', 'payments', 'timetable', 'landing'].forEach(t => {
           const el = document.getElementById(`editor-view-${t}`);
           if (el) el.classList.add('hidden');
       });
-      ['bank', 'classes', 'students', 'payments', 'timetable', 'landing'].forEach(t => {
+      ['overview', 'bank', 'classes', 'students', 'payments', 'timetable', 'landing'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
+        if (t === 'overview' && currentUser?.role === 'collaborator') {
+          b?.classList.add('hidden');
+          return;
+        }
         if(b) b.className = `app-sidebar-link${t === tab ? ' is-active' : ''}`;
       });
 
@@ -8635,6 +8796,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
           try { window.toggleDashboardView(savedDashView); }
           finally { appRouterApplying = wasApplying; }
       }
+      if (tab === 'overview') window.renderTeacherOverview();
       if (tab === 'classes') { 
           const classView = document.getElementById('editor-view-classes');
           if(classView) classView.classList.remove('hidden'); 
@@ -15648,8 +15810,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 toggleEditorTab('bank');
               }
             } else {
-              const validTabs = ['bank', 'classes', 'students', 'payments', 'timetable', 'landing'];
-              const tab = validTabs.includes(route.section) ? route.section : 'bank';
+              const validTabs = ['overview', 'bank', 'classes', 'students', 'payments', 'timetable', 'landing'];
+              const tab = validTabs.includes(route.section) && !(route.section === 'overview' && currentUser.role !== 'teacher')
+                ? route.section
+                : 'bank';
               if (tab === 'bank' && ['tests', 'classes'].includes(route.detail)) {
                 sessionStorage.setItem('lms_dash_view', route.detail);
               }
