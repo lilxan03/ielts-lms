@@ -442,6 +442,29 @@
 
     .col-resizer { display: none !important; }
     .rich-editor .col-resizer { display: block !important; }
+    .registry-col-resizer {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 8px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        cursor: col-resize;
+        touch-action: none;
+        z-index: 2;
+    }
+    .registry-col-resizer:hover,
+    .registry-col-resizer:focus-visible {
+        background: rgb(59 130 246 / 45%);
+        outline: none;
+    }
+    .student-registry-table th,
+    .student-registry-table td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     .rich-editor table, #questions-container table, #review-right-pane table, #review-left-pane table {
         overflow-wrap: break-word;
         word-break: normal;
@@ -2873,7 +2896,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
     <!-- Students Management -->
         <div id="editor-view-students" class="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#f4f7fb] hidden animate-fade-in-up">
-          <div class="max-w-6xl mx-auto">
+          <div class="w-full max-w-none">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-blue-50 mb-6">
               <div class="mb-5 border-b border-slate-100 pb-4">
                   <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
@@ -20618,6 +20641,71 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         window.removeUserFromSystem(username);
     };
 
+    const studentRegistryColumnDefaults = [27, 15, 12, 8, 17, 13, 8];
+    const studentRegistryColumnMinimums = [18, 10, 9, 7, 12, 10, 7];
+    const studentRegistryColumnStorageKey = 'lms_student_registry_column_widths';
+
+    function getStudentRegistryColumnWidths() {
+        try {
+            const savedWidths = JSON.parse(localStorage.getItem(studentRegistryColumnStorageKey) || 'null');
+            if (Array.isArray(savedWidths) && savedWidths.length === studentRegistryColumnDefaults.length &&
+                savedWidths.every(width => Number.isFinite(width) && width > 0)) {
+                const total = savedWidths.reduce((sum, width) => sum + width, 0);
+                return savedWidths.map(width => width * 100 / total);
+            }
+        } catch (error) {
+            console.error('Unable to restore student registry column widths:', error);
+        }
+        return [...studentRegistryColumnDefaults];
+    }
+
+    function enableStudentRegistryColumnResizing(table) {
+        const columns = Array.from(table.querySelectorAll('col'));
+        let widths = getStudentRegistryColumnWidths();
+        const applyWidths = () => columns.forEach((column, index) => {
+            column.style.width = `${widths[index]}%`;
+        });
+        applyWidths();
+
+        table.querySelectorAll('[data-registry-col-resizer]').forEach(handle => {
+            handle.addEventListener('pointerdown', event => {
+                event.preventDefault();
+                const leftIndex = Number(handle.dataset.registryColResizer);
+                const rightIndex = leftIndex + 1;
+                const startX = event.clientX;
+                const tableWidth = table.getBoundingClientRect().width;
+                const startLeftWidth = widths[leftIndex];
+                const startRightWidth = widths[rightIndex];
+
+                handle.setPointerCapture(event.pointerId);
+                const resize = moveEvent => {
+                    const delta = (moveEvent.clientX - startX) / tableWidth * 100;
+                    const pairTotal = startLeftWidth + startRightWidth;
+                    const minLeft = studentRegistryColumnMinimums[leftIndex];
+                    const minRight = studentRegistryColumnMinimums[rightIndex];
+                    const leftWidth = Math.min(pairTotal - minRight, Math.max(minLeft, startLeftWidth + delta));
+                    widths[leftIndex] = leftWidth;
+                    widths[rightIndex] = pairTotal - leftWidth;
+                    applyWidths();
+                };
+                const finishResize = () => {
+                    handle.removeEventListener('pointermove', resize);
+                    handle.removeEventListener('pointerup', finishResize);
+                    handle.removeEventListener('pointercancel', finishResize);
+                    try {
+                        localStorage.setItem(studentRegistryColumnStorageKey, JSON.stringify(widths));
+                    } catch (error) {
+                        console.error('Unable to save student registry column widths:', error);
+                    }
+                };
+
+                handle.addEventListener('pointermove', resize);
+                handle.addEventListener('pointerup', finishResize, { once: true });
+                handle.addEventListener('pointercancel', finishResize, { once: true });
+            });
+        });
+    }
+
     function renderStudentsList() {
         const container = document.getElementById('registry-table-container');
         const countBadge = document.getElementById('student-count-badge');
@@ -20627,15 +20715,16 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const students = USERS.filter(u => u.role === 'student');
             if (countBadge) countBadge.textContent = students.length;
 
-            let html = `<table class="w-full text-left border-collapse whitespace-nowrap min-w-[900px]">
+            let html = `<table class="student-registry-table w-full text-left border-collapse whitespace-nowrap min-w-[1180px]" style="table-layout:fixed">
+                <colgroup>${studentRegistryColumnDefaults.map(() => '<col>').join('')}</colgroup>
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <th class="p-4">Student Account</th>
-                        <th class="p-4">Parent / Contact Name</th>
-                        <th class="p-4">Phone / Zalo</th>
-                        <th class="p-4 text-center">Lessons</th>
-                        <th class="p-4">Joined Date</th>
-                        <th class="p-4 text-center">Status</th>
+                        <th class="p-4 relative">Student Account<button type="button" class="registry-col-resizer" data-registry-col-resizer="0" aria-label="Resize Student Account column"></button></th>
+                        <th class="p-4 relative">Parent / Contact Name<button type="button" class="registry-col-resizer" data-registry-col-resizer="1" aria-label="Resize Parent / Contact Name column"></button></th>
+                        <th class="p-4 relative">Phone / Zalo<button type="button" class="registry-col-resizer" data-registry-col-resizer="2" aria-label="Resize Phone / Zalo column"></button></th>
+                        <th class="p-4 text-center relative">Lessons<button type="button" class="registry-col-resizer" data-registry-col-resizer="3" aria-label="Resize Lessons column"></button></th>
+                        <th class="p-4 relative">Joined Date<button type="button" class="registry-col-resizer" data-registry-col-resizer="4" aria-label="Resize Joined Date column"></button></th>
+                        <th class="p-4 text-center relative">Status<button type="button" class="registry-col-resizer" data-registry-col-resizer="5" aria-label="Resize Status column"></button></th>
                         <th class="p-4 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -20708,6 +20797,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
             html += `</tbody></table>`;
             container.innerHTML = html;
+            enableStudentRegistryColumnResizing(container.querySelector('.student-registry-table'));
 
         } else {
             const staff = USERS.filter(u => u.role === 'collaborator' || u.role === 'teacher');
