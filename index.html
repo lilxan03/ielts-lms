@@ -7234,9 +7234,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid();
                     if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
                 }),
-                waitForInitialSnapshot('teacher templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
+                ...(['teacher', 'collaborator'].includes(currentUser?.role)
+                  ? [waitForInitialSnapshot('teacher templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
                     if (snap.exists()) TEACHER_TEMPLATES = snap.data().items || [];
-                })
+                  })]
+                  : (TEACHER_TEMPLATES = [], []))
             ]);
 
             // 3. Attach RESTRICTED listeners based on role
