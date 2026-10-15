@@ -465,6 +465,55 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    .student-registry-table td.student-actions-cell {
+        position: relative;
+        overflow: visible;
+    }
+    .student-actions-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .student-actions-dropdown summary {
+        list-style: none;
+        cursor: pointer;
+    }
+    .student-actions-dropdown summary::-webkit-details-marker {
+        display: none;
+    }
+    .student-actions-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 50;
+        width: 190px;
+        padding: 0.35rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        background: #fff;
+        box-shadow: 0 12px 24px rgb(15 23 42 / 18%);
+    }
+    .student-actions-menu button {
+        display: block;
+        width: 100%;
+        padding: 0.55rem 0.65rem;
+        border-radius: 0.45rem;
+        color: #334155;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+    .student-actions-menu button:hover,
+    .student-actions-menu button:focus-visible {
+        background: #f1f5f9;
+        outline: none;
+    }
+    .student-actions-menu button.danger {
+        color: #e11d48;
+    }
+    .student-actions-menu button.danger:hover,
+    .student-actions-menu button.danger:focus-visible {
+        background: #fff1f2;
+    }
     .rich-editor table, #questions-container table, #review-right-pane table, #review-left-pane table {
         overflow-wrap: break-word;
         word-break: normal;
@@ -20758,13 +20807,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         statusBadge = `<span class="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm whitespace-nowrap">${billing.label}</span>`;
                     }
 
-                    let approveBtn = '';
-                    if (isPending) {
-                        approveBtn = `<button onclick="togglePaymentStatus('${s.user}', true)" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">✓ Approve</button>`;
-                    } else {
-                        approveBtn = `<button onclick="togglePaymentStatus('${s.user}', ${!billing.hasAccess})" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition whitespace-nowrap">${billing.hasAccess ? 'Lock' : 'Unlock'}</button>`;
-                    }
-
                     return `
                     <tr class="hover:bg-blue-50/40 transition-colors ${isPending ? 'bg-rose-50/20' : ''}">
                         <td class="p-4">
@@ -20784,12 +20826,19 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         </td>
                         <td class="p-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">${s.createdAt || 'N/A'}</td>
                         <td class="p-4 text-center">${statusBadge}</td>
-                        <td class="p-4 text-right space-x-1 whitespace-nowrap">
-                            ${approveBtn}
-                            <button onclick="window.promptEditStudentContact('${s.user}')" class="bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Contact Info">✏️</button>
-                            <button onclick="window.openRadarEditor('${s.user}')" class="bg-white border border-slate-200 hover:border-purple-400 hover:text-purple-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Edit Radar Chart">📊</button>
-                            <button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Reset Password">🔑</button>
-                            <button onclick="window.removeUserFromSystem('${s.user}')" class="bg-white border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-600 w-7 h-7 rounded inline-flex items-center justify-center transition shadow-sm text-sm" title="Remove student from LMS">🗑️</button>
+                        <td class="p-2 text-right student-actions-cell">
+                            <details class="student-actions-dropdown">
+                                <summary class="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-bold text-slate-700 shadow-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400">
+                                    Actions <span aria-hidden="true">⋯</span>
+                                </summary>
+                                <div class="student-actions-menu">
+                                    <button type="button" onclick="togglePaymentStatus('${s.user}', ${isPending || !billing.hasAccess}); this.closest('details').open = false">${isPending ? '✓ Approve payment' : billing.hasAccess ? '🔒 Lock access' : '🔓 Unlock access'}</button>
+                                    <button type="button" onclick="window.promptEditStudentContact('${s.user}'); this.closest('details').open = false">✏️ Edit contact info</button>
+                                    <button type="button" onclick="window.openRadarEditor('${s.user}'); this.closest('details').open = false">📊 Edit radar chart</button>
+                                    <button type="button" onclick="window.promptResetStudentPassword('${s.user}'); this.closest('details').open = false">🔑 Reset password</button>
+                                    <button type="button" class="danger" onclick="window.removeUserFromSystem('${s.user}'); this.closest('details').open = false">🗑️ Remove student</button>
+                                </div>
+                            </details>
                         </td>
                     </tr>
                     `;
