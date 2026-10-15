@@ -3727,16 +3727,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 <input type="number" id="new-q-qty" value="1" min="1" max="20" class="w-12 text-center text-sm font-bold outline-none bg-transparent" title="Number of questions in this block">
             </div>
             <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add</button>
-            <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
-            <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5" title="Grid/Excel Paste">📥 Grid Import</button>
-            <button onclick="window.openMarkupImport()" class="bg-slate-800 text-white px-4 py-2.5 rounded-lg font-black shadow hover:bg-black text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:-translate-y-0.5" title="Compile from Plain Text">⚡ Text-to-Test</button>
             <button onclick="window.openIeltsLatexImport()" class="bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-black shadow hover:bg-indigo-800 text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:-translate-y-0.5" title="Compose with IELTS LaTeX-style macros">∑ LaTeX Import</button>
-                     <label class="bg-amber-500 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-amber-600 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5 cursor-pointer" title="Auto-create a test from a text PDF">
-                         📄 PDF Auto Test
-                         <input id="test-pdf-import" type="file" accept="application/pdf" class="hidden" onchange="window.handleTestPdfImport(event)">
-                     </label>
           </div>
-                    <div id="test-pdf-import-status" class="hidden mb-6 rounded-xl border px-4 py-3 text-sm font-medium"></div>
           
           <div id="editor-questions-list" class="space-y-6 pb-32"></div>
         </div>
