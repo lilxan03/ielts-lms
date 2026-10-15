@@ -2934,7 +2934,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
               <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
                  <span class="text-3xl">👥</span> Classes & Submissions
               </h2>
-              <p class="text-sm text-slate-500 font-medium mt-1">Manage your student groups and grade their work</p>
+              <p class="text-sm text-slate-500 font-medium mt-1">Main classes hold shared learning materials. Small classes inside them track each group’s roster, progress, and submissions.</p>
             </div>
             <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
                <button onclick="promptCreateClass()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
@@ -9362,21 +9362,37 @@ If the user inputs \gap[colour]{color}, both are accepted.
       }
 
       let filteredClasses = viewableClasses.filter(c => c.name.toLowerCase().includes(query));
+      if (query) {
+          const matchingParents = filteredClasses
+              .filter(cls => cls.parentClassId)
+              .map(cls => CLASSES.find(candidate => candidate.id === cls.parentClassId))
+              .filter(parent => parent && viewableClasses.some(candidate => candidate.id === parent.id));
+          const matchingParentIds = new Set(filteredClasses.filter(cls => !cls.parentClassId).map(cls => cls.id));
+          const matchingParentChildren = viewableClasses.filter(cls => matchingParentIds.has(cls.parentClassId));
+          filteredClasses = [...new Map([...matchingParents, ...filteredClasses, ...matchingParentChildren].map(cls => [cls.id, cls])).values()];
+      }
       
       // Apply Sorting Logic
-      if (sortVal === 'az') {
-          filteredClasses.sort((a, b) => a.name.localeCompare(b.name));
-      } else if (sortVal === 'za') {
-          filteredClasses.sort((a, b) => b.name.localeCompare(a.name));
-      } else if (sortVal === 'students_high') {
-          filteredClasses.sort((a, b) => (b.enrolledStudents || []).length - (a.enrolledStudents || []).length);
-      } else if (sortVal === 'subs_high') {
-          filteredClasses.sort((a, b) => {
+      const compareClasses = (a, b) => {
+          if (sortVal === 'az') return a.name.localeCompare(b.name);
+          if (sortVal === 'za') return b.name.localeCompare(a.name);
+          if (sortVal === 'students_high') return (b.enrolledStudents || []).length - (a.enrolledStudents || []).length;
+          if (sortVal === 'subs_high') {
               const subsA = SUBMISSIONS.filter(s => s.className === a.name).length;
               const subsB = SUBMISSIONS.filter(s => s.className === b.name).length;
               return subsB - subsA;
-          });
-      }
+          }
+          return 0;
+      };
+      const rootClasses = filteredClasses
+          .filter(cls => !cls.parentClassId || !filteredClasses.some(parent => parent.id === cls.parentClassId))
+          .sort(compareClasses);
+      filteredClasses = rootClasses.flatMap(parent => {
+          const children = filteredClasses
+              .filter(cls => cls.parentClassId === parent.id)
+              .sort(compareClasses);
+          return [parent, ...children];
+      });
       
       document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
@@ -9477,10 +9493,12 @@ If the user inputs \gap[colour]{color}, both are accepted.
 
         const parentClass = getClassParent(cls);
         const childClasses = CLASSES.filter(candidate => candidate.parentClassId === cls.id);
+        const isSmallClass = Boolean(parentClass);
+        const isMainClass = !isSmallClass;
         const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center justify-end w-full gap-3">
                     ${!cls.parentClassId ? `<button onclick="window.promptCreateChildClass('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shadow-sm">+ Create Small Class</button>` : ''}
-                    ${parentClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100">Small class · ${parentClass.name}</span>` : childClasses.length ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-100">Material template · ${childClasses.length} small class${childClasses.length === 1 ? '' : 'es'}</span>` : ''}
+                    ${parentClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100">Small class · ${parentClass.name}</span>` : isMainClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-100">Main class · shared materials · ${childClasses.length} small class${childClasses.length === 1 ? '' : 'es'}</span>` : ''}
                     <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none">
                         <label class="text-[10px] font-black text-rose-500 uppercase tracking-widest whitespace-nowrap">Meet Link:</label>
                         <input type="text" onchange="window.updateClassMeetLink('${cls.id}', this.value)" value="${cls.meetLink || ''}" placeholder="https://meet.google.com/..." class="w-full md:w-36 text-sm text-slate-600 font-bold outline-none bg-transparent border-none p-0 focus:ring-0">
@@ -9495,14 +9513,17 @@ If the user inputs \gap[colour]{color}, both are accepted.
         ` : '';
 
         return `
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-4 transition-all duration-300">
+        <div class="bg-white border ${isSmallClass ? 'border-indigo-200 ml-4 sm:ml-8 border-l-4 border-l-indigo-300' : 'border-slate-200'} rounded-2xl shadow-sm overflow-hidden mb-4 transition-all duration-300">
             
             <!-- CLICKABLE HEADER -->
             <div onclick="window.toggleClassDetails('${cls.id}')" class="cursor-pointer bg-white hover:bg-blue-50/40 px-6 py-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors">
                 <div class="flex items-center gap-5">
                     <div class="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 text-blue-600 rounded-xl flex items-center justify-center text-2xl font-black shadow-sm shrink-0">🏫</div>
-                    <div>
+                    <div class="min-w-0">
                         <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
+                        <div class="text-[10px] font-black uppercase tracking-widest mt-1 ${isSmallClass ? 'text-indigo-600' : isMainClass ? 'text-blue-700' : 'text-slate-400'}">
+                            ${isSmallClass ? `↳ Small class · ${parentClass.name} · roster & progress` : isMainClass ? 'Main class · shared materials for its small classes' : 'Class'}
+                        </div>
                         <div class="flex flex-wrap gap-3 sm:gap-4 text-[11px] font-bold text-slate-500 mt-1.5">
                             <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ${enrolled.length} Student${enrolled.length !== 1 ? 's' : ''}</span>
                             <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span> ${(cls.learningPaths || []).length || 1} Path${((cls.learningPaths || []).length || 1) !== 1 ? 's' : ''}</span>
@@ -9594,7 +9615,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 </div>
                 
                 <div class="p-6 bg-white">
-                    <h4 class="font-bold text-slate-700 mb-4 border-b border-slate-100 pb-3">Learning Paths (${(cls.learningPaths || []).length || 1})</h4>
+                    <h4 class="font-bold text-slate-700 mb-4 border-b border-slate-100 pb-3">${isSmallClass ? 'Shared Learning Materials' : 'Learning Paths'} (${getClassLearningPaths(cls).length || 1})</h4>
                     <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
                         ${(() => {
                             const paths = getClassLearningPaths(cls);
