@@ -9387,12 +9387,23 @@ If the user inputs \gap[colour]{color}, both are accepted.
       const rootClasses = filteredClasses
           .filter(cls => !cls.parentClassId || !filteredClasses.some(parent => parent.id === cls.parentClassId))
           .sort(compareClasses);
-      filteredClasses = rootClasses.flatMap(parent => {
+      const orderedClasses = [];
+      const orderedClassIds = new Set();
+      rootClasses.forEach(parent => {
+          orderedClasses.push(parent);
+          orderedClassIds.add(parent.id);
           const children = filteredClasses
               .filter(cls => cls.parentClassId === parent.id)
               .sort(compareClasses);
-          return [parent, ...children];
+          children.forEach(child => {
+              orderedClasses.push(child);
+              orderedClassIds.add(child.id);
+          });
       });
+      const misplacedClasses = filteredClasses
+          .filter(cls => !orderedClassIds.has(cls.id))
+          .sort(compareClasses);
+      filteredClasses = [...orderedClasses, ...misplacedClasses];
       
       document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
@@ -9494,9 +9505,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const parentClass = getClassParent(cls);
         const childClasses = CLASSES.filter(candidate => candidate.parentClassId === cls.id);
         const isSmallClass = Boolean(parentClass);
+        const hasInvalidHierarchyDepth = Boolean(parentClass?.parentClassId);
         const isMainClass = !isSmallClass;
         const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center justify-end w-full gap-3">
+                    <button onclick="window.openClassHierarchyEditor('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition shadow-sm">Edit / Assign Parent</button>
                     ${!cls.parentClassId ? `<button onclick="window.promptCreateChildClass('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shadow-sm">+ Create Small Class</button>` : ''}
                     ${parentClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100">Small class · ${parentClass.name}</span>` : isMainClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-100">Main class · shared materials · ${childClasses.length} small class${childClasses.length === 1 ? '' : 'es'}</span>` : ''}
                     <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm flex-1 md:flex-none">
@@ -9521,8 +9534,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     <div class="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 text-blue-600 rounded-xl flex items-center justify-center text-2xl font-black shadow-sm shrink-0">🏫</div>
                     <div class="min-w-0">
                         <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
-                        <div class="text-[10px] font-black uppercase tracking-widest mt-1 ${isSmallClass ? 'text-indigo-600' : isMainClass ? 'text-blue-700' : 'text-slate-400'}">
-                            ${isSmallClass ? `↳ Small class · ${parentClass.name} · roster & progress` : isMainClass ? 'Main class · shared materials for its small classes' : 'Class'}
+                        <div class="text-[10px] font-black uppercase tracking-widest mt-1 ${hasInvalidHierarchyDepth ? 'text-rose-600' : isSmallClass ? 'text-indigo-600' : isMainClass ? 'text-blue-700' : 'text-slate-400'}">
+                            ${hasInvalidHierarchyDepth ? `Hierarchy needs review · parent ${parentClass.name} is also a small class` : isSmallClass ? `↳ Small class · ${parentClass.name} · roster & progress` : isMainClass ? 'Main class · shared materials for its small classes' : 'Class'}
                         </div>
                         <div class="flex flex-wrap gap-3 sm:gap-4 text-[11px] font-bold text-slate-500 mt-1.5">
                             <span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ${enrolled.length} Student${enrolled.length !== 1 ? 's' : ''}</span>
@@ -9551,8 +9564,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 
                 <div class="p-6 bg-white">
                     <h4 class="font-bold text-slate-700 mb-4 flex justify-between items-center border-b border-slate-100 pb-3">
-                        Enrolled Students (${enrolled.length})
-                        ${isOwner ? `<button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200">+ Assign User</button>` : ''}
+                        ${isSmallClass ? 'Small-Class Students' : 'Enrolled Students'} (${enrolled.length})
+                        ${isOwner ? `<button onclick="window.promptEnrollStudent('${cls.id}')" class="text-xs bg-blue-50 text-blue-700 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition border border-blue-200">+ Assign Student</button>` : ''}
                     </h4>
                                         <div class="space-y-2 max-h-60 overflow-y-auto pr-1 ${isOwner ? 'mb-6' : ''}">
                         ${enrolled.length ? enrolled.map(student => {
@@ -9715,6 +9728,102 @@ If the user inputs \gap[colour]{color}, both are accepted.
             cls.feePerLesson = Number(fee);
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
         }
+    };
+
+    window.openClassHierarchyEditor = function(cid) {
+      const cls = CLASSES.find(candidate => candidate.id === cid);
+      if (!cls) return;
+
+      const childClasses = CLASSES.filter(candidate => candidate.parentClassId === cls.id);
+      const canBecomeSmallClass = childClasses.length === 0 &&
+        (Boolean(cls.parentClassId) || !(cls.enrolledStudents || []).length);
+      const eligibleParents = CLASSES.filter(candidate =>
+        candidate.id !== cls.id &&
+        !candidate.parentClassId &&
+        !childClasses.some(child => child.id === candidate.id)
+      );
+      const currentParentId = cls.parentClassId || '';
+      const currentParentIsEligible = eligibleParents.some(parent => parent.id === currentParentId);
+      const parentOptions = [
+        ...(currentParentId && !currentParentIsEligible
+          ? [`<option value="__choose__" selected disabled>Choose a valid parent to repair this hierarchy</option>`]
+          : []),
+        `<option value="" ${currentParentId ? '' : 'selected'}>Main class (no parent)</option>`,
+        ...eligibleParents.map(parent => `<option value="${parent.id}" ${currentParentId === parent.id ? 'selected' : ''}>Small class under: ${parent.name}</option>`)
+      ].join('');
+      const hierarchyNote = canBecomeSmallClass
+        ? 'Choose a main class to make this a small class sharing its materials, or leave it at the top level as a main class.'
+        : childClasses.length
+          ? 'This class currently contains small classes. Move those small classes first; a class cannot be nested under another class while it has children.'
+          : 'This main class has enrolled students. Assign them to a small class first so they keep access to their class materials.';
+
+      document.getElementById('modal-title').textContent = `Edit Hierarchy: ${cls.name}`;
+      document.getElementById('modal-message').innerHTML = `
+        <p class="mb-3 text-sm text-slate-600">${hierarchyNote}</p>
+        <label for="class-parent-select" class="block text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Assign parent class</label>
+        <select id="class-parent-select" ${canBecomeSmallClass ? '' : 'disabled'} class="w-full border-2 border-slate-200 p-3 rounded-xl outline-none focus:border-blue-500 font-bold text-blue-900 bg-white disabled:bg-slate-100">
+          ${parentOptions}
+        </select>
+        <p class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-3">Changing the parent changes which learning materials this class inherits. Students and class schedules will stay assigned to this class.</p>`;
+      document.getElementById('modal-input').classList.add('hidden');
+      document.getElementById('modal-cancel').classList.remove('hidden');
+      document.getElementById('modal-confirm').textContent = 'Save Hierarchy';
+      document.getElementById('custom-modal').classList.remove('hidden');
+      document.getElementById('modal-cancel').onclick = () => {
+        document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').textContent = 'OK';
+      };
+      document.getElementById('modal-confirm').onclick = () => window.saveClassHierarchy(cid);
+    };
+
+    window.saveClassHierarchy = async function(cid) {
+      const cls = CLASSES.find(candidate => candidate.id === cid);
+      const select = document.getElementById('class-parent-select');
+      if (!cls || !select || select.disabled) return;
+
+      const newParentId = select.value;
+      const newParent = newParentId ? CLASSES.find(candidate => candidate.id === newParentId) : null;
+      const hasChildren = CLASSES.some(candidate => candidate.parentClassId === cls.id);
+      const hasEnrolledStudents = (cls.enrolledStudents || []).length > 0;
+      if (newParentId === '__choose__' || (newParentId && (!newParent || newParent.parentClassId)) || (newParentId === cls.id) ||
+          (newParentId && hasChildren) || (newParentId && hasEnrolledStudents && !cls.parentClassId)) {
+        document.getElementById('modal-confirm').textContent = 'OK';
+        showModalMsg("Invalid Hierarchy", "Small classes must belong directly to a main class. Move child classes first and choose a main class as the parent.");
+        return;
+      }
+
+      if ((cls.parentClassId || '') === newParentId) {
+        document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').textContent = 'OK';
+        return;
+      }
+
+      const updatedClass = { ...cls };
+      if (newParentId) updatedClass.parentClassId = newParentId;
+      else delete updatedClass.parentClassId;
+
+      const button = document.getElementById('modal-confirm');
+      button.disabled = true;
+      button.textContent = 'Saving...';
+      try {
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), updatedClass.id), updatedClass);
+        const classIndex = CLASSES.findIndex(candidate => candidate.id === updatedClass.id);
+        if (classIndex >= 0) CLASSES[classIndex] = updatedClass;
+        document.getElementById('custom-modal').classList.add('hidden');
+        renderClasses();
+        if (typeof window.renderTimetable === 'function') window.renderTimetable();
+        if (typeof window.showToast === 'function') {
+          window.showToast("Hierarchy Updated", newParent
+            ? `${updatedClass.name} now belongs to ${newParent.name}.`
+            : `${updatedClass.name} is now a main class.`);
+        }
+      } catch (error) {
+        console.error(`Unable to update hierarchy for class ${cid}:`, error);
+        showModalMsg("Error", "Could not save this hierarchy change. Please check your connection and try again.");
+      } finally {
+        button.disabled = false;
+        button.textContent = 'OK';
+      }
     };
 
     window.toggleClassLearningPath = async function(cid) {
