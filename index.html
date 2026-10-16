@@ -963,6 +963,8 @@
     }
     .selection-tooltip-pop[data-placement="left"] .arrow,
     .selection-tooltip-pop[data-placement="right"] .arrow { display: none; }
+    .selection-lookup-popover[data-placement="left"] .arrow,
+    .selection-lookup-popover[data-placement="right"] .arrow { display: none; }
 
     .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
     .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
@@ -2137,7 +2139,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
   </div>
 
     <!-- VOCAB POPOVER (Practice Mode) -->
-  <div id="vocab-popover" class="hidden absolute z-[170] bg-white border border-blue-200 shadow-2xl rounded-lg p-4 w-72 -translate-y-full mt-[-10px] animate-pop">
+  <div id="vocab-popover" class="hidden fixed z-[170] bg-white border border-blue-200 shadow-2xl rounded-lg p-4 w-72 selection-tooltip-pop selection-lookup-popover">
     <div class="flex justify-between items-start mb-1">
         <h3 class="font-black text-lg text-blue-800 flex items-center gap-2">
             <span id="vp-term"></span>
@@ -2153,7 +2155,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
   </div>
 
   <!-- GRAMMAR POPOVER (Practice Mode) -->
-  <div id="grammar-popover" class="hidden absolute z-[170] bg-white border border-emerald-200 shadow-2xl rounded-xl p-5 w-[340px] max-w-[90vw] -translate-y-full mt-[-10px] animate-pop">
+  <div id="grammar-popover" class="hidden fixed z-[170] bg-white border border-emerald-200 shadow-2xl rounded-xl p-5 w-[340px] max-w-[90vw] selection-tooltip-pop selection-lookup-popover">
     <div class="mb-3 border-b border-slate-100 pb-3">
         <div class="mb-2">
             <span id="gp-type" class="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded shadow-sm uppercase tracking-widest inline-block"></span>
@@ -2801,7 +2803,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 <p class="text-xs font-semibold text-slate-500 mt-1">Continue your course plan and complete the next available lesson.</p>
               </div>
               <div class="flex flex-wrap items-center gap-2">
-                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search materials..." class="flex-1 min-w-[140px] border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition font-medium">
+                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search tests or part titles..." class="flex-1 min-w-[140px] border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition font-medium">
                 <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
                   <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
                 </select>
@@ -3147,7 +3149,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <span class="text-slate-400">🔍</span>
                  </div>
-                 <input type="text" id="bank-search" onkeyup="renderTestBank(true)" placeholder="Search tests by title or tag..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
+                 <input type="text" id="bank-search" onkeyup="renderTestBank(true)" placeholder="Search test or part titles, or tags..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
               </div>
               <select id="bank-filter-mod" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
                 <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option><option value="activity">Activities</option>
@@ -9057,6 +9059,23 @@ If the user inputs \gap[colour]{color}, both are accepted.
         if (bankView) bankView.scrollTop = scrollTop;
     };
 
+    function matchesTestSearch(test, query, additionalTitle = '') {
+      const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
+      if (!normalizedQuery) return true;
+
+      const searchableTitles = [
+        additionalTitle,
+        test?.title,
+        ...(Array.isArray(test?.parts) ? test.parts.map(part => part?.title) : []),
+        ...(Array.isArray(test?.topics) ? test.topics : [])
+      ];
+      return searchableTitles
+        .filter(value => typeof value === 'string')
+        .join(' ')
+        .toLocaleLowerCase()
+        .includes(normalizedQuery);
+    }
+
     function renderTestBank(resetPage = false) {
       if (resetPage) currentTestBankPage = 1;
       const grid = document.getElementById('test-bank-grid');
@@ -9080,7 +9099,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
       }
 
       let filtered = TEST_BANK.filter(t => {
-          const matchQuery = t.title.toLowerCase().includes(query) || (t.topics && t.topics.join(' ').toLowerCase().includes(query));
+          const matchQuery = matchesTestSearch(t, query);
           const matchMod = mod === 'all' || t.module === mod;
           const matchTag = selectedTag === 'all' || (t.topics && t.topics.includes(selectedTag));
           
@@ -11188,7 +11207,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
     }
 
     window.addEventListener('scroll', () => {
-      ['exam-selection-tooltip', 'clear-highlight-tooltip', 'editor-selection-tooltip'].forEach(id => {
+      ['exam-selection-tooltip', 'clear-highlight-tooltip', 'editor-selection-tooltip', 'vocab-popover', 'grammar-popover'].forEach(id => {
         const tooltip = document.getElementById(id);
         if (tooltip) tooltip.classList.add('hidden');
       });
@@ -15804,7 +15823,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               const t = item.testId ? TEST_BANK.find(x => x.id === item.testId) : null;
               const title = item.title || (t ? t.title : '');
               const topics = t ? (t.topics || []) : [];
-              const matchQuery = title.toLowerCase().includes(query) || topics.join(' ').toLowerCase().includes(query);
+              const matchQuery = matchesTestSearch(t, query, title);
               const matchMod = mod === 'all' || (t && t.module === mod);
               const matchTag = selectedTag === 'all' || topics.includes(selectedTag);
               return matchQuery && matchMod && matchTag;
@@ -17909,7 +17928,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       restoreHighlights();
     }
     
-        function showVocabPop(e, idx) {
+    function positionLookupPopover(popover, anchor) {
+      positionSelectionTooltip(popover, anchor);
+
+      const arrow = popover.querySelector('.arrow');
+      if (!arrow || ['left', 'right'].includes(popover.dataset.placement)) return;
+
+      const popoverRect = popover.getBoundingClientRect();
+      const anchorCenter = anchor.left + anchor.width / 2;
+      const arrowInset = 12;
+      const arrowLeft = Math.max(arrowInset, Math.min(anchorCenter - popoverRect.left, popoverRect.width - arrowInset));
+      arrow.style.left = `${arrowLeft}px`;
+    }
+
+    function showVocabPop(e, idx) {
       e.stopPropagation(); const v = APP_DATA.vocab[idx]; if(!v) return;
       document.getElementById('vp-term').textContent = v.term;
       document.getElementById('vp-pron').textContent = v.pron || ''; document.getElementById('vp-pron').classList.toggle('hidden', !v.pron);
@@ -17934,24 +17966,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       extrasEl.classList.toggle('hidden', extraHtml.length === 0);
       
       const pop = document.getElementById('vocab-popover'); 
-      pop.classList.remove('hidden');
-      
-      const rect = e.target.getBoundingClientRect();
-      const popWidth = pop.offsetWidth || 288; 
-      
-      let popLeft = rect.left + (rect.width / 2);
-      if (popLeft - (popWidth / 2) < 10) popLeft = (popWidth / 2) + 10;
-      if (popLeft + (popWidth / 2) > window.innerWidth - 10) popLeft = window.innerWidth - (popWidth / 2) - 10;
-      
-      pop.style.left = `${popLeft}px`; 
-      pop.style.top = `${rect.top}px`;
-      
-      const arrow = pop.querySelector('.arrow');
-      if (arrow) {
-         const wordCenter = rect.left + (rect.width / 2);
-         const relativeOffset = wordCenter - popLeft;
-         arrow.style.left = `calc(50% + ${relativeOffset}px)`;
-      }
+      const rect = (e.currentTarget || e.target).getBoundingClientRect();
+      positionLookupPopover(pop, rect);
     }
 
     function showGrammarPop(e, idx) {
@@ -17961,24 +17977,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       document.getElementById('gp-expl').innerHTML = g.expl || '';
       
       const pop = document.getElementById('grammar-popover'); 
-      pop.classList.remove('hidden');
-      
-      const rect = e.target.getBoundingClientRect();
-      const popWidth = pop.offsetWidth || 340; 
-      
-      let popLeft = rect.left + (rect.width / 2);
-      if (popLeft - (popWidth / 2) < 10) popLeft = (popWidth / 2) + 10;
-      if (popLeft + (popWidth / 2) > window.innerWidth - 10) popLeft = window.innerWidth - (popWidth / 2) - 10;
-      
-      pop.style.left = `${popLeft}px`; 
-      pop.style.top = `${rect.top}px`;
-      
-      const arrow = pop.querySelector('.arrow');
-      if (arrow) {
-         const wordCenter = rect.left + (rect.width / 2);
-         const relativeOffset = wordCenter - popLeft;
-         arrow.style.left = `calc(50% + ${relativeOffset}px)`;
-      }
+      const rect = (e.currentTarget || e.target).getBoundingClientRect();
+      positionLookupPopover(pop, rect);
     }
     
     document.addEventListener('mouseup', e => { 
