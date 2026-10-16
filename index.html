@@ -7387,29 +7387,9 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 return;
             }
 
-            // Student Launch Sequence
             const m = document.getElementById('student-day-modal');
             if (m) m.classList.add('hidden');
-            
-            window.APP_DATA = JSON.parse(JSON.stringify(test));
-            
-            const metaModal = document.getElementById('test-mode-modal');
-            if (metaModal) {
-                const container = document.getElementById('part-checkboxes');
-                if (container) {
-                    container.innerHTML = APP_DATA.parts.map((p, i) => 
-                        `<label class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg cursor-pointer hover:bg-blue-50 transition">
-                            <input type="checkbox" value="${i}" class="part-select-checkbox w-4 h-4 text-blue-600" checked>
-                            <span class="text-sm font-bold text-slate-700">${p.title || 'Part ' + (i+1)}</span>
-                        </label>`
-                    ).join('');
-                    document.getElementById('part-selection-container').classList.remove('hidden');
-                }
-                metaModal.classList.remove('hidden');
-            } else {
-                window.isTimeFree = true;
-                if(typeof window.startTestSession === 'function') window.startTestSession();
-            }
+            openModeSelection(testId);
         }
     };
 
