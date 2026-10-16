@@ -6829,6 +6829,74 @@ If the user inputs \gap[colour]{color}, both are accepted.
         window.triggerEditorAutosave();
     };
 
+    function escapeHtmlAttributeValue(value) {
+        return String(value || '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+    }
+
+    function saveListeningQuestionImage(questionIndex, image) {
+        const question = APP_DATA.parts[currentEditorPartIdx]?.questions?.[questionIndex];
+        if (!question) return;
+        question.image = image || '';
+        window.saveCurrentEditorPart();
+        renderEditorQuestions();
+        window.triggerEditorAutosave();
+    }
+
+    window.handleListeningQuestionImageClick = function(e, questionIndex) {
+        if (e.target.closest('button')) return;
+        document.getElementById(`listening-question-image-file-${questionIndex}`)?.click();
+    };
+
+    window.handleListeningQuestionImagePaste = function(e, questionIndex) {
+        const clipboard = e.clipboardData || e.originalEvent?.clipboardData;
+        if (!clipboard) return;
+
+        const imageItem = Array.from(clipboard.items || []).find(item => item.type.startsWith('image/'));
+        if (imageItem) {
+            e.preventDefault();
+            const file = imageItem.getAsFile();
+            if (!file) {
+                window.showModalMsg('Paste Error', 'Could not read the pasted image.');
+                return;
+            }
+            window.processImageFile(file, image => saveListeningQuestionImage(questionIndex, image));
+            return;
+        }
+
+        const pastedText = clipboard.getData('text/plain').trim();
+        if (/^https?:\/\/\S+$/i.test(pastedText)) {
+            e.preventDefault();
+            saveListeningQuestionImage(questionIndex, pastedText);
+        }
+    };
+
+    window.handleListeningQuestionImageFile = function(e, questionIndex) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            window.showModalMsg('Invalid File', 'Please choose an image file.');
+            e.target.value = '';
+            return;
+        }
+        window.processImageFile(file, image => saveListeningQuestionImage(questionIndex, image));
+        e.target.value = '';
+    };
+
+    window.removeListeningQuestionImage = function(questionIndex) {
+        saveListeningQuestionImage(questionIndex, '');
+    };
+
+    window.setListeningQuestionImageUrl = function(questionIndex, imageUrl) {
+        const url = imageUrl.trim();
+        if (url && !/^(https?:\/\/|data:image\/)/i.test(url)) {
+            window.showModalMsg('Invalid Image Link', 'Use a direct image link beginning with http:// or https://.');
+            return;
+        }
+        saveListeningQuestionImage(questionIndex, url);
+    };
+
     window.handlePartImagePaste = function(e) {
         e.preventDefault();
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
@@ -12242,7 +12310,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
       part.questions.forEach((q, i) => {
         const div = document.createElement('div'); 
         div.className = 'bg-white rounded-xl border border-slate-200 shadow-sm relative transition-all hover:shadow-md overflow-hidden';
-        const esc = s => (s||'').replace(/"/g,'&quot;'); const formatArr = a => (a||[]).map(value => q.latexSource ? String(value).replace(/[&<>]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[char])) : value).join('\n');
+        const esc = s => (s||'').replace(/"/g,'&quot;');
+        const formatArr = a => (a||[]).map(value => q.latexSource ? String(value).replace(/[&<>]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[char])) : value).join('\n');
         const mkLbl = (t) => `<label class="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1.5 mt-4 first:mt-0">${t}</label>`;
         
         const mkStandardToolbar = () => `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
@@ -12321,6 +12390,17 @@ If the user inputs \gap[colour]{color}, both are accepted.
                  </div>`;
                  
         html += `<div>${mkLbl('Instruction')}${mkStandardToolbar()}<div class="q-inst rich-editor w-full border border-slate-300 bg-white p-3 rounded-b-lg min-h-[70px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.instruction||''}</div></div>`;
+
+        const hasDedicatedMapImage = q.type === 'map_labelling_grid' || q.type === 'map_labelling_hotspots';
+        if (APP_DATA.module === 'listening' && !hasDedicatedMapImage) {
+            html += `<div>${mkLbl('Question Image (Upload, Paste, or Image Link)')}
+                <input type="url" value="${escapeHtmlAttributeValue(q.image)}" placeholder="Paste a direct image URL here..." class="${baseInputClass} mb-2 !p-2 !text-blue-600 font-mono shadow-sm" onchange="window.setListeningQuestionImageUrl(${i}, this.value)">
+                <div class="relative border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-blue-50 transition flex flex-col items-center justify-center min-h-[100px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-hidden rounded-xl" tabindex="0" onclick="window.handleListeningQuestionImageClick(event, ${i})" onpaste="window.handleListeningQuestionImagePaste(event, ${i})">
+                    ${q.image ? `<div class="absolute top-2 right-2 z-20"><button type="button" class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-md shadow" onclick="event.stopPropagation(); window.removeListeningQuestionImage(${i})">✕ Clear Image</button></div><img src="${escapeHtmlAttributeValue(q.image)}" alt="Question image" class="max-w-full max-h-[240px] object-contain block pointer-events-none select-none rounded-lg">` : `<div class="text-slate-500 font-medium pointer-events-none py-6">Paste an image here or click to upload</div>`}
+                </div>
+                <input type="file" id="listening-question-image-file-${i}" class="hidden" accept="image/*" onchange="window.handleListeningQuestionImageFile(event, ${i})">
+            </div>`;
+        }
         
         if (q.type === 'multiple_choice' || q.type === 'tfng' || q.type === 'ynng') {
            html += `<div>${mkLbl('Question Text')}${mkStandardToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
@@ -18525,6 +18605,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const hasInst = cleanInst && cleanInst !== '<br>' && cleanInst !== '<p><br></p>';
         
         let finalInst = highlightVocab(q.instruction);
+        const hasDedicatedMapImage = q.type === 'map_labelling_grid' || q.type === 'map_labelling_hotspots';
+        const questionImageHtml = APP_DATA.module === 'listening' && q.image && !hasDedicatedMapImage
+            ? `<div class="mb-5 text-center bg-slate-50 p-4 border border-slate-200 rounded-xl"><img src="${escapeHtmlAttributeValue(q.image)}" alt="Question image" class="max-w-full max-h-[420px] inline-block rounded shadow-sm"></div>`
+            : '';
 
         if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
             if (leftoverBadges) instructionHtml = `<div class="flex gap-1 flex-wrap shrink-0 mb-2">${leftoverBadges}</div>`;
@@ -18540,6 +18624,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         div.innerHTML = `
           <div class="flex flex-col ${instructionHtml ? 'gap-3' : 'gap-0'}">
             ${instructionHtml}
+            ${questionImageHtml}
             <div class="w-full text-slate-800 ${instructionHtml ? 'mt-2' : 'mt-0'}">
               ${content}
               ${chkBtn}
@@ -19523,6 +19608,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         p.questions.forEach((q) => {
           let content = '';
           let qImageHtml = '';
+          const hasDedicatedMapImage = q.type === 'map_labelling_grid' || q.type === 'map_labelling_hotspots';
+          const genericQuestionImageHtml = APP_DATA.module === 'listening' && q.image && !hasDedicatedMapImage
+              ? `<div class="mb-5 text-center bg-slate-50 p-4 border border-slate-200 rounded-xl"><img src="${escapeHtmlAttributeValue(q.image)}" alt="Question image" class="max-w-full max-h-[420px] inline-block rounded shadow-sm"></div>`
+              : '';
           let qTextHtml = '';
           let qOptsHtml = '';
           const displayResultOption = value => q.latexSource
@@ -19900,6 +19989,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           // Use the beautiful q-block styling from Test Mode!
           rHtml += `<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-6 transition theme-q-block">
               ${instructionHtml}
+              ${genericQuestionImageHtml}
               <div class="w-full text-slate-800">
                   ${qTextHtml}
                   ${qOptsHtml}
@@ -23195,6 +23285,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     qText = qText.replace(/\{blank:(\d+)\}/g, '<span class="blank">$1</span>');
                     qText = qText.replace(/\{drop:(\d+)\}/g, '<span class="blank">$1</span>');
                     
+                    if (APP_DATA.module === 'listening' && q.image && q.type !== 'map_labelling_grid' && q.type !== 'map_labelling_hotspots') {
+                        html += `<div><img src="${escapeHtmlAttributeValue(q.image)}" alt="Question image" style="max-width:100%; max-height:420px; display:block; margin:10px auto;"></div>`;
+                    }
                     if (q.type === 'map_labelling_grid' && q.image) {
                         html += `<div><img src="${q.image}" style="max-width:400px; display:block; margin: 10px auto;"></div>`;
                     }
