@@ -1852,18 +1852,20 @@
         <div class="mb-5 bg-blue-50/50 border border-blue-200 rounded-xl p-4 shadow-inner">
             <label class="text-xs font-black text-blue-800 uppercase tracking-widest flex items-center gap-2 mb-2"><span class="text-base drop-shadow-sm">📋</span> Smart Paste Area</label>
             <textarea id="smart-paste-area" class="w-full bg-white border border-blue-200 rounded-lg p-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 font-medium text-slate-700 placeholder:text-slate-400 resize-none h-20 shadow-sm transition-all" placeholder="Click here and press Ctrl+V to paste your rows directly from Excel/Google Sheets..." onpaste="window.handleSmartPaste(event)"></textarea>
-            <p class="text-[10px] font-bold text-blue-600 mt-2">The table below will automatically build and intelligently group your questions (🔗) when you paste here.</p>
+            <p class="text-[10px] font-bold text-blue-600 mt-2">Paste a tab-separated sheet with headers such as Section, Passage, Type, Instruction, Question, Options, Answer, Hint, and Explanation. Header order is flexible; separate options with semicolons or | to preserve commas. The original seven-column format still works.</p>
         </div>
         
-        <div class="border border-slate-200 rounded-xl mb-3 overflow-hidden shadow-sm">
-            <table class="w-full text-left border-collapse" id="bulk-import-table">
+        <div class="border border-slate-200 rounded-xl mb-3 overflow-x-auto shadow-sm">
+            <table class="w-full min-w-[1400px] text-left border-collapse" id="bulk-import-table">
                 <thead class="bg-slate-50 border-b border-slate-200">
                     <tr class="text-[10px] text-slate-500 uppercase tracking-wider">
                         <th class="p-3 font-bold w-[4%] text-center border-r border-slate-200" title="Group with previous row">🔗</th>
+                        <th class="p-3 font-bold w-[9%]">Section / Part</th>
+                        <th class="p-3 font-bold w-[14%]">Passage / Context</th>
                         <th class="p-3 font-bold w-[12%]">Type</th>
                         <th class="p-3 font-bold w-[15%]">Instruction</th>
                         <th class="p-3 font-bold w-[18%]">Question Text / Statement</th>
-                        <th class="p-3 font-bold w-[13%]">Options (csv)</th>
+                        <th class="p-3 font-bold w-[13%]">Options</th>
                         <th class="p-3 font-bold w-[12%]">Answer</th>
                         <th class="p-3 font-bold w-[13%]">Hint</th>
                         <th class="p-3 font-bold w-[13%]">Explanation</th>
@@ -12618,6 +12620,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
         tr.className = "import-row hover:bg-slate-50 transition-colors";
         tr.innerHTML = `
             <td class="p-2 align-middle text-center border-r border-slate-100"><input type="checkbox" class="row-group w-4 h-4 text-blue-600 rounded border-slate-300 cursor-pointer" title="Merge into the same block as the row above" onchange="this.closest('tr').classList.toggle('bg-blue-50/40', this.checked)"></td>
+            <td class="p-2 align-top"><input class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-section focus:border-blue-500 bg-white" placeholder="Part 1 / Section 1"></td>
+            <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-passage focus:border-blue-500 resize-none h-14 bg-white" placeholder="Passage / shared context"></textarea></td>
             <td class="p-2 align-top"><select class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-type focus:border-blue-500 font-medium bg-white" data-col="0" onchange="window.checkAutoGroup(this)"><option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop</option><option value="tfng">True/False</option><option value="ynng">Yes/No</option><option value="matching_headings">Matching Headings</option><option value="matching_info">Matching Info</option><option value="map_labelling_hotspots">Map (Hotspots)</option><option value="map_labelling_grid">Map (Grid)</option><option value="essay">Essay / Writing</option></select></td>
             <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-inst focus:border-blue-500 resize-none h-14 bg-white" placeholder="Instruction" data-col="1"></textarea></td>
             <td class="p-2 align-top"><textarea class="w-full border border-slate-200 p-2 rounded text-sm outline-none row-text focus:border-blue-500 resize-none h-14 bg-white" placeholder="Question Text" data-col="2"></textarea></td>
@@ -12639,7 +12643,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const groupCb = tr.querySelector('.row-group');
         
         const groupables = ['fill_blanks', 'dnd_list', 'matching_headings', 'matching_info', 'map_labelling_hotspots', 'map_labelling_grid'];
-        if (groupables.includes(currType) && currType === prevType) {
+        const sameSection = tr.querySelector('.row-section').value.trim() === prevTr.querySelector('.row-section').value.trim();
+        if (groupables.includes(currType) && currType === prevType && sameSection) {
             groupCb.checked = true;
             tr.classList.add('bg-blue-50/40');
         } else {
@@ -12719,7 +12724,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const existingRows = tbody.querySelectorAll('.import-row');
         let isEmpty = true;
         existingRows.forEach(r => {
-            if (r.querySelector('.row-text').value || r.querySelector('.row-ans').value) isEmpty = false;
+            if (['.row-section', '.row-passage', '.row-inst', '.row-text', '.row-opts', '.row-ans', '.row-hint', '.row-expl']
+                .some(selector => r.querySelector(selector).value.trim())) isEmpty = false;
         });
         if (isEmpty) tbody.innerHTML = '';
 
@@ -12768,53 +12774,104 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
 
         // Filter out completely empty rows
-        const pasteRows = rows.filter(r => r.some(cell => cell.trim() !== ''));
+        let pasteRows = rows.filter(r => r.some(cell => cell.trim() !== ''));
+        if (!pasteRows.length) return;
+        const normalizeHeader = value => value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+        const headerAliases = {
+            section: ['section', 'part', 'section part', 'part section', 'test section', 'section name', 'part name', 'test part', 'passage number', 'section number'],
+            passage: ['passage', 'passage text', 'passage context', 'context', 'reading text', 'reading passage', 'transcript', 'source text'],
+            type: ['type', 'question type', 'item type', 'task type', 'question format'],
+            instruction: ['instruction', 'instructions', 'direction', 'directions', 'question instruction'],
+            text: ['question', 'question text', 'statement', 'prompt', 'item', 'sentence'],
+            options: ['options', 'choices', 'answer options', 'option list'],
+            answer: ['answer', 'correct answer', 'correct', 'key', 'answer key'],
+            hint: ['hint', 'clue'],
+            explanation: ['explanation', 'rationale', 'feedback']
+        };
+        const firstHeaders = pasteRows[0].map(normalizeHeader);
+        const headerMap = {};
+        let recognizedHeaders = 0;
+        firstHeaders.forEach((header, index) => {
+            for (const [field, aliases] of Object.entries(headerAliases)) {
+                if (aliases.includes(header)) {
+                    if (headerMap[field] === undefined) headerMap[field] = index;
+                    recognizedHeaders++;
+                    break;
+                }
+            }
+        });
+        const choiceColumns = firstHeaders
+            .map((header, index) => ({ header, index, label: header.match(/^(?:(?:option|choice)\s*)?([a-d]|\d+)$/)?.[1] || '' }))
+            .filter(({label}) => !!label)
+            .sort((left, right) => left.label.localeCompare(right.label, undefined, { numeric: true }))
+            .map(({index}) => index);
+        const hasHeader = recognizedHeaders >= 2 && (
+            headerMap.text !== undefined || headerMap.type !== undefined || headerMap.answer !== undefined
+        );
+        if (hasHeader) pasteRows = pasteRows.slice(1);
 
+        const normalizeType = value => {
+            const raw = String(value || '').trim().toLowerCase().replace(/[_-]+/g, ' ');
+            if (/^(fill blanks|gap fill|fill in|fill the gaps|completion|sentence completion|note completion|summary completion)$/.test(raw) || /gap|fill.*blank|completion/.test(raw)) return 'fill_blanks';
+            if (/drag|drop|dnd/.test(raw)) return 'dnd_list';
+            if (/true.*false|tfng/.test(raw)) return 'tfng';
+            if (/yes.*no|ynng/.test(raw)) return 'ynng';
+            if (/heading/.test(raw)) return 'matching_headings';
+            if (/matching.*(info|information)|match.*paragraph/.test(raw)) return 'matching_info';
+            if (/hotspot/.test(raw)) return 'map_labelling_hotspots';
+            if (/map.*grid|grid.*map/.test(raw)) return 'map_labelling_grid';
+            if (/essay|writing/.test(raw)) return 'essay';
+            if (/multiple choice|mcq|choose.*(answer|option)/.test(raw)) return 'multiple_choice';
+            return '';
+        };
+        const inferType = (typeValue, instruction, question, options) => {
+            const explicitType = normalizeType(typeValue);
+            if (explicitType) return explicitType;
+            const context = `${instruction} ${question}`.toLowerCase();
+            if (/true\s*\/\s*false\s*\/\s*not given|true,?\s*false,?\s*not given|tfng/.test(context)) return 'tfng';
+            if (/yes\s*\/\s*no\s*\/\s*not given|yes,?\s*no,?\s*not given|ynng|agree with (?:the )?(?:views|claims)|yes if.*(?:views|claims)/.test(context)) return 'ynng';
+            if (/matching headings|heading for each paragraph/.test(context)) return 'matching_headings';
+            if (/matching (?:information|features)|which paragraph|which section/.test(context)) return 'matching_info';
+            if (/map|plan|diagram/.test(context) && /label|letter|location/.test(context)) return 'map_labelling_grid';
+            if (/drag|drop/.test(context)) return 'dnd_list';
+            if (/no more than|complete the (?:notes|summary|sentences|table|form)|fill in the blank|gap.?fill/.test(context)) return 'fill_blanks';
+            return options.length > 1 ? 'multiple_choice' : 'multiple_choice';
+        };
+        const parseOptions = value => {
+            const raw = String(value || '').trim();
+            if (!raw) return [];
+            const separator = raw.includes('|') ? /\s*\|\s*/ : raw.includes(';') ? /\s*;\s*/ : /\r?\n/;
+            const values = raw.split(separator).map(option => option.trim()).filter(Boolean);
+            return values.length > 1 ? values : raw.split(/\s*,\s*/).map(option => option.trim()).filter(Boolean);
+        };
+        const getField = (cols, field, legacyIndex) => {
+            const index = hasHeader ? headerMap[field] : legacyIndex;
+            return index === undefined ? '' : String(cols[index] || '').trim();
+        };
+        
         pasteRows.forEach((pasteCols) => {
             window.addBulkImportRow();
             const tr = tbody.lastElementChild;
-            
-            const inputs = [
-                tr.querySelector('.row-type'), 
-                tr.querySelector('.row-inst'), 
-                tr.querySelector('.row-text'), 
-                tr.querySelector('.row-opts'), 
-                tr.querySelector('.row-ans'),
-                tr.querySelector('.row-hint'),
-                tr.querySelector('.row-expl')
-            ];
+            const typeValue = getField(pasteCols, 'type', 0);
+            const instruction = getField(pasteCols, 'instruction', 1);
+            let question = getField(pasteCols, 'text', 2);
+            question = question.replace(/^(?:question\s*)?\d{1,3}\s*[.)\-:]\s*/i, '').trim();
+            let options = parseOptions(getField(pasteCols, 'options', 3));
+            if (hasHeader && choiceColumns.length) {
+                options = choiceColumns.map(index => String(pasteCols[index] || '').trim()).filter(Boolean);
+            }
+            const type = inferType(typeValue, instruction, question, options);
 
-            // STRIPPED THE BUGGY OFFSET. Maps 1-to-1 based on exact Excel columns!
-            pasteCols.forEach((pasteVal, j) => {
-                if (j < inputs.length) {
-                    const input = inputs[j];
-                    const val = pasteVal.trim();
-                    
-                    if (j === 0) {
-                        const rawType = val.toLowerCase();
-                        let type = 'multiple_choice';
-                        
-                        // Strict Regex matching for maximum reliability
-                        if (rawType.includes('gap') || rawType.includes('fill') || rawType.includes('blank')) type = 'fill_blanks';
-                        else if (rawType.includes('drag') || rawType.includes('drop') || rawType === 'dnd_list') type = 'dnd_list';
-                        else if (rawType.includes('true') || rawType.includes('tfng')) type = 'tfng';
-                        else if (rawType.includes('yes') || rawType.includes('ynng')) type = 'ynng';
-                        else if (rawType.includes('heading')) type = 'matching_headings';
-                        else if (rawType.includes('info') || (rawType.includes('grid') && !rawType.includes('map'))) type = 'matching_info';
-                        else if (rawType.includes('hotspot') || (rawType.includes('map') && !rawType.includes('grid'))) type = 'map_labelling_hotspots';
-                        else if (rawType.includes('map') && rawType.includes('grid')) type = 'map_labelling_grid';
-                        else if (rawType.includes('essay') || rawType.includes('writing')) type = 'essay';
-                        else if (rawType.includes('multi') || rawType.includes('mcq') || rawType.includes('choice')) type = 'multiple_choice';
-                        
-                        input.value = type;
-                        
-                        // Force the grouping algorithm to run immediately!
-                        window.checkAutoGroup(input);
-                    } else {
-                        input.value = val;
-                    }
-                }
-            });
+            tr.querySelector('.row-section').value = getField(pasteCols, 'section', 7);
+            tr.querySelector('.row-passage').value = getField(pasteCols, 'passage', 8);
+            tr.querySelector('.row-type').value = type;
+            tr.querySelector('.row-inst').value = instruction;
+            tr.querySelector('.row-text').value = question;
+            tr.querySelector('.row-opts').value = options.join('; ');
+            tr.querySelector('.row-ans').value = getField(pasteCols, 'answer', 4);
+            tr.querySelector('.row-hint').value = getField(pasteCols, 'hint', 5);
+            tr.querySelector('.row-expl').value = getField(pasteCols, 'explanation', 6);
+            window.checkAutoGroup(tr.querySelector('.row-type'));
         });
         
         // Briefly flash the background to confirm success, then clear the box
@@ -12835,6 +12892,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
         const rows = document.querySelectorAll('.import-row');
         let importedCount = 0;
         let newQuestions = [];
+        const newQuestionsBySection = new Map();
         const rapidMode = window.isRapidTestImport
             ? (document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new')
             : '';
@@ -12865,10 +12923,15 @@ If the user inputs \gap[colour]{color}, both are accepted.
         }
         
         let currentBlock = null;
+        let activeSectionKey = null;
+        const getSectionNumber = label =>
+            label.match(/(?:passage|section|part|task)\s*(\d+)/i) || label.match(/^\s*(\d+)\s*$/);
 
         rows.forEach((row, i) => {
             const isGroupCb = row.querySelector('.row-group').checked;
             const type = row.querySelector('.row-type').value;
+            const section = row.querySelector('.row-section').value.trim();
+            const passage = row.querySelector('.row-passage').value.trim();
             const inst = row.querySelector('.row-inst').value.trim();
             const text = row.querySelector('.row-text').value.trim();
             const optsRaw = row.querySelector('.row-opts').value.trim();
@@ -12876,13 +12939,38 @@ If the user inputs \gap[colour]{color}, both are accepted.
             const hint = row.querySelector('.row-hint').value.trim();
             const expl = row.querySelector('.row-expl').value.trim();
 
+            const sectionKey = section || '__default__';
+            if (window.isRapidTestImport) {
+                if (activeSectionKey !== sectionKey) currentBlock = null;
+                activeSectionKey = sectionKey;
+                if (!newQuestionsBySection.has(sectionKey)) {
+                    newQuestionsBySection.set(sectionKey, { label: section, passage, questions: [] });
+                } else if (passage) {
+                    newQuestionsBySection.get(sectionKey).passage = passage;
+                }
+            }
             if (!text && !ans && !inst && !hint && !expl) return; // Skip blank rows
 
             // Sequential ID logic
             currentMaxId++; 
             const newId = currentMaxId;
             
-            let options = optsRaw ? optsRaw.split(',').map(o => o.trim()).filter(Boolean) : [];
+            let options = optsRaw
+                ? (/[;|]/.test(optsRaw) ? optsRaw.split(/[;|]/) : optsRaw.split(',')).map(o => o.trim()).filter(Boolean)
+                : [];
+            let normalizedAnswer = ans;
+            if (type === 'multiple_choice' && normalizedAnswer && options.length) {
+                const answerLabel = normalizedAnswer.match(/^(?:option\s*)?([a-z]|\d+)(?:[.)\]:-]|\s|$)/i)?.[1];
+                if (answerLabel) {
+                    const matchingOption = options.find(option => {
+                        const optionLabel = option.match(/^\s*\(?([a-z]|\d+)[.)\]:-]?\s+/i)?.[1];
+                        return optionLabel && optionLabel.toLowerCase() === answerLabel.toLowerCase();
+                    });
+                    const answerIndex = /^[a-d]$/i.test(answerLabel) ? answerLabel.toUpperCase().charCodeAt(0) - 65 : -1;
+                    if (matchingOption) normalizedAnswer = matchingOption;
+                    else if (answerIndex >= 0 && options[answerIndex]) normalizedAnswer = options[answerIndex];
+                }
+            }
 
             // Prevent grouping for single-ID types (like MCQ, TFNG) to ensure LMS stability
             const groupables = ['fill_blanks', 'dnd_list', 'matching_headings', 'matching_info', 'map_labelling_hotspots', 'map_labelling_grid'];
@@ -12902,22 +12990,26 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     processedText = token;
                 }
             }
+            if (type === 'matching_headings' && text) processedText = `${newId}. ${text}`;
 
             if (actualIsGroup && currentBlock && currentBlock.type === type) {
                 // MERGE INTO EXISTING BLOCK
                 currentBlock.ids.push(newId);
-                currentBlock.correctAnswers[newId] = ans;
+                currentBlock.correctAnswers[newId] = normalizedAnswer;
+                currentBlock.points = currentBlock.ids.length;
                 
                 // Append text dynamically based on type
                 if (['fill_blanks', 'dnd_list'].includes(type)) {
                     if (processedText) {
                         // Concat with a space to form a continuous paragraph
-                        currentBlock.text = currentBlock.text ? currentBlock.text + ' ' + processedText : processedText;
+                        currentBlock.text = currentBlock.text ? currentBlock.text + '\n' + processedText : processedText;
                     }
                 } else if (['matching_info', 'map_labelling_grid'].includes(type)) {
                     if (text && text !== currentBlock.text) {
                         currentBlock.text = currentBlock.text ? currentBlock.text + '\n' + text : text;
                     }
+                } else if (type === 'matching_headings' && text) {
+                    currentBlock.text = currentBlock.text ? currentBlock.text + '\n' + processedText : processedText;
                 }
                 
                 // Append options if they provided more
@@ -12944,8 +13036,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
                     correctAnswers: {}
                 };
 
-                newBlock.correctAnswers[newId] = ans;
+                newBlock.correctAnswers[newId] = normalizedAnswer;
                 newQuestions.push(newBlock);
+                if (window.isRapidTestImport) {
+                    newQuestionsBySection.get(sectionKey).questions.push(newBlock);
+                }
                 currentBlock = newBlock; // Update current block tracker
                 importedCount++;
             }
@@ -12966,7 +13061,36 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 const diff = document.getElementById('rapid-test-diff').value.trim();
                 
                 let smartParts = getSmartIeltsStructure(mod);
-                smartParts[0].questions = newQuestions; 
+                let nextUnassignedPart = 0;
+                newQuestionsBySection.forEach(bucket => {
+                    if (!bucket.questions.length) return;
+                    const sectionNumber = getSectionNumber(bucket.label);
+                    const partNumber = sectionNumber?.[1] || sectionNumber?.[2];
+                    let partIndex = partNumber ? Number(partNumber) - 1 : nextUnassignedPart;
+                    if (!sectionNumber && bucket.label) nextUnassignedPart++;
+                    partIndex = Math.max(0, partIndex);
+                    while (partIndex >= smartParts.length) {
+                        smartParts.push({ title: `Part ${smartParts.length + 1}`, text: '', questions: [] });
+                    }
+                    const targetPart = smartParts[partIndex];
+                    if (bucket.label && sectionNumber) {
+                        const number = partNumber;
+                        const suffix = /(?:passage|section|part|task)\s*\d+/i.test(bucket.label)
+                            ? bucket.label.replace(/.*?(?:passage|section|part|task)\s*\d+\s*[:\-–]?\s*/i, '').trim()
+                            : '';
+                        const baseTitle = mod === 'reading' ? `Reading Passage ${number}`
+                            : mod === 'writing' ? `Task ${number}`
+                            : `Part ${number}`;
+                        targetPart.title = suffix ? `${baseTitle}: ${suffix}` : baseTitle;
+                    } else if (bucket.label) targetPart.title = bucket.label;
+                    if (bucket.passage) targetPart.text = bucket.passage;
+                    if (['writing', 'speaking'].includes(mod) &&
+                        targetPart.questions.some(question => ['essay', 'audio_record'].includes(question.type))) {
+                        targetPart.questions = [];
+                    }
+                    targetPart.questions.push(...bucket.questions);
+                    nextUnassignedPart = Math.max(nextUnassignedPart, partIndex + 1);
+                });
                 
                 const newTest = { 
                     id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), 
@@ -12991,7 +13115,19 @@ If the user inputs \gap[colour]{color}, both are accepted.
                 const test = TEST_BANK.find(t => t.id === tid);
                 
                 if (test && test.parts[pIdx]) {
-                    test.parts[pIdx].questions.push(...newQuestions);
+                    newQuestionsBySection.forEach(bucket => {
+                        if (!bucket.questions.length) return;
+                        const sectionNumber = getSectionNumber(bucket.label);
+                        const partNumber = sectionNumber?.[1] || sectionNumber?.[2];
+                        const targetIndex = partNumber ? Number(partNumber) - 1 : pIdx;
+                        while (targetIndex >= test.parts.length) {
+                            test.parts.push({ title: bucket.label || `Part ${test.parts.length + 1}`, text: '', questions: [] });
+                        }
+                        const targetPart = test.parts[targetIndex];
+                        if (bucket.label) targetPart.title = bucket.label;
+                        if (bucket.passage) targetPart.text = bucket.passage;
+                        targetPart.questions.push(...bucket.questions);
+                    });
                     await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), test.id), test);
                     
                     document.getElementById('csv-import-modal').classList.add('hidden');
