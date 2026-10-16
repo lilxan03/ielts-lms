@@ -951,6 +951,19 @@
         box-decoration-break: clone;
     }
 
+    .selection-tooltip-pop { animation: selectionTooltipPop 0.16s ease-out; }
+    @keyframes selectionTooltipPop {
+      from { opacity: 0; scale: 0.95; }
+      to { opacity: 1; scale: 1; }
+    }
+    .selection-tooltip-pop[data-placement="bottom"] .arrow {
+      top: -6px;
+      bottom: auto;
+      transform: translateX(-50%) rotate(225deg);
+    }
+    .selection-tooltip-pop[data-placement="left"] .arrow,
+    .selection-tooltip-pop[data-placement="right"] .arrow { display: none; }
+
     .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
     .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
     .flip-card-front, .flip-card-back { backface-visibility: hidden; }
@@ -2044,7 +2057,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
   </div>
 
   <!-- UNIFIED SELECTION TOOLTIP (Exam & Review) -->
-  <div id="exam-selection-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 animate-pop">
+  <div id="exam-selection-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 selection-tooltip-pop">
     <div id="tooltip-hl-group" class="flex items-center gap-2 px-2 py-1 hidden">
       <button onmousedown="highlightSelection(event, 'bg-yellow-300')" class="w-5 h-5 rounded-full bg-yellow-300 border border-yellow-400 hover:scale-110 transition shadow-sm" title="Yellow"></button>
       
@@ -2074,7 +2087,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
   </div>
 
   <!-- CLEAR HIGHLIGHT TOOLTIP -->
-  <div id="clear-highlight-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 animate-pop">
+  <div id="clear-highlight-tooltip" class="hidden absolute z-[160] bg-white border border-slate-300 shadow-lg rounded flex items-center p-1 selection-tooltip-pop">
     <button onmousedown="clearHighlight(event)" class="flex flex-col items-center justify-center px-4 py-1 hover:bg-rose-50 text-rose-600 rounded transition">
       <span class="text-[10px] font-bold">Clear Highlight</span>
     </button>
@@ -2082,7 +2095,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
   </div>
 
   <!-- TEACHER EDITOR TEXT SELECTION (Quick Add Vocab) -->
-  <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 -translate-x-1/2 -translate-y-full mt-[-10px] animate-pop">
+  <div id="editor-selection-tooltip" class="hidden absolute z-[160] bg-slate-800 border border-slate-700 shadow-lg rounded flex items-center p-1 selection-tooltip-pop">
     <button onmousedown="quickAddTeacherGrammar(event)" class="flex flex-col items-center justify-center px-3 py-1 hover:bg-slate-700 rounded text-amber-400 transition">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-1"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
       <span class="text-[10px] font-bold">Grammar</span>
@@ -11128,6 +11141,59 @@ If the user inputs \gap[colour]{color}, both are accepted.
        }
     });
 
+    function positionSelectionTooltip(tooltip, anchorRect) {
+      if (!tooltip || !anchorRect) return;
+
+      tooltip.classList.remove('hidden');
+      tooltip.style.position = 'fixed';
+      tooltip.style.left = '0px';
+      tooltip.style.top = '0px';
+      tooltip.style.maxWidth = 'calc(100vw - 16px)';
+      tooltip.style.maxHeight = 'calc(100vh - 16px)';
+      tooltip.style.overflowY = 'auto';
+      tooltip.style.visibility = 'hidden';
+
+      const tooltipRect = tooltip.getBoundingClientRect();
+      const width = tooltipRect.width;
+      const height = tooltipRect.height;
+      const padding = 8;
+      const gap = 8;
+      const centerX = anchorRect.left + anchorRect.width / 2;
+      const centerY = anchorRect.top + anchorRect.height / 2;
+      const candidates = [
+        { placement: 'top', left: centerX - width / 2, top: anchorRect.top - height - gap },
+        { placement: 'bottom', left: centerX - width / 2, top: anchorRect.bottom + gap },
+        { placement: 'right', left: anchorRect.right + gap, top: centerY - height / 2 },
+        { placement: 'left', left: anchorRect.left - width - gap, top: centerY - height / 2 }
+      ];
+      const fits = candidate =>
+        candidate.left >= padding &&
+        candidate.top >= padding &&
+        candidate.left + width <= window.innerWidth - padding &&
+        candidate.top + height <= window.innerHeight - padding;
+      const position = candidates.find(fits) || candidates
+        .map(candidate => ({
+          ...candidate,
+          space: candidate.placement === 'top' ? anchorRect.top :
+            candidate.placement === 'bottom' ? window.innerHeight - anchorRect.bottom :
+            candidate.placement === 'right' ? window.innerWidth - anchorRect.right :
+            anchorRect.left
+        }))
+        .sort((a, b) => b.space - a.space)[0];
+
+      tooltip.dataset.placement = position.placement;
+      tooltip.style.left = `${Math.max(padding, Math.min(position.left, window.innerWidth - width - padding))}px`;
+      tooltip.style.top = `${Math.max(padding, Math.min(position.top, window.innerHeight - height - padding))}px`;
+      tooltip.style.visibility = '';
+    }
+
+    window.addEventListener('scroll', () => {
+      ['exam-selection-tooltip', 'clear-highlight-tooltip', 'editor-selection-tooltip'].forEach(id => {
+        const tooltip = document.getElementById(id);
+        if (tooltip) tooltip.classList.add('hidden');
+      });
+    }, true);
+
     document.addEventListener('mouseup', (e) => {
       const edTT = document.getElementById('editor-selection-tooltip');
       const exTT = document.getElementById('exam-selection-tooltip');
@@ -11156,9 +11222,7 @@ If the user inputs \gap[colour]{color}, both are accepted.
           if (sel && sel.toString().trim().length > 0) {
             const range = sel.getRangeAt(0);
             const rect = range.getBoundingClientRect();
-            edTT.style.left = `${rect.left + (rect.width/2)}px`; 
-            edTT.style.top = `${rect.top - 5}px`;
-            edTT.classList.remove('hidden');
+            positionSelectionTooltip(edTT, rect);
           }
         }
       } 
@@ -11200,13 +11264,11 @@ If the user inputs \gap[colour]{color}, both are accepted.
                if(hlDivdr) hlDivdr.classList.add('hidden');
             }
 
-            exTT.style.left = `${rect.left + (rect.width / 2)}px`; exTT.style.top = `${rect.top}px`; 
-            exTT.classList.remove('hidden');
+            positionSelectionTooltip(exTT, rect);
          } else if (e.target.classList.contains('highlighted-text')) {
             activeHighlightNode = e.target;
             const rect = activeHighlightNode.getBoundingClientRect();
-            clTT.style.left = `${rect.left + (rect.width / 2)}px`; clTT.style.top = `${rect.top}px`;
-            clTT.classList.remove('hidden');
+            positionSelectionTooltip(clTT, rect);
          }
       }
     });
