@@ -1824,16 +1824,20 @@
             </div>
             
             <!-- Mode: New Test -->
-            <div id="rapid-mode-new" class="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in">
+            <div id="rapid-mode-new" class="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Test Title</label>
                     <input type="text" id="rapid-test-title" placeholder="e.g. Cam 15 Reading Test 1" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Module</label>
-                    <select id="rapid-test-mod" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white">
+                    <select id="rapid-test-mod" onchange="window.populateRapidNewParts()" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white">
                         <option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
                     </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Target Part</label>
+                    <select id="rapid-new-part" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Band / Diff</label>
@@ -1843,24 +1847,54 @@
 
             <!-- Mode: Existing Test -->
             <div id="rapid-mode-existing" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Select Existing Test</label>
+                    <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_180px] gap-2 mb-2">
+                        <input id="rapid-existing-search" type="search" placeholder="Search by title, part, topic, or band…" oninput="window.populateRapidExistingTests()" class="w-full border border-purple-200 p-2 rounded-lg font-medium outline-none focus:border-purple-500 bg-white">
+                        <select id="rapid-existing-module" onchange="window.populateRapidExistingTests()" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white">
+                            <option value="all">All modules</option>
+                            <option value="reading">Reading</option>
+                            <option value="listening">Listening</option>
+                            <option value="writing">Writing</option>
+                            <option value="speaking">Speaking</option>
+                        </select>
+                    </div>
                     <select id="rapid-existing-test" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white" onchange="window.updateRapidPartOptions()"></select>
+                    <p id="rapid-existing-count" class="text-xs text-slate-500 mt-1"></p>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Select Target Part</label>
                     <select id="rapid-existing-part" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white"></select>
                 </div>
             </div>
         </div>
 
-        <div class="mb-5 bg-blue-50/50 border border-blue-200 rounded-xl p-4 shadow-inner">
+        <div id="rapid-latex-section" class="hidden mb-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="bg-indigo-50/50 border border-indigo-200 rounded-xl p-4 shadow-inner">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <label for="rapid-latex-input" class="text-xs font-black text-indigo-800 uppercase tracking-widest flex items-center gap-2">∑ IELTS LaTeX Source</label>
+                    <div class="flex gap-2">
+                        <select id="rapid-latex-template" class="max-w-[210px] border border-indigo-200 bg-white p-1.5 rounded-lg text-xs font-bold"></select>
+                        <button type="button" onclick="window.insertRapidLatexTemplate()" class="border border-indigo-200 bg-white px-2.5 py-1.5 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100">Insert template</button>
+                    </div>
+                </div>
+                <textarea id="rapid-latex-input" oninput="window.previewRapidLatexImport()" class="w-full bg-white border border-indigo-200 rounded-lg p-4 text-sm outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 font-mono text-slate-700 placeholder:text-slate-400 resize-y min-h-[320px] shadow-sm transition-all" placeholder="Paste IELTS LaTeX macros here, for example:\n\\passage{Passage title}{Passage text with \\gap{answer}}\n\\mcq{Question text}{\\choice{Option A}\\correct{Option B}}"></textarea>
+                <p class="text-[10px] font-bold text-indigo-700 mt-2">Rapid Import now uses the same LaTeX parser and native question compiler as the test editor.</p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 shadow-inner">
+                <div class="text-xs font-black text-slate-700 uppercase tracking-widest mb-2">Live Preview</div>
+                <div id="rapid-latex-error" class="hidden mb-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700"></div>
+                <div id="rapid-latex-preview" class="bg-white border border-slate-200 rounded-lg p-4 min-h-[320px] max-h-[520px] overflow-y-auto text-sm text-slate-700 whitespace-pre-wrap">Paste LaTeX to preview the imported questions.</div>
+            </div>
+        </div>
+
+        <div id="rapid-smart-paste-section" class="mb-5 bg-blue-50/50 border border-blue-200 rounded-xl p-4 shadow-inner">
             <label class="text-xs font-black text-blue-800 uppercase tracking-widest flex items-center gap-2 mb-2"><span class="text-base drop-shadow-sm">📋</span> Smart Paste Area</label>
             <textarea id="smart-paste-area" class="w-full bg-white border border-blue-200 rounded-lg p-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 font-medium text-slate-700 placeholder:text-slate-400 resize-none h-20 shadow-sm transition-all" placeholder="Click here and press Ctrl+V to paste your rows directly from Excel/Google Sheets..." onpaste="window.handleSmartPaste(event)"></textarea>
             <p class="text-[10px] font-bold text-blue-600 mt-2">Paste a tab-separated sheet with headers such as Section, Passage, Type, Instruction, Question, Options, Answer, Hint, and Explanation. Header order is flexible; separate options with semicolons or | to preserve commas. The original seven-column format still works.</p>
         </div>
         
-        <div class="border border-slate-200 rounded-xl mb-3 overflow-x-auto shadow-sm">
+        <div id="rapid-grid-section" class="border border-slate-200 rounded-xl mb-3 overflow-x-auto shadow-sm">
             <table class="w-full min-w-[1400px] text-left border-collapse" id="bulk-import-table">
                 <thead class="bg-slate-50 border-b border-slate-200">
                     <tr class="text-[10px] text-slate-500 uppercase tracking-wider">
@@ -1881,11 +1915,11 @@
                 </tbody>
             </table>
         </div>
-        <button onclick="addBulkImportRow()" class="text-blue-600 hover:text-blue-800 font-bold text-sm flex items-center gap-1 transition-colors">+ Add Row</button>
+        <button id="rapid-add-row" onclick="addBulkImportRow()" class="text-blue-600 hover:text-blue-800 font-bold text-sm flex items-center gap-1 transition-colors">+ Add Row</button>
       </div>
       <div class="p-4 border-t border-slate-200 bg-white rounded-b-xl flex justify-end gap-3 shrink-0">
         <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold">Cancel</button>
-        <button onclick="processBulkImport()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow">Import Questions</button>
+        <button id="rapid-import-action" onclick="window.isRapidTestImport ? window.compileRapidLatexImport() : processBulkImport()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow">Import Questions</button>
       </div>
     </div>
   </div>
@@ -12683,7 +12717,34 @@
 
     window.populateRapidExistingTests = function() {
         const sel = document.getElementById('rapid-existing-test');
-        sel.innerHTML = TEST_BANK.map(t => `<option value="${t.id}">${t.title} (${t.module})</option>`).join('');
+        const selectedId = sel.value;
+        const query = document.getElementById('rapid-existing-search')?.value || '';
+        const module = document.getElementById('rapid-existing-module')?.value || 'all';
+        const escapeHtml = value => String(value || '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+        const tests = TEST_BANK.filter(test => {
+            const matchesModule = module === 'all' || test.module === module;
+            const searchable = [
+                test.title,
+                test.module,
+                test.difficulty,
+                ...(test.topics || []),
+                ...(test.parts || []).flatMap(part => [part.title, part.text])
+            ].filter(Boolean).join(' ').toLocaleLowerCase();
+            const terms = String(query).trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+            return matchesModule && terms.every(term => searchable.includes(term));
+        });
+        sel.innerHTML = tests.length
+            ? tests.map(test => {
+                const partCount = (test.parts || []).length;
+                const label = `${test.title || 'Untitled test'} · ${test.module || 'Unspecified'} · ${partCount} part${partCount === 1 ? '' : 's'}${test.difficulty ? ` · Band ${test.difficulty}` : ''}`;
+                return `<option value="${escapeHtml(test.id)}">${escapeHtml(label)}</option>`;
+            }).join('')
+            : '<option value="">No matching tests found</option>';
+        if (tests.some(test => test.id === selectedId)) sel.value = selectedId;
+        const resultCount = document.getElementById('rapid-existing-count');
+        if (resultCount) resultCount.textContent = `${tests.length} of ${TEST_BANK.length} tests`;
         window.updateRapidPartOptions();
     };
 
@@ -12691,26 +12752,145 @@
         const tid = document.getElementById('rapid-existing-test').value;
         const test = TEST_BANK.find(t => t.id === tid);
         const pSel = document.getElementById('rapid-existing-part');
-        if(test && test.parts) {
-            pSel.innerHTML = test.parts.map((p, i) => `<option value="${i}">${p.title || 'Part '+(i+1)}</option>`).join('');
+        if(test && Array.isArray(test.parts) && test.parts.length) {
+            pSel.innerHTML = test.parts.map((part, index) =>
+                `<option value="${index}">${String(part.title || `Part ${index + 1}`).replace(/[&<>"']/g, char => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[char])} · ${((part.questions || []).reduce((count, question) => count + (question.ids || []).length, 0))} questions</option>`
+            ).join('');
         } else {
-            pSel.innerHTML = '';
+            pSel.innerHTML = '<option value="">No parts available</option>';
+        }
+        window.populateRapidLatexTemplates();
+    };
+
+    window.populateRapidLatexTemplates = function() {
+        const select = document.getElementById('rapid-latex-template');
+        if (!select || !window.getIeltsLatexTemplates) return;
+        const mode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+        const skill = mode === 'existing'
+            ? TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test').value)?.module
+            : document.getElementById('rapid-test-mod')?.value;
+        const templates = window.getIeltsLatexTemplates()[skill] || [];
+        select.innerHTML = '<option value="">Choose a template…</option>' + templates
+            .map((template, index) => `<option value="${index}">${String(template[0]).replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char])}</option>`)
+            .join('');
+    };
+
+    window.insertRapidLatexTemplate = function() {
+        const select = document.getElementById('rapid-latex-template');
+        const mode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+        const skill = mode === 'existing'
+            ? TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test').value)?.module
+            : document.getElementById('rapid-test-mod')?.value;
+        const template = (window.getIeltsLatexTemplates()[skill] || [])[Number(select.value)];
+        if (!template || select.value === '') return;
+        const input = document.getElementById('rapid-latex-input');
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? start;
+        const before = input.value.slice(0, start);
+        const after = input.value.slice(end);
+        const insertion = `${before && !before.endsWith('\n') ? '\n\n' : ''}${template[1]}\n\n`;
+        input.value = before + insertion + after;
+        const caret = before.length + insertion.length;
+        input.setSelectionRange(caret, caret);
+        input.focus();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        select.value = '';
+    };
+
+    window.populateRapidNewParts = function() {
+        const module = document.getElementById('rapid-test-mod')?.value || 'reading';
+        const select = document.getElementById('rapid-new-part');
+        if (!select) return;
+        const parts = getSmartIeltsStructure(module);
+        select.innerHTML = parts.map((part, index) =>
+            `<option value="${index}">${String(part.title || `Part ${index + 1}`).replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char])}</option>`
+        ).join('');
+        window.populateRapidLatexTemplates();
+    };
+
+    window.previewRapidLatexImport = function() {
+        const source = document.getElementById('rapid-latex-input')?.value || '';
+        const preview = document.getElementById('rapid-latex-preview');
+        const error = document.getElementById('rapid-latex-error');
+        if (!source.trim()) {
+            preview.textContent = 'Paste LaTeX to preview the imported questions.';
+            error.classList.add('hidden');
+            error.textContent = '';
+            return null;
+        }
+        try {
+            const parsed = window.parseIeltsLatex(source);
+            const descriptions = parsed.questions.map((question, index) => {
+                const typeNames = {
+                    fill_blanks: 'Fill in the blanks',
+                    dnd_list: 'Drag and drop',
+                    mcq: 'Multiple choice',
+                    tfng: 'True / False / Not Given',
+                    ynng: 'Yes / No / Not Given',
+                    matching_headings: 'Matching headings',
+                    matching_info: 'Matching information',
+                    matching_endings: 'Matching sentence endings',
+                    map_labelling_grid: 'Map labelling',
+                    map_labelling_hotspots: 'Map hotspots',
+                    essay: 'Writing task',
+                    audio_record: 'Speaking task'
+                };
+                const declared = Array.isArray(question.questionNumbers) ? question.questionNumbers : [];
+                const label = declared.length
+                    ? `Q${declared.length > 1 ? `${declared[0]}–${declared[declared.length - 1]}` : declared[0]}`
+                    : `Block ${index + 1}`;
+                const count = question.gaps?.length || question.items?.length || question.hotspots?.length || question.selectCount || 1;
+                return `${label} · ${typeNames[question.type] || question.type} · ${count} question${count === 1 ? '' : 's'}`;
+            });
+            const prefix = [
+                parsed.passage.title ? `Passage: ${parsed.passage.title}` : '',
+                parsed.passage.hasGaps ? `${parsed.gapCount} inline blank${parsed.gapCount === 1 ? '' : 's'}` : ''
+            ].filter(Boolean);
+            preview.textContent = [...prefix, ...descriptions].join('\n') || 'No questions found. Add IELTS macros to import.';
+            error.classList.add('hidden');
+            error.textContent = '';
+            return parsed;
+        } catch (parseError) {
+            preview.textContent = 'Correct the LaTeX syntax error to see the import preview.';
+            error.textContent = parseError.message;
+            error.classList.remove('hidden');
+            return null;
         }
     };
 
     window.openRapidFullTestImport = function() {
         window.isRapidTestImport = true;
         document.getElementById('csv-meta-section').classList.remove('hidden');
+        document.getElementById('rapid-latex-section').classList.remove('hidden');
+        document.getElementById('rapid-smart-paste-section').classList.add('hidden');
+        document.getElementById('rapid-grid-section').classList.add('hidden');
+        document.getElementById('rapid-add-row').classList.add('hidden');
+        document.getElementById('rapid-import-action').textContent = 'Parse LaTeX & Import';
         
         // Reset to "new" mode by default when opened
         const newRadio = document.querySelector('input[name="rapid-mode"][value="new"]');
         if (newRadio) { newRadio.checked = true; window.toggleRapidMode(); }
+        window.populateRapidNewParts();
 
         document.getElementById('csv-import-title').innerHTML = "🚀 Rapid Import";
         
         document.getElementById('smart-paste-area').value = '';
+        document.getElementById('rapid-latex-input').value = '';
+        window.previewRapidLatexImport();
         document.getElementById('bulk-import-tbody').innerHTML = ''; 
-        for(let i=0; i<3; i++) window.addBulkImportRow(); // Start with 3 blank rows
+        document.getElementById('rapid-test-title').value = '';
+        document.getElementById('rapid-test-diff').value = '';
+        const search = document.getElementById('rapid-existing-search');
+        const moduleFilter = document.getElementById('rapid-existing-module');
+        if (search) search.value = '';
+        if (moduleFilter) moduleFilter.value = 'all';
+        window.populateRapidExistingTests();
         
         document.getElementById('csv-import-modal').classList.remove('hidden');
     };
@@ -12718,6 +12898,11 @@
     window.openCSVImport = function() {
         window.isRapidTestImport = false;
         document.getElementById('csv-meta-section').classList.add('hidden');
+        document.getElementById('rapid-latex-section').classList.add('hidden');
+        document.getElementById('rapid-smart-paste-section').classList.remove('hidden');
+        document.getElementById('rapid-grid-section').classList.remove('hidden');
+        document.getElementById('rapid-add-row').classList.remove('hidden');
+        document.getElementById('rapid-import-action').textContent = 'Import Questions';
         document.getElementById('csv-import-title').innerHTML = "📋 Bulk Import Questions";
         
         document.getElementById('smart-paste-area').value = '';
@@ -25997,12 +26182,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const gap = { ...node, id: nextPreviewId++ };
             gaps.push(gap);
             gapModes.add(node.type);
-            return `{blank:${gap.id}}`;
+            return `{${node.type === 'drop' ? 'drop' : 'blank'}:${gap.id}}`;
         }).join('');
         if (gapModes.size > 1) fail('Do not mix \\gap and \\drop in the same passage import', 0);
         let gapQuestion = null;
         if (gaps.length) {
-            const firstGapIndex = passageHtmlSource.indexOf('{blank:');
+            const firstGapIndex = passageHtmlSource.search(/\{(?:blank|drop):/);
             const questionNumbers = parseQuestionNumbers(passageHtmlSource.slice(0, firstGapIndex), gaps.length);
             gapQuestion = {
                 type: gapModes.has('drop') ? 'dnd_list' : 'fill_blanks',
@@ -26412,14 +26597,18 @@ Write the transcript here. The answer is \drop{correct option}.
                 });
                 let body = '';
                 let offset = 0;
-                const gapPattern = /\{blank:(\d+)\}/g;
+                const gapPattern = /\{(blank|drop):(\d+)\}/g;
                 let gapMatch;
                 while ((gapMatch = gapPattern.exec(parsed.passage.text)) !== null) {
                     body += escapeHtml(parsed.passage.text.slice(offset, gapMatch.index));
-                    const time = gapTimes.get(gapMatch[1]);
+                    const tokenType = gapMatch[1];
+                    const gapId = gapMatch[2];
+                    const time = gapTimes.get(gapId);
                     const timestamp = time === null || time === undefined ? '' : ` title="Audio timestamp ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')}"`;
-                    const number = gapQuestionNumbers.get(gapMatch[1]);
-                    body += `<input type="text" disabled aria-label="Question ${number}"${timestamp} class="inline-block align-middle w-24 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${number}">`;
+                    const number = gapQuestionNumbers.get(gapId);
+                    body += tokenType === 'drop'
+                        ? `<span role="img" aria-label="Question ${number}, drag-and-drop answer area" class="inline-flex items-center align-middle border-2 border-dashed border-indigo-300 bg-indigo-50 text-indigo-700 rounded px-3 py-1 mx-1 text-xs font-bold">Drop answer · Q${number}</span>`
+                        : `<input type="text" disabled aria-label="Question ${number}"${timestamp} class="inline-block align-middle w-24 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${number}">`;
                     offset = gapPattern.lastIndex;
                 }
                 body += escapeHtml(parsed.passage.text.slice(offset));
@@ -26438,12 +26627,19 @@ Write the transcript here. The answer is \drop{correct option}.
                 const questionLabel = questionRange(questionNumbers);
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
                     if (question.shortAnswer) {
-                        const statement = formatPreviewText(question.text).replace(/\{blank:(\d+)\}/g, (_, id) =>
-                            `<input type="text" disabled aria-label="Question ${gapQuestionNumbers.get(String(id)) || firstQuestionNumber}" class="inline-block align-middle w-28 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${gapQuestionNumbers.get(String(id)) || firstQuestionNumber}">`);
+                        const statement = formatPreviewText(question.text).replace(/\{(blank|drop):(\d+)\}/g, (_, tokenType, id) => {
+                            const number = gapQuestionNumbers.get(String(id)) || firstQuestionNumber;
+                            return tokenType === 'drop'
+                                ? `<span role="img" aria-label="Question ${number}, drag-and-drop answer area" class="inline-flex items-center align-middle border-2 border-dashed border-indigo-300 bg-indigo-50 text-indigo-700 rounded px-3 py-1 mx-1 text-xs font-bold">Drop answer · Q${number}</span>`
+                                : `<input type="text" disabled aria-label="Question ${number}" class="inline-block align-middle w-28 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${number}">`;
+                        });
                         html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${statement}</div><p class="text-xs text-slate-500 mt-1">Short-answer question · answer in your own words as instructed.</p></section>`;
                         return;
                     }
-                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${question.numberedInPassage ? '' : `${questionLabel}. `}${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p></section>`;
+                    const options = question.type === 'dnd_list'
+                        ? `<div class="mt-2 flex flex-wrap gap-2">${[...new Set(question.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]))].map(option => `<span class="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-800">${escapeHtml(option)}</span>`).join('')}</div>`
+                        : '';
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${question.numberedInPassage ? '' : `${questionLabel}. `}${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p>${options}</section>`;
                     return;
                 }
                 if (question.type === 'matching_endings') {
@@ -26485,22 +26681,79 @@ Write the transcript here. The answer is \drop{correct option}.
         }
     };
 
-    window.compileIeltsLatex = function() {
-        const parsed = window.updateIeltsLatexPreview();
+    window.compileIeltsLatex = async function(options = {}) {
+        const rapidImport = options.rapid === true;
+        const parsed = rapidImport
+            ? window.previewRapidLatexImport()
+            : window.updateIeltsLatexPreview();
         if (!parsed) {
-            if (!window.getIeltsLatexSource()) {
+            if (!rapidImport && !window.getIeltsLatexSource()) {
                 showModalMsg('Empty source', 'Enter a passage or question before importing.');
+            } else if (rapidImport && !document.getElementById('rapid-latex-input').value.trim()) {
+                const error = document.getElementById('rapid-latex-error');
+                error.textContent = 'Paste an IELTS LaTeX passage or question before importing.';
+                error.classList.remove('hidden');
             }
             return;
         }
 
+        const rapidMode = rapidImport
+            ? (document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new')
+            : '';
+        const selectedRapidTest = rapidImport && rapidMode === 'existing'
+            ? TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test').value)
+            : null;
+        const rapidTest = selectedRapidTest
+            ? {
+                ...selectedRapidTest,
+                parts: Array.isArray(selectedRapidTest.parts)
+                    ? selectedRapidTest.parts.map(part => part
+                        ? { ...part, questions: [...(part.questions || [])] }
+                        : part)
+                    : []
+            }
+            : null;
+        const rapidModule = rapidImport
+            ? (rapidMode === 'existing' ? rapidTest?.module : document.getElementById('rapid-test-mod').value)
+            : APP_DATA.module;
+        const rapidPartIndex = rapidImport
+            ? Number(rapidMode === 'existing'
+                ? document.getElementById('rapid-existing-part').value
+                : document.getElementById('rapid-new-part').value)
+            : currentEditorPartIdx;
+        if (rapidImport && rapidMode === 'existing' && !rapidTest) {
+            const error = document.getElementById('rapid-latex-error');
+            error.textContent = 'Select an existing test before importing.';
+            error.classList.remove('hidden');
+            return;
+        }
+        const rapidNewTest = rapidImport && rapidMode === 'new'
+            ? {
+                id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                title: document.getElementById('rapid-test-title').value.trim() || 'Untitled Rapid Test',
+                module: rapidModule,
+                topics: [],
+                difficulty: document.getElementById('rapid-test-diff').value.trim(),
+                parts: getSmartIeltsStructure(rapidModule),
+                vocab: []
+            }
+            : null;
+        const targetTest = rapidImport ? (rapidTest || rapidNewTest) : null;
+        const targetParts = rapidImport ? (Array.isArray(targetTest.parts) ? targetTest.parts : []) : APP_DATA.parts;
+        const part = targetParts[rapidPartIndex];
+        if (!part) {
+            const error = document.getElementById(rapidImport ? 'rapid-latex-error' : 'ielts-latex-error');
+            error.textContent = 'Select a valid test part before importing.';
+            error.classList.remove('hidden');
+            return;
+        }
         const allowedTypes = {
             reading: ['fill_blanks', 'dnd_list', 'multiple_choice', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'matching_endings', 'map_labelling_grid', 'map_labelling_hotspots'],
             listening: ['fill_blanks', 'dnd_list', 'multiple_choice', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'],
             writing: ['essay'],
             speaking: ['essay', 'audio_record']
         };
-        const skillTypes = allowedTypes[APP_DATA.module] || [];
+        const skillTypes = allowedTypes[rapidModule] || [];
         const unsupported = parsed.questions.find(question => {
             const nativeType = question.type === 'mcq' ? 'multiple_choice'
                 : question.type === 'matching_endings' ? 'dnd_list' : question.type;
@@ -26508,21 +26761,20 @@ Write the transcript here. The answer is \drop{correct option}.
         });
         if (unsupported || (parsed.writingTask && APP_DATA.module !== 'writing') || (parsed.hasSpeaking && APP_DATA.module !== 'speaking') || (parsed.audioUrl && APP_DATA.module !== 'listening')) {
             const wrongMacro = parsed.writingTask ? 'writingtask' : parsed.hasSpeaking ? 'speaking' : parsed.audioUrl ? 'audio' : unsupported.type.replace(/_/g, ' ');
-            const message = `The ${wrongMacro} macro is not available for the ${APP_DATA.module || 'current'} skill.`;
-            const error = document.getElementById('ielts-latex-error');
+            const message = `The ${wrongMacro} macro is not available for the ${rapidModule || 'current'} skill.`;
+            const error = document.getElementById(rapidImport ? 'rapid-latex-error' : 'ielts-latex-error');
             error.textContent = message;
             error.classList.remove('hidden');
             return;
         }
 
-        const part = APP_DATA.parts[currentEditorPartIdx];
         const hasImportedPassage = !!(parsed.passage.title || parsed.passage.text.trim());
+        if (!rapidImport) saveCurrentEditorPart();
         if (hasImportedPassage && (part.text || part.title) &&
             !confirm('This import will replace the current part title and passage text, then append the parsed questions. Continue?')) {
             return;
         }
-        saveCurrentEditorPart();
-        const usedIds = new Set(APP_DATA.parts.flatMap(item =>
+        const usedIds = new Set(targetParts.flatMap(item =>
             (item.questions || []).flatMap(question => question.ids || []).map(Number)));
         const declaredIds = parsed.questions.flatMap(question =>
             Array.isArray(question.questionNumbers) ? question.questionNumbers : []);
@@ -26533,7 +26785,7 @@ Write the transcript here. The answer is \drop{correct option}.
             return duplicate;
         });
         if (duplicateDeclaredIds.length) {
-            const error = document.getElementById('ielts-latex-error');
+            const error = document.getElementById(rapidImport ? 'rapid-latex-error' : 'ielts-latex-error');
             error.textContent = `Question number${duplicateDeclaredIds.length > 1 ? 's' : ''} ${[...new Set(duplicateDeclaredIds)].join(', ')} already exist in this test. Change the LaTeX numbering or import into a new test.`;
             error.classList.remove('hidden');
             return;
@@ -26561,7 +26813,8 @@ Write the transcript here. The answer is \drop{correct option}.
         const compileGapQuestion = gapBlock => {
             const ids = allocateIds(gapBlock.gaps.length, gapBlock.questionNumbers);
             const gapIds = Object.fromEntries(gapBlock.gaps.map((gap, index) => [gap.id, ids[index]]));
-            const text = gapBlock.text.replace(/\{blank:(\d+)\}/g, (_, id) => `{blank:${gapIds[id]}}`);
+            const marker = gapBlock.type === 'dnd_list' ? 'drop' : 'blank';
+            const text = gapBlock.text.replace(/\{(?:blank|drop):(\d+)\}/g, (_, id) => `{${marker}:${gapIds[id]}}`);
             const correctAnswers = {};
             const timestamps = {};
             gapBlock.gaps.forEach(gap => {
@@ -26724,6 +26977,21 @@ Write the transcript here. The answer is \drop{correct option}.
         }
         if (parsed.writingTask) part.writingTask = parsed.writingTask;
         if (parsed.hasSpeaking) part.speakingQuestions = formatText(parsed.speakingQuestions);
+        if (parsed.audioUrl) part.audioUrl = parsed.audioUrl;
+        part.questions.push(...newBlocks);
+        if (rapidImport) {
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), targetTest.id), targetTest);
+            if (rapidNewTest) TEST_BANK.unshift(rapidNewTest);
+            else {
+                const testIndex = TEST_BANK.findIndex(test => test.id === targetTest.id);
+                if (testIndex >= 0) TEST_BANK[testIndex] = targetTest;
+            }
+            document.getElementById('csv-import-modal').classList.add('hidden');
+            renderTestBank();
+            const targetLabel = `${targetTest.title} (${part.title || `Part ${rapidPartIndex + 1}`})`;
+            showModalMsg('LaTeX import complete', `${rapidNewTest ? 'Created' : 'Updated'} "${targetLabel}" with ${newBlocks.length} native question block${newBlocks.length === 1 ? '' : 's'}.`);
+            return;
+        }
         if (parsed.audioUrl) {
             part.audioUrl = parsed.audioUrl;
             const audioInput = document.getElementById('edit-audio-url');
@@ -26740,11 +27008,22 @@ Write the transcript here. The answer is \drop{correct option}.
             if (passageEl.isContentEditable) passageEl.innerHTML = part.text;
             else passageEl.value = part.text;
         }
-        part.questions.push(...newBlocks);
         document.getElementById('latex-import-modal').classList.add('hidden');
         loadEditorPart(currentEditorPartIdx);
         triggerEditorAutosave();
         showModalMsg('LaTeX import complete', `Added ${newBlocks.length} native question block${newBlocks.length === 1 ? '' : 's'} to this part.`);
+    };
+
+    window.compileRapidLatexImport = async function() {
+        const source = document.getElementById('rapid-latex-input').value;
+        try {
+            return await window.compileIeltsLatex({ rapid: true, source });
+        } catch (importError) {
+            console.error('Rapid LaTeX import failed:', importError);
+            const error = document.getElementById('rapid-latex-error');
+            error.textContent = `Import failed: ${importError.message || importError}`;
+            error.classList.remove('hidden');
+        }
     };
 
     window.openMarkupImport = function() {
