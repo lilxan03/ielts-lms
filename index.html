@@ -119,6 +119,11 @@
       outline: none;
       overflow-y: auto;
     }
+    .latex-source-editor:empty::before {
+      content: attr(data-placeholder);
+      color: #94a3b8;
+      pointer-events: none;
+    }
     .rich-editor p { margin-bottom: 0.5rem; }
     .rich-editor:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
 
@@ -1987,27 +1992,25 @@
       </div>
       <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2">
         <div class="p-5 flex flex-col min-h-0 border-b lg:border-b-0 lg:border-r border-slate-200">
-          <label for="ielts-latex-input" class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">LaTeX-style source</label>
+          <label id="ielts-latex-source-label" for="ielts-latex-input" class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">LaTeX-style source</label>
           <div class="flex flex-col sm:flex-row gap-2 mb-3">
             <select id="ielts-latex-template" class="flex-1 min-w-0 border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:border-blue-500 outline-none" aria-label="Choose a question template">
               <option value="">Choose a template…</option>
             </select>
-            <button type="button" onclick="window.insertIeltsLatexTemplate()" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg text-sm font-bold transition">Insert template</button>
+            <button type="button" onmousedown="event.preventDefault()" onclick="window.insertIeltsLatexTemplate()" class="px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-lg text-sm font-bold transition">Insert template</button>
           </div>
           <p id="ielts-latex-template-help" class="text-xs text-slate-500 mb-2">Templates are filtered for the selected skill and inserted at the cursor.</p>
-          <textarea id="ielts-latex-input" spellcheck="false" oninput="window.updateIeltsLatexPreview()" class="flex-1 min-h-[220px] resize-none border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" placeholder="\passage{The Evolution of Language}{
-The system relies on \gap{photosynthesis}.
-If the user inputs \gap[colour]{color}, both are accepted.
-}
-
-\mcq{What is the main advantage of the new system?}{
-  \choice{It is cheaper.}
-  \correct{It is faster.}
-  \choice{It is easier to maintain.}
-}
-
-\tfng{The study was conducted in 2026.}{NOT GIVEN}[The passage does not mention the study date.]"></textarea>
-          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; <code>time=01:23</code> marks a listening blank. Use <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, <code>\mapgrid</code>, or <code>\maphotspots</code>. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
+          <div class="flex flex-wrap gap-1.5 mb-2 rounded-lg border border-slate-200 bg-slate-100 p-2" role="toolbar" aria-label="LaTeX editor formatting">
+            <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold')" class="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50" aria-label="Bold">B</button>
+            <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic')" class="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs italic text-slate-700 hover:bg-slate-50" aria-label="Italic">I</button>
+            <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline')" class="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs underline text-slate-700 hover:bg-slate-50" aria-label="Underline">U</button>
+            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertUnorderedList')" class="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50">• List</button>
+            <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertOrderedList')" class="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50">1. List</button>
+            <button type="button" onmousedown="event.preventDefault(); window.insertIeltsLatexTable()" class="rounded border border-slate-200 bg-white px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-50">Insert table</button>
+            <span class="self-center text-[11px] text-slate-500">Paste formatted text or select text and apply formatting.</span>
+          </div>
+          <div id="ielts-latex-input" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="ielts-latex-source-label" spellcheck="false" onkeyup="window.saveIeltsLatexSelection()" onmouseup="window.saveIeltsLatexSelection()" oninput="window.saveIeltsLatexSelection(); window.updateIeltsLatexPreview()" class="latex-source-editor rich-editor flex-1 min-h-[220px] resize-none overflow-y-auto border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" data-placeholder="Paste or type IELTS macros here. Use the toolbar to format text."></div>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, <code>\mapgrid</code>, or <code>\maphotspots</code>. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
         </div>
         <div class="p-5 flex flex-col min-h-0 bg-slate-50">
           <div class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Live preview</div>
@@ -3745,7 +3748,6 @@ If the user inputs \gap[colour]{color}, both are accepted.
             </div>
             <button onclick="addEditorQuestion()" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold shadow hover:bg-blue-700 text-sm whitespace-nowrap transition-colors flex items-center gap-2">＋ Add</button>
             <div class="hidden sm:block w-px h-8 bg-slate-200 shrink-0"></div>
-            <button onclick="openCSVImport()" class="bg-emerald-600 text-white px-4 py-2.5 rounded-lg font-bold shadow hover:bg-emerald-700 text-sm whitespace-nowrap flex items-center gap-1 transition-all hover:-translate-y-0.5" title="Grid/Excel Paste">📥 Grid Import</button>
             <button onclick="window.openIeltsLatexImport()" class="bg-indigo-700 text-white px-4 py-2.5 rounded-lg font-black shadow hover:bg-indigo-800 text-sm whitespace-nowrap flex items-center gap-2 transition-all hover:-translate-y-0.5" title="Compose with IELTS LaTeX-style macros">∑ LaTeX Import</button>
           </div>
           
@@ -11632,7 +11634,8 @@ If the user inputs \gap[colour]{color}, both are accepted.
       else if(APP_DATA.module==='activity') qSel.innerHTML = '<option value="pair_roleplay">🎭 Pair Roleplay (Cards)</option><option value="group_debate">🗣️ Group Debate (Teams)</option><option value="vocab_game">🎲 Multiplayer Vocab Board</option>';
       else {
         qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option>`;
-        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Info (Grid)</option>`;
+        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Information</option>`;
+        if(APP_DATA.module==='listening') qSel.innerHTML += `<option value="matching_info">Matching</option>`;
         qSel.innerHTML += `<option value="map_labelling_hotspots">Map Labelling (Hotspots / Options > Gaps)</option><option value="map_labelling_grid">Map Labelling (Grid / Options < Gaps)</option>`;
       }
 
@@ -25268,6 +25271,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             ['multiple_choice', 'Multiple Choice'],
             ['fill_blanks', 'Gap Fill'],
             ['dnd_list', 'Drag & Drop'],
+            ['matching_info', 'Matching Information'],
             ['map_labelling_hotspots', 'Map Labelling (Hotspots)'],
             ['map_labelling_grid', 'Map Labelling (Grid)']
         ],
@@ -25670,6 +25674,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 } else if (command === 'question') {
                     nodes.push({ type: 'question', value: readRequiredText('Speaking follow-up question') });
                 } else if (command === 'mcq') {
+                    const selectionOption = readOptionalBracket() || '';
+                    const selectionMatch = selectionOption.match(/^select\s*=\s*(\d+)$/i);
+                    if (selectionOption && !selectionMatch) fail('\\mcq option must be [select=2] or another positive answer count', slashAt);
+                    const selectCount = selectionMatch ? Number(selectionMatch[1]) : 1;
+                    if (!Number.isSafeInteger(selectCount) || selectCount < 1) fail('Multiple-choice selection count must be a positive integer', slashAt);
                     const question = readRequiredText('Multiple-choice question');
                     if (!question) fail('Multiple-choice question text cannot be empty', slashAt);
                     const optionNodes = readRequiredNodes();
@@ -25679,13 +25688,25 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     }
                     if (options.length < 2) fail('A multiple-choice question needs at least two options', slashAt);
                     if (options.some(option => !option.value.trim())) fail('Multiple-choice options cannot be empty', slashAt);
-                    if (options.filter(option => option.type === 'correct').length !== 1) {
-                        fail('A multiple-choice question needs exactly one \\correct option', slashAt);
+                    if (options.filter(option => option.type === 'correct').length !== selectCount) {
+                        fail(`This multiple-choice question needs exactly ${selectCount} \\correct option${selectCount === 1 ? '' : 's'}`, slashAt);
                     }
                     nodes.push({
                         type: 'mcq',
                         question,
+                        selectCount,
                         options: options.map(option => ({ text: option.value, correct: option.type === 'correct' }))
+                    });
+                } else if (command === 'shortanswer') {
+                    const answerOptions = parseGapOptions(readOptionalBracket());
+                    const statement = readRequiredText('Short-answer question');
+                    const answer = readRequiredText('Short-answer key');
+                    if (!statement || !answer) fail('Short-answer question and key cannot be empty', slashAt);
+                    nodes.push({
+                        type: 'fill_blanks',
+                        shortAnswer: true,
+                        text: `${statement} {blank:1}`,
+                        gaps: [{ id: 1, answer, alternatives: answerOptions.alternatives, time: answerOptions.time }]
                     });
                 } else if (command === 'matchingheadings' || command === 'matchinginfo') {
                     const instruction = readRequiredText('Matching instruction');
@@ -25832,7 +25853,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             } else if (node.type === 'notes') {
                 const question = { type: 'essay', instruction: node.text, text: '' };
                 questionOrder.push(question);
-            } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'].includes(node.type)) {
+            } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots', 'fill_blanks'].includes(node.type)) {
                 questionOrder.push(node);
             } else {
                 fail(`\\${node.type} must be inside an appropriate question macro`, 0);
@@ -25890,6 +25911,23 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 ['Passage with gap-fill', String.raw`\passage{Passage title}{
 Write the passage here. The answer is \gap[alt=alternative]{correct answer}.
 }`],
+                ['Sentence completion', String.raw`\passage{Reading Passage 1}{
+Complete each sentence using words from the passage.
+The research began in \gap{1998}.
+}`],
+                ['Summary / note completion', String.raw`\passage{Reading Passage 1}{
+Complete the summary using words from the passage.
+The main discovery was \gap{photosynthesis}.
+}`],
+                ['Table completion', String.raw`\passage{Reading Passage 1}{
+Complete the table using information from the passage.
+| Species | Habitat |
+| --- | --- |
+| Red fox | \gap{woodland} |
+| Grey seal | \gap{coastal caves} |
+}`],
+                ['Short-answer questions', String.raw`\shortanswer{When was the research first published?}{1998}
+\shortanswer[alt=the year 1998]{What year did the research begin?}{1998}`],
                 ['Drag-and-drop completion', String.raw`\passage{Passage title}{
 Write the passage here. The answer is \drop{correct option}.
 }`],
@@ -25897,6 +25935,12 @@ Write the passage here. The answer is \drop{correct option}.
   \choice{Incorrect option}
   \correct{Correct option}
   \choice{Another incorrect option}
+}`],
+                ['Multiple choice — choose two', String.raw`\mcq[select=2]{Which TWO statements are correct?}{
+  \correct{First correct answer}
+  \choice{Incorrect answer}
+  \correct{Second correct answer}
+  \choice{Another incorrect answer}
 }`],
                 ['True / False / Not Given', String.raw`\tfng{Write a statement based on the passage.}{TRUE}[Explain why this is the answer.]`],
                 ['Yes / No / Not Given', String.raw`\tfng{Write a statement about the writer's views.}{YES}[Explain why this is the answer.]`],
@@ -25914,6 +25958,22 @@ Write the passage here. The answer is \drop{correct option}.
 }{
   \option{Source A}
   \option{Source B}
+}`],
+                ['Matching sentence endings', String.raw`\matchinginfo{Match each sentence beginning with the correct ending.}{
+  \item{The researchers concluded that}{the method was reliable.}
+  \item{The new approach works because}{it reduces measurement error.}
+}{
+  \option{the method was reliable.}
+  \option{it reduces measurement error.}
+  \option{it requires no training.}
+}`],
+                ['Matching features', String.raw`\matchinginfo{Match each statement with the researcher who expressed that view.}{
+  \item{This approach should be used in schools.}{Professor Lee}
+  \item{More evidence is needed before drawing a conclusion.}{Dr Patel}
+}{
+  \option{Professor Lee}
+  \option{Dr Patel}
+  \option{Both researchers}
 }`],
                 ['Map labelling (grid)', String.raw`\mapgrid[image=https://example.com/map.png]{Choose the correct location for each place.}{
   \item{Place name}{A}
@@ -25933,6 +25993,28 @@ Write the passage here. The answer is \drop{correct option}.
 \passage{Listening Part 1}{
 Write the listening transcript here. The answer is \gap[time=01:23;alt=alternative]{correct answer}.
 }`],
+                ['Form / note completion', String.raw`\audio{https://example.com/audio.mp3}
+\passage{Listening Part 1 — Booking details}{
+Complete the form. Write NO MORE THAN TWO WORDS AND/OR A NUMBER.
+Name: \gap{Amira Khan}
+Arrival date: \gap[time=01:23]{14 June}
+}`],
+                ['Table / summary completion', String.raw`\audio{https://example.com/audio.mp3}
+\passage{Listening Part 3 — Research summary}{
+Complete the summary using words from the recording.
+The project studied \gap{urban wildlife} and began in \gap{2025}.
+}`],
+                ['Table completion', String.raw`\audio{https://example.com/audio.mp3}
+\passage{Listening Part 2 — Course details}{
+Complete the table with the information you hear.
+| Course | Starting time |
+| --- | --- |
+| Photography | \gap{9:30 am} |
+| Local history | \gap{2 pm} |
+}`],
+                ['Short-answer questions', String.raw`\audio{https://example.com/audio.mp3}
+\shortanswer{What is the name of the booking website?}{City Breaks}
+\shortanswer[time=02:15;alt=the west entrance]{Which entrance should visitors use?}{West entrance}`],
                 ['Drag-and-drop completion', String.raw`\passage{Listening Part 1}{
 Write the transcript here. The answer is \drop{correct option}.
 }`],
@@ -25940,6 +26022,20 @@ Write the transcript here. The answer is \drop{correct option}.
   \choice{Incorrect option}
   \correct{Correct option}
   \choice{Another incorrect option}
+}`],
+                ['Multiple choice — choose two', String.raw`\mcq[select=2]{Which TWO features does the speaker mention?}{
+  \correct{The service is available at weekends.}
+  \choice{The service is free for everyone.}
+  \correct{The service can be booked online.}
+  \choice{The service operates all night.}
+}`],
+                ['Matching', String.raw`\matchinginfo{Match each speaker with the opinion expressed.}{
+  \item{Speaker 1}{Option A}
+  \item{Speaker 2}{Option C}
+}{
+  \option{Option A}
+  \option{Option B}
+  \option{Option C}
 }`],
                 ['Map labelling (grid)', String.raw`\mapgrid[image=https://example.com/map.png]{Choose the correct location for each place.}{
   \item{Place name}{A}
@@ -25956,11 +26052,27 @@ Write the transcript here. The answer is \drop{correct option}.
             ],
             writing: [
                 ['Writing Task 1 (Academic)', String.raw`\writingtask[task=1]{Writing Task 1}{Summarise the information by selecting and reporting the main features, and make comparisons where relevant.}`],
+                ['Task 1 — line / bar / pie chart', String.raw`\writingtask[task=1]{Task 1 — Charts}{The chart shows changes in the percentage of people using four types of transport between 2000 and 2025. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.}`],
+                ['Task 1 — table', String.raw`\writingtask[task=1]{Task 1 — Table}{The table compares the average monthly household spending in three countries in 2024. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.}`],
+                ['Task 1 — process diagram', String.raw`\writingtask[task=1]{Task 1 — Process}{The diagram shows how drinking water is produced from seawater. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.}`],
+                ['Task 1 — maps', String.raw`\writingtask[task=1]{Task 1 — Maps}{The maps show the changes made to a town centre between 1990 and the present day. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.}`],
                 ['Writing Task 1 (General Training)', String.raw`\writingtask[task=1]{Writing Task 1}{Write a letter in response to the situation. Include all three bullet points: [point 1], [point 2], and [point 3].}`],
-                ['Writing Task 2 essay', String.raw`\writingtask[task=2]{Writing Task 2}{Write about the following topic. Give reasons for your answer and include relevant examples from your knowledge or experience.}`]
+                ['General Training — formal letter', String.raw`\writingtask[task=1]{Task 1 — Formal letter}{You recently bought an item from a shop, but it was damaged. Write a letter to the manager. In your letter: describe the item and the damage; explain what happened; say what you would like the manager to do.}`],
+                ['General Training — informal letter', String.raw`\writingtask[task=1]{Task 1 — Informal letter}{A friend is planning to visit your town. Write a letter to your friend. In your letter: recommend a time to visit; suggest places to see; invite your friend to stay with you.}`],
+                ['Writing Task 2 essay', String.raw`\writingtask[task=2]{Writing Task 2}{Write about the following topic. Give reasons for your answer and include relevant examples from your knowledge or experience.}`],
+                ['Task 2 — agree / disagree', String.raw`\writingtask[task=2]{Task 2 — Opinion essay}{Some people believe that public transport should be free in all cities. To what extent do you agree or disagree? Give reasons for your answer and include relevant examples from your knowledge or experience.}`],
+                ['Task 2 — discuss both views', String.raw`\writingtask[task=2]{Task 2 — Discussion essay}{Some people think that university students should study whatever they like, while others believe they should only study subjects that will be useful in the future. Discuss both these views and give your own opinion.}`],
+                ['Task 2 — advantages / disadvantages', String.raw`\writingtask[task=2]{Task 2 — Advantages and disadvantages}{More people are choosing to work remotely rather than in an office. Do the advantages of this development outweigh the disadvantages?}`],
+                ['Task 2 — problem / solution', String.raw`\writingtask[task=2]{Task 2 — Problem and solution}{Many cities are experiencing increasing traffic congestion. What problems does this cause, and what measures could be taken to solve them?}`],
+                ['Task 2 — direct questions', String.raw`\writingtask[task=2]{Task 2 — Two-part question}{People are spending less time with their neighbours than in the past. Why is this happening? How can communities encourage people to know each other better?}`]
             ],
             speaking: [
-                ['Speaking cue card with follow-ups', String.raw`\speaking{Describe a memorable experience}{Describe an experience you remember well. You should say:
+                ['Part 1 — familiar topic', String.raw`\speaking{Speaking Part 1 — Your home}{Answer questions about your home and where you live.}{
+  \question{What do you like most about your home?}
+  \question{How long have you lived there?}
+  \question{Would you like to live somewhere else in the future?}
+}`],
+                ['Part 2 — cue card with follow-ups', String.raw`\speaking{Speaking Part 2 — A memorable experience}{Describe an experience you remember well. You should say:
 - what happened
 - where and when it happened
 - who was with you
@@ -25969,9 +26081,86 @@ Write the transcript here. The answer is \drop{correct option}.
   \question{How do people usually celebrate this kind of experience?}
   \question{Do you think people's memories change over time?}
 }`],
+                ['Part 3 — discussion topic', String.raw`\speaking{Speaking Part 3 — Memories and society}{Discuss the role of memories in society.}{
+  \question{Why do some events become part of a country's history?}
+  \question{How has technology changed the way people preserve memories?}
+  \question{Should historical events always be remembered?}
+}`],
                 ['Speaking notes prompt', String.raw`\notes{Make brief notes before you speak. Do not write a full script.}`]
             ]
         };
+    };
+
+    window.saveIeltsLatexSelection = function() {
+        const editor = document.getElementById('ielts-latex-input');
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount && editor.contains(selection.getRangeAt(0).commonAncestorContainer)) {
+            window.ieltsLatexSavedRange = selection.getRangeAt(0).cloneRange();
+        }
+    };
+
+    window.getIeltsLatexSource = function() {
+        const editor = document.getElementById('ielts-latex-input');
+        const serialize = node => {
+            if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || '';
+            if (node.nodeType !== Node.ELEMENT_NODE) return '';
+            const tag = node.tagName.toLowerCase();
+            if (tag === 'br') return '\n';
+            const children = Array.from(node.childNodes).map(serialize).join('');
+            const styles = node.style || {};
+            const bold = tag === 'b' || tag === 'strong' || styles.fontWeight === 'bold' || Number(styles.fontWeight) >= 600;
+            const italic = tag === 'i' || tag === 'em' || styles.fontStyle === 'italic';
+            const underline = tag === 'u' || styles.textDecoration.includes('underline');
+            const formatted = `${bold && children ? `**${children}**` : children}`;
+            const italicFormatted = `${italic && formatted ? `*${formatted}*` : formatted}`;
+            const text = underline && italicFormatted ? `__${italicFormatted}__` : italicFormatted;
+            if (tag === 'li') {
+                const siblings = Array.from(node.parentElement.children).filter(item => item.tagName === 'LI');
+                const prefix = node.parentElement.tagName === 'OL' ? `${siblings.indexOf(node) + 1}. ` : '- ';
+                return `${prefix}${text.trim()}\n`;
+            }
+            if (tag === 'table') {
+                const rows = Array.from(node.rows).map(row =>
+                    `| ${Array.from(row.cells).map(cell => Array.from(cell.childNodes).map(serialize).join('').trim()).join(' | ')} |`
+                );
+                if (!rows.length) return '';
+                const separator = `| ${Array.from(node.rows[0].cells).map(() => '---').join(' | ')} |`;
+                return `\n${rows[0]}\n${separator}${rows.length > 1 ? `\n${rows.slice(1).join('\n')}` : ''}\n`;
+            }
+            if (tag === 'div' || tag === 'p') return `${text}\n`;
+            return text;
+        };
+        return Array.from(editor.childNodes).map(serialize).join('')
+            .replace(/\u00a0/g, ' ')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+    };
+
+    window.insertIeltsLatexTable = function() {
+        const editor = document.getElementById('ielts-latex-input');
+        const selection = window.getSelection();
+        const savedRange = window.ieltsLatexSavedRange;
+        let range = savedRange && editor.contains(savedRange.commonAncestorContainer)
+            ? savedRange.cloneRange()
+            : selection && selection.rangeCount && editor.contains(selection.getRangeAt(0).commonAncestorContainer)
+                ? selection.getRangeAt(0)
+                : null;
+        if (!range) {
+            range = document.createRange();
+            range.selectNodeContents(editor);
+            range.collapse(false);
+        }
+        range.deleteContents();
+        const table = document.createElement('table');
+        table.innerHTML = '<tbody><tr><th>Heading 1</th><th>Heading 2</th></tr><tr><td>Item 1</td><td>\\gap{answer}</td></tr></tbody>';
+        range.insertNode(table);
+        range.setStartAfter(table);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        editor.focus();
+        window.saveIeltsLatexSelection();
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
     window.refreshIeltsLatexTemplates = function() {
@@ -25996,22 +26185,29 @@ Write the transcript here. The answer is \drop{correct option}.
         if (!template) return;
 
         const input = document.getElementById('ielts-latex-input');
-        const start = input.selectionStart;
-        const end = input.selectionEnd;
-        const before = input.value.slice(0, start);
-        const after = input.value.slice(end);
-        const prefix = before && !before.endsWith('\n') ? '\n\n' : '';
-        const suffix = after && !after.startsWith('\n') ? '\n\n' : '';
-        const cursor = before.length + prefix.length + template[1].length;
-        input.value = before + prefix + template[1] + suffix + after;
-        input.setSelectionRange(cursor, cursor);
         input.focus();
+        const selection = window.getSelection();
+        let range = window.ieltsLatexSavedRange || (selection && selection.rangeCount ? selection.getRangeAt(0) : null);
+        if (!range || !input.contains(range.commonAncestorContainer)) {
+            range = document.createRange();
+            range.selectNodeContents(input);
+            range.collapse(false);
+        }
+        range.deleteContents();
+        const insertion = document.createTextNode(`${template[1]}\n\n`);
+        range.insertNode(insertion);
+        range.setStartAfter(insertion);
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        window.ieltsLatexSavedRange = range.cloneRange();
         input.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
     window.openIeltsLatexImport = function() {
         const input = document.getElementById('ielts-latex-input');
-        input.value = '';
+        input.innerHTML = '';
+        window.ieltsLatexSavedRange = null;
         document.getElementById('latex-import-modal').classList.remove('hidden');
         window.refreshIeltsLatexTemplates();
         window.updateIeltsLatexPreview();
@@ -26019,27 +26215,29 @@ Write the transcript here. The answer is \drop{correct option}.
     };
 
     window.updateIeltsLatexPreview = function() {
-        const input = document.getElementById('ielts-latex-input');
         const preview = document.getElementById('ielts-latex-preview');
         const error = document.getElementById('ielts-latex-error');
+        const source = window.getIeltsLatexSource();
         const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         })[char]);
+        const formatPreviewText = value => window.formatIELTSMarkdown(escapeHtml(value));
         const questionCount = question => {
             if (question.type === 'fill_blanks' || question.type === 'dnd_list') return question.gaps.length;
             if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') return question.items.length;
             if (question.type === 'map_labelling_hotspots') return question.hotspots.length;
+            if (question.type === 'mcq') return question.selectCount || 1;
             return 1;
         };
         const questionRange = (first, count) => count > 1 ? `${first}-${first + count - 1}` : String(first);
-        if (!input.value.trim()) {
+        if (!source) {
             error.classList.add('hidden');
             error.textContent = '';
             preview.innerHTML = '<p class="text-sm text-slate-400">Start typing a passage or IELTS question macro to preview it.</p>';
             return null;
         }
         try {
-            const parsed = window.parseIeltsLatex(input.value);
+            const parsed = window.parseIeltsLatex(source);
             error.classList.add('hidden');
             error.textContent = '';
             let html = '';
@@ -26074,7 +26272,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     offset = gapPattern.lastIndex;
                 }
                 body += escapeHtml(parsed.passage.text.slice(offset));
-                passageHtml += `<div class="leading-relaxed whitespace-pre-wrap">${body.replace(/\n/g, '<br>')}</div>`;
+                passageHtml += `<div class="leading-relaxed whitespace-pre-wrap">${window.formatIELTSMarkdown(body)}</div>`;
             }
             questionNumber = 0;
             let renderedPassage = false;
@@ -26088,28 +26286,35 @@ Write the transcript here. The answer is \drop{correct option}.
                 const count = questionCount(question);
                 questionNumber += count;
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
+                    if (question.shortAnswer) {
+                        const statement = formatPreviewText(question.text).replace(/\{blank:(\d+)\}/g, (_, id) =>
+                            `<input type="text" disabled aria-label="Question ${firstQuestionNumber}" class="inline-block align-middle w-28 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${firstQuestionNumber}">`);
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${statement}</div><p class="text-xs text-slate-500 mt-1">Short-answer question · answer in your own words as instructed.</p></section>`;
+                        return;
+                    }
                     const questionLabel = questionRange(firstQuestionNumber, count);
                     html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p></section>`;
                     return;
                 }
                 const questionLabel = questionRange(firstQuestionNumber, count);
                 if (question.type === 'mcq') {
-                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold mb-2">${questionLabel}. ${escapeHtml(question.question)}</p>`;
+                    const selectionPrompt = question.selectCount > 1 ? `Choose ${question.selectCount} answers.` : '';
+                    html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold mb-2">${questionLabel}. ${formatPreviewText(question.question)}</div>${selectionPrompt ? `<p class="text-xs font-bold text-blue-700 mb-2">${selectionPrompt}</p>` : ''}`;
                     question.options.forEach(option => {
-                        html += `<div class="py-1 text-sm">${option.correct ? '◉' : '○'} ${escapeHtml(option.text)}${option.correct ? ' <span class="text-emerald-700 text-xs font-bold">(answer)</span>' : ''}</div>`;
+                        html += `<div class="py-1 text-sm">${option.correct ? '◉' : '○'} ${formatPreviewText(option.text)}${option.correct ? ' <span class="text-emerald-700 text-xs font-bold">(answer)</span>' : ''}</div>`;
                     });
                     html += '</section>';
                 } else {
                     if (question.type === 'tfng') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.statement)}</p><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<p class="text-sm text-purple-700 mt-1">${escapeHtml(question.explanation)}</p>` : ''}</section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.statement)}</div><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<div class="text-sm text-purple-700 mt-1">${formatPreviewText(question.explanation)}</div>` : ''}</section>`;
                     } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.instruction)}</p>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map((item, index) => `${firstQuestionNumber + index}. ${escapeHtml(item.text)} → ${escapeHtml(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map((item, index) => `${firstQuestionNumber + index}. ${formatPreviewText(item.text)} → ${formatPreviewText(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
                     } else if (question.type === 'map_labelling_hotspots') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.instruction)}</p><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Q${firstQuestionNumber + index} Hotspot (${spot.x}%, ${spot.y}%) → ${escapeHtml(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Q${firstQuestionNumber + index} Hotspot (${spot.x}%, ${spot.y}%) → ${formatPreviewText(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
                     } else if (question.type === 'essay') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${escapeHtml(question.instruction)}</p>${question.text ? `<div class="text-sm mt-1">${escapeHtml(question.text)}</div>` : ''}</section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div>${question.text ? `<div class="text-sm mt-1">${formatPreviewText(question.text)}</div>` : ''}</section>`;
                     } else if (question.type === 'audio_record') {
-                        html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. Speaking: ${escapeHtml(question.instruction)}</p>${parsed.speakingQuestions ? `<div class="text-sm mt-1">${escapeHtml(parsed.speakingQuestions).replace(/\n/g, '<br>')}</div>` : ''}</section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. Speaking: ${formatPreviewText(question.instruction)}</div>${parsed.speakingQuestions ? `<div class="text-sm mt-1">${formatPreviewText(parsed.speakingQuestions)}</div>` : ''}</section>`;
                     }
                 }
             });
@@ -26130,7 +26335,7 @@ Write the transcript here. The answer is \drop{correct option}.
     window.compileIeltsLatex = function() {
         const parsed = window.updateIeltsLatexPreview();
         if (!parsed) {
-            if (!document.getElementById('ielts-latex-input').value.trim()) {
+            if (!window.getIeltsLatexSource()) {
                 showModalMsg('Empty source', 'Enter a passage or question before importing.');
             }
             return;
@@ -26138,7 +26343,7 @@ Write the transcript here. The answer is \drop{correct option}.
 
         const allowedTypes = {
             reading: ['fill_blanks', 'dnd_list', 'multiple_choice', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'],
-            listening: ['fill_blanks', 'dnd_list', 'multiple_choice', 'map_labelling_grid', 'map_labelling_hotspots'],
+            listening: ['fill_blanks', 'dnd_list', 'multiple_choice', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'],
             writing: ['essay'],
             speaking: ['essay', 'audio_record']
         };
@@ -26210,18 +26415,22 @@ Write the transcript here. The answer is \drop{correct option}.
             }
             let id;
             if (question.type === 'mcq') {
-                id = nextId++;
+                const ids = allocateIds(question.selectCount || 1);
                 const options = question.options.map(option => option.text);
+                const correctAnswers = {};
+                question.options.filter(option => option.correct).forEach((option, index) => {
+                    correctAnswers[ids[index]] = option.text;
+                });
                 newBlocks.push({
                     blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
                     type: 'multiple_choice',
-                    ids: [id],
-                    points: 1,
-                    instruction: 'Choose the correct answer.',
+                    ids,
+                    points: ids.length,
+                    instruction: ids.length > 1 ? `Choose ${ids.length} answers.` : 'Choose the correct answer.',
                     text: formatText(question.question),
                     options,
-                    correctAnswers: { [id]: question.options.find(option => option.correct).text },
-                    multi: false,
+                    correctAnswers,
+                    multi: ids.length > 1,
                     latexSource: true
                 });
             } else if (question.type === 'tfng') {
@@ -26350,10 +26559,27 @@ Write the transcript here. The answer is \drop{correct option}.
         let out = [];
         let inUl = false;
         let inOl = false;
+        const formatInline = value => value
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/__(.*?)__/g, '<u>$1</u>')
+            .replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<i>$1</i>');
 
         for (let i = 0; i < lines.length; i++) {
             let line = lines[i].trim();
-            
+
+            if (/^\|.*\|$/.test(line) && /^\|\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|$/.test((lines[i + 1] || '').trim())) {
+                if (inUl) { out.push('</ul>'); inUl = false; }
+                if (inOl) { out.push('</ol>'); inOl = false; }
+                const cells = row => row.trim().replace(/^\||\|$/g, '').split('|').map(cell => formatInline(cell.trim()));
+                const headerCells = cells(line);
+                i += 2;
+                const bodyRows = [];
+                while (i < lines.length && /^\|.*\|$/.test(lines[i].trim())) bodyRows.push(cells(lines[i++]));
+                i--;
+                out.push(`<table class="border-collapse border border-slate-300 mb-4 bg-white w-full"><thead><tr>${headerCells.map(cell => `<th class="border border-slate-300 p-2">${cell}</th>`).join('')}</tr></thead><tbody>${bodyRows.map(row => `<tr>${row.map(cell => `<td class="border border-slate-300 p-2">${cell}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
+                continue;
+            }
+
             if (!line) {
                 if (inUl) { out.push('</ul>'); inUl = false; }
                 if (inOl) { out.push('</ol>'); inOl = false; }
@@ -26362,9 +26588,7 @@ Write the transcript here. The answer is \drop{correct option}.
             }
 
             // Inline formatting (bold, italic, underline) - Safely ignores existing HTML tags
-            line = line.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>'); 
-            line = line.replace(/__(.*?)__/g, '<u>$1</u>');     
-            line = line.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<i>$1</i>'); 
+            line = formatInline(line);
 
             // List detection
             const ulMatch = line.match(/^[\-\•]\s+(.*)/);
