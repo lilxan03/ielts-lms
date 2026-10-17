@@ -25606,12 +25606,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const exact = options.find(option => option.trim().toLowerCase() === normalizedAnswer);
             if (exact) return exact;
             const matchingLabel = options.find(option => {
-                const match = option.trim().match(/^([a-z]|\d+)\s*[.):\-]\s*(.+)$/i);
+                const match = option.trim().match(/^([a-z]|\d+)(?:\s*[.):\-]\s*|\s+)(.+)$/i);
                 return match && match[1].toLowerCase() === normalizedAnswer;
             });
             if (matchingLabel) return matchingLabel;
             const matchingText = options.find(option => {
-                const optionText = option.trim().replace(/^([a-z]|\d+)\s*[.):\-]\s*/i, '').toLowerCase();
+                const optionText = option.trim().replace(/^([a-z]|\d+)(?:\s*[.):\-]\s*|\s+)/i, '').toLowerCase();
                 return optionText === normalizedAnswer;
             });
             return matchingText || null;
