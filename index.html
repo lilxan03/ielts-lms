@@ -12326,6 +12326,37 @@
       const list = document.getElementById('editor-questions-list'); list.innerHTML = '';
       const part = APP_DATA.parts[currentEditorPartIdx];
       const locateSegments = getEditorLocateSegments(part, APP_DATA.module);
+      const questionTypeOptions = {
+        reading: [
+          ['multiple_choice', 'Multiple Choice'],
+          ['fill_blanks', 'Gap Fill'],
+          ['dnd_list', 'Drag/Drop'],
+          ['tfng', 'True / False / Not Given'],
+          ['ynng', 'Yes / No / Not Given'],
+          ['matching_headings', 'Matching Headings'],
+          ['matching_info', 'Matching Information'],
+          ['matching_endings', 'Matching Sentence Endings'],
+          ['map_labelling_hotspots', 'Map Hotspots'],
+          ['map_labelling_grid', 'Map Grid']
+        ],
+        listening: [
+          ['multiple_choice', 'Multiple Choice'],
+          ['fill_blanks', 'Gap Fill'],
+          ['dnd_list', 'Drag/Drop'],
+          ['tfng', 'True / False / Not Given'],
+          ['ynng', 'Yes / No / Not Given'],
+          ['matching_info', 'Matching'],
+          ['map_labelling_hotspots', 'Map Hotspots'],
+          ['map_labelling_grid', 'Map Grid']
+        ],
+        writing: [['essay', 'Writing Essay']],
+        speaking: [['audio_record', 'Audio Recording'], ['essay', 'Notes / Text']],
+        activity: [
+          ['pair_roleplay', 'Pair Roleplay'],
+          ['group_debate', 'Group Debate'],
+          ['vocab_game', 'Vocabulary Game']
+        ]
+      }[APP_DATA.module] || [];
       part.questions.forEach((q, i) => {
         const div = document.createElement('div'); 
         div.className = 'bg-white rounded-xl border border-slate-200 shadow-sm relative transition-all hover:shadow-md overflow-hidden';
@@ -12388,6 +12419,9 @@
             <div class="flex gap-2">
                 ${i > 0 ? `<button onclick="moveEditorQuestion(${i}, -1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Up">↑</button>` : ''}
                 ${i < APP_DATA.parts[currentEditorPartIdx].questions.length - 1 ? `<button onclick="moveEditorQuestion(${i}, 1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Down">↓</button>` : ''}
+                <select onchange="window.changeEditorQuestionType(${i}, this.value)" class="h-7 max-w-[140px] border border-slate-200 rounded bg-white px-1 text-[11px] font-bold text-indigo-700 shadow-sm cursor-pointer" title="Change this question type">
+                    ${questionTypeOptions.map(([type, label]) => `<option value="${type}" ${type === (q.questionFormat === 'matching_sentence_endings' ? 'matching_endings' : q.type) ? 'selected' : ''}>⇄ ${label}</option>`).join('')}
+                </select>
                 <div class="w-px h-7 bg-slate-300 mx-1"></div>
                 <button onclick="window.cloneEditorQuestion(${i})" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-emerald-50 hover:text-emerald-600 text-slate-500 font-bold transition shadow-sm" title="Duplicate Block">⧉</button>
                 <div class="w-px h-7 bg-slate-300 mx-1"></div>
@@ -12428,11 +12462,17 @@
                html += `<div class="mt-1 mb-2"><label class="flex items-center text-sm font-bold text-slate-700 cursor-pointer bg-slate-50 border border-slate-200 px-4 py-3 rounded-lg hover:bg-slate-100 transition"><input type="checkbox" class="q-multi mr-3 w-4 h-4 text-blue-600 rounded" ${q.multi ? 'checked' : ''} onchange="APP_DATA.parts[currentEditorPartIdx].questions[${i}].multi = this.checked; saveCurrentEditorPart(); renderEditorQuestions();"> Allow multiple selections (Checkboxes)</label></div>`;
                if (q.multi) {
                    html += `<div>${mkLbl('Answers (ID:Ans) — Use / for multiple valid')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
+               } else if (q.ids.length > 1) {
+                   html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
                } else {
                    html += `<div>${mkLbl('Correct Answer (Use / for multiple valid)')}<input type="text" class="q-correct ${answerInputClass}" value="${esc(q.correctAnswers?.[q.ids[0]])}"></div>`;
                }
            } else {
-               html += `<div>${mkLbl('Correct Answer (Use / for multiple valid)')}<input type="text" class="q-correct ${answerInputClass}" value="${esc(q.correctAnswers?.[q.ids[0]])}"></div>`;
+               if (q.ids.length > 1) {
+                   html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
+               } else {
+                   html += `<div>${mkLbl('Correct Answer (Use / for multiple valid)')}<input type="text" class="q-correct ${answerInputClass}" value="${esc(q.correctAnswers?.[q.ids[0]])}"></div>`;
+               }
            }
         } else if (q.type === 'essay' || q.type === 'audio_record') {
         } else if (q.type === 'matching_info') {
@@ -13358,6 +13398,105 @@
       }
     }
 
+    window.changeEditorQuestionType = function(index, requestedType) {
+        const choices = {
+            reading: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'matching_endings', 'map_labelling_hotspots', 'map_labelling_grid'],
+            listening: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'matching_info', 'map_labelling_hotspots', 'map_labelling_grid'],
+            writing: ['essay'],
+            speaking: ['audio_record', 'essay'],
+            activity: ['pair_roleplay', 'group_debate', 'vocab_game']
+        }[APP_DATA.module] || [];
+        if (!choices.includes(requestedType)) {
+            showModalMsg('Cannot change question type', 'That question type is not available for this skill.');
+            renderEditorQuestions();
+            return;
+        }
+
+        saveCurrentEditorPart();
+        const questions = APP_DATA.parts[currentEditorPartIdx].questions;
+        const question = questions[index];
+        if (!question) return;
+        const previousType = question.questionFormat === 'matching_sentence_endings' ? 'matching_endings' : question.type;
+        if (previousType === requestedType) return;
+
+        const ids = Array.isArray(question.ids) && question.ids.length ? [...question.ids] : [1];
+        const answers = { ...(question.correctAnswers || {}) };
+        let text = String(question.text || '');
+        const sourceHotspots = Array.isArray(question.hotspots) ? question.hotspots : [];
+        if (!text && sourceHotspots.length) {
+            text = sourceHotspots.map(hotspot => `${hotspot.id}. ${answers[hotspot.id] || 'Map label'}`).join('\n');
+        }
+        if (requestedType === 'fill_blanks') {
+            text = text.replace(/\{drop:(\d+)\}/g, '{blank:$1}');
+            if (!/\{blank:\d+\}/.test(text)) {
+                text = `${text}${text ? '\n' : ''}${ids.map(id => `{blank:${id}}`).join(' ')}`;
+            }
+        } else if (requestedType === 'dnd_list' || requestedType === 'matching_endings') {
+            text = text.replace(/\{blank:(\d+)\}/g, '{drop:$1}');
+            if (!/\{drop:\d+\}/.test(text)) {
+                text = `${text}${text ? '\n' : ''}${ids.map(id => `${id}. {drop:${id}}`).join('\n')}`;
+            }
+        } else {
+            text = text
+                .replace(/\s*\{(?:blank|drop):\d+\}/g, '')
+                .replace(/(?:^|\n)\s*\d+[.)]\s*$/gm, '')
+                .trim();
+        }
+
+        question.ids = ['essay', 'audio_record', 'vocab_game', 'pair_roleplay', 'group_debate'].includes(requestedType)
+            ? [ids[0]]
+            : ids;
+        question.type = requestedType === 'matching_endings' ? 'dnd_list' : requestedType;
+        question.text = text;
+        question.correctAnswers = answers;
+        delete question.questionFormat;
+        delete question.hotspots;
+        if (requestedType === 'matching_endings') {
+            question.questionFormat = 'matching_sentence_endings';
+            question.instruction = question.instruction || 'Complete each sentence by matching it with an ending from the box.';
+        } else if (requestedType === 'multiple_choice') {
+            question.options = question.options?.length ? question.options : ['A', 'B', 'C', 'D'];
+            question.multi = false;
+        } else if (requestedType === 'tfng') {
+            question.options = ['True', 'False', 'Not Given'];
+            question.multi = false;
+        } else if (requestedType === 'ynng') {
+            question.options = ['Yes', 'No', 'Not Given'];
+            question.multi = false;
+        } else if (requestedType === 'dnd_list') {
+            question.options = question.options?.length ? question.options : ['Option 1', 'Option 2', 'Option 3'];
+            question.reusable = false;
+        } else if (requestedType === 'matching_headings') {
+            question.options = question.options?.length ? question.options : ['i', 'ii', 'iii', 'iv'];
+            question.reusable = false;
+        } else if (requestedType === 'matching_info' || requestedType === 'map_labelling_grid') {
+            question.options = question.options || [];
+            question.reusable = true;
+        } else if (requestedType === 'map_labelling_hotspots') {
+            question.options = question.options?.length ? question.options : ['Option 1', 'Option 2', 'Option 3'];
+            question.hotspots = question.ids.map((id, hotspotIndex) => {
+                const previous = sourceHotspots.find(hotspot => hotspot.id === id);
+                return previous || {
+                    id,
+                    x: Math.round(((hotspotIndex + 1) / (question.ids.length + 1)) * 100),
+                    y: 50
+                };
+            });
+        } else if (['essay', 'audio_record', 'pair_roleplay', 'group_debate', 'vocab_game'].includes(requestedType)) {
+            question.options = [];
+            question.correctAnswers = {};
+            question.multi = false;
+            question.reusable = false;
+        } else if (requestedType === 'fill_blanks') {
+            question.options = [];
+            question.reusable = false;
+        }
+
+        question.points = Math.max(1, question.ids.length);
+        renderEditorQuestions();
+        triggerEditorAutosave();
+    };
+
         window.setListeningHighlightStart = function(value) {
             const start = Math.max(0, Number(value) || 0);
             const input = document.getElementById('edit-listening-start');
@@ -13441,7 +13580,7 @@
         const c = b.querySelector('.q-correct');
         if(c) {
           res.correctAnswers = {};
-          if(old.type==='tfng' || old.type==='ynng' || (old.type==='multiple_choice' && !res.multi)) {
+          if((old.type==='tfng' || old.type==='ynng' || (old.type==='multiple_choice' && !res.multi)) && c.tagName !== 'TEXTAREA') {
              res.correctAnswers[res.ids[0]] = c.value.trim();
           } else {
              // Retain old answers if ID range is expanded
