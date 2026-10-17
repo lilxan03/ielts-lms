@@ -2010,7 +2010,7 @@
             <span class="self-center text-[11px] text-slate-500">Paste formatted text or select text and apply formatting.</span>
           </div>
           <div id="ielts-latex-input" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="ielts-latex-source-label" spellcheck="false" onkeyup="window.saveIeltsLatexSelection()" onmouseup="window.saveIeltsLatexSelection()" oninput="window.saveIeltsLatexSelection(); window.updateIeltsLatexPreview()" class="latex-source-editor rich-editor flex-1 min-h-[220px] resize-none overflow-y-auto border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" data-placeholder="Paste or type IELTS macros here. Use the toolbar to format text."></div>
-          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, <code>\mapgrid</code>, or <code>\maphotspots</code>. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, or for Reading sentence endings <code>\matchingendings{instruction}{\item{stem}{A}}{\ending{A}{ending text}}</code>; <code>\mapgrid</code> and <code>\maphotspots</code> handle map tasks. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
         </div>
         <div class="p-5 flex flex-col min-h-0 bg-slate-50">
           <div class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Live preview</div>
@@ -11634,7 +11634,7 @@
       else if(APP_DATA.module==='activity') qSel.innerHTML = '<option value="pair_roleplay">🎭 Pair Roleplay (Cards)</option><option value="group_debate">🗣️ Group Debate (Teams)</option><option value="vocab_game">🎲 Multiplayer Vocab Board</option>';
       else {
         qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option>`;
-        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Information</option>`;
+        if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Information</option><option value="matching_endings">Matching Sentence Endings (Drag &amp; Drop)</option>`;
         if(APP_DATA.module==='listening') qSel.innerHTML += `<option value="matching_info">Matching</option>`;
         qSel.innerHTML += `<option value="map_labelling_hotspots">Map Labelling (Hotspots / Options > Gaps)</option><option value="map_labelling_grid">Map Labelling (Grid / Options < Gaps)</option>`;
       }
@@ -12349,7 +12349,7 @@
         <div class="bg-slate-50/80 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <span class="bg-blue-100 text-blue-800 font-black text-[10px] px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">Block ${i+1}</span>
-                <span class="text-sm font-bold text-slate-700 capitalize">${q.type.replace(/_/g, ' ')}</span>
+                <span class="text-sm font-bold text-slate-700 capitalize">${q.questionFormat === 'matching_sentence_endings' ? 'matching sentence endings' : q.type.replace(/_/g, ' ')}</span>
             </div>
             <div class="flex gap-2">
                 ${i > 0 ? `<button onclick="moveEditorQuestion(${i}, -1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Up">↑</button>` : ''}
@@ -12454,16 +12454,19 @@
         } else if (q.type === 'vocab_game') {
            html += `<div class="p-5 bg-fuchsia-50 border border-fuchsia-200 rounded-xl text-fuchsia-800 text-[15px] font-medium flex items-center gap-4 shadow-inner"><span class="text-4xl drop-shadow-sm">🎲</span> <p>This block automatically generates a multiplayer Vocabulary Board Game using the words in the <b>Test Vocabulary Bank</b> (click the 🗂️ icon in the top right to add words).</p></div>`;
         } else {
+           const optionsLabel = q.questionFormat === 'matching_sentence_endings' ? 'Sentence Endings / Options (1 per line)' : 'Options Bank (1/line)';
            if (q.type === 'fill_blanks' || q.type === 'dnd_list') {
-               html += `<div>${mkLbl('Passage Text With Gaps')}${advToolbar}<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
+               const textLabel = q.questionFormat === 'matching_sentence_endings' ? 'Sentence Beginnings and Drop Zones' : 'Passage Text With Gaps';
+               html += `<div>${mkLbl(textLabel)}${advToolbar}<div id="${editorId}" class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            } else {
                html += `<div>${mkLbl('Text')}${mkStandardToolbar()}<div class="q-text rich-editor w-full border border-slate-300 bg-white p-4 rounded-b-lg min-h-[120px] focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all outline-none" contenteditable="true" oninput="window.triggerEditorAutosave()">${q.text||''}</div></div>`;
            }
            
            if (q.type !== 'fill_blanks') {
-               html += `<div>${mkLbl('Options Bank (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[80px]">${formatArr(q.options)}</textarea></div>`;
+               html += `<div>${mkLbl(optionsLabel || 'Options Bank (1/line)')}<textarea class="q-opts ${baseInputClass} min-h-[80px]">${formatArr(q.options)}</textarea></div>`;
            }
-           html += `<div>${mkLbl('Answers (ID:Ans)')}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
+           const answerLabel = q.questionFormat === 'matching_sentence_endings' ? 'Correct Ending for Each Question (ID: exact option text)' : 'Answers (ID:Ans)';
+           html += `<div>${mkLbl(answerLabel)}<textarea class="q-correct ${answerInputClass} min-h-[80px]">${q.ids.map(id => `${id}:${q.correctAnswers?.[id]||''}`).join('\n')}</textarea></div>`;
            if (q.type === 'dnd_list' || q.type === 'matching_headings') {
               html += `<div class="mt-1 mb-2"><label class="flex items-center text-sm font-bold text-slate-700 cursor-pointer bg-slate-50 border border-slate-200 px-4 py-3 rounded-lg hover:bg-slate-100 transition"><input type="checkbox" class="q-reus mr-3 w-4 h-4 text-blue-600 rounded" ${q.reusable ? 'checked' : ''}> Options are Reusable (can be used multiple times)</label></div>`;
            }
@@ -12493,7 +12496,9 @@
     }
 
     function addEditorQuestion() {
-      const type = document.getElementById('new-q-type').value;
+      const selectedType = document.getElementById('new-q-type').value;
+      const matchingEndings = selectedType === 'matching_endings';
+      const type = matchingEndings ? 'dnd_list' : selectedType;
       const qtyInput = document.getElementById('new-q-qty');
       const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
       
@@ -12536,8 +12541,13 @@
           instruction = `Complete the summary below.<br>Choose <b>NO MORE THAN TWO WORDS</b> from the passage for each answer.`;
           text = ids.map(id => `{blank:${id}}`).join(" ... ");
       } else if (type === 'dnd_list') {
-          instruction = `Complete the sentences below.<br>Choose the correct word from the box.`;
-          options = ["Word1", "Word2", "Word3"];
+          instruction = matchingEndings
+              ? `Complete each sentence by matching it with an ending from the box.`
+              : `Complete the sentences below.<br>Choose the correct word from the box.`;
+          options = matchingEndings
+              ? ["A. Ending one", "B. Ending two", "C. Ending three"]
+              : ["Word1", "Word2", "Word3"];
+          if (matchingEndings) text = ids.map(id => `${id}. Write the sentence beginning here {drop:${id}}`).join('\n');
       } else if (type === 'essay') {
           instruction = `You should spend about 40 minutes on this task.<br><br>Write about the following topic:`;
       }
@@ -12552,6 +12562,7 @@
           options,
           correctAnswers,
           reusable,
+          ...(matchingEndings ? { questionFormat: 'matching_sentence_endings' } : {}),
           hint: getAssignedQuestionTemplateHtml(APP_DATA.module, type)
       };
       
@@ -13217,6 +13228,7 @@
             hint: getVal(b.querySelector('.q-hint')),
             explanation: getVal(b.querySelector('.q-expl')) 
         };
+        if (old.questionFormat) res.questionFormat = old.questionFormat;
 
         if (['reading', 'listening'].includes(APP_DATA.module)) {
             if (old.locateText) res.locateText = old.locateText;
@@ -25589,6 +25601,21 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
             return entries.map(entry => ({ ...entry, values: values(entry) }));
         };
+        const resolveMatchingOption = (answer, options) => {
+            const normalizedAnswer = answer.trim().toLowerCase();
+            const exact = options.find(option => option.trim().toLowerCase() === normalizedAnswer);
+            if (exact) return exact;
+            const matchingLabel = options.find(option => {
+                const match = option.trim().match(/^([a-z]|\d+)\s*[.):\-]\s*(.+)$/i);
+                return match && match[1].toLowerCase() === normalizedAnswer;
+            });
+            if (matchingLabel) return matchingLabel;
+            const matchingText = options.find(option => {
+                const optionText = option.trim().replace(/^([a-z]|\d+)\s*[.):\-]\s*/i, '').toLowerCase();
+                return optionText === normalizedAnswer;
+            });
+            return matchingText || null;
+        };
         const parseGapOptions = (raw) => {
             const result = { alternatives: [], time: null };
             if (raw === null || raw.trim() === '') return result;
@@ -25617,6 +25644,46 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
             return result;
         };
+        const parseQuestionNumbers = (text, count) => {
+            const source = String(text || '');
+            const range = source.match(/\bquestions?\s*(\d+)\s*(?:-|–|—|to)\s*(\d+)\b/i);
+            if (range) {
+                const first = Number(range[1]);
+                const last = Number(range[2]);
+                const numbers = Array.from({ length: last - first + 1 }, (_, index) => first + index);
+                return numbers.length === count ? numbers : null;
+            }
+            const list = source.match(/\bquestions?\s+(\d+(?:\s*(?:,|and|&)\s*\d+)+)\b/i);
+            if (list) {
+                const numbers = list[1].match(/\d+/g).map(Number);
+                return numbers.length === count ? numbers : null;
+            }
+            const prefix = source.match(/^\s*(?:questions?\s*)?(\d+(?:\s*(?:-|–|—|to|,|and|&)\s*\d+)*)\s*[:.)-]\s*/i);
+            if (prefix) {
+                const numbers = prefix[1].match(/\d+/g).map(Number);
+                if (numbers.length === count) return numbers;
+            }
+            const single = source.match(/\bquestions?\s*(\d+)\b/i);
+            return single && count === 1 ? [Number(single[1])] : null;
+        };
+        const parseItemQuestionNumbers = items => {
+            const numbers = items.map(item => item.text.match(/^\s*(?:question\s*)?(\d{1,3})[.)]\s*/i));
+            return numbers.every(Boolean) ? numbers.map(match => Number(match[1])) : null;
+        };
+        const stripQuestionNumberPrefix = (text, numbers) => {
+            if (!Array.isArray(numbers) || !numbers.length) return text;
+            return String(text).replace(
+                /^\s*(?:questions?\s*)?(\d+(?:\s*(?:-|–|—|to|,|and|&)\s*\d+)*)\s*[:.)-]\s*/i,
+                (prefix, numberText) => {
+                    const values = numberText.match(/\d+/g).map(Number);
+                    return values.length === numbers.length && values.every((number, index) => number === numbers[index])
+                        ? ''
+                        : prefix;
+                }
+            ).trim();
+        };
+        const stripItemNumberPrefix = (text, number) =>
+            String(text).replace(new RegExp(`^\\s*(?:question\\s*)?${number}[:.)-]\\s*`, 'i'), '');
         const parseSequence = (stopAtClose = false) => {
             const nodes = [];
             let text = '';
@@ -25665,6 +25732,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     nodes.push({ type: 'option', value: readRequiredText('Option') });
                 } else if (command === 'item') {
                     nodes.push({ type: 'item', values: [readRequiredText('Item text'), readRequiredText('Item answer')] });
+                } else if (command === 'ending') {
+                    nodes.push({ type: 'ending', values: [readRequiredText('Ending label'), readRequiredText('Sentence ending')] });
                 } else if (command === 'hotspot') {
                     nodes.push({ type: 'hotspot', values: [
                         readRequiredText('Hotspot x position'),
@@ -25691,10 +25760,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     if (options.filter(option => option.type === 'correct').length !== selectCount) {
                         fail(`This multiple-choice question needs exactly ${selectCount} \\correct option${selectCount === 1 ? '' : 's'}`, slashAt);
                     }
+                    const questionNumbers = parseQuestionNumbers(question, selectCount);
                     nodes.push({
                         type: 'mcq',
-                        question,
+                        question: stripQuestionNumberPrefix(question, questionNumbers),
                         selectCount,
+                        questionNumbers,
                         options: options.map(option => ({ text: option.value, correct: option.type === 'correct' }))
                     });
                 } else if (command === 'shortanswer') {
@@ -25702,10 +25773,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     const statement = readRequiredText('Short-answer question');
                     const answer = readRequiredText('Short-answer key');
                     if (!statement || !answer) fail('Short-answer question and key cannot be empty', slashAt);
+                    const questionNumbers = parseQuestionNumbers(statement, 1);
                     nodes.push({
                         type: 'fill_blanks',
                         shortAnswer: true,
-                        text: `${statement} {blank:1}`,
+                        text: `${stripQuestionNumberPrefix(statement, questionNumbers)} {blank:1}`,
+                        questionNumbers,
                         gaps: [{ id: 1, answer, alternatives: answerOptions.alternatives, time: answerOptions.time }]
                     });
                 } else if (command === 'matchingheadings' || command === 'matchinginfo') {
@@ -25713,15 +25786,51 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     const items = readMacroList('item', 2);
                     const options = readMacroList('option', 1);
                     if (!items.length || !options.length) fail('Matching questions need at least one item and one option', slashAt);
-                    const allowedOptions = new Set(options.map(option => option.values[0].trim().toLowerCase()));
-                    if (items.some(item => !allowedOptions.has(item.values[1].trim().toLowerCase()))) {
-                        fail('Every matching answer must match one of the listed options', slashAt);
+                    const optionValues = options.map(option => option.values[0]);
+                    const resolvedAnswers = items.map(item => resolveMatchingOption(item.values[1], optionValues));
+                    if (resolvedAnswers.some(answer => !answer)) {
+                        const hint = command === 'matchinginfo' && /sentence.{0,30}ending|ending.{0,30}sentence/i.test(instruction)
+                            ? '; for sentence endings, use \\matchingendings with \\ending{label}{ending text}'
+                            : '';
+                        fail(`Every matching answer must match one of the listed options${hint}`, slashAt);
                     }
+                    const questionNumbers = parseItemQuestionNumbers(items.map(item => ({ text: item.values[0] }))) || parseQuestionNumbers(instruction, items.length);
                     nodes.push({
                         type: command === 'matchingheadings' ? 'matching_headings' : 'matching_info',
-                        instruction,
-                        items: items.map(item => ({ text: item.values[0], answer: item.values[1] })),
-                        options: options.map(option => option.values[0])
+                        instruction: stripQuestionNumberPrefix(instruction, questionNumbers),
+                        items: items.map((item, index) => ({
+                            text: questionNumbers ? stripItemNumberPrefix(item.values[0], questionNumbers[index]) : item.values[0],
+                            answer: resolvedAnswers[index]
+                        })),
+                        questionNumbers,
+                        options: optionValues
+                    });
+                } else if (command === 'matchingendings') {
+                    const instruction = readRequiredText('Sentence-ending instruction');
+                    const items = readMacroList('item', 2);
+                    const endings = readMacroList('ending', 2);
+                    if (!items.length || endings.length < items.length) {
+                        fail('Matching sentence endings need at least one sentence and an ending for every answer', slashAt);
+                    }
+                    const endingByKey = new Map();
+                    endings.forEach(ending => {
+                        const key = ending.values[0].trim().toLowerCase();
+                        if (endingByKey.has(key)) fail(`Duplicate sentence-ending option "${ending.values[0]}"`, slashAt);
+                        endingByKey.set(key, ending.values[1]);
+                    });
+                    if (items.some(item => !endingByKey.has(item.values[1].trim().toLowerCase()))) {
+                        fail('Every sentence-ending answer must match one of the listed ending labels', slashAt);
+                    }
+                    const questionNumbers = parseItemQuestionNumbers(items.map(item => ({ text: item.values[0] }))) || parseQuestionNumbers(instruction, items.length);
+                    nodes.push({
+                        type: 'matching_endings',
+                        instruction: stripQuestionNumberPrefix(instruction, questionNumbers),
+                        items: items.map((item, index) => ({
+                            text: questionNumbers ? stripItemNumberPrefix(item.values[0], questionNumbers[index]) : item.values[0],
+                            answer: item.values[1]
+                        })),
+                        questionNumbers,
+                        options: endings.map(ending => `${ending.values[0]}. ${ending.values[1]}`)
                     });
                 } else if (command === 'mapgrid') {
                     const imageOptions = readOptionalBracket() || '';
@@ -25735,11 +25844,16 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     if (items.some(item => !allowedOptions.has(item.values[1].trim().toLowerCase()))) {
                         fail('Every map-grid answer must match one of the listed options', slashAt);
                     }
+                    const questionNumbers = parseItemQuestionNumbers(items.map(item => ({ text: item.values[0] }))) || parseQuestionNumbers(instruction, items.length);
                     nodes.push({
                         type: 'map_labelling_grid',
                         image,
-                        instruction,
-                        items: items.map(item => ({ text: item.values[0], answer: item.values[1] })),
+                        instruction: stripQuestionNumberPrefix(instruction, questionNumbers),
+                        items: items.map((item, index) => ({
+                            text: questionNumbers ? stripItemNumberPrefix(item.values[0], questionNumbers[index]) : item.values[0],
+                            answer: item.values[1]
+                        })),
+                        questionNumbers,
                         options: options.map(option => option.values[0])
                     });
                 } else if (command === 'maphotspots') {
@@ -25761,7 +25875,15 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     if (hotspots.some(hotspot => !allowedOptions.has(hotspot.answer.trim().toLowerCase()))) {
                         fail('Every hotspot answer must match one of the listed options', slashAt);
                     }
-                    nodes.push({ type: 'map_labelling_hotspots', image, instruction, hotspots, options });
+                    const questionNumbers = parseQuestionNumbers(instruction, hotspots.length);
+                    nodes.push({
+                        type: 'map_labelling_hotspots',
+                        image,
+                        instruction: stripQuestionNumberPrefix(instruction, questionNumbers),
+                        questionNumbers,
+                        hotspots,
+                        options
+                    });
                 } else if (command === 'writingtask') {
                     const taskOption = readOptionalBracket() || '';
                     const taskMatch = taskOption.match(/^task\s*=\s*([12])$/i);
@@ -25792,7 +25914,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     if (!['TRUE', 'FALSE', 'NOT GIVEN', 'YES', 'NO'].includes(answer)) {
                         fail('TFNG answer must be TRUE, FALSE, NOT GIVEN, YES, or NO', slashAt);
                     }
-                    nodes.push({ type: 'tfng', statement, answer, explanation: explanation ? explanation.trim() : '' });
+                    const questionNumbers = parseQuestionNumbers(statement, 1);
+                    nodes.push({
+                        type: 'tfng',
+                        statement: stripQuestionNumberPrefix(statement, questionNumbers),
+                        answer,
+                        questionNumbers,
+                        explanation: explanation ? explanation.trim() : ''
+                    });
                 } else if (command === 'passage') {
                     const title = readRequiredText('Passage title');
                     const content = readRequiredNodes();
@@ -25853,7 +25982,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             } else if (node.type === 'notes') {
                 const question = { type: 'essay', instruction: node.text, text: '' };
                 questionOrder.push(question);
-            } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots', 'fill_blanks'].includes(node.type)) {
+            } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'matching_endings', 'map_labelling_grid', 'map_labelling_hotspots', 'fill_blanks'].includes(node.type)) {
                 questionOrder.push(node);
             } else {
                 fail(`\\${node.type} must be inside an appropriate question macro`, 0);
@@ -25873,10 +26002,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if (gapModes.size > 1) fail('Do not mix \\gap and \\drop in the same passage import', 0);
         let gapQuestion = null;
         if (gaps.length) {
+            const firstGapIndex = passageHtmlSource.indexOf('{blank:');
+            const questionNumbers = parseQuestionNumbers(passageHtmlSource.slice(0, firstGapIndex), gaps.length);
             gapQuestion = {
                 type: gapModes.has('drop') ? 'dnd_list' : 'fill_blanks',
                 text: passageHtmlSource,
-                gaps
+                gaps,
+                questionNumbers,
+                numberedInPassage: !!questionNumbers
             };
         }
         const questions = questionOrder
@@ -25959,13 +26092,13 @@ Write the passage here. The answer is \drop{correct option}.
   \option{Source A}
   \option{Source B}
 }`],
-                ['Matching sentence endings', String.raw`\matchinginfo{Match each sentence beginning with the correct ending.}{
-  \item{The researchers concluded that}{the method was reliable.}
-  \item{The new approach works because}{it reduces measurement error.}
+                ['Matching sentence endings', String.raw`\matchingendings{Questions 31–34: Complete each sentence with the correct ending, A–F, below.}{
+  \item{The researchers concluded that}{A}
+  \item{The new approach works because}{B}
 }{
-  \option{the method was reliable.}
-  \option{it reduces measurement error.}
-  \option{it requires no training.}
+  \ending{A}{the method was reliable.}
+  \ending{B}{it reduces measurement error.}
+  \ending{C}{it requires no training.}
 }`],
                 ['Matching features', String.raw`\matchinginfo{Match each statement with the researcher who expressed that view.}{
   \item{This approach should be used in schools.}{Professor Lee}
@@ -26224,12 +26357,18 @@ Write the transcript here. The answer is \drop{correct option}.
         const formatPreviewText = value => window.formatIELTSMarkdown(escapeHtml(value));
         const questionCount = question => {
             if (question.type === 'fill_blanks' || question.type === 'dnd_list') return question.gaps.length;
+            if (question.type === 'matching_endings') return question.items.length;
             if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') return question.items.length;
             if (question.type === 'map_labelling_hotspots') return question.hotspots.length;
             if (question.type === 'mcq') return question.selectCount || 1;
             return 1;
         };
-        const questionRange = (first, count) => count > 1 ? `${first}-${first + count - 1}` : String(first);
+        const questionRange = numbers => {
+            if (numbers.length > 1 && numbers.every((number, index) => index === 0 || number === numbers[index - 1] + 1)) {
+                return `${numbers[0]}-${numbers[numbers.length - 1]}`;
+            }
+            return numbers.join(', ');
+        };
         if (!source) {
             error.classList.add('hidden');
             error.textContent = '';
@@ -26244,14 +26383,26 @@ Write the transcript here. The answer is \drop{correct option}.
             let passageHtml = parsed.passage.title
                 ? `<h3 class="font-black text-lg text-slate-900">${escapeHtml(parsed.passage.title)}</h3>`
                 : '';
+            const existingQuestionIds = APP_DATA.parts.flatMap(part =>
+                (part.questions || []).flatMap(question => question.ids || []).map(Number));
+            let nextQuestionNumber = Math.max(0, ...existingQuestionIds) + 1;
+            const previewQuestionNumbers = new Map();
+            const getPreviewNumbers = question => {
+                const count = questionCount(question);
+                const declared = question.questionNumbers;
+                const numbers = Array.isArray(declared) && declared.length === count
+                    ? declared
+                    : Array.from({ length: count }, (_, index) => nextQuestionNumber + index);
+                numbers.forEach(number => previewQuestionNumbers.set(question, numbers));
+                nextQuestionNumber = Math.max(nextQuestionNumber, ...numbers) + 1;
+                return numbers;
+            };
             const gapQuestionNumbers = new Map();
-            let questionNumber = 0;
             parsed.previewOrder.forEach(question => {
                 if (question.type === 'passage_preview') return;
+                const numbers = getPreviewNumbers(question);
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
-                    question.gaps.forEach(gap => gapQuestionNumbers.set(String(gap.id), ++questionNumber));
-                } else {
-                    questionNumber += questionCount(question);
+                    question.gaps.forEach((gap, index) => gapQuestionNumbers.set(String(gap.id), numbers[index]));
                 }
             });
             if (parsed.passage.text.trim()) {
@@ -26274,7 +26425,6 @@ Write the transcript here. The answer is \drop{correct option}.
                 body += escapeHtml(parsed.passage.text.slice(offset));
                 passageHtml += `<div class="leading-relaxed whitespace-pre-wrap">${window.formatIELTSMarkdown(body)}</div>`;
             }
-            questionNumber = 0;
             let renderedPassage = false;
             parsed.previewOrder.forEach(question => {
                 if (question.type === 'passage_preview') {
@@ -26282,21 +26432,24 @@ Write the transcript here. The answer is \drop{correct option}.
                     renderedPassage = true;
                     return;
                 }
-                const firstQuestionNumber = questionNumber + 1;
                 const count = questionCount(question);
-                questionNumber += count;
+                const questionNumbers = previewQuestionNumbers.get(question) || getPreviewNumbers(question);
+                const firstQuestionNumber = questionNumbers[0];
+                const questionLabel = questionRange(questionNumbers);
                 if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
                     if (question.shortAnswer) {
                         const statement = formatPreviewText(question.text).replace(/\{blank:(\d+)\}/g, (_, id) =>
-                            `<input type="text" disabled aria-label="Question ${firstQuestionNumber}" class="inline-block align-middle w-28 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${firstQuestionNumber}">`);
+                            `<input type="text" disabled aria-label="Question ${gapQuestionNumbers.get(String(id)) || firstQuestionNumber}" class="inline-block align-middle w-28 border border-blue-300 bg-blue-50 rounded px-2 py-1 mx-1" placeholder="Q${gapQuestionNumbers.get(String(id)) || firstQuestionNumber}">`);
                         html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${statement}</div><p class="text-xs text-slate-500 mt-1">Short-answer question · answer in your own words as instructed.</p></section>`;
                         return;
                     }
-                    const questionLabel = questionRange(firstQuestionNumber, count);
-                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${questionLabel}. ${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p></section>`;
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${question.numberedInPassage ? '' : `${questionLabel}. `}${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p></section>`;
                     return;
                 }
-                const questionLabel = questionRange(firstQuestionNumber, count);
+                if (question.type === 'matching_endings') {
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold mb-2">${questionLabel}. ${formatPreviewText(question.instruction)}</p><div class="space-y-2">${question.items.map((item, index) => `<div class="text-sm">${questionNumbers[index]}. ${formatPreviewText(item.text)} <span class="font-bold text-blue-700">→ ${escapeHtml(item.answer)}</span></div>`).join('')}</div><div class="mt-3 rounded-lg bg-slate-50 p-3 text-sm">${question.options.map(escapeHtml).join('<br>')}</div></section>`;
+                    return;
+                }
                 if (question.type === 'mcq') {
                     const selectionPrompt = question.selectCount > 1 ? `Choose ${question.selectCount} answers.` : '';
                     html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold mb-2">${questionLabel}. ${formatPreviewText(question.question)}</div>${selectionPrompt ? `<p class="text-xs font-bold text-blue-700 mb-2">${selectionPrompt}</p>` : ''}`;
@@ -26308,9 +26461,9 @@ Write the transcript here. The answer is \drop{correct option}.
                     if (question.type === 'tfng') {
                         html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.statement)}</div><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<div class="text-sm text-purple-700 mt-1">${formatPreviewText(question.explanation)}</div>` : ''}</section>`;
                     } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') {
-                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map((item, index) => `${firstQuestionNumber + index}. ${formatPreviewText(item.text)} → ${formatPreviewText(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map((item, index) => `${questionNumbers[index]}. ${formatPreviewText(item.text)} → ${formatPreviewText(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
                     } else if (question.type === 'map_labelling_hotspots') {
-                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Q${firstQuestionNumber + index} Hotspot (${spot.x}%, ${spot.y}%) → ${formatPreviewText(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
+                        html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Q${questionNumbers[index]} Hotspot (${spot.x}%, ${spot.y}%) → ${formatPreviewText(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
                     } else if (question.type === 'essay') {
                         html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div>${question.text ? `<div class="text-sm mt-1">${formatPreviewText(question.text)}</div>` : ''}</section>`;
                     } else if (question.type === 'audio_record') {
@@ -26342,14 +26495,15 @@ Write the transcript here. The answer is \drop{correct option}.
         }
 
         const allowedTypes = {
-            reading: ['fill_blanks', 'dnd_list', 'multiple_choice', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'],
+            reading: ['fill_blanks', 'dnd_list', 'multiple_choice', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'matching_endings', 'map_labelling_grid', 'map_labelling_hotspots'],
             listening: ['fill_blanks', 'dnd_list', 'multiple_choice', 'matching_info', 'map_labelling_grid', 'map_labelling_hotspots'],
             writing: ['essay'],
             speaking: ['essay', 'audio_record']
         };
         const skillTypes = allowedTypes[APP_DATA.module] || [];
         const unsupported = parsed.questions.find(question => {
-            const nativeType = question.type === 'mcq' ? 'multiple_choice' : question.type;
+            const nativeType = question.type === 'mcq' ? 'multiple_choice'
+                : question.type === 'matching_endings' ? 'dnd_list' : question.type;
             return !skillTypes.includes(nativeType);
         });
         if (unsupported || (parsed.writingTask && APP_DATA.module !== 'writing') || (parsed.hasSpeaking && APP_DATA.module !== 'speaking') || (parsed.audioUrl && APP_DATA.module !== 'listening')) {
@@ -26368,21 +26522,44 @@ Write the transcript here. The answer is \drop{correct option}.
             return;
         }
         saveCurrentEditorPart();
+        const usedIds = new Set(APP_DATA.parts.flatMap(item =>
+            (item.questions || []).flatMap(question => question.ids || []).map(Number)));
+        const declaredIds = parsed.questions.flatMap(question =>
+            Array.isArray(question.questionNumbers) ? question.questionNumbers : []);
+        const declaredIdSet = new Set();
+        const duplicateDeclaredIds = declaredIds.filter(id => {
+            const duplicate = usedIds.has(id) || declaredIdSet.has(id);
+            declaredIdSet.add(id);
+            return duplicate;
+        });
+        if (duplicateDeclaredIds.length) {
+            const error = document.getElementById('ielts-latex-error');
+            error.textContent = `Question number${duplicateDeclaredIds.length > 1 ? 's' : ''} ${[...new Set(duplicateDeclaredIds)].join(', ')} already exist in this test. Change the LaTeX numbering or import into a new test.`;
+            error.classList.remove('hidden');
+            return;
+        }
         const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         })[char]);
         const formatText = value => window.formatIELTSMarkdown(escapeHtml(value));
-        let nextId = 1;
-        APP_DATA.parts.forEach(item => (item.questions || []).forEach(question =>
-            (question.ids || []).forEach(id => { nextId = Math.max(nextId, Number(id) + 1 || 1); })));
+        let nextId = Math.max(0, ...usedIds) + 1;
         const newBlocks = [];
 
-        const allocateIds = count => Array.from({ length: count }, () => nextId++);
-        const compileGapQuestion = gapBlock => {
-            const ids = gapBlock.gaps.map(gap => {
+        const allocateIds = (count, declared = null) => {
+            if (Array.isArray(declared) && declared.length === count) {
+                declared.forEach(id => usedIds.add(id));
+                nextId = Math.max(nextId, ...declared) + 1;
+                return [...declared];
+            }
+            return Array.from({ length: count }, () => {
+                while (usedIds.has(nextId)) nextId++;
                 const id = nextId++;
+                usedIds.add(id);
                 return id;
             });
+        };
+        const compileGapQuestion = gapBlock => {
+            const ids = allocateIds(gapBlock.gaps.length, gapBlock.questionNumbers);
             const gapIds = Object.fromEntries(gapBlock.gaps.map((gap, index) => [gap.id, ids[index]]));
             const text = gapBlock.text.replace(/\{blank:(\d+)\}/g, (_, id) => `{blank:${gapIds[id]}}`);
             const correctAnswers = {};
@@ -26409,13 +26586,37 @@ Write the transcript here. The answer is \drop{correct option}.
         };
 
         parsed.questions.forEach(question => {
+            if (question.type === 'matching_endings') {
+                const ids = allocateIds(question.items.length, question.questionNumbers);
+                const correctAnswers = {};
+                const text = question.items.map((item, index) => {
+                    correctAnswers[ids[index]] = question.options.find(option =>
+                        option.toLowerCase().startsWith(`${item.answer.toLowerCase()}. `));
+                    const stem = item.text.replace(new RegExp(`^\\s*(?:question\\s*)?${ids[index]}[.)]\\s*`, 'i'), '');
+                    return `${ids[index]}. ${stem} {drop:${ids[index]}}`;
+                }).join('\n');
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: 'dnd_list',
+                    questionFormat: 'matching_sentence_endings',
+                    ids,
+                    points: ids.length,
+                    instruction: formatText(question.instruction),
+                    text: formatText(text),
+                    options: question.options,
+                    correctAnswers,
+                    reusable: false,
+                    latexSource: true
+                });
+                return;
+            }
             if (question.type === 'fill_blanks' || question.type === 'dnd_list') {
                 newBlocks.push(compileGapQuestion(question));
                 return;
             }
             let id;
             if (question.type === 'mcq') {
-                const ids = allocateIds(question.selectCount || 1);
+                const ids = allocateIds(question.selectCount || 1, question.questionNumbers);
                 const options = question.options.map(option => option.text);
                 const correctAnswers = {};
                 question.options.filter(option => option.correct).forEach((option, index) => {
@@ -26434,7 +26635,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     latexSource: true
                 });
             } else if (question.type === 'tfng') {
-                id = nextId++;
+                id = allocateIds(1, question.questionNumbers)[0];
                 const isYesNo = question.answer === 'YES' || question.answer === 'NO';
                 const answer = question.answer === 'TRUE' ? 'True'
                     : question.answer === 'FALSE' ? 'False'
@@ -26453,7 +26654,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     explanation: formatText(question.explanation || '')
                 });
             } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') {
-                const ids = allocateIds(question.items.length);
+                const ids = allocateIds(question.items.length, question.questionNumbers);
                 const text = question.type === 'matching_headings'
                     ? question.items.map((item, index) => `${ids[index]}. ${item.text}`).join('\n')
                     : question.items.map(item => escapeHtml(item.text)).join('\n');
@@ -26473,7 +26674,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     ...(question.type === 'map_labelling_grid' ? { image: question.image } : {})
                 });
             } else if (question.type === 'map_labelling_hotspots') {
-                const ids = allocateIds(question.hotspots.length);
+                const ids = allocateIds(question.hotspots.length, question.questionNumbers);
                 const correctAnswers = {};
                 question.hotspots.forEach((hotspot, index) => { correctAnswers[ids[index]] = hotspot.answer; });
                 newBlocks.push({
@@ -26491,7 +26692,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     hotspots: question.hotspots.map((hotspot, index) => ({ id: ids[index], x: hotspot.x, y: hotspot.y }))
                 });
             } else if (question.type === 'essay') {
-                id = nextId++;
+                id = allocateIds(1, question.questionNumbers)[0];
                 newBlocks.push({
                     blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
                     type: 'essay',
@@ -26503,7 +26704,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     correctAnswers: {}
                 });
             } else if (question.type === 'audio_record') {
-                id = nextId++;
+                id = allocateIds(1, question.questionNumbers)[0];
                 newBlocks.push({
                     blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
                     type: 'audio_record',
