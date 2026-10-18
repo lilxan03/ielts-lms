@@ -2044,7 +2044,7 @@
             <span class="self-center text-[11px] text-slate-500">Paste formatted text or select text and apply formatting.</span>
           </div>
           <div id="ielts-latex-input" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="ielts-latex-source-label" spellcheck="false" onkeyup="window.saveIeltsLatexSelection()" onmouseup="window.saveIeltsLatexSelection()" oninput="window.saveIeltsLatexSelection(); window.updateIeltsLatexPreview()" class="latex-source-editor rich-editor flex-1 min-h-[220px] resize-none overflow-y-auto border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" data-placeholder="Paste or type IELTS macros here. Use the toolbar to format text."></div>
-          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, or for Reading sentence endings <code>\matchingendings{instruction}{\item{stem}{A}}{\ending{A}{ending text}}</code>; <code>\mapgrid</code> and <code>\maphotspots</code> handle map tasks. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; use Markdown pipe tables or <code>\begin{tabular}{...} ... \end{tabular}</code> for table-completion gaps. <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, or for Reading sentence endings <code>\matchingendings{instruction}{\item{stem}{A}}{\ending{A}{ending text}}</code>; <code>\mapgrid</code> and <code>\maphotspots</code> handle map tasks. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
         </div>
         <div class="p-5 flex flex-col min-h-0 bg-slate-50">
           <div class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Live preview</div>
@@ -25965,7 +25965,85 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     // ==========================================
     
     window.parseIeltsLatex = function(source) {
-        const input = String(source || '');
+        const normalizeTabularEnvironments = source => {
+            const startPattern = /\\begin\s*\{tabular\}\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g;
+            let normalized = '';
+            let sourceOffset = 0;
+            let environment;
+
+            const convertRows = body => {
+                const rows = [];
+                let cells = [];
+                let cell = '';
+                let braceDepth = 0;
+                let bracketDepth = 0;
+
+                const finishCell = () => {
+                    cells.push(cell.trim());
+                    cell = '';
+                };
+                const finishRow = () => {
+                    finishCell();
+                    if (cells.some(value => value)) rows.push(cells);
+                    cells = [];
+                };
+
+                for (let index = 0; index < body.length; index++) {
+                    const char = body[index];
+                    if (char === '\\') {
+                        if (body[index + 1] === '\\' && braceDepth === 0 && bracketDepth === 0) {
+                            finishRow();
+                            index++;
+                            continue;
+                        }
+                        const command = body.slice(index + 1).match(/^[A-Za-z]+/)?.[0];
+                        if (command) {
+                            if (braceDepth === 0 && bracketDepth === 0 && /^(?:hline|toprule|midrule|bottomrule)$/.test(command)) {
+                                index += command.length;
+                                continue;
+                            }
+                            cell += body.slice(index, index + command.length + 1);
+                            index += command.length;
+                            continue;
+                        }
+                        if (index + 1 < body.length) {
+                            cell += body.slice(index, index + 2);
+                            index++;
+                            continue;
+                        }
+                    }
+
+                    if (char === '&' && braceDepth === 0 && bracketDepth === 0) {
+                        finishCell();
+                        continue;
+                    }
+                    if (char === '{') braceDepth++;
+                    else if (char === '}') braceDepth = Math.max(0, braceDepth - 1);
+                    else if (char === '[') bracketDepth++;
+                    else if (char === ']') bracketDepth = Math.max(0, bracketDepth - 1);
+                    cell += char;
+                }
+                finishRow();
+
+                const columnCount = Math.max(0, ...rows.map(row => row.length));
+                if (!columnCount) return '';
+                const formatRow = row => `| ${Array.from({ length: columnCount }, (_, index) => row[index] || '').join(' | ')} |`;
+                return `\n${formatRow(rows[0])}\n| ${Array(columnCount).fill('---').join(' | ')} |${rows.length > 1 ? `\n${rows.slice(1).map(formatRow).join('\n')}` : ''}\n`;
+            };
+
+            while ((environment = startPattern.exec(source))) {
+                const endMarker = /\\end\s*\{tabular\}/g;
+                endMarker.lastIndex = startPattern.lastIndex;
+                const end = endMarker.exec(source);
+                if (!end) break;
+                normalized += source.slice(sourceOffset, environment.index);
+                normalized += convertRows(source.slice(startPattern.lastIndex, end.index));
+                sourceOffset = endMarker.lastIndex;
+                startPattern.lastIndex = sourceOffset;
+            }
+            return normalized + source.slice(sourceOffset);
+        };
+        const input = normalizeTabularEnvironments(String(source || ''));
         let cursor = 0;
 
         const fail = (message, at = cursor) => {
@@ -26199,7 +26277,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         questionNumbers,
                         gaps: [{ id: 1, answer, alternatives: answerOptions.alternatives, time: answerOptions.time }]
                     });
-                } else if (command === 'matchingheadings' || command === 'matchinginfo') {
+                } else if (command === 'matchingheadings' || command === 'matchinginfo' || command === 'matchingstatements') {
                     const instruction = readRequiredText('Matching instruction');
                     const items = readMacroList('item', 2);
                     const options = readMacroList('option', 1);
@@ -26213,8 +26291,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         fail(`Every matching answer must match one of the listed options${hint}`, slashAt);
                     }
                     const questionNumbers = parseItemQuestionNumbers(items.map(item => ({ text: item.values[0] }))) || parseQuestionNumbers(instruction, items.length);
+                    const isMatchingStatements = command === 'matchingstatements' ||
+                        command === 'matchinginfo' && /\bstatements?\b/i.test(instruction);
                     nodes.push({
-                        type: command === 'matchingheadings' ? 'matching_headings' : 'matching_info',
+                        type: command === 'matchingheadings' ? 'matching_headings' : isMatchingStatements ? 'matching_statements' : 'matching_info',
                         instruction: stripQuestionNumberPrefix(instruction, questionNumbers),
                         items: items.map((item, index) => ({
                             text: questionNumbers ? stripItemNumberPrefix(item.values[0], questionNumbers[index]) : item.values[0],
@@ -26400,7 +26480,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             } else if (node.type === 'notes') {
                 const question = { type: 'essay', instruction: node.text, text: '' };
                 questionOrder.push(question);
-            } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'matching_endings', 'map_labelling_grid', 'map_labelling_hotspots', 'fill_blanks'].includes(node.type)) {
+            } else if (['mcq', 'tfng', 'matching_headings', 'matching_info', 'matching_statements', 'matching_endings', 'map_labelling_grid', 'map_labelling_hotspots', 'fill_blanks'].includes(node.type)) {
                 questionOrder.push(node);
             } else {
                 fail(`\\${node.type} must be inside an appropriate question macro`, 0);
@@ -26421,10 +26501,30 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         let gapQuestion = null;
         if (gaps.length) {
             const firstGapIndex = passageHtmlSource.search(/\{(?:blank|drop):/);
-            const questionNumbers = parseQuestionNumbers(passageHtmlSource.slice(0, firstGapIndex), gaps.length);
+            const gapPrefix = passageHtmlSource.slice(0, firstGapIndex);
+            const questionNumbers = parseQuestionNumbers(gapPrefix, gaps.length);
+            const instructionPattern = /^\s*(?:(?:questions?\s+\d+(?:\s*(?:-|–|—|to|,|and|&)\s*\d+)*)\s*[:.)-]\s*)?(?:complete|fill|choose|write|use|answer|select|label|match|circle|tick|mark|enter|record|put)\b/i;
+            const prefixLines = gapPrefix.split('\n');
+            const instructionLines = [];
+            let firstContentLine = 0;
+            while (firstContentLine < prefixLines.length) {
+                const line = prefixLines[firstContentLine];
+                if (!line.trim()) {
+                    firstContentLine++;
+                    continue;
+                }
+                if (!instructionPattern.test(line)) break;
+                instructionLines.push(line.trim());
+                firstContentLine++;
+            }
+            const instruction = instructionLines.join('\n');
+            const passageText = instructionLines.length
+                ? [...prefixLines.slice(firstContentLine), passageHtmlSource.slice(firstGapIndex)].join('\n')
+                : passageHtmlSource;
             gapQuestion = {
                 type: gapModes.has('drop') ? 'dnd_list' : 'fill_blanks',
-                text: passageHtmlSource,
+                text: passageText,
+                instruction,
                 gaps,
                 questionNumbers,
                 numberedInPassage: !!questionNumbers
@@ -26477,6 +26577,17 @@ Complete the table using information from the passage.
 | Red fox | \gap{woodland} |
 | Grey seal | \gap{coastal caves} |
 }`],
+                ['LaTeX tabular gap-fill table', String.raw`\passage{Reading Passage 1}{
+Complete the table using information from the passage.
+\begin{tabular}{|l|l|l|}
+\hline
+Part & Description & Uses \\
+\hline
+Trunk & Up to 30 metres & Used for \gap{timber} \\
+Leaves & Up to 6 metres long & Used to make \gap{brushes} \\
+\hline
+\end{tabular}
+}`],
                 ['Short-answer questions', String.raw`\shortanswer{When was the research first published?}{1998}
 \shortanswer[alt=the year 1998]{What year did the research begin?}{1998}`],
                 ['Drag-and-drop completion', String.raw`\passage{Passage title}{
@@ -26509,6 +26620,14 @@ Write the passage here. The answer is \drop{correct option}.
 }{
   \option{Source A}
   \option{Source B}
+}`],
+                ['Matching statements (drag and drop)', String.raw`\matchingstatements{Match each statement with the correct option.}{
+  \item{The trunk is used for}{timber}
+  \item{Leaves can be used to make}{brushes}
+}{
+  \option{timber}
+  \option{brushes}
+  \option{rope}
 }`],
                 ['Matching sentence endings', String.raw`\matchingendings{Questions 31–34: Complete each sentence with the correct ending, A–F, below.}{
   \item{The researchers concluded that}{A}
@@ -26776,7 +26895,7 @@ Write the transcript here. The answer is \drop{correct option}.
         const questionCount = question => {
             if (question.type === 'fill_blanks' || question.type === 'dnd_list') return question.gaps.length;
             if (question.type === 'matching_endings') return question.items.length;
-            if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') return question.items.length;
+            if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'matching_statements' || question.type === 'map_labelling_grid') return question.items.length;
             if (question.type === 'map_labelling_hotspots') return question.hotspots.length;
             if (question.type === 'mcq') return question.selectCount || 1;
             return 1;
@@ -26872,7 +26991,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     const options = question.type === 'dnd_list'
                         ? `<div class="mt-2 flex flex-wrap gap-2">${[...new Set(question.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]))].map(option => `<span class="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-800">${escapeHtml(option)}</span>`).join('')}</div>`
                         : '';
-                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${question.numberedInPassage ? '' : `${questionLabel}. `}${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p>${options}</section>`;
+                    html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${question.instruction ? formatPreviewText(question.instruction) : `${question.numberedInPassage ? '' : `${questionLabel}. `}${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}`}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p>${options}</section>`;
                     return;
                 }
                 if (question.type === 'matching_endings') {
@@ -26889,7 +27008,7 @@ Write the transcript here. The answer is \drop{correct option}.
                 } else {
                     if (question.type === 'tfng') {
                         html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.statement)}</div><div class="text-sm text-slate-500 mt-1">Answer: ${escapeHtml(question.answer)}</div>${question.explanation ? `<div class="text-sm text-purple-700 mt-1">${formatPreviewText(question.explanation)}</div>` : ''}</section>`;
-                    } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'map_labelling_grid') {
+                    } else if (question.type === 'matching_headings' || question.type === 'matching_info' || question.type === 'matching_statements' || question.type === 'map_labelling_grid') {
                         html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div>${question.image ? `<img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2">` : ''}<div class="text-sm text-slate-600">${question.items.map((item, index) => `${questionNumbers[index]}. ${formatPreviewText(item.text)} → ${formatPreviewText(item.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
                     } else if (question.type === 'map_labelling_hotspots') {
                         html += `<section class="border-t border-slate-200 pt-4"><div class="font-bold">${questionLabel}. ${formatPreviewText(question.instruction)}</div><img src="${escapeHtml(question.image)}" alt="Map" class="max-h-36 my-2"><div class="text-sm text-slate-600">${question.hotspots.map((spot, index) => `Q${questionNumbers[index]} Hotspot (${spot.x}%, ${spot.y}%) → ${formatPreviewText(spot.answer)}`).join('<br>')}</div><div class="text-xs text-slate-500 mt-1">Options: ${question.options.map(escapeHtml).join(', ')}</div></section>`;
@@ -26989,7 +27108,7 @@ Write the transcript here. The answer is \drop{correct option}.
         const skillTypes = allowedTypes[rapidModule] || [];
         const unsupported = parsed.questions.find(question => {
             const nativeType = question.type === 'mcq' ? 'multiple_choice'
-                : question.type === 'matching_endings' ? 'dnd_list' : question.type;
+                : question.type === 'matching_endings' || question.type === 'matching_statements' ? 'dnd_list' : question.type;
             return !skillTypes.includes(nativeType);
         });
         if (unsupported || (parsed.writingTask && APP_DATA.module !== 'writing') || (parsed.hasSpeaking && APP_DATA.module !== 'speaking') || (parsed.audioUrl && APP_DATA.module !== 'listening')) {
@@ -27060,7 +27179,7 @@ Write the transcript here. The answer is \drop{correct option}.
                 type: gapBlock.type,
                 ids,
                 points: ids.length,
-                instruction: gapBlock.type === 'dnd_list' ? 'Complete the sentences using the options.' : 'Fill in the blanks.',
+                instruction: formatText(gapBlock.instruction || (gapBlock.type === 'dnd_list' ? 'Complete the sentences using the options.' : 'Fill in the blanks.')),
                 text: formatText(text),
                 options: gapBlock.type === 'dnd_list' ? [...new Set(gapBlock.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]))] : [],
                 correctAnswers,
@@ -27072,6 +27191,28 @@ Write the transcript here. The answer is \drop{correct option}.
         };
 
         parsed.questions.forEach(question => {
+            if (question.type === 'matching_statements') {
+                const ids = allocateIds(question.items.length, question.questionNumbers);
+                const correctAnswers = {};
+                const text = question.items.map((item, index) => {
+                    correctAnswers[ids[index]] = item.answer;
+                    return `${ids[index]}. ${item.text} {drop:${ids[index]}}`;
+                }).join('\n');
+                newBlocks.push({
+                    blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
+                    type: 'dnd_list',
+                    questionFormat: 'matching_statements',
+                    ids,
+                    points: ids.length,
+                    instruction: formatText(question.instruction),
+                    text: formatText(text),
+                    options: question.options,
+                    correctAnswers,
+                    reusable: false,
+                    latexSource: true
+                });
+                return;
+            }
             if (question.type === 'matching_endings') {
                 const ids = allocateIds(question.items.length, question.questionNumbers);
                 const correctAnswers = {};
@@ -27212,6 +27353,10 @@ Write the transcript here. The answer is \drop{correct option}.
         if (parsed.hasSpeaking) part.speakingQuestions = formatText(parsed.speakingQuestions);
         if (parsed.audioUrl) part.audioUrl = parsed.audioUrl;
         part.questions.push(...newBlocks);
+        part.questions = part.questions
+            .map((question, index) => ({ question, index, firstId: Math.min(...(question.ids || []).map(Number)) }))
+            .sort((left, right) => left.firstId - right.firstId || left.index - right.index)
+            .map(({ question }) => question);
         if (rapidImport) {
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), targetTest.id), targetTest);
             if (rapidNewTest) TEST_BANK.unshift(rapidNewTest);
