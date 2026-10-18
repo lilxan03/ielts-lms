@@ -26062,6 +26062,25 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                                 index += command.length;
                                 continue;
                             }
+                            if (braceDepth === 0 && bracketDepth === 0 && command === 'cline') {
+                                let argumentStart = index + command.length + 1;
+                                while (/\s/.test(body[argumentStart] || '') && argumentStart < body.length) argumentStart++;
+                                if (body[argumentStart] === '{') {
+                                    let depth = 1;
+                                    let argumentEnd = argumentStart + 1;
+                                    while (argumentEnd < body.length && depth > 0) {
+                                        if (body[argumentEnd] === '{') depth++;
+                                        else if (body[argumentEnd] === '}') depth--;
+                                        argumentEnd++;
+                                    }
+                                    if (depth === 0) {
+                                        index = argumentEnd - 1;
+                                        continue;
+                                    }
+                                }
+                                index += command.length;
+                                continue;
+                            }
                             cell += body.slice(index, index + command.length + 1);
                             index += command.length;
                             continue;
