@@ -2044,7 +2044,7 @@
             <span class="self-center text-[11px] text-slate-500">Paste formatted text or select text and apply formatting.</span>
           </div>
           <div id="ielts-latex-input" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="ielts-latex-source-label" spellcheck="false" onkeyup="window.saveIeltsLatexSelection()" onmouseup="window.saveIeltsLatexSelection()" oninput="window.saveIeltsLatexSelection(); window.updateIeltsLatexPreview()" class="latex-source-editor rich-editor flex-1 min-h-[220px] resize-none overflow-y-auto border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" data-placeholder="Paste or type IELTS macros here. Use the toolbar to format text."></div>
-          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; use Markdown pipe tables or <code>\begin{tabular}{...} ... \end{tabular}</code> for table-completion gaps. <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, or for Reading sentence endings <code>\matchingendings{instruction}{\item{stem}{A}}{\ending{A}{ending text}}</code>; <code>\mapgrid</code> and <code>\maphotspots</code> handle map tasks. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; use Markdown pipe tables or <code>\begin{tabular}{...} ... \end{tabular}</code> for table-completion gaps. Table cells support <code>\textbf{...}</code>, <code>\textit{...}</code>, <code>\emph{...}</code>, and <code>\underline{...}</code>. <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, <code>\matchingheadings</code>, <code>\matchinginfo</code>, or for Reading sentence endings <code>\matchingendings{instruction}{\item{stem}{A}}{\ending{A}{ending text}}</code>; <code>\mapgrid</code> and <code>\maphotspots</code> handle map tasks. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
         </div>
         <div class="p-5 flex flex-col min-h-0 bg-slate-50">
           <div class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Live preview</div>
@@ -25971,6 +25971,66 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             let sourceOffset = 0;
             let environment;
 
+            const normalizeCellFormatting = value => {
+                const readGroup = start => {
+                    let depth = 1;
+                    let index = start + 1;
+                    let content = '';
+                    while (index < value.length && depth > 0) {
+                        const char = value[index];
+                        if (char === '\\' && index + 1 < value.length) {
+                            content += value.slice(index, index + 2);
+                            index += 2;
+                            continue;
+                        }
+                        if (char === '{') depth++;
+                        else if (char === '}') {
+                            depth--;
+                            if (!depth) break;
+                        }
+                        content += char;
+                        index++;
+                    }
+                    return depth === 0 ? { content, end: index + 1 } : null;
+                };
+                let output = '';
+                for (let index = 0; index < value.length;) {
+                    if (value[index] !== '\\') {
+                        output += value[index++];
+                        continue;
+                    }
+                    const match = value.slice(index + 1).match(/^[A-Za-z]+/);
+                    if (!match) {
+                        output += value.slice(index, index + 2);
+                        index += 2;
+                        continue;
+                    }
+                    const command = match[0];
+                    const commandEnd = index + command.length + 1;
+                    const supported = ['textbf', 'textit', 'emph', 'underline', 'textrm', 'textsf', 'textnormal', 'texttt'];
+                    if (!supported.includes(command)) {
+                        output += value.slice(index, commandEnd);
+                        index = commandEnd;
+                        continue;
+                    }
+                    let groupStart = commandEnd;
+                    while (/\s/.test(value[groupStart] || '') && groupStart < value.length) groupStart++;
+                    const group = value[groupStart] === '{' ? readGroup(groupStart) : null;
+                    if (!group) {
+                        output += value.slice(index, commandEnd);
+                        index = commandEnd;
+                        continue;
+                    }
+                    const content = normalizeCellFormatting(group.content);
+                    if (command === 'textbf') output += `**${content}**`;
+                    else if (command === 'textit' || command === 'emph') output += `*${content}*`;
+                    else if (command === 'underline') output += `__${content}__`;
+                    else output += content;
+                    index = group.end;
+                }
+                return output;
+            };
+
             const convertRows = body => {
                 const rows = [];
                 let cells = [];
@@ -26027,7 +26087,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
                 const columnCount = Math.max(0, ...rows.map(row => row.length));
                 if (!columnCount) return '';
-                const formatRow = row => `| ${Array.from({ length: columnCount }, (_, index) => row[index] || '').join(' | ')} |`;
+                const formatRow = row => `| ${Array.from({ length: columnCount }, (_, index) => normalizeCellFormatting(row[index] || '')).join(' | ')} |`;
                 return `\n${formatRow(rows[0])}\n| ${Array(columnCount).fill('---').join(' | ')} |${rows.length > 1 ? `\n${rows.slice(1).map(formatRow).join('\n')}` : ''}\n`;
             };
 
