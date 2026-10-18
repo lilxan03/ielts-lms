@@ -2313,7 +2313,7 @@
               <!-- Class Selection -->
               <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">Assign to Class</label>
-                  <select id="assign-class-select" class="w-full border border-slate-300 rounded-md px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 bg-white transition-colors cursor-pointer shadow-sm"></select>
+                  <select id="assign-class-select" onchange="window.updateUnassignTestButton()" class="w-full border border-slate-300 rounded-md px-3 py-2.5 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-700 bg-white transition-colors cursor-pointer shadow-sm"></select>
               </div>
 
               <!-- Grading and feedback -->
@@ -2416,6 +2416,7 @@
 
           </div>
           <div class="px-8 py-5 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shrink-0">
+              <button id="btn-unassign-test" onclick="window.unassignTestFromClass()" class="hidden mr-auto px-5 py-2 text-rose-600 hover:bg-rose-50 rounded-lg font-semibold transition">Unassign</button>
               <button onclick="document.getElementById('assign-settings-modal').classList.add('hidden')" class="px-5 py-2 text-blue-600 hover:bg-blue-50 rounded-lg font-semibold transition">Cancel</button>
               <button id="btn-confirm-assign" onclick="window.confirmAssignTest()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold shadow-sm transition hover:-translate-y-0.5">Assign</button>
           </div>
@@ -9285,6 +9286,14 @@
 
     window.currentAssignTestId = null;
 
+    window.updateUnassignTestButton = function() {
+        const button = document.getElementById('btn-unassign-test');
+        const tid = window.currentAssignTestId;
+        const cid = document.getElementById('assign-class-select').value;
+        const cls = CLASSES.find(c => c.id === cid);
+        button.classList.toggle('hidden', !cls || !tid || !Array.isArray(cls.assignedTests) || !cls.assignedTests.includes(tid));
+    };
+
     window.promptAssignTest = function(tid) {
         if (!tid) return;
         window.currentAssignTestId = tid;
@@ -9304,6 +9313,7 @@
         // Populate the class dropdown dynamically based on available classes
         const classSelect = document.getElementById('assign-class-select');
         classSelect.innerHTML = CLASSES.map(c => `<option value="${c.id}">${getClassParent(c) ? `Small class · ${c.name}` : c.name}</option>`).join('');
+        window.updateUnassignTestButton();
 
         // Reset the form back to sensible defaults upon opening
         document.getElementById('assign-attempts').value = 'unlimited';
@@ -9323,6 +9333,45 @@
         document.getElementById('assign-due-time').value = '';
 
         document.getElementById('assign-settings-modal').classList.remove('hidden');
+    };
+
+    window.unassignTestFromClass = function() {
+        const tid = window.currentAssignTestId;
+        const cid = document.getElementById('assign-class-select').value;
+        const cls = CLASSES.find(c => c.id === cid);
+        if (!tid || !cls || !Array.isArray(cls.assignedTests) || !cls.assignedTests.includes(tid)) return;
+
+        showConfirm("Unassign Test", "Remove this test and its class-specific settings from the selected class?", async () => {
+            const button = document.getElementById('btn-unassign-test');
+            button.disabled = true;
+            button.textContent = "Unassigning...";
+
+            try {
+                const updatedClass = {
+                    ...cls,
+                    assignedTests: cls.assignedTests.filter(assignedId => assignedId !== tid),
+                    testSettings: { ...(cls.testSettings || {}) }
+                };
+                delete updatedClass.testSettings[tid];
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), updatedClass);
+                Object.assign(cls, updatedClass);
+
+                document.getElementById('assign-settings-modal').classList.add('hidden');
+                if (typeof window.showToast === 'function') {
+                    window.showToast("Unassigned Successfully", "The test has been removed from the selected class.");
+                } else {
+                    showModalMsg("Unassigned", "The test has been removed from the selected class.");
+                }
+                if (typeof renderTestBank === 'function') renderTestBank(false);
+                if (typeof renderClasses === 'function') renderClasses();
+            } catch (e) {
+                console.error(e);
+                showModalMsg("Error", "Could not unassign test from class due to a cloud error.");
+            } finally {
+                button.disabled = false;
+                button.textContent = "Unassign";
+            }
+        });
     };
 
     window.confirmAssignTest = async function() {
