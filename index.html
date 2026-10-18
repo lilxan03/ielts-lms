@@ -11967,8 +11967,38 @@
       window.triggerEditorAutosave();
     };
 
+    function reconcileMatchingHeadingDrops(part) {
+      if (!part || !Array.isArray(part.questions)) return false;
+
+      const passageText = String(part.text || '');
+      const passageDropIds = [...passageText.matchAll(/\{drop:(\d+)\}/g)].map(match => Number(match[1]));
+      if (!passageDropIds.length) return false;
+
+      const questionIds = new Set(part.questions.flatMap(question => question.ids || []).map(Number));
+      const existingDropIds = new Set(passageDropIds);
+      const unassignedDropIds = [...new Set(passageDropIds.filter(id => !questionIds.has(id)))];
+      const missingHeadingIds = part.questions
+        .filter(question => question.type === 'matching_headings')
+        .flatMap(question => question.ids || [])
+        .map(Number)
+        .filter(id => !existingDropIds.has(id));
+      const remappedIds = new Map();
+
+      unassignedDropIds.slice(0, missingHeadingIds.length).forEach((oldId, index) => {
+        remappedIds.set(oldId, missingHeadingIds[index]);
+      });
+      if (!remappedIds.size) return false;
+
+      part.text = passageText.replace(/\{drop:(\d+)\}/g, (token, rawId) => {
+        const id = remappedIds.get(Number(rawId));
+        return id === undefined ? token : `{drop:${id}}`;
+      });
+      return true;
+    }
+
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
+      const matchingHeadingDropsChanged = reconcileMatchingHeadingDrops(p);
       
       document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => 
         `<button 
@@ -12020,6 +12050,7 @@
       const passTxt = document.getElementById('edit-passage-text');
       if(passTxt.tagName === 'TEXTAREA') passTxt.value = p.text||''; else passTxt.innerHTML = p.text||'';
       renderEditorQuestions();
+      if (matchingHeadingDropsChanged) triggerEditorAutosave();
 
       if (typeof window.loadChartEditorUI === 'function') {
           window.loadChartEditorUI();
@@ -12619,11 +12650,13 @@
     }
 
     function addEditorQuestion() {
+      saveCurrentEditorPart();
       const selectedType = document.getElementById('new-q-type').value;
       const matchingEndings = selectedType === 'matching_endings';
       const type = matchingEndings ? 'dnd_list' : selectedType;
       const qtyInput = document.getElementById('new-q-qty');
       const qty = parseInt(qtyInput ? qtyInput.value : 1) || 1;
+      const part = APP_DATA.parts[currentEditorPartIdx];
       
       // Auto-calculate sequential ID across the entire test
       let maxId = 0;
@@ -12632,12 +12665,23 @@
               (q.ids || []).forEach(id => { if (id > maxId) maxId = id; });
           });
       });
+      [...(part.text || '').matchAll(/\{(?:drop|blank):(\d+)\}/g)].forEach(match => {
+          maxId = Math.max(maxId, Number(match[1]));
+      });
       
       // Generate the array of IDs based on quantity
       const ids = [];
       let correctAnswers = {};
+      const claimedIds = new Set(APP_DATA.parts.flatMap(existingPart =>
+          existingPart.questions.flatMap(question => question.ids || [])
+      ).map(Number));
+      const unassignedPassageDropIds = type === 'matching_headings'
+          ? [...new Set([...(part.text || '').matchAll(/\{drop:(\d+)\}/g)]
+              .map(match => Number(match[1]))
+              .filter(id => !claimedIds.has(id)))]
+          : [];
       for(let i = 0; i < qty; i++) {
-          const newId = maxId + 1 + i;
+          const newId = unassignedPassageDropIds[i] ?? maxId + 1 + i;
           ids.push(newId);
           correctAnswers[newId] = "";
       }
