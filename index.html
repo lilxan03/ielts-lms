@@ -2561,18 +2561,22 @@
 
               <!-- Account Security Section -->
               <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 mt-4">
-                  <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b pb-2">App Settings & Security</h3>
+                  <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest border-b pb-2" data-student-en="App Settings & Security" data-student-vi="Cài đặt & Bảo mật">App Settings & Security</h3>
+                  <div class="flex items-center justify-between gap-3">
+                      <span class="text-sm font-bold text-slate-700" data-student-en="🌐 Language" data-student-vi="🌐 Ngôn ngữ">🌐 Language</span>
+                      <button id="student-language-toggle" type="button" onclick="window.toggleStudentLanguage()" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 rounded-lg px-4 py-2 font-black text-sm transition">English</button>
+                  </div>
                   <button id="btn-push-noti" onclick="window.requestPushNotifications()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2 shadow-sm">
-                      🔔 Enable Device Push Notifications
+                      <span data-student-en="🔔 Enable Device Push Notifications" data-student-vi="🔔 Bật thông báo trên thiết bị">🔔 Enable Device Push Notifications</span>
                   </button>
                   <button onclick="window.promptChangePassword(); document.getElementById('student-profile-modal').classList.add('hidden');" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2 shadow-sm">
-                      🔑 Change Password
+                      <span data-student-en="🔑 Change Password" data-student-vi="🔑 Đổi mật khẩu">🔑 Change Password</span>
                   </button>
               </div>
           </div>
           <div class="p-4 border-t border-slate-200 bg-white flex justify-end gap-3 shrink-0">
-              <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition">Cancel</button>
-              <button onclick="window.saveStudentProfile()" id="btn-save-profile-data" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition">Save Profile</button>
+              <button onclick="document.getElementById('student-profile-modal').classList.add('hidden')" class="px-5 py-2.5 text-slate-600 hover:bg-slate-100 rounded-lg font-bold transition" data-student-en="Cancel" data-student-vi="Hủy">Cancel</button>
+              <button onclick="window.saveStudentProfile()" id="btn-save-profile-data" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition" data-student-en="Save Profile" data-student-vi="Lưu hồ sơ">Save Profile</button>
           </div>
       </div>
   </div>
@@ -2581,14 +2585,14 @@
   <div id="student-history-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm md:p-6">
       <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] overflow-hidden animate-scale-up border border-slate-200">
           <div class="bg-gradient-to-r from-indigo-700 to-blue-800 p-5 flex justify-between items-center shrink-0">
-              <h2 class="text-xl font-black text-white flex items-center gap-2">📜 Test History</h2>
+              <h2 class="text-xl font-black text-white flex items-center gap-2" data-student-en="📜 Test History" data-student-vi="📜 Lịch sử bài thi">📜 Test History</h2>
               <button onclick="window.closeAppRouteView()" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
           </div>
           <div class="p-6 bg-slate-50 flex-1 overflow-y-auto space-y-6" id="student-history-content">
               <!-- Content injected via JS -->
           </div>
           <div class="p-4 border-t border-slate-200 bg-white flex justify-end">
-              <button onclick="window.closeAppRouteView()" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold transition">Close</button>
+              <button onclick="window.closeAppRouteView()" class="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-bold transition" data-student-en="Close" data-student-vi="Đóng">Close</button>
           </div>
       </div>
   </div>
@@ -2722,10 +2726,10 @@
         <button type="button" class="app-sidebar-toggle w-9 h-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" onclick="window.closeAppSidebar('student')" aria-label="Close navigation menu">✕</button>
       </div>
       <nav class="flex flex-col gap-1 p-3">
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label">Overview</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-test-bank" onclick="window.navigateFromSidebar('student','student/test-bank')"><span>📚</span><span class="sidebar-label">Test Bank</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-class" onclick="window.navigateFromSidebar('student','student/class')"><span>🏫</span><span class="sidebar-label">Class</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label">Flashcards</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label" data-student-en="Overview" data-student-vi="Tổng quan">Overview</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-test-bank" onclick="window.navigateFromSidebar('student','student/test-bank')"><span>📚</span><span class="sidebar-label" data-student-en="Test Bank" data-student-vi="Ngân hàng đề">Test Bank</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-class" onclick="window.navigateFromSidebar('student','student/class')"><span>🏫</span><span class="sidebar-label" data-student-en="Class" data-student-vi="Lớp học">Class</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label" data-student-en="Flashcards" data-student-vi="Thẻ ghi nhớ">Flashcards</span></button>
         <button type="button" class="app-sidebar-link" onclick="window.closeAppSidebar('student'); window.openStudentProfile()"><span>⚙️</span><span class="sidebar-label">Profile & Goals</span></button>
       </nav>
     </aside>
@@ -2811,10 +2815,10 @@
     <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-5 hidden animate-fade-in-up items-start">
           <section id="student-overview-section" class="col-span-full bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/70">
-              <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>📌</span> Overview</h2>
-              <p class="text-xs font-semibold text-slate-500 mt-1">Quick links to your assigned tests and class information.</p>
+              <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>📌</span> <span data-student-en="Overview" data-student-vi="Tổng quan">Overview</span></h2>
+              <p class="text-xs font-semibold text-slate-500 mt-1" data-student-en="Your urgent homework, next lesson, preparation, and quick actions." data-student-vi="Bài tập cần ưu tiên, buổi học tiếp theo, nội dung chuẩn bị và thao tác nhanh.">Your urgent homework, next lesson, preparation, and quick actions.</p>
             </div>
-            <div id="student-overview-content" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4"></div>
+            <div id="student-overview-content" class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4"></div>
           </section>
         
           <!-- LEFT/MAIN COLUMN: Student Sections -->
@@ -2824,11 +2828,41 @@
             <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/70">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>🏫</span> Class</h2>
-                  <p class="text-xs font-semibold text-slate-500 mt-1">Classmates, upcoming lessons, preparation, meeting links, and homework deadlines.</p>
+                  <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>🏫</span> <span data-student-en="Class" data-student-vi="Lớp học">Class</span></h2>
+                  <p class="text-xs font-semibold text-slate-500 mt-1" data-student-en="Active enrollment and timetable first, followed by preparation, deadlines, and classmates." data-student-vi="Lớp đang theo học và thời khóa biểu ở trên cùng, tiếp theo là nội dung chuẩn bị, hạn bài tập và bạn cùng lớp.">Active enrollment and timetable first, followed by preparation, deadlines, and classmates.</p>
                 </div>
-                <button type="button" onclick="window.showLeaderboardModal()" class="shrink-0 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2 text-xs font-black transition">🏆 Leaderboard</button>
               </div>
+            </div>
+            <div class="p-4 pb-0">
+              <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest flex items-center gap-2">🏫 <span data-student-en="Active Enrollment" data-student-vi="Lớp đang theo học">Active Enrollment</span></h3>
+                  <span class="text-[10px] font-black uppercase tracking-[0.18em] text-blue-700 bg-blue-50 px-2 py-1 rounded-full border border-blue-200" data-student-en="Class" data-student-vi="Lớp học">Class</span>
+                </div>
+                <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full bg-slate-50 border border-slate-200 text-blue-900 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-black text-lg transition-all shadow-sm cursor-pointer appearance-none"></select>
+              </div>
+            </div>
+            <div id="student-schedule-section" class="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden hidden flex-col h-[420px]">
+              <div class="bg-slate-50/50 px-4 py-4 border-b border-slate-100 flex justify-between items-center flex-wrap gap-3 shrink-0">
+                <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-indigo-500">📅</span> <span data-student-en="Class Timetable" data-student-vi="Thời khóa biểu lớp">Class Timetable</span></h2>
+                <div class="flex items-center gap-3">
+                  <div class="flex items-center bg-white border border-slate-200 rounded-xl shadow-sm p-1">
+                    <button onclick="window.navigateCalendar(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&larr;</button>
+                    <span id="student-cal-month" class="font-bold text-blue-900 min-w-[120px] text-center text-sm uppercase">Month Year</span>
+                    <button onclick="window.navigateCalendar(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&rarr;</button>
+                  </div>
+                  <select id="student-cal-view-select" onchange="window.changeCalendarView(this.value, 'student')" class="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-600 outline-none cursor-pointer shadow-sm bg-white hidden sm:block">
+                    <option value="week" selected data-student-en="Week" data-student-vi="Tuần">Week</option>
+                    <option value="month" data-student-en="Month" data-student-vi="Tháng">Month</option>
+                  </select>
+                  <button id="btn-student-book-slot" onclick="window.openStudentBooking()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-bold whitespace-nowrap hidden" data-student-en="＋ Book Slot" data-student-vi="＋ Đặt lịch">＋ Book Slot</button>
+                </div>
+              </div>
+              <div id="student-schedule-empty-state" class="hidden px-4 py-3 text-sm font-medium text-slate-600 bg-indigo-50 border-b border-indigo-100"></div>
+              <div id="student-cal-container" class="flex-1 overflow-hidden flex flex-col relative w-full p-2 sm:p-4 bg-white"></div>
+            </div>
+            <div class="px-4 pt-3 flex justify-end">
+              <button type="button" onclick="window.showLeaderboardModal()" class="shrink-0 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2 text-xs font-black transition">🏆 <span data-student-en="Leaderboard" data-student-vi="Bảng xếp hạng">Leaderboard</span></button>
             </div>
             <div id="student-class-overview-content" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4"></div>
             <div id="student-class-info-section" class="hidden mx-4 mb-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-5"></div>
@@ -2838,19 +2872,19 @@
                       <div id="student-test-bank-section" class="hidden order-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col flex-1">
                         <div class="bg-slate-50/50 px-4 py-4 border-b border-slate-100 flex flex-col xl:flex-row justify-between xl:items-center gap-3">
               <div>
-                <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-blue-600">📚</span> Test Bank</h2>
-                <p class="text-xs font-semibold text-slate-500 mt-1">Browse your class tests, take a test, or review your test history.</p>
+                <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-blue-600">📚</span> <span data-student-en="Test Bank" data-student-vi="Ngân hàng đề">Test Bank</span></h2>
+                  <p class="text-xs font-semibold text-slate-500 mt-1" data-student-en="Browse your class tests, take a test, or review your test history." data-student-vi="Xem bài thi của lớp, làm bài hoặc xem lại lịch sử thi.">Browse your class tests, take a test, or review your test history.</p>
               </div>
               <div class="flex flex-wrap items-center gap-2">
-                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search tests or part titles..." class="flex-1 min-w-[140px] border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition font-medium">
+                <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search tests or part titles..." data-student-placeholder-en="Search tests or part titles..." data-student-placeholder-vi="Tìm bài thi hoặc tiêu đề phần..." class="flex-1 min-w-[140px] border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition font-medium">
                 <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
-                  <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option><option value="activity">Activities</option>
+                  <option value="all" data-student-en="All Modules" data-student-vi="Tất cả kỹ năng">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option><option value="activity" data-student-en="Activities" data-student-vi="Hoạt động">Activities</option>
                 </select>
                 <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer hidden md:block">
-                  <option value="all">All Tags</option>
+                  <option value="all" data-student-en="All Tags" data-student-vi="Tất cả chủ đề">All Tags</option>
                 </select>
                 <select id="student-test-sort" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
-                  <option value="default">Default Order</option><option value="az">A-Z</option><option value="za">Z-A</option>
+                  <option value="default" data-student-en="Default Order" data-student-vi="Thứ tự mặc định">Default Order</option><option value="az">A-Z</option><option value="za">Z-A</option>
                 </select>
               </div>
             </div>
@@ -2859,53 +2893,23 @@
             <div id="student-tests-list" class="p-3 xl:p-4 bg-white flex flex-col gap-3 max-h-[620px] overflow-y-auto stagger-fade-in"></div>
           </div>
 
-          <!-- Upcoming Classes -->
-              <div id="student-schedule-section" class="order-1 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden hidden flex-col h-[420px]">
-                 <div class="bg-slate-50/50 px-4 py-4 border-b border-slate-100 flex justify-between items-center flex-wrap gap-3 shrink-0">
-               <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-indigo-500">📅</span> Class Timetable</h2>
-               <div class="flex items-center gap-3">
-                 <div class="flex items-center bg-white border border-slate-200 rounded-xl shadow-sm p-1">
-                   <button onclick="window.navigateCalendar(-1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&larr;</button>
-                   <span id="student-cal-month" class="font-bold text-blue-900 min-w-[120px] text-center text-sm uppercase">Month Year</span>
-                   <button onclick="window.navigateCalendar(1, 'student')" class="px-3 py-1 hover:bg-slate-50 text-slate-500 rounded-lg font-bold transition">&rarr;</button>
-                 </div>
-                 <select id="student-cal-view-select" onchange="window.changeCalendarView(this.value, 'student')" class="border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-600 outline-none cursor-pointer shadow-sm bg-white hidden sm:block">
-                    <option value="week" selected>Week</option>
-                    <option value="month">Month</option>
-                 </select>
-                 <button id="btn-student-book-slot" onclick="window.openStudentBooking()" class="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl shadow-sm transition font-bold whitespace-nowrap hidden">＋ Book Slot</button>
-               </div>
-             </div>
-             <div id="student-schedule-empty-state" class="hidden px-4 py-3 text-sm font-medium text-slate-600 bg-indigo-50 border-b border-indigo-100"></div>
-             <div id="student-cal-container" class="flex-1 overflow-hidden flex flex-col relative w-full p-2 sm:p-4 bg-white"></div>
-          </div>
-
         </div>
 
         <!-- RIGHT/SIDE COLUMN: Analytics & Actions (Secondary Focus) -->
         <div id="student-dashboard-sidebar-content" class="lg:col-span-4 xl:col-span-4 flex flex-col gap-4 xl:gap-5 order-1 lg:order-2">
           
-          <!-- Class Setup -->
-          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
-            <div class="flex items-center justify-between gap-2">
-              <h2 class="font-black text-xs text-slate-400 uppercase tracking-widest flex items-center gap-2">🏫 Active Enrollment</h2>
-              <span class="text-[10px] font-black uppercase tracking-[0.18em] text-blue-700 bg-blue-50 px-2 py-1 rounded-full border border-blue-200">Class</span>
-            </div>
-            <select id="student-class-select" onchange="renderStudentDashboard()" class="w-full bg-slate-50 border border-slate-200 text-blue-900 rounded-xl p-3.5 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-black text-lg transition-all shadow-sm cursor-pointer appearance-none">
-            </select>
-          </div>
           <!-- Study Tools -->
           <div id="student-quick-actions" class="order-1 hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex-col gap-3 relative overflow-hidden">
-              <h2 class="font-black text-xs text-slate-400 uppercase tracking-widest mb-1 z-10 flex items-center gap-2">⚡ Study Tools</h2>
+              <h2 class="font-black text-xs text-slate-400 uppercase tracking-widest mb-1 z-10 flex items-center gap-2"><span data-student-en="⚡ Study Tools" data-student-vi="⚡ Công cụ học tập">⚡ Study Tools</span></h2>
               
               <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 z-10">
                   <button onclick="window.startFullExam()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
                       <span class="text-2xl drop-shadow-sm">🎓</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Mock<br>Exam</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight" data-student-en="Mock Exam" data-student-vi="Thi thử">Mock<br>Exam</span>
                   </button>
                   <button onclick="window.toggleStudentFlashcardPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
                       <span class="text-2xl drop-shadow-sm">🧠</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Study<br>Cards</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight" data-student-en="Study Cards" data-student-vi="Thẻ học">Study<br>Cards</span>
                   </button>
               </div>
 
@@ -4329,6 +4333,7 @@
 };
 
     window.addEventListener('DOMContentLoaded', () => {
+        window.applyStudentLanguage(studentLanguage, false);
         window.initFirebaseSystem();
         const editorBuilder = document.getElementById('editor-view-builder');
         if (editorBuilder) {
@@ -4377,6 +4382,51 @@
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
+    const STUDENT_LANGUAGE_KEY = 'ielts_student_language';
+    let studentLanguage = localStorage.getItem(STUDENT_LANGUAGE_KEY) === 'vi' ? 'vi' : 'en';
+    window.studentText = function(english, vietnamese) {
+      return studentLanguage === 'vi' ? vietnamese : english;
+    };
+    window.refreshStudentLanguageLock = function() {
+      const exam = document.getElementById('exam-ui');
+      const languageButton = document.getElementById('student-language-toggle');
+      if (!languageButton) return;
+      languageButton.disabled = Boolean(exam && !exam.classList.contains('hidden'));
+      languageButton.title = languageButton.disabled
+        ? (studentLanguage === 'vi' ? 'Không thể đổi ngôn ngữ khi đang làm bài' : 'Language cannot be changed while taking a test')
+        : '';
+    };
+    window.translateStudentStatic = function() {
+      document.querySelectorAll('[data-student-en][data-student-vi]').forEach(element => {
+        element.textContent = element.dataset[studentLanguage === 'vi' ? 'studentVi' : 'studentEn'];
+      });
+      document.querySelectorAll('[data-student-placeholder-en][data-student-placeholder-vi]').forEach(element => {
+        element.placeholder = element.dataset[studentLanguage === 'vi' ? 'studentPlaceholderVi' : 'studentPlaceholderEn'];
+      });
+    };
+    window.applyStudentLanguage = function(language = studentLanguage, rerender = true) {
+      if (!['en', 'vi'].includes(language)) return;
+      const exam = document.getElementById('exam-ui');
+      if (exam && !exam.classList.contains('hidden') && language !== studentLanguage) {
+        if (typeof window.showToast === 'function') window.showToast('Language locked', 'Language cannot be changed while taking a test.', 'info');
+        return;
+      }
+      studentLanguage = language;
+      localStorage.setItem(STUDENT_LANGUAGE_KEY, studentLanguage);
+      document.documentElement.lang = studentLanguage === 'vi' ? 'vi' : 'en';
+      window.translateStudentStatic();
+      const languageButton = document.getElementById('student-language-toggle');
+      if (languageButton) {
+        languageButton.textContent = studentLanguage === 'vi' ? 'Tiếng Việt' : 'English';
+      }
+      window.refreshStudentLanguageLock();
+      if (rerender && currentUser?.role === 'student' && typeof window.renderStudentDashboard === 'function') {
+        window.renderStudentDashboard();
+      }
+    };
+    window.toggleStudentLanguage = function() {
+      window.applyStudentLanguage(studentLanguage === 'vi' ? 'en' : 'vi');
+    };
     if (currentUser) {
         delete currentUser.pass;
         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
@@ -11797,6 +11847,7 @@
 
       document.getElementById('editor-ui').classList.add('hidden');
       document.getElementById('exam-ui').classList.remove('hidden');
+      window.refreshStudentLanguageLock?.();
       
       document.getElementById('exam-candidate-name').textContent = "Teacher (Preview)";
       document.getElementById('exam-preview-badge').classList.remove('hidden');
@@ -14272,15 +14323,15 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="font-black text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">${s.score}</span>
-                    <span class="text-xs font-black text-blue-700">Review →</span>
+                    <span class="text-xs font-black text-blue-700">${window.studentText('Review →', 'Xem lại →')}</span>
                 </div>
             </button>
-        `).join('') : '<p class="text-sm text-slate-500 italic bg-white p-4 rounded-xl border border-slate-200 text-center">No tests submitted yet.</p>';
+        `).join('') : `<p class="text-sm text-slate-500 italic bg-white p-4 rounded-xl border border-slate-200 text-center">${window.studentText('No tests submitted yet.', 'Bạn chưa nộp bài thi nào.')}</p>`;
         content.innerHTML = `
             <div>
                 <div class="mb-4">
-                    <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-1 ml-1">📝 Your test submissions</h3>
-                    <p class="text-sm text-slate-500 ml-1">Select any submission to review your answers and results.</p>
+                    <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-1 ml-1">${window.studentText('📝 Your test submissions', '📝 Các bài thi đã nộp')}</h3>
+                    <p class="text-sm text-slate-500 ml-1">${window.studentText('Select any submission to review your answers and results.', 'Chọn bài đã nộp để xem lại câu trả lời và kết quả.')}</p>
                 </div>
                 <div class="max-h-full overflow-y-auto space-y-2">${subsHtml}</div>
             </div>
@@ -15946,7 +15997,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             </div>`;
         });
         html += `</div>`;
-        document.getElementById('modal-title').innerHTML = '🏆 Global Leaderboard';
+        document.getElementById('modal-title').innerHTML = window.studentText('🏆 Global Leaderboard', '🏆 Bảng xếp hạng tổng');
         document.getElementById('modal-message').innerHTML = html;
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.add('hidden');
@@ -15964,7 +16015,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }
         const candidates = getPeerReviewCandidatesForCurrentStudent();
         if (candidates.length === 0) {
-            if (typeof window.showToast === 'function') window.showToast("Peer Review", "All caught up! No submissions are pending your review right now.", "info");
+            if (typeof window.showToast === 'function') window.showToast(window.studentText("Peer Review", "Chấm chéo"), window.studentText("All caught up! No submissions are pending your review right now.", "Bạn đã xem hết! Hiện không có bài nào đang chờ bạn nhận xét."), "info");
             if (normalizeAppRoute().section === 'peer-review') {
                 window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/test-bank');
             }
@@ -15975,14 +16026,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             html += `
             <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-3 shadow-sm flex justify-between items-center gap-3">
                 <div class="min-w-0">
-                    <div class="font-black text-indigo-900 text-sm truncate">${escapeForumHtml(getSubmissionModule(sub) === 'speaking' ? 'Speaking sample' : 'Writing sample')}</div>
-                    <div class="text-[10px] font-bold text-indigo-500 mt-1 truncate">${escapeForumHtml(sub.testName || 'Peer submission')}</div>
+                    <div class="font-black text-indigo-900 text-sm truncate">${escapeForumHtml(getSubmissionModule(sub) === 'speaking' ? window.studentText('Speaking sample', 'Bài nói') : window.studentText('Writing sample', 'Bài viết'))}</div>
+                    <div class="text-[10px] font-bold text-indigo-500 mt-1 truncate">${escapeForumHtml(sub.testName || window.studentText('Peer submission', 'Bài làm của bạn học'))}</div>
                 </div>
-                <button onclick="document.getElementById('custom-modal').classList.add('hidden'); window.openPeerReviewModal(${sub.id})" class="text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg shadow-sm transition shrink-0">Review</button>
+                <button onclick="document.getElementById('custom-modal').classList.add('hidden'); window.openPeerReviewModal(${sub.id})" class="text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2 rounded-lg shadow-sm transition shrink-0">${window.studentText('Review', 'Nhận xét')}</button>
             </div>`;
         });
         html += `</div>`;
-        document.getElementById('modal-title').innerHTML = '🤝 Pending Peer Reviews';
+        document.getElementById('modal-title').innerHTML = window.studentText('🤝 Pending Peer Reviews', '🤝 Bài đang chờ nhận xét');
         document.getElementById('modal-message').innerHTML = html;
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.add('hidden');
@@ -16116,6 +16167,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           window.initStudentDashboard();
           return;
       }
+      const st = window.studentText;
       const cid = document.getElementById('student-class-select').value;
       const list = document.getElementById('student-tests-list');
       const prog = document.getElementById('student-progress-section');
@@ -16150,14 +16202,15 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if(mainContent) mainContent.classList.remove('hidden');
       
       if(!cid) { 
-          if (overviewContent) overviewContent.innerHTML = '<div class="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm font-medium text-blue-800">Select an active class to see your next lesson, preparation, and homework deadlines.</div>';
-          if (classOverviewContent) classOverviewContent.innerHTML = '<div class="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm font-medium text-blue-800">Select an active class to view classmates, timetable, and class updates.</div>';
+          if (overviewContent) overviewContent.innerHTML = `<article class="lg:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-5"><div class="font-black text-amber-900">${st('⚠️ No active class enrollment', '⚠️ Chưa có lớp đang theo học')}</div><p class="text-sm text-amber-800 mt-1">${st('Choose an active enrollment in the Class section to see your next lesson, preparation, meeting link, and homework deadlines.', 'Chọn lớp đang theo học trong mục Lớp học để xem buổi học tiếp theo, nội dung chuẩn bị, liên kết họp và hạn bài tập.')}</p><button type="button" data-student-class class="mt-3 text-sm font-black text-amber-900 hover:underline">${st('Open Class →', 'Mở Lớp học →')}</button></article>`;
+          overviewContent?.querySelector('[data-student-class]')?.addEventListener('click', () => window.navigateAppRoute('student/class'));
+          if (classOverviewContent) classOverviewContent.innerHTML = `<div class="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm font-medium text-blue-800">${st('Select an active enrollment above to view your classmates, timetable, and class updates.', 'Chọn lớp đang theo học ở trên để xem bạn cùng lớp, thời khóa biểu và thông tin lớp.')}</div>`;
           if (classInfoSection) classInfoSection.innerHTML = '';
-          if(list) list.innerHTML = '<div class="p-6 text-slate-500 col-span-full">Please select a class to view tests.</div>'; 
+          if(list) list.innerHTML = `<div class="p-6 text-slate-500 col-span-full">${st('Please select a class to view tests.', 'Vui lòng chọn lớp để xem bài thi.')}</div>`;
           if(bottomSec) { bottomSec.classList.toggle('hidden', !isClassRoute && !isTestBankRoute); bottomSec.classList.toggle('flex', isClassRoute || isTestBankRoute); }
           if(schedSec) { schedSec.classList.toggle('hidden', !isClassRoute); schedSec.classList.toggle('flex', isClassRoute); }
           if(scheduleEmptyState) {
-              scheduleEmptyState.textContent = 'No class is enrolled yet. Please contact your teacher to be added to a class timetable.';
+              scheduleEmptyState.textContent = st('No class is enrolled yet. Please contact your teacher to be added to a class timetable.', 'Bạn chưa tham gia lớp nào. Vui lòng liên hệ giáo viên để được thêm vào thời khóa biểu lớp.');
               scheduleEmptyState.classList.toggle('hidden', !isClassRoute);
           }
           if(isClassRoute) window.renderCalendar('student');
@@ -16189,19 +16242,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const isLocked = price > 0 && !(currentUser.unlockedTests || []).includes(test.id);
         const isCompleted = completedTestIds.includes(test.id);
         const moduleColors = { reading: 'blue', listening: 'cyan', writing: 'emerald', speaking: 'amber', activity: 'fuchsia' };
+        const moduleNames = { reading: st('Reading', 'Đọc'), listening: st('Listening', 'Nghe'), writing: st('Writing', 'Viết'), speaking: st('Speaking', 'Nói'), activity: st('Activities', 'Hoạt động') };
         const color = moduleColors[test.module] || 'slate';
         const settings = getClassTestSettings(cls, test.id);
         const dueDate = settings?.dueDate && !isCompleted
           ? `<span class="text-[10px] font-bold text-rose-600">Due ${settings.dueDate}${settings.dueTime ? ` ${settings.dueTime}` : ''}</span>`
           : '';
         const status = isCompleted
-          ? '<span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">Completed</span>'
-          : '<span class="text-[10px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">Ready</span>';
+          ? `<span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">${st('Completed', 'Đã hoàn thành')}</span>`
+          : `<span class="text-[10px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">${st('Ready', 'Sẵn sàng')}</span>`;
 
         return `
           <article class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition p-4 flex flex-col gap-3">
             <div class="flex items-start justify-between gap-2">
-              <span class="text-[10px] font-bold px-2 py-1 rounded bg-${color}-100 text-${color}-800 uppercase tracking-wide">${test.module || 'Test'}</span>
+              <span class="text-[10px] font-bold px-2 py-1 rounded bg-${color}-100 text-${color}-800 uppercase tracking-wide">${moduleNames[test.module] || test.module || st('Test', 'Bài thi')}</span>
               ${status}
             </div>
             <div class="flex-1">
@@ -16210,7 +16264,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               ${dueDate ? `<div class="mt-2">${dueDate}</div>` : ''}
             </div>
             <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} rounded-lg py-2.5 text-sm font-black transition">
-              ${isLocked ? `🔒 Unlock ${price} 💎` : isCompleted ? 'Take Again →' : 'Take Test →'}
+              ${isLocked ? `🔒 ${st('Unlock', 'Mở khóa')} ${price} 💎` : isCompleted ? st('Take Again →', 'Làm lại →') : st('Take Test →', 'Làm bài →')}
             </button>
           </article>`;
       };
@@ -16253,7 +16307,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const allTags = new Set(assignedTests.flatMap(test => test.topics || []));
 
       if (tagSelect) {
-          tagSelect.innerHTML = `<option value="all">All Tags</option>` +
+          tagSelect.innerHTML = `<option value="all">${st('All Tags', 'Tất cả chủ đề')}</option>` +
               Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
       }
 
@@ -16266,7 +16320,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       else if (sort === 'za') filteredTests.sort((a, b) => b.title.localeCompare(a.title));
       list.innerHTML = filteredTests.length
           ? `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${filteredTests.map(renderTestBankCard).join('')}</div>`
-          : `<div class="text-sm text-slate-500 italic py-8 text-center">${assignedTests.length ? 'No tests match your search or filters.' : 'No tests have been assigned to this class yet.'}</div>`;
+          : `<div class="text-sm text-slate-500 italic py-8 text-center">${assignedTests.length ? st('No tests match your search or filters.', 'Không có bài thi phù hợp với nội dung tìm kiếm hoặc bộ lọc.') : st('No tests have been assigned to this class yet.', 'Lớp chưa được giao bài thi nào.')}</div>`;
       list.querySelectorAll('[data-student-bank-test]').forEach(button => {
           button.addEventListener('click', () => openModeSelection(button.dataset.studentBankTest));
       });
@@ -16292,14 +16346,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           const presence = classPresence[student];
           const lastActiveAt = Number(presence?.lastActiveAt) || null;
           const online = Boolean(presence?.isOnline && lastActiveAt && Date.now() - lastActiveAt < 120000);
-          let activityLabel = 'Chưa ghi nhận hoạt động';
+          let activityLabel = st('No recent activity', 'Chưa ghi nhận hoạt động');
           if (lastActiveAt) {
               const elapsedMinutes = Math.max(0, Math.floor((Date.now() - lastActiveAt) / 60000));
-              activityLabel = online ? 'Đang online' : elapsedMinutes < 1 ? 'Hoạt động vừa xong' : elapsedMinutes < 60
-                  ? `Hoạt động ${elapsedMinutes} phút trước`
+              activityLabel = online ? st('Online', 'Đang online') : elapsedMinutes < 1 ? st('Active just now', 'Hoạt động vừa xong') : elapsedMinutes < 60
+                  ? st(`${elapsedMinutes} minute(s) ago`, `${elapsedMinutes} phút trước`)
                   : elapsedMinutes < 1440
-                      ? `Hoạt động ${Math.floor(elapsedMinutes / 60)} giờ trước`
-                      : `Hoạt động ${Math.floor(elapsedMinutes / 1440)} ngày trước`;
+                      ? st(`${Math.floor(elapsedMinutes / 60)} hour(s) ago`, `${Math.floor(elapsedMinutes / 60)} giờ trước`)
+                      : st(`${Math.floor(elapsedMinutes / 1440)} day(s) ago`, `${Math.floor(elapsedMinutes / 1440)} ngày trước`);
           }
           return { student, online, activityLabel };
       }).sort((a, b) => Number(b.online) - Number(a.online) || a.student.localeCompare(b.student));
@@ -16334,60 +16388,63 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               .map(testId => TEST_BANK.find(test => test.id === testId))
               .filter(Boolean)
           : [];
+      const dateLocale = studentLanguage === 'vi' ? 'vi-VN' : 'en-US';
       const nextLessonHtml = nextLesson ? `
           <article class="rounded-xl border border-indigo-200 bg-indigo-50/70 p-4">
-            <div class="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2">📅 Next lesson</div>
-            <h3 class="font-black text-indigo-950 text-lg">${escapeForumHtml(nextSchedule.topic || 'Class lesson')}</h3>
-            <p class="text-sm font-bold text-indigo-800 mt-1">${nextLesson.startsAt.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</p>
+            <div class="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2">📅 ${st('Next lesson', 'Buổi học tiếp theo')}</div>
+            <h3 class="font-black text-indigo-950 text-lg">${escapeForumHtml(nextSchedule.topic || st('Class lesson', 'Buổi học'))}</h3>
+            <p class="text-sm font-bold text-indigo-800 mt-1">${nextLesson.startsAt.toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}</p>
             <p class="text-xs text-slate-600 mt-1">${escapeForumHtml(window.getScheduleClassLabel(nextSchedule) || cls.name)}</p>
-            ${nextSchedule.prepText ? `<div class="mt-3 rounded-lg bg-white/80 border border-indigo-100 p-3"><div class="text-[10px] font-black uppercase tracking-widest text-sky-700 mb-1">Prepare before class</div><p class="text-sm text-slate-700 whitespace-pre-wrap">${escapeForumHtml(nextSchedule.prepText)}</p></div>` : `<p class="text-xs text-slate-500 mt-3">No additional preparation notes from your teacher.</p>`}
-            ${nextLessonMaterials.length ? `<div class="mt-3"><div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Lesson materials</div><div class="space-y-2">${nextLessonMaterials.map(test => `
+            ${nextSchedule.prepText ? `<div class="mt-3 rounded-lg bg-white/80 border border-indigo-100 p-3"><div class="text-[10px] font-black uppercase tracking-widest text-sky-700 mb-1">${st('Prepare before class', 'Chuẩn bị trước buổi học')}</div><p class="text-sm text-slate-700 whitespace-pre-wrap">${escapeForumHtml(nextSchedule.prepText)}</p></div>` : `<p class="text-xs text-slate-500 mt-3">${st('No additional preparation notes from your teacher.', 'Giáo viên chưa thêm hướng dẫn chuẩn bị.')}</p>`}
+            ${nextLessonMaterials.length ? `<div class="mt-3"><div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">${st('Lesson materials', 'Tài liệu buổi học')}</div><div class="space-y-2">${nextLessonMaterials.map(test => `
                 <div class="flex items-center justify-between gap-2 rounded-lg bg-white border border-slate-200 px-3 py-2">
                   <span class="text-xs font-bold text-slate-700 truncate">${escapeForumHtml(test.title)}</span>
-                  ${getCurrentStudentAssignedTest(test.id) ? `<button type="button" data-student-overview-test="${escapeForumHtml(test.id)}" class="shrink-0 text-xs font-black text-blue-700 hover:text-blue-900">Take test →</button>` : '<span class="text-[10px] text-slate-400">Unavailable</span>'}
+                  ${getCurrentStudentAssignedTest(test.id) ? `<button type="button" data-student-overview-test="${escapeForumHtml(test.id)}" class="shrink-0 text-xs font-black text-blue-700 hover:text-blue-900">${st('Take test →', 'Làm bài →')}</button>` : `<span class="text-[10px] text-slate-400">${st('Unavailable', 'Chưa khả dụng')}</span>`}
                 </div>`).join('')}</div></div>` : ''}
-            ${nextSchedule.link || cls.meetLink ? `<button type="button" data-student-next-lesson="${escapeForumHtml(nextSchedule.id)}" class="mt-3 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 text-sm font-black transition">🎥 Join Google Meet</button>` : `<p class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">The teacher has not added a meeting link yet.</p>`}
+            ${nextSchedule.link || cls.meetLink ? `<button type="button" data-student-next-lesson="${escapeForumHtml(nextSchedule.id)}" class="mt-3 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 text-sm font-black transition">🎥 ${st('Join Google Meet', 'Tham gia Google Meet')}</button>` : `<p class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">${st('The teacher has not added a meeting link yet.', 'Giáo viên chưa thêm liên kết họp.')}</p>`}
           </article>` : `
           <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">📅 Next lesson</div>
-            <p class="font-bold text-slate-700">No upcoming lessons are scheduled.</p>
-            <p class="text-xs text-slate-500 mt-1">Check your timetable or contact your teacher for the next class time.</p>
+            <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">📅 ${st('Next lesson', 'Buổi học tiếp theo')}</div>
+            <p class="font-bold text-slate-700">${st('No upcoming lessons are scheduled.', 'Chưa có buổi học sắp tới.')}</p>
+            <p class="text-xs text-slate-500 mt-1">${st('Check your timetable or contact your teacher for the next class time.', 'Kiểm tra thời khóa biểu hoặc liên hệ giáo viên để biết lịch học tiếp theo.')}</p>
           </article>`;
       const deadlineOverviewHtml = pendingDeadlines.length ? `
           <article class="rounded-xl border ${pendingDeadlines[0].dueAt < now ? 'border-rose-200 bg-rose-50/70' : 'border-amber-200 bg-amber-50/70'} p-4">
             <div class="flex items-center justify-between gap-2 mb-3">
-              <div class="text-[10px] font-black uppercase tracking-widest text-rose-700">⏰ Homework deadlines</div>
-              <span class="text-[10px] font-black bg-white/80 rounded-full px-2 py-1 text-slate-600">${pendingDeadlines.length} pending</span>
+              <div class="text-[10px] font-black uppercase tracking-widest text-rose-700">⏰ ${st('Homework deadlines', 'Hạn nộp bài tập')}</div>
+              <span class="text-[10px] font-black bg-white/80 rounded-full px-2 py-1 text-slate-600">${pendingDeadlines.length} ${st('pending', 'đang chờ')}</span>
             </div>
             <div class="space-y-2">${pendingDeadlines.slice(0, 4).map(({ testId, settings, dueAt }) => {
                 const test = TEST_BANK.find(item => item.id === testId);
                 const overdue = dueAt < now;
                 return `<div class="rounded-lg bg-white border ${overdue ? 'border-rose-200' : 'border-amber-100'} p-3">
                     <div class="font-bold text-sm text-slate-800">${escapeForumHtml(test?.title || 'Homework / Test')}</div>
-                    <div class="text-[11px] font-black ${overdue ? 'text-rose-700' : 'text-amber-700'} mt-1">${overdue ? 'OVERDUE · ' : 'Due · '}${dueAt.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</div>
-                    ${test && getCurrentStudentAssignedTest(testId) ? `<button type="button" data-student-overview-test="${escapeForumHtml(testId)}" class="mt-2 text-xs font-black text-blue-700 hover:text-blue-900">Open test →</button>` : ''}
+                    <div class="text-[11px] font-black ${overdue ? 'text-rose-700' : 'text-amber-700'} mt-1">${overdue ? `${st('OVERDUE', 'QUÁ HẠN')} · ` : `${st('Due', 'Hạn nộp')} · `}${dueAt.toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}</div>
+                    ${test && getCurrentStudentAssignedTest(testId) ? `<button type="button" data-student-overview-test="${escapeForumHtml(testId)}" class="mt-2 text-xs font-black text-blue-700 hover:text-blue-900">${st('Open test →', 'Mở bài thi →')}</button>` : ''}
                 </div>`;
             }).join('')}</div>
             ${pendingDeadlines.length > 4 ? `<p class="text-[11px] font-bold text-slate-500 mt-2">+ ${pendingDeadlines.length - 4} more pending</p>` : ''}
           </article>` : `
           <article class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
-            <div class="text-[10px] font-black uppercase tracking-widest text-emerald-700 mb-2">⏰ Homework deadlines</div>
-            <p class="font-bold text-emerald-900">No pending homework deadlines.</p>
-            <p class="text-xs text-emerald-800 mt-1">You’re all caught up.</p>
+            <div class="text-[10px] font-black uppercase tracking-widest text-emerald-700 mb-2">⏰ ${st('Homework deadlines', 'Hạn nộp bài tập')}</div>
+            <p class="font-bold text-emerald-900">${st('No pending homework deadlines.', 'Không có bài tập nào sắp đến hạn.')}</p>
+            <p class="text-xs text-emerald-800 mt-1">${st('You’re all caught up.', 'Bạn đã hoàn thành đầy đủ.')}</p>
           </article>`;
       if (overviewContent) {
           overviewContent.innerHTML = `
+            ${deadlineOverviewHtml}
+            ${nextLessonHtml}
             <article class="rounded-xl border border-blue-200 bg-blue-50/70 p-4">
-              <div class="text-[10px] font-black uppercase tracking-widest text-blue-700 mb-2">📚 Test Bank</div>
-              <p class="font-black text-blue-950 text-lg">${totalTests} assigned test${totalTests === 1 ? '' : 's'}</p>
-              <p class="text-sm text-blue-800 mt-1">${completedCount} completed · ${Math.max(0, totalTests - completedCount)} remaining</p>
-              <button type="button" data-student-test-bank class="mt-3 text-xs font-black text-blue-700 hover:text-blue-900">Open Test Bank →</button>
+              <div class="text-[10px] font-black uppercase tracking-widest text-blue-700 mb-2">📚 ${st('Test Bank', 'Ngân hàng đề')}</div>
+              <p class="font-black text-blue-950 text-lg">${st(`${totalTests} assigned test${totalTests === 1 ? '' : 's'}`, `${totalTests} bài được giao`)}</p>
+              <p class="text-sm text-blue-800 mt-1">${completedCount} ${st('completed', 'đã hoàn thành')} · ${Math.max(0, totalTests - completedCount)} ${st('remaining', 'còn lại')}</p>
+              <button type="button" data-student-test-bank class="mt-3 text-xs font-black text-blue-700 hover:text-blue-900">${st('Open Test Bank →', 'Mở Ngân hàng đề →')}</button>
             </article>
             <article class="rounded-xl border border-indigo-200 bg-indigo-50/70 p-4">
-              <div class="text-[10px] font-black uppercase tracking-widest text-indigo-700 mb-2">🏫 Class</div>
+              <div class="text-[10px] font-black uppercase tracking-widest text-indigo-700 mb-2">🏫 ${st('Class', 'Lớp học')}</div>
               <p class="font-black text-indigo-950 text-lg">${escapeForumHtml(displayClassName)}</p>
-              <p class="text-sm text-indigo-800 mt-1">${nextLesson ? `Next lesson: ${nextLesson.startsAt.toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}` : 'View your classmates, timetable, preparation, and homework.'}</p>
-              <button type="button" data-student-class class="mt-3 text-xs font-black text-indigo-700 hover:text-indigo-900">Open Class →</button>
+              <p class="text-sm text-indigo-800 mt-1">${nextLesson ? `${st('Next lesson:', 'Buổi học tiếp theo:')} ${nextLesson.startsAt.toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}` : st('View your classmates, timetable, preparation, and homework.', 'Xem bạn cùng lớp, thời khóa biểu, nội dung chuẩn bị và bài tập.')}</p>
+              <button type="button" data-student-class class="mt-3 text-xs font-black text-indigo-700 hover:text-indigo-900">${st('Open Class →', 'Mở Lớp học →')}</button>
             </article>`;
           overviewContent.querySelector('[data-student-test-bank]')?.addEventListener('click', () => window.navigateAppRoute('student/test-bank'));
           overviewContent.querySelector('[data-student-class]')?.addEventListener('click', () => window.navigateAppRoute('student/class'));
@@ -16405,41 +16462,41 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             <div class="flex items-center gap-3 mb-5 border-b border-slate-100 pb-4">
               <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl shadow-inner shrink-0">🏫</div>
               <div class="min-w-0">
-                <h3 class="font-black text-slate-800 text-base leading-tight truncate">Mini class: ${escapeForumHtml(displayClassName)}</h3>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Shared materials: ${escapeForumHtml(getClassParent(cls)?.name || cls.name)}</p>
+                <h3 class="font-black text-slate-800 text-base leading-tight truncate">${st('Mini class', 'Lớp nhỏ')}: ${escapeForumHtml(displayClassName)}</h3>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">${st('Shared materials', 'Tài liệu chung')}: ${escapeForumHtml(getClassParent(cls)?.name || cls.name)}</p>
               </div>
             </div>
-            <h4 class="text-[10px] font-black uppercase text-emerald-600 mb-3 tracking-widest flex items-center gap-1.5"><span>👥</span> Classmates (${classmates.length})</h4>
+            <h4 class="text-[10px] font-black uppercase text-emerald-600 mb-3 tracking-widest flex items-center gap-1.5"><span>👥</span> ${st('Classmates', 'Bạn cùng lớp')} (${classmates.length})</h4>
             <div class="space-y-2">
               ${classmates.map(({ student, online, activityLabel }) => `
                 <div class="flex items-center gap-3 p-3 rounded-xl ${student === currentUser.user ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'bg-slate-50 border border-slate-100'}">
                   <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student)}&background=random" class="w-8 h-8 rounded-full shadow-sm border border-white">
                   <div class="min-w-0">
-                    <span class="text-xs font-bold ${student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${escapeForumHtml(student)}${student === currentUser.user ? '<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(You)</span>' : ''}</span>
+                    <span class="text-xs font-bold ${student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${escapeForumHtml(student)}${student === currentUser.user ? `<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(${st('You', 'Bạn')})</span>` : ''}</span>
                     <span class="flex items-center gap-1.5 mt-1 text-[10px] font-bold ${online ? 'text-emerald-600' : 'text-slate-400'}"><span class="w-2 h-2 rounded-full ${online ? 'bg-emerald-500' : 'bg-slate-300'}"></span>${escapeForumHtml(activityLabel)}</span>
                   </div>
                 </div>
-              `).join('') || '<p class="text-xs text-slate-400 italic">No other students in this class yet.</p>'}
+              `).join('') || `<p class="text-xs text-slate-400 italic">${st('No other students in this class yet.', 'Chưa có học viên nào khác trong lớp.')}</p>`}
             </div>`;
       }
       prog.innerHTML = `
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-5 text-white shadow-sm border border-blue-500/40">
             <div class="flex items-center justify-between gap-3 mb-4">
                 <div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Your Test Bank</h3>
-                    <div class="font-black text-xl mt-1">${totalTests} assigned test${totalTests === 1 ? '' : 's'}</div>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">${st('Your Test Bank', 'Ngân hàng đề của bạn')}</h3>
+                    <div class="font-black text-xl mt-1">${st(`${totalTests} assigned test${totalTests === 1 ? '' : 's'}`, `${totalTests} bài được giao`)}</div>
                 </div>
                 <span class="text-2xl">📚</span>
             </div>
             <div class="bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-sm mb-4">
-                <div class="text-[10px] uppercase tracking-[0.16em] text-blue-200 mb-1">Test progress</div>
-                <div class="font-black text-lg leading-snug">${completedCount} of ${totalTests} completed</div>
+                <div class="text-[10px] uppercase tracking-[0.16em] text-blue-200 mb-1">${st('Test progress', 'Tiến độ làm bài')}</div>
+                <div class="font-black text-lg leading-snug">${completedCount} / ${totalTests} ${st('completed', 'đã hoàn thành')}</div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button onclick="window.openStudentHistory()" class="bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">📜 Review Test History</button>
+                <button onclick="window.openStudentHistory()" class="bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">${st('📜 Review Test History', '📜 Xem lịch sử thi')}</button>
                 <button onclick="window.showPeerReviewList()" class="relative bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">
                   <span id="test-bank-peer-review-badge" class="hidden absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black min-w-5 h-5 px-1 items-center justify-center rounded-full shadow-md"></span>
-                  🤝 Writing & Speaking Peer Review
+                  ${st('🤝 Writing & Speaking Peer Review', '🤝 Chấm chéo Writing & Speaking')}
                 </button>
             </div>
         </div>
@@ -16447,8 +16504,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mt-1">
             <div class="flex justify-between items-end mb-3">
                 <div>
-                    <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest">Test Bank Progress</h3>
-                    <div class="font-bold text-slate-600 text-sm mt-1">${completedCount} / ${totalTests} tests completed</div>
+                    <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest">${st('Test Bank Progress', 'Tiến độ Ngân hàng đề')}</h3>
+                    <div class="font-bold text-slate-600 text-sm mt-1">${completedCount} / ${totalTests} ${st('tests completed', 'bài đã hoàn thành')}</div>
                 </div>
                 <span class="font-black text-4xl text-blue-600 tracking-tighter leading-none">${progressPct}%</span>
             </div>
@@ -16457,6 +16514,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             </div>
         </div>
       `;
+      window.translateStudentStatic();
     };
 
     let pendingTestId = null;
@@ -17626,6 +17684,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('exam-ui').classList.remove('hidden');
+      window.refreshStudentLanguageLock?.();
       document.getElementById('exam-candidate-name').textContent = currentUser.user;
       document.getElementById('exam-preview-badge').classList.add('hidden');
       document.getElementById('exam-module-title').textContent = APP_DATA.title + (window.isFullExamMode ? ` (Full Exam - Section ${window.fullExamCurrentIndex + 1}/3)` : '');
@@ -19482,6 +19541,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         finalizeCurrentQuestionTiming();
         clearInterval(timerInterval); 
         document.getElementById('exam-ui').classList.add('hidden');
+        window.refreshStudentLanguageLock?.();
         
         const examAudio = document.getElementById('exam-listening-audio');
         window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
@@ -19503,6 +19563,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const proceed = async () => {
         finalizeCurrentQuestionTiming();
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
+        window.refreshStudentLanguageLock?.();
         
         const examAudio = document.getElementById('exam-listening-audio');
         window.clearListeningMedia('exam-listening-audio', 'exam-listening-youtube-player');
