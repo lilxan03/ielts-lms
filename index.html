@@ -2722,7 +2722,8 @@
         <button type="button" class="app-sidebar-toggle w-9 h-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" onclick="window.closeAppSidebar('student')" aria-label="Close navigation menu">✕</button>
       </div>
       <nav class="flex flex-col gap-1 p-3">
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label">Overview & Test Bank</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label">Overview</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-test-bank" onclick="window.navigateFromSidebar('student','student/test-bank')"><span>📚</span><span class="sidebar-label">Test Bank</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-timetable" onclick="window.navigateFromSidebar('student','student/timetable')"><span>📅</span><span class="sidebar-label">Timetable</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-history" onclick="window.navigateFromSidebar('student','student/history')"><span>📜</span><span class="sidebar-label">Test History</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label">Flashcards</span></button>
@@ -2824,7 +2825,7 @@
         <div class="lg:col-span-8 xl:col-span-8 flex flex-col gap-4 xl:gap-5 order-2 lg:order-1" id="bottom-student-sections">
           
           <!-- Student Test Bank -->
-                      <div class="order-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col flex-1">
+                      <div id="student-test-bank-section" class="hidden order-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col flex-1">
                         <div class="bg-slate-50/50 px-4 py-4 border-b border-slate-100 flex flex-col xl:flex-row justify-between xl:items-center gap-3">
               <div>
                 <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-blue-600">📚</span> Test Bank</h2>
@@ -2871,7 +2872,7 @@
         </div>
 
         <!-- RIGHT/SIDE COLUMN: Analytics & Actions (Secondary Focus) -->
-        <div class="lg:col-span-4 xl:col-span-4 flex flex-col gap-4 xl:gap-5 order-1 lg:order-2">
+        <div id="student-dashboard-sidebar-content" class="lg:col-span-4 xl:col-span-4 flex flex-col gap-4 xl:gap-5 order-1 lg:order-2">
           
           <!-- Class Setup -->
           <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-3">
@@ -16140,7 +16141,18 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const quickActions = document.getElementById('student-quick-actions');
       const mainContent = document.getElementById('student-main-content');
       const overviewContent = document.getElementById('student-overview-content');
-      const isTimetableRoute = normalizeAppRoute().section === 'timetable';
+      const overviewSection = document.getElementById('student-overview-section');
+      const testBankSection = document.getElementById('student-test-bank-section');
+      const dashboardSidebarContent = document.getElementById('student-dashboard-sidebar-content');
+      const routeSection = normalizeAppRoute().section;
+      const isTimetableRoute = routeSection === 'timetable';
+      const isTestBankRoute = routeSection === 'test-bank';
+      overviewSection?.classList.toggle('hidden', isTimetableRoute || isTestBankRoute);
+      testBankSection?.classList.toggle('hidden', !isTestBankRoute);
+      dashboardSidebarContent?.classList.toggle('hidden', isTestBankRoute);
+      bottomSec?.classList.toggle('lg:col-span-8', !isTestBankRoute);
+      bottomSec?.classList.toggle('xl:col-span-8', !isTestBankRoute);
+      bottomSec?.classList.toggle('col-span-full', isTestBankRoute);
       const scheduleEmptyState = document.getElementById('student-schedule-empty-state');
       
       if(mainContent) mainContent.classList.remove('hidden');
@@ -16148,7 +16160,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if(!cid) { 
           if (overviewContent) overviewContent.innerHTML = '<div class="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm font-medium text-blue-800">Select an active class to see your next lesson, preparation, and homework deadlines.</div>';
           if(list) list.innerHTML = '<div class="p-6 text-slate-500 col-span-full">Please select a class to view tests.</div>'; 
-          if(bottomSec) { bottomSec.classList.toggle('hidden', !isTimetableRoute); bottomSec.classList.toggle('flex', isTimetableRoute); }
+          if(bottomSec) { bottomSec.classList.toggle('hidden', !isTimetableRoute && !isTestBankRoute); bottomSec.classList.toggle('flex', isTimetableRoute || isTestBankRoute); }
           if(schedSec) { schedSec.classList.toggle('hidden', !isTimetableRoute); schedSec.classList.toggle('flex', isTimetableRoute); }
           if(scheduleEmptyState) {
               scheduleEmptyState.textContent = 'No class is enrolled yet. Please contact your teacher to be added to a class timetable.';
@@ -16211,7 +16223,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
       const classSchedules = SCHEDULES.filter(s => window.scheduleBelongsToClass(s, cls) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
       if (schedSec) {
-          if (classSchedules.length || cls.allowBooking || isTimetableRoute) {
+          if (!isTestBankRoute && (classSchedules.length || cls.allowBooking || isTimetableRoute)) {
               schedSec.classList.remove('hidden');
               schedSec.classList.add('flex');
               window.renderCalendar('student');
@@ -16382,10 +16394,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           });
           const joinButton = overviewContent.querySelector('[data-student-next-lesson]');
           if (joinButton) joinButton.addEventListener('click', () => window.joinLiveClass(nextSchedule.id, nextSchedule.topic || 'General Practice'));
-          overviewContent.querySelector('[data-student-test-bank]')?.addEventListener('click', () => {
-              document.getElementById('student-test-search')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              document.getElementById('student-test-search')?.focus({ preventScroll: true });
-          });
+          overviewContent.querySelector('[data-student-test-bank]')?.addEventListener('click', () => window.navigateAppRoute('student/test-bank'));
       }
       prog.innerHTML = `
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-5 text-white shadow-sm border border-blue-500/40">
@@ -16770,9 +16779,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           enableStudentSectionResizing('timetable', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
           requestAnimationFrame(() => document.getElementById('student-schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-        } else if (route.section === 'dashboard' || !['history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review', 'timetable'].includes(route.section)) {
+        } else if (route.section === 'dashboard' || !['test-bank', 'history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review', 'timetable'].includes(route.section)) {
           route = { role: 'student', section: 'dashboard' };
           enableStudentSectionResizing('dashboard', '#student-dashboard-content');
+          if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
+        } else if (route.section === 'test-bank') {
+          enableStudentSectionResizing('test-bank', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
         } else if (route.section === 'history') {
           window.openStudentHistory();
