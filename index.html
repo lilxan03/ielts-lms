@@ -2725,11 +2725,7 @@
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label">Overview</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-test-bank" onclick="window.navigateFromSidebar('student','student/test-bank')"><span>📚</span><span class="sidebar-label">Test Bank</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-class" onclick="window.navigateFromSidebar('student','student/class')"><span>🏫</span><span class="sidebar-label">Class</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-history" onclick="window.navigateFromSidebar('student','student/history')"><span>📜</span><span class="sidebar-label">Test History</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label">Flashcards</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-peer-review" onclick="window.navigateFromSidebar('student','student/peer-review')"><span>🤝</span><span class="sidebar-label">Peer Review</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-leaderboard" onclick="window.navigateFromSidebar('student','student/leaderboard')"><span>🏆</span><span class="sidebar-label">Leaderboard</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-forum" onclick="window.navigateFromSidebar('student','student/forum')"><span>💬</span><span class="sidebar-label">Class Forum</span></button>
         <button type="button" class="app-sidebar-link" onclick="window.closeAppSidebar('student'); window.openStudentProfile()"><span>⚙️</span><span class="sidebar-label">Profile & Goals</span></button>
       </nav>
     </aside>
@@ -2826,8 +2822,13 @@
           
           <section id="student-class-overview-section" class="hidden col-span-full bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/70">
-              <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>🏫</span> Class</h2>
-              <p class="text-xs font-semibold text-slate-500 mt-1">Classmates, upcoming lessons, preparation, meeting links, and homework deadlines.</p>
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>🏫</span> Class</h2>
+                  <p class="text-xs font-semibold text-slate-500 mt-1">Classmates, upcoming lessons, preparation, meeting links, and homework deadlines.</p>
+                </div>
+                <button type="button" onclick="window.showLeaderboardModal()" class="shrink-0 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl px-4 py-2 text-xs font-black transition">🏆 Leaderboard</button>
+              </div>
             </div>
             <div id="student-class-overview-content" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4"></div>
             <div id="student-class-info-section" class="hidden mx-4 mb-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-5"></div>
@@ -2905,23 +2906,6 @@
                   <button onclick="window.toggleStudentFlashcardPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
                       <span class="text-2xl drop-shadow-sm">🧠</span>
                       <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Study<br>Cards</span>
-                  </button>
-                  <button onclick="window.toggleForumPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-purple-50 text-purple-700 hover:bg-purple-100 transition border border-purple-100 shadow-sm active:scale-95">
-                      <span class="text-2xl drop-shadow-sm">🗂️</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Class<br>Forum</span>
-                  </button>
-                  <button onclick="window.openStudentHistory()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 text-slate-700 hover:bg-slate-100 transition border border-slate-200 shadow-sm active:scale-95">
-                      <span class="text-2xl drop-shadow-sm">📜</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Test<br>History</span>
-                  </button>
-                  <button onclick="window.showPeerReviewList()" class="relative flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
-                      <span id="quick-badge-peer" class="hidden absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black w-5 h-5 items-center justify-center rounded-full shadow-md animate-bounce"></span>
-                      <span class="text-2xl drop-shadow-sm">🤝</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Peer<br>Review</span>
-                  </button>
-                  <button onclick="window.showLeaderboardModal()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition border border-amber-100 shadow-sm active:scale-95">
-                      <span class="text-2xl drop-shadow-sm">🏆</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Top<br>Scores</span>
                   </button>
               </div>
 
@@ -3021,8 +3005,6 @@
             </div>
         </div>
         
-        <button id="editor-inbox-btn" onclick="window.toggleForumPanel()" class="shrink-0 w-9 h-9 lg:w-10 lg:h-10 flex items-center justify-center bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl transition shadow-md border border-indigo-400 hover:-translate-y-0.5 text-base lg:text-lg" title="Course Forum">🗂️</button>
-        
         <div id="editor-profile-menu" class="relative shrink-0">
             <button onclick="window.toggleTeacherDropdown(event)" class="shrink-0 w-9 h-9 lg:w-10 lg:h-10 bg-white/10 hover:bg-white/20 text-white rounded-xl transition shadow-sm border border-white/20 hover:-translate-y-0.5 flex items-center justify-center" title="Profile & Settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="opacity-80"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -3069,7 +3051,6 @@
         <button type="button" id="tab-btn-payments" class="app-sidebar-link" data-sidebar-item="teacher-payments" onclick="window.navigateFromSidebar('teacher','teacher/payments')"><span>💳</span><span class="sidebar-label">Payments</span></button>
         <button type="button" id="tab-btn-timetable" class="app-sidebar-link" data-sidebar-item="teacher-timetable" onclick="window.navigateFromSidebar('teacher','teacher/timetable')"><span>🗓️</span><span class="sidebar-label">Timetable</span></button>
         <button type="button" id="tab-btn-landing" class="app-sidebar-link" data-sidebar-item="teacher-landing" onclick="window.navigateFromSidebar('teacher','teacher/landing')"><span>🌐</span><span class="sidebar-label">Landing Page</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="teacher-forum" onclick="window.navigateFromSidebar('teacher','teacher/forum')"><span>💬</span><span class="sidebar-label">Class Forum</span></button>
       </nav>
     </aside>
 
@@ -3417,7 +3398,7 @@
               <h2 class="text-2xl font-black text-blue-950 tracking-tight flex items-center gap-2">
                  <span class="text-3xl">📅</span> Monthly Timetable & Attendance
               </h2>
-              <p class="text-sm text-slate-500 font-medium mt-1">Manage schedules, availability, and class discussions</p>
+              <p class="text-sm text-slate-500 font-medium mt-1">Manage schedules and availability</p>
           </div>
           <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
             <button onclick="promptCreateSchedule()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
@@ -3427,10 +3408,6 @@
             <button onclick="window.openAvailabilitySettings()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 text-slate-700 hover:bg-slate-100 transition border border-slate-200 shadow-sm active:scale-95">
                 <span class="text-2xl drop-shadow-sm">⚙️</span>
                 <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Booking<br>Settings</span>
-            </button>
-            <button onclick="window.toggleForumPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
-                <span class="text-2xl drop-shadow-sm">🗂️</span>
-                <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Course<br>Forum</span>
             </button>
           </div>
         </div>
@@ -15976,7 +15953,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.getElementById('custom-modal').classList.remove('hidden');
         document.getElementById('modal-confirm').onclick = () => {
             document.getElementById('custom-modal').classList.add('hidden');
-            if (normalizeAppRoute().section === 'leaderboard') window.navigateAppRoute('student/dashboard', true);
+            if (normalizeAppRoute().section === 'leaderboard') window.navigateAppRoute('student/class', true);
         };
     };
 
@@ -15989,7 +15966,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if (candidates.length === 0) {
             if (typeof window.showToast === 'function') window.showToast("Peer Review", "All caught up! No submissions are pending your review right now.", "info");
             if (normalizeAppRoute().section === 'peer-review') {
-                window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
+                window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/test-bank');
             }
             return;
         }
@@ -16012,7 +15989,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         document.getElementById('custom-modal').classList.remove('hidden');
         document.getElementById('modal-confirm').onclick = () => {
             document.getElementById('custom-modal').classList.add('hidden');
-            if (normalizeAppRoute().section === 'peer-review') window.navigateAppRoute('student/dashboard', true);
+            if (normalizeAppRoute().section === 'peer-review') window.navigateAppRoute('student/test-bank', true);
         };
     };
 
@@ -16126,7 +16103,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(subId)), sub);
         document.getElementById('custom-modal')?.classList.add('hidden');
         window.renderStudentDashboard();
-        if (normalizeAppRoute().section === 'peer-review') window.navigateAppRoute('student/dashboard', true);
+        if (normalizeAppRoute().section === 'peer-review') window.navigateAppRoute('student/test-bank', true);
         if (typeof window.showToast === 'function') window.showToast('Peer Review Saved', 'Thanks for helping your classmate learn the rubric.');
       } catch (e) {
         console.error('Peer review save error:', e);
@@ -16295,7 +16272,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       });
 
       // Update Peer Review App Badge
-      const peerBadge = document.getElementById('quick-badge-peer');
+      const peerBadge = document.getElementById('test-bank-peer-review-badge');
       const peerCount = getPeerReviewCandidatesForCurrentStudent().length;
       if (peerBadge) {
           if (peerCount > 0) {
@@ -16458,7 +16435,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 <div class="text-[10px] uppercase tracking-[0.16em] text-blue-200 mb-1">Test progress</div>
                 <div class="font-black text-lg leading-snug">${completedCount} of ${totalTests} completed</div>
             </div>
-            <button onclick="window.openStudentHistory()" class="w-full bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">Review Test History <span aria-hidden="true">→</span></button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button onclick="window.openStudentHistory()" class="bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">📜 Review Test History</button>
+                <button onclick="window.showPeerReviewList()" class="relative bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">
+                  <span id="test-bank-peer-review-badge" class="hidden absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black min-w-5 h-5 px-1 items-center justify-center rounded-full shadow-md"></span>
+                  🤝 Writing & Speaking Peer Review
+                </button>
+            </div>
         </div>
 
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mt-1">
@@ -16644,7 +16627,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           ? (routeParts[2] === 'classes' ? 'teacher-classes' : 'teacher-bank')
           : `teacher-${routeParts[1]}`;
       } else {
-        const section = routeParts[1] === 'review' ? 'history' : routeParts[1] === 'timetable' ? 'class' : (routeParts[1] || 'dashboard');
+        const section = ['history', 'peer-review', 'review'].includes(routeParts[1])
+          ? 'test-bank'
+          : ['leaderboard', 'timetable'].includes(routeParts[1])
+            ? 'class'
+            : (routeParts[1] || 'dashboard');
         item = `student-${section}`;
       }
       document.querySelectorAll(`#${role === 'teacher' ? 'editor-sidebar' : 'student-sidebar'} [data-sidebar-item]`).forEach(button => {
@@ -16698,7 +16685,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if (route.section !== 'history') document.getElementById('student-history-modal')?.classList.add('hidden');
         if (route.section !== 'flashcards') document.getElementById('student-fc-panel')?.classList.add('hidden');
         if (route.section !== 'leaderboard') document.getElementById('test-leaderboard-modal')?.classList.add('hidden');
-        if (route.section !== 'forum') document.getElementById('chat-panel')?.classList.add('hidden');
+        document.getElementById('chat-panel')?.classList.add('hidden');
         if (route.section !== 'peer-review' && route.section !== 'leaderboard') document.getElementById('custom-modal')?.classList.add('hidden');
         if (route.section === 'hall-of-fame') {
           document.getElementById('hof-full-screen')?.classList.remove('hidden');
@@ -16708,7 +16695,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           return;
         }
         document.getElementById('hof-full-screen')?.classList.add('hidden');
-        if (route.section !== 'forum') document.getElementById('chat-panel')?.classList.add('hidden');
+        document.getElementById('chat-panel')?.classList.add('hidden');
         if (!currentUser) {
           publicLanding?.classList.toggle('hidden', route.section !== 'landing' && route.section !== 'dashboard');
           authUi?.classList.toggle('hidden', route.section !== 'login');
@@ -16733,6 +16720,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         } else if (route.role === 'student' && route.section === 'dashboard' && window.location.hash === '#/dashboard') {
           window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
         }
+        if (route.section === 'forum') {
+          route = ['teacher', 'collaborator'].includes(currentUser.role)
+            ? { role: 'teacher', section: 'bank', detail: 'tests' }
+            : { role: 'student', section: 'dashboard' };
+          const forumRedirect = route.role === 'teacher' ? '#/teacher/bank/tests' : '#/student/dashboard';
+          window.history.replaceState({ lmsRoute: route.role }, '', forumRedirect);
+          setSidebarRoute(route.role, forumRedirect);
+        }
         if (route.role === 'teacher') {
           if (!['teacher', 'collaborator'].includes(currentUser.role)) {
             window.history.replaceState({ lmsRoute: 'dashboard' }, '', '#/student/dashboard');
@@ -16740,9 +16735,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           } else {
             studentUi?.classList.add('hidden');
             editorUi?.classList.remove('hidden');
-            if (route.section === 'forum') {
-              window.toggleForumPanel(true);
-            } else if (route.section === 'review') {
+            if (route.section === 'review') {
               const submissionId = Number(route.detail);
               if (currentUser.role === 'teacher' && Number.isFinite(submissionId) && SUBMISSIONS.some(sub => Number(sub.id) === submissionId)) openGradingView(submissionId);
               else {
@@ -16801,7 +16794,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           enableStudentSectionResizing('class', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
           requestAnimationFrame(() => document.getElementById('student-schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-        } else if (route.section === 'dashboard' || !['class', 'test-bank', 'history', 'flashcards', 'peer-review', 'leaderboard', 'forum', 'review', 'timetable'].includes(route.section)) {
+        } else if (route.section === 'dashboard' || !['class', 'test-bank', 'history', 'flashcards', 'peer-review', 'leaderboard', 'review', 'timetable'].includes(route.section)) {
           route = { role: 'student', section: 'dashboard' };
           enableStudentSectionResizing('dashboard', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
@@ -16829,9 +16822,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         } else if (route.section === 'leaderboard') {
           window.showLeaderboardModal();
           enableStudentSectionResizing('leaderboard', '#custom-modal > div');
-        } else if (route.section === 'forum') {
-          window.toggleForumPanel(true);
-          enableStudentSectionResizing('forum', '#chat-panel > div');
         } else if (route.section === 'review') {
           const submissionId = Number(route.detail);
           if (Number.isFinite(submissionId) && SUBMISSIONS.some(sub => Number(sub.id) === submissionId)) reviewPastSubmission(submissionId);
@@ -16875,12 +16865,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       } else if (route.section === 'leaderboard') {
         document.getElementById('custom-modal')?.classList.add('hidden');
         document.getElementById('test-leaderboard-modal')?.classList.add('hidden');
-      } else if (route.section === 'forum') {
-        document.getElementById('chat-panel')?.classList.add('hidden');
       }
       const dashboardRoute = currentUser && ['teacher', 'collaborator'].includes(currentUser.role)
         ? 'teacher/bank/tests'
-        : 'student/dashboard';
+        : route.section === 'leaderboard'
+          ? 'student/class'
+          : ['history', 'peer-review', 'review'].includes(route.section)
+            ? 'student/test-bank'
+            : 'student/dashboard';
       window.navigateAppRoute(dashboardRoute, true);
     };
 
