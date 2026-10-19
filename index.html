@@ -919,25 +919,6 @@
     .drop-zone.drag-over { background-color: #dbeafe !important; border-color: #3b82f6 !important; border-style: solid !important; }
     .drop-zone-options.drag-over { background-color: #f1f5f9; border-color: #94a3b8; border-style: dashed; }
 
-    .roadmap-card { position: relative; overflow: visible; }
-    .roadmap-card::before { content: ''; position: absolute; left: 29px; top: 96px; bottom: 28px; width: 2px; background: linear-gradient(180deg, rgba(59,130,246,0.18), rgba(59,130,246,0.04)); z-index: 0; }
-    .roadmap-step { position: relative; display: grid; grid-template-columns: auto 1fr; gap: 0.75rem; align-items: start; }
-    .roadmap-step .roadmap-node { position: relative; z-index: 10; width: 2rem; height: 2rem; min-width: 2rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; border: 2px solid #cbd5e1; background: #f8fafc; color: #1e293b; }
-    .roadmap-step.completed .roadmap-node { border-color: #22c55e; background: #dcfce7; color: #166534; }
-    .roadmap-step.current .roadmap-node { border-color: #2563eb; background: #dbeafe; color: #1d4ed8; box-shadow: 0 0 0 4px rgba(59,130,246,0.08); }
-    .roadmap-step.locked .roadmap-node { border-color: #f59e0b; background: #fffbeb; color: #92400e; }
-    .roadmap-step .roadmap-connector { position: absolute; left: 1.05rem; top: 2.25rem; width: 2px; bottom: 0; background: rgba(148,163,184,0.2); z-index: 1; }
-    .roadmap-step:last-child .roadmap-connector { display: none; }
-    .roadmap-step-content { position: relative; z-index: 10; }
-    .roadmap-step-title { font-weight: 900; color: #0f172a; }
-    .roadmap-step-meta { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 800; padding: 0.35rem 0.75rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.35rem; }
-    .roadmap-step-meta.completed { background: #ecfdf5; color: #166534; border: 1px solid #22c55e; }
-    .roadmap-step-meta.current { background: #eff6ff; color: #1d4ed8; border: 1px solid #3b82f6; }
-    .roadmap-step-meta.locked { background: #fffbeb; color: #92400e; border: 1px solid #fbbf24; }
-    .roadmap-step-copy { color: #475569; font-size: 0.88rem; line-height: 1.5; }
-    .roadmap-step-button { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 0.65rem; font-weight: 700; transition: all 0.2s; }
-    .roadmap-step-button:hover { transform: translateY(-1px); }
-
     .vocab-word { border-bottom: 2px dotted #2563eb; cursor: pointer; color: #1d4ed8; font-weight: 600; transition: all 0.2s; }
     .vocab-word:hover { background-color: #dbeafe; border-bottom-color: #1e40af; }
 
@@ -2600,7 +2581,7 @@
   <div id="student-history-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[350] flex items-center justify-center backdrop-blur-sm md:p-6">
       <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-5xl h-full md:h-[90vh] overflow-hidden animate-scale-up border border-slate-200">
           <div class="bg-gradient-to-r from-indigo-700 to-blue-800 p-5 flex justify-between items-center shrink-0">
-              <h2 class="text-xl font-black text-white flex items-center gap-2">📜 My History & Activity</h2>
+              <h2 class="text-xl font-black text-white flex items-center gap-2">📜 Test History</h2>
               <button onclick="window.closeAppRouteView()" class="text-white/70 hover:text-white font-bold text-2xl leading-none">&times;</button>
           </div>
           <div class="p-6 bg-slate-50 flex-1 overflow-y-auto space-y-6" id="student-history-content">
@@ -2736,14 +2717,14 @@
     <div id="student-sidebar-backdrop" class="app-sidebar-backdrop" onclick="window.closeAppSidebar('student')"></div>
     <aside id="student-sidebar" class="app-sidebar" aria-label="Student navigation">
       <div class="flex items-center justify-between gap-2 p-4 border-b border-slate-100">
-        <span class="sidebar-label text-xs font-black uppercase tracking-widest text-slate-400">Learning Menu</span>
+        <span class="sidebar-label text-xs font-black uppercase tracking-widest text-slate-400">Student Menu</span>
         <button type="button" class="app-sidebar-collapse text-slate-500 hover:text-blue-700 px-2 py-1 rounded-lg hover:bg-slate-100" onclick="window.toggleAppSidebar('student')" title="Collapse sidebar" aria-label="Collapse sidebar">⇤</button>
         <button type="button" class="app-sidebar-toggle w-9 h-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" onclick="window.closeAppSidebar('student')" aria-label="Close navigation menu">✕</button>
       </div>
       <nav class="flex flex-col gap-1 p-3">
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label">Dashboard</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>📚</span><span class="sidebar-label">Test Bank</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-timetable" onclick="window.navigateFromSidebar('student','student/timetable')"><span>📅</span><span class="sidebar-label">Timetable</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-history" onclick="window.navigateFromSidebar('student','student/history')"><span>📜</span><span class="sidebar-label">Learning History</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-history" onclick="window.navigateFromSidebar('student','student/history')"><span>📜</span><span class="sidebar-label">Test History</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label">Flashcards</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-peer-review" onclick="window.navigateFromSidebar('student','student/peer-review')"><span>🤝</span><span class="sidebar-label">Peer Review</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-leaderboard" onclick="window.navigateFromSidebar('student','student/leaderboard')"><span>🏆</span><span class="sidebar-label">Leaderboard</span></button>
@@ -2832,26 +2813,26 @@
       <!-- MAIN DASHBOARD GRID -->
     <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-5 hidden animate-fade-in-up items-start">
         
-        <!-- LEFT/MAIN COLUMN: Upcoming Classes & Assigned Learning -->
+        <!-- LEFT/MAIN COLUMN: Test Bank & Upcoming Classes -->
         <div class="lg:col-span-8 xl:col-span-8 flex flex-col gap-4 xl:gap-5 order-2 lg:order-1" id="bottom-student-sections">
           
-          <!-- Assigned Learning Library -->
+          <!-- Student Test Bank -->
                       <div class="order-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden flex flex-col flex-1">
                         <div class="bg-slate-50/50 px-4 py-4 border-b border-slate-100 flex flex-col xl:flex-row justify-between xl:items-center gap-3">
               <div>
-                <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-blue-600">📚</span> Assigned Learning</h2>
-                <p class="text-xs font-semibold text-slate-500 mt-1">Continue your course plan and complete the next available lesson.</p>
+                <h2 class="font-black text-slate-800 text-xl flex items-center gap-2"><span class="text-blue-600">📚</span> Test Bank</h2>
+                <p class="text-xs font-semibold text-slate-500 mt-1">Browse your class tests, take a test, or review your test history.</p>
               </div>
               <div class="flex flex-wrap items-center gap-2">
                 <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search tests or part titles..." class="flex-1 min-w-[140px] border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition font-medium">
                 <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
-                  <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option>
+                  <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option><option value="activity">Activities</option>
                 </select>
                 <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer hidden md:block">
                   <option value="all">All Tags</option>
                 </select>
-                <select id="student-test-sort" onchange="renderStudentDashboard()" class="hidden border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
-                  <option value="default">Default</option><option value="az">A-Z</option><option value="za">Z-A</option>
+                <select id="student-test-sort" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
+                  <option value="default">Default Order</option><option value="az">A-Z</option><option value="za">Z-A</option>
                 </select>
               </div>
             </div>
@@ -2914,7 +2895,7 @@
                   </button>
                   <button onclick="window.openStudentHistory()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-slate-50 text-slate-700 hover:bg-slate-100 transition border border-slate-200 shadow-sm active:scale-95">
                       <span class="text-2xl drop-shadow-sm">📜</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">My<br>History</span>
+                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Test<br>History</span>
                   </button>
                   <button onclick="window.showPeerReviewList()" class="relative flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
                       <span id="quick-badge-peer" class="hidden absolute -top-2 -right-2 bg-rose-500 text-white text-[10px] font-black w-5 h-5 items-center justify-center rounded-full shadow-md animate-bounce"></span>
@@ -14291,77 +14272,26 @@
         const modal = document.getElementById('student-history-modal');
         const content = document.getElementById('student-history-content');
         
-        // 1. Gather Data
-        let mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user).sort((a,b) => b.id - a.id);
-        let myAtt = ATTENDANCE.filter(a => a.student === currentUser.user);
-        
-        // 2. Build Tests History HTML
-        let subsHtml = mySubs.length ? mySubs.map(s => `
-            <div class="flex justify-between items-center p-3 bg-white border border-slate-200 rounded-xl shadow-sm mb-2 hover:border-blue-300 transition group cursor-pointer" onclick="reviewPastSubmission(${s.id}); document.getElementById('student-history-modal').classList.add('hidden');">
+        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user).sort((a, b) => b.id - a.id);
+        const subsHtml = mySubs.length ? mySubs.map(s => `
+            <button type="button" class="w-full flex justify-between items-center text-left p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-blue-300 hover:shadow-md transition group" onclick="reviewPastSubmission(${s.id}); document.getElementById('student-history-modal').classList.add('hidden');">
                 <div>
                     <div class="font-bold text-slate-800 text-sm group-hover:text-blue-700 transition-colors">${s.testName}</div>
                     <div class="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-0.5">${s.date} • ${s.className}</div>
                 </div>
-                <div class="font-black text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">${s.score}</div>
-            </div>
+                <div class="flex items-center gap-3">
+                    <span class="font-black text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">${s.score}</span>
+                    <span class="text-xs font-black text-blue-700">Review →</span>
+                </div>
+            </button>
         `).join('') : '<p class="text-sm text-slate-500 italic bg-white p-4 rounded-xl border border-slate-200 text-center">No tests submitted yet.</p>';
-        
-        // 3. Build Attendance HTML
-        let attHtml = myAtt.length ? myAtt.map(a => {
-            const statusMap = {
-                'on_time': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-700 uppercase">Present</span>',
-                'late': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-amber-100 text-amber-700 uppercase">Late</span>',
-                'absent_adv': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-rose-100 text-rose-700 uppercase">Absent (Excused)</span>',
-                'absent_late': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-rose-100 text-rose-700 uppercase">Absent (Late Notice)</span>',
-                'absent_none': '<span class="text-[10px] font-bold px-2 py-1 rounded bg-red-100 text-red-800 uppercase">Absent (No Notice)</span>'
-            };
-            return `
-            <div class="flex justify-between items-center p-3 bg-white border-b border-slate-100 last:border-0 text-sm">
-                <div>
-                    <div class="font-bold text-slate-700">${a.className}</div>
-                    <div class="text-[10px] text-slate-400 font-medium uppercase">${a.date}</div>
-                </div>
-                ${statusMap[a.status] || '<span class="text-[10px] font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-700 uppercase">Present</span>'}
-            </div>`;
-        }).join('') : '<p class="text-sm text-slate-500 italic bg-white p-4 rounded-xl border border-slate-200 text-center">No class attendance recorded.</p>';
-
-        // 4. Build Banking / Account HTML
-        let lessonsUsed = myAtt.length;
-        let lessonsRemaining = currentUser.totalLessonsPaid ? Math.max(0, currentUser.totalLessonsPaid - lessonsUsed) : 'N/A';
-        const billingStatus = getStudentBillingStatus(currentUser);
-        
-        let finHtml = `
-            <div class="p-5 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <span class="font-bold text-slate-600 text-sm">Economy Balance:</span> 
-                    <span class="font-black text-amber-500 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200">${currentUser.gems || 0} 💎</span>
-                </div>
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                    <span class="font-bold text-slate-600 text-sm">Tuition Status:</span> 
-                    <span class="font-black text-[11px] uppercase tracking-widest px-2.5 py-1 rounded ${billingStatus.hasAccess ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${billingStatus.label}</span>
-                </div>
-                ${currentUser.billingPlanTitle ? `<div class="flex justify-between items-center border-b border-slate-100 pb-3"><span class="font-bold text-slate-600 text-sm">Paid Plan:</span><span class="font-bold text-slate-700 text-sm">${currentUser.billingPlanTitle}</span></div>` : ''}
-                ${billingStatus.expiry !== null ? `<div class="flex justify-between items-center border-b border-slate-100 pb-3"><span class="font-bold text-slate-600 text-sm">Access Until:</span><span class="font-bold text-slate-700 text-sm">${formatBillingDate(billingStatus.expiry)}</span></div>` : ''}
-                <div class="flex justify-between items-center">
-                    <span class="font-bold text-slate-600 text-sm">Lessons Remaining:</span> 
-                    <span class="font-black text-indigo-700 text-lg">${lessonsRemaining}</span>
-                </div>
-            </div>
-        `;
-
-        // 5. Inject Everything
         content.innerHTML = `
             <div>
-                <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-2 ml-1">💳 Banking & Account</h3>
-                ${finHtml}
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-2 ml-1 mt-2">📝 Test Submissions</h3>
-                <div class="max-h-[250px] overflow-y-auto pr-1 space-y-2">${subsHtml}</div>
-            </div>
-            <div>
-                <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-2 ml-1 mt-2">📅 Class Attendance</h3>
-                <div class="max-h-[200px] overflow-y-auto pr-1 bg-white rounded-xl border border-slate-200 shadow-sm">${attHtml}</div>
+                <div class="mb-4">
+                    <h3 class="font-black text-sm text-slate-400 uppercase tracking-widest mb-1 ml-1">📝 Your test submissions</h3>
+                    <p class="text-sm text-slate-500 ml-1">Select any submission to review your answers and results.</p>
+                </div>
+                <div class="max-h-full overflow-y-auto space-y-2">${subsHtml}</div>
             </div>
         `;
         
@@ -15949,54 +15879,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }];
     }
 
-    function getClassPathItems(cls) {
-      return getClassLearningPaths(cls).flatMap(path => (path.items || []).map(item => ({
-        ...item,
-        pathId: path.id,
-        pathTitle: path.title
-      })));
-    }
-
-    function parseScoreToBand(score) {
-      if (score === null || score === undefined || score === '') return null;
-      if (typeof score === 'number') return score;
-      const str = String(score).trim();
-      if (!str) return null;
-      const bandMatch = str.match(/band\s*([0-9]+(?:\.[0-9]+)?)/i);
-      if (bandMatch) return parseFloat(bandMatch[1]);
-      const ratioMatch = str.match(/([0-9]+(?:\.[0-9]+)?)\s*\/\s*([0-9]+(?:\.[0-9]+)?)/);
-      if (ratioMatch) {
-        const numerator = parseFloat(ratioMatch[1]);
-        const denominator = parseFloat(ratioMatch[2]);
-        if (!isNaN(numerator) && !isNaN(denominator) && denominator > 0) {
-          return (numerator / denominator) * 10;
-        }
-      }
-      const numeric = parseFloat(str.replace(/[^0-9.]/g, ''));
-      return Number.isFinite(numeric) ? numeric : null;
-    }
-
-    function getLatestScoreForTest(studentSubs, testId) {
-      const matches = (studentSubs || []).filter(s => String(s.testId) === String(testId));
-      if (!matches.length) return null;
-      const latest = matches.reduce((best, current) => {
-        if (!best) return current;
-        const bestId = Number.isFinite(Number(best.id)) ? Number(best.id) : 0;
-        const curId = Number.isFinite(Number(current.id)) ? Number(current.id) : 0;
-        return curId > bestId ? current : best;
-      }, null);
-      return latest ? parseScoreToBand(latest.score) : null;
-    }
-
-    function isPrerequisiteSatisfied(item, studentSubs) {
-      const prereq = item?.prerequisite;
-      if (!prereq || !prereq.testId) return true;
-      const required = parseFloat(prereq.minScore);
-      if (Number.isNaN(required)) return true;
-      const score = getLatestScoreForTest(studentSubs, prereq.testId);
-      return score !== null && score >= required;
-    }
-
     function getSubmissionModule(sub) {
       const fromTest = TEST_BANK.find(x => x.id === sub?.testId) || sub?.syntheticData || null;
       if (fromTest?.module) return fromTest.module;
@@ -16256,7 +16138,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if(mainContent) mainContent.classList.remove('hidden');
       
       if(!cid) { 
-          if(list) list.innerHTML = '<div class="p-6 text-slate-500 col-span-full">Please select a class to view materials.</div>'; 
+          if(list) list.innerHTML = '<div class="p-6 text-slate-500 col-span-full">Please select a class to view tests.</div>'; 
           if(bottomSec) { bottomSec.classList.toggle('hidden', !isTimetableRoute); bottomSec.classList.toggle('flex', isTimetableRoute); }
           if(schedSec) { schedSec.classList.toggle('hidden', !isTimetableRoute); schedSec.classList.toggle('flex', isTimetableRoute); }
           if(scheduleEmptyState) {
@@ -16279,137 +16161,43 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if(quickActions) { quickActions.classList.remove('hidden'); quickActions.classList.add('flex'); }
       if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
 
-      // 🧠 KRASHEN'S i+1: Hoist Stats Calculation Here to fuel the Recommendation Engine!
       const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
-      const pathItems = getClassPathItems(cls);
-      const totalTests = pathItems.length;
+      const assignedTestItems = getClassAssignedTests(cls)
+          .filter(testId => TEST_BANK.some(test => test.id === testId))
+          .map(testId => ({ testId }));
+      const totalTests = assignedTestItems.length;
       const completedTestIds = [...new Set(mySubs.map(s => s.testId).filter(Boolean))]; 
-      const completedCount = pathItems.filter(item => item.testId && completedTestIds.includes(item.testId)).length;
+      const completedCount = assignedTestItems.filter(item => completedTestIds.includes(item.testId)).length;
       const progressPct = totalTests === 0 ? 0 : Math.min(100, Math.round((completedCount / totalTests) * 100));
-
-      let rLStats = { reading: { correct: 0, total: 0 }, listening: { correct: 0, total: 0 } };
-      let wSStats = { writing: { sum: 0, count: 0 }, speaking: { sum: 0, count: 0 } };
-
-      mySubs.forEach(s => {
-          if (s.testName && s.testName.includes('(Practice)')) return;
-
-          let t = TEST_BANK.find(x => x.id === s.testId) || s.syntheticData;
-          let mod = t ? t.module : null;
-          
-          if (!mod) {
-              const tn = (s.testName || '').toLowerCase();
-              if (tn.includes('reading')) mod = 'reading';
-              else if (tn.includes('listening')) mod = 'listening';
-              else if (tn.includes('writing')) mod = 'writing';
-              else if (tn.includes('speaking')) mod = 'speaking';
-          }
-          
-          if (mod === 'reading' || mod === 'listening') {
-              if (s.score && s.score.includes('/')) {
-                  let parts = s.score.split('/');
-                  let correct = parseFloat(parts[0]);
-                  let total = parseFloat(parts[1]);
-                  if (!isNaN(correct) && !isNaN(total) && total > 0) {
-                      rLStats[mod].correct += correct;
-                      rLStats[mod].total += total;
-                  }
-              }
-          } 
-          else if (mod === 'writing' || mod === 'speaking') {
-              if (s.score && s.score.includes('Band')) {
-                  let val = parseFloat(s.score.replace('Band', '').trim());
-                  if (!isNaN(val) && val > 0) {
-                      wSStats[mod].sum += val;
-                      wSStats[mod].count++;
-                  }
-              }
-          }
-      });
-
-      const getRLBand = (stat) => {
-          if (stat.total === 0) return 0;
-          let projected = Math.round((stat.correct / stat.total) * 40);
-          if (projected >= 39) return 9.0;
-          if (projected >= 37) return 8.5;
-          if (projected >= 35) return 8.0;
-          if (projected >= 33) return 7.5;
-          if (projected >= 30) return 7.0;
-          if (projected >= 27) return 6.5;
-          if (projected >= 23) return 6.0;
-          if (projected >= 20) return 5.5;
-          if (projected >= 16) return 5.0;
-          if (projected >= 13) return 4.5;
-          if (projected >= 10) return 4.0;
-          if (projected >= 7) return 3.5;
-          if (projected >= 5) return 3.0;
-          if (projected >= 3) return 2.5;
-          if (projected >= 2) return 2.0; 
-          if (projected >= 1) return 1.0; 
-          return 0; 
-      };
-
-      const radarData = currentUser.radarChartData || [
-          getRLBand(rLStats.reading),
-          getRLBand(rLStats.listening),
-          wSStats.writing.count ? parseFloat((wSStats.writing.sum / wSStats.writing.count).toFixed(1)) : 0,
-          wSStats.speaking.count ? parseFloat((wSStats.speaking.sum / wSStats.speaking.count).toFixed(1)) : 0
-      ];
-
-      const skillBands = { reading: radarData[0], listening: radarData[1], writing: radarData[2], speaking: radarData[3] };
-
-      const renderRoadmapStep = (item, index, totalSteps) => {
-        const t = item.testId ? TEST_BANK.find(x => x.id === item.testId) : null;
-        const title = item.title || (t ? t.title : 'Material');
-        const module = t ? t.module : null;
-        const price = Number(t?.price) || 0;
-        const unlockedTests = currentUser.unlockedTests || [];
-        const premiumLocked = Boolean(t && price > 0 && !unlockedTests.includes(t.id));
-        const prereqLocked = !isPrerequisiteSatisfied(item, mySubs);
-        const isLocked = premiumLocked || prereqLocked;
-        const isCompleted = Boolean(item.testId && completedTestIds.includes(item.testId));
-
-        const myBand = module ? skillBands[module] || 0 : 0;
-        const targetIPlusOne = myBand > 0 ? myBand + 0.5 : null;
-        const testDiff = t ? parseFloat(t.difficulty) : null;
-        
-        const settings = getClassTestSettings(cls, item.testId);
-        let deadlineHtml = '';
-        if (settings && settings.dueDate && !isCompleted) {
-            deadlineHtml = `<div class="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded shadow-sm mt-1 inline-block">Due: ${settings.dueDate} ${settings.dueTime || ''}</div>`;
-        }
-        
-        const isIPlusOne = testDiff && targetIPlusOne && (testDiff === targetIPlusOne || testDiff === targetIPlusOne + 0.5);
-        const isStarterRec = myBand === 0 && testDiff && testDiff <= 5.0;
-        const isRecommended = !isCompleted && !isLocked && (isIPlusOne || isStarterRec);
-
-        const statusLabel = isCompleted ? 'Completed' : isLocked ? 'Locked' : 'On Track';
-        const statusClass = isCompleted ? 'completed' : isLocked ? 'locked' : 'current';
-        const statusMeta = isCompleted ? 'completed' : isLocked ? 'locked' : 'current';
-        const showPrereq = item.prerequisite && item.prerequisite.testId;
-        const actionLabel = isLocked ? (prereqLocked ? `Locked by ${item.prerequisite.testId}` : premiumLocked ? `Unlock ${price} 💎` : 'Locked') : (isCompleted ? 'Completed' : 'Start Practice →');
-        const actionClass = isLocked ? 'bg-amber-100 text-amber-900 border border-amber-200' : isRecommended ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white';
+      const renderTestBankCard = test => {
+        const price = Number(test.price) || 0;
+        const isLocked = price > 0 && !(currentUser.unlockedTests || []).includes(test.id);
+        const isCompleted = completedTestIds.includes(test.id);
+        const moduleColors = { reading: 'blue', listening: 'cyan', writing: 'emerald', speaking: 'amber', activity: 'fuchsia' };
+        const color = moduleColors[test.module] || 'slate';
+        const settings = getClassTestSettings(cls, test.id);
+        const dueDate = settings?.dueDate && !isCompleted
+          ? `<span class="text-[10px] font-bold text-rose-600">Due ${settings.dueDate}${settings.dueTime ? ` ${settings.dueTime}` : ''}</span>`
+          : '';
+        const status = isCompleted
+          ? '<span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">Completed</span>'
+          : '<span class="text-[10px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">Ready</span>';
 
         return `
-        <div class="roadmap-step ${statusClass}">
-            <div class="relative">
-                <div class="roadmap-node">${index + 1}</div>
-                <div class="roadmap-connector"></div>
+          <article class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition p-4 flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-2">
+              <span class="text-[10px] font-bold px-2 py-1 rounded bg-${color}-100 text-${color}-800 uppercase tracking-wide">${test.module || 'Test'}</span>
+              ${status}
             </div>
-            <div class="roadmap-step-content rounded-2xl border ${isLocked ? 'border-amber-200 bg-amber-50/80' : isCompleted ? 'border-emerald-200 bg-emerald-50/80' : 'border-slate-200 bg-white'} p-4 shadow-sm">
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <div class="space-y-1 min-w-0">
-                        <div class="roadmap-step-title text-sm sm:text-base leading-snug">${title}</div>${deadlineHtml}
-                        <div class="text-xs text-slate-500">${module ? module.charAt(0).toUpperCase() + module.slice(1) : 'Study Material'}${testDiff ? ` · Band ${testDiff.toFixed(1)}` : ''}</div>
-                    </div>
-                    <span class="roadmap-step-meta ${statusMeta}">${statusLabel}</span>
-                </div>
-                ${showPrereq ? `<div class="text-[11px] text-amber-700 font-semibold mb-3">Requires ${item.prerequisite.minScore}+ on ${item.prerequisite.testId}</div>` : ''}
-                <p class="roadmap-step-copy line-clamp-2">${t ? (t.description || t.topics?.join(', ') || 'Complete this lesson to advance your score') : 'Follow this step to keep your learning momentum moving forward.'}</p>
-                <div class="mt-3 sm:flex sm:justify-end">
-                    ${isLocked ? `<button disabled class="roadmap-step-button ${actionClass} w-full sm:w-auto text-sm rounded-full">${actionLabel}</button>` : isCompleted ? `<button disabled class="roadmap-step-button bg-slate-100 text-slate-600 w-full sm:w-auto text-sm rounded-full border border-slate-200">✓ Completed</button>` : `<button onclick="openModeSelection('${item.testId}')" class="roadmap-step-button ${actionClass} w-full sm:w-auto text-sm rounded-full">${actionLabel}</button>`}
-                </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-slate-900 leading-snug">${test.title}</h3>
+              <p class="text-xs text-slate-500 mt-2">${test.parts?.length || 0} part(s)${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
+              ${dueDate ? `<div class="mt-2">${dueDate}</div>` : ''}
             </div>
-        </div>`;
+            <button ${isLocked ? 'disabled' : `onclick="openModeSelection('${test.id}')"`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} rounded-lg py-2.5 text-sm font-black transition">
+              ${isLocked ? `🔒 Unlock ${price} 💎` : isCompleted ? 'Take Again →' : 'Take Test →'}
+            </button>
+          </article>`;
       };
 
       const classSchedules = SCHEDULES.filter(s => window.scheduleBelongsToClass(s, cls) && (!s.attendingStudents || s.attendingStudents.includes(currentUser.user)));
@@ -16439,62 +16227,31 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           else bookBtn.classList.add('hidden');
       }
       
-      let allTestsHtml = '<div class="col-span-full text-sm text-slate-500 italic py-4">No materials assigned to this course yet.</div>';
+      const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
+      const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
+      const sort = document.getElementById('student-test-sort')?.value || 'default';
+      const tagSelect = document.getElementById('student-test-filter-tag');
+      const selectedTag = tagSelect ? tagSelect.value : 'all';
+      const assignedTests = assignedTestItems
+          .map(item => TEST_BANK.find(test => test.id === item.testId))
+          .filter(Boolean);
+      const allTags = new Set(assignedTests.flatMap(test => test.topics || []));
 
-      if (pathItems.length) {
-          const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
-          const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
-          const tagSelect = document.getElementById('student-test-filter-tag');
-          const selectedTag = tagSelect ? tagSelect.value : 'all';
-          
-          let filteredItems = pathItems.filter(item => {
-              const t = item.testId ? TEST_BANK.find(x => x.id === item.testId) : null;
-              const title = item.title || (t ? t.title : '');
-              const topics = t ? (t.topics || []) : [];
-              const matchQuery = matchesTestSearch(t, query, title);
-              const matchMod = mod === 'all' || (t && t.module === mod);
-              const matchTag = selectedTag === 'all' || topics.includes(selectedTag);
-              return matchQuery && matchMod && matchTag;
-          });
+      if (tagSelect) {
+          tagSelect.innerHTML = `<option value="all">All Tags</option>` +
+              Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
+      }
 
-          if (tagSelect && pathItems.length > 0) {
-              let allTags = new Set();
-              pathItems.forEach(item => {
-                  const t = item.testId ? TEST_BANK.find(x => x.id === item.testId) : null;
-                  if (t && t.topics) t.topics.forEach(tag => allTags.add(tag));
-              });
-              tagSelect.innerHTML = `<option value="all">All Tags</option>` + 
-                  Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
-          }
-          
-          const groupedItems = filteredItems.reduce((groups, item) => {
-              const group = groups.find(g => g.pathId === item.pathId);
-              if (group) {
-                  group.items.push(item);
-              } else {
-                  groups.push({ pathId: item.pathId, pathTitle: item.pathTitle, items: [item] });
-              }
-              return groups;
-          }, []);
-
-          if (groupedItems.length) {
-              allTestsHtml = groupedItems.map(group => `
-                <div class="rounded-xl border border-slate-200 bg-slate-50/50 p-4 shadow-sm roadmap-card">
-                    <div class="flex items-center justify-between gap-3 mb-3 border-b border-slate-200/60 pb-2">
-                        <div class="min-w-0">
-                            <h3 class="text-base sm:text-lg font-black text-blue-950 truncate">${group.pathTitle}</h3>
-                            <p class="text-xs font-bold text-slate-500 mt-1">${group.items.length} material${group.items.length === 1 ? '' : 's'}</p>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        ${group.items.map((item, idx) => renderRoadmapStep(item, idx, group.items.length)).join('')}
-                    </div>
-                </div>`).join('');
-          } else if (query || mod !== 'all' || selectedTag !== 'all') {
-              allTestsHtml = '<div class="col-span-full text-sm text-slate-500 italic py-4">No materials match your search or filter.</div>';
-          }
-      } 
-      list.innerHTML = allTestsHtml;
+      const filteredTests = assignedTests.filter(test =>
+          matchesTestSearch(test, query) &&
+          (mod === 'all' || test.module === mod) &&
+          (selectedTag === 'all' || (test.topics || []).includes(selectedTag))
+      );
+      if (sort === 'az') filteredTests.sort((a, b) => a.title.localeCompare(b.title));
+      else if (sort === 'za') filteredTests.sort((a, b) => b.title.localeCompare(a.title));
+      list.innerHTML = filteredTests.length
+          ? `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${filteredTests.map(renderTestBankCard).join('')}</div>`
+          : `<div class="text-sm text-slate-500 italic py-8 text-center">${assignedTests.length ? 'No tests match your search or filters.' : 'No tests have been assigned to this class yet.'}</div>`;
 
       // Update Peer Review App Badge
       const peerBadge = document.getElementById('quick-badge-peer');
@@ -16509,18 +16266,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               peerBadge.classList.remove('flex');
           }
       }
-
-      const availableNextItems = pathItems.filter(item => {
-          if (!item.testId || completedTestIds.includes(item.testId)) return false;
-          const test = TEST_BANK.find(x => x.id === item.testId);
-          const premiumLocked = Boolean(test && Number(test.price) > 0 && !(currentUser.unlockedTests || []).includes(test.id));
-          return !premiumLocked && isPrerequisiteSatisfied(item, mySubs);
-      });
-      const nextUp = availableNextItems[0] || null;
-      const readyCount = availableNextItems.length;
-      const nextTest = nextUp ? TEST_BANK.find(x => x.id === nextUp.testId) : null;
-      const nextModule = nextTest?.module || 'All set';
-      const nextLabel = nextUp ? (nextUp.title || nextTest?.title || 'Next step') : 'You are all caught up';
 
       const peers = [...new Set((cls.enrolledStudents || []).filter(student => student && student !== currentUser.user))];
       const displayClassName = cls.name;
@@ -16542,7 +16287,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }).sort((a, b) => Number(b.online) - Number(a.online) || a.student.localeCompare(b.student));
 
       const homeworkTestIds = [...new Set([
-          ...pathItems.map(item => item.testId).filter(Boolean),
+          ...assignedTestItems.map(item => item.testId).filter(Boolean),
           ...classSchedules.flatMap(schedule => schedule.homeworkTests || []),
           ...Object.keys(cls.testSettings || {})
       ])];
@@ -16565,16 +16310,16 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-5 text-white shadow-sm border border-blue-500/40">
             <div class="flex items-center justify-between gap-3 mb-4">
                 <div>
-                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Bài học tiếp theo</h3>
-                    <div class="font-black text-xl mt-1">Lộ trình của bạn</div>
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Your Test Bank</h3>
+                    <div class="font-black text-xl mt-1">${totalTests} assigned test${totalTests === 1 ? '' : 's'}</div>
                 </div>
                 <span class="text-2xl">📚</span>
             </div>
             <div class="bg-white/10 border border-white/20 rounded-2xl p-4 backdrop-blur-sm mb-4">
-                <div class="text-[10px] uppercase tracking-[0.16em] text-blue-200 mb-1">Môn học: ${nextModule}</div>
-                <div class="font-black text-lg leading-snug line-clamp-2">${nextLabel}</div>
+                <div class="text-[10px] uppercase tracking-[0.16em] text-blue-200 mb-1">Test progress</div>
+                <div class="font-black text-lg leading-snug">${completedCount} of ${totalTests} completed</div>
             </div>
-            ${nextUp ? `<button onclick="openModeSelection('${nextUp.testId}')" class="w-full bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">Vào Học Ngay <span aria-hidden="true">→</span></button>` : ''}
+            <button onclick="window.openStudentHistory()" class="w-full bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2">Review Test History <span aria-hidden="true">→</span></button>
         </div>
 
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm mt-1">
@@ -16612,8 +16357,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 mt-1">
             <div class="flex justify-between items-end mb-3">
                 <div>
-                    <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest">Tiến độ lộ trình</h3>
-                    <div class="font-bold text-slate-600 text-sm mt-1">${completedCount} / ${totalTests} bài đã hoàn thành</div>
+                    <h3 class="font-black text-xs text-slate-400 uppercase tracking-widest">Test Bank Progress</h3>
+                    <div class="font-bold text-slate-600 text-sm mt-1">${completedCount} / ${totalTests} tests completed</div>
                 </div>
                 <span class="font-black text-4xl text-blue-600 tracking-tighter leading-none">${progressPct}%</span>
             </div>
@@ -16626,20 +16371,17 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     let pendingTestId = null;
 
-    function getCurrentStudentClassPathItem(testId) {
+    function getCurrentStudentAssignedTest(testId) {
       if (!testId || !currentUser || currentUser.role !== 'student') return null;
       const cid = document.getElementById('student-class-select')?.value;
       const cls = CLASSES.find(c => c.id === cid);
       if (!cls) return null;
-      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
-      return getClassPathItems(cls).find(item => item.testId === testId) || null;
+      return getClassAssignedTests(cls).includes(testId) ? { testId } : null;
     }
 
     function openModeSelection(tid) {
-      const item = getCurrentStudentClassPathItem(tid);
-      if (item && !isPrerequisiteSatisfied(item, SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === (CLASSES.find(c => c.id === document.getElementById('student-class-select')?.value)?.name || '')))) {
-          const prereq = item.prerequisite;
-          showModalMsg('Locked', `You need to score at least ${prereq.minScore} on ${prereq.testId} before starting this item.`);
+      if (currentUser?.role === 'student' && !getCurrentStudentAssignedTest(tid)) {
+          showModalMsg('Unavailable', 'This test is not assigned to your current class.');
           return;
       }
 
@@ -17032,7 +16774,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const cls = CLASSES.find(item => item.id === cid);
       if (!cls) return false;
 
-      const pathItem = getClassPathItems(cls).find(item => item.testId === testId);
       const assigned = getClassAssignedTests(cls).includes(testId);
       const scheduled = SCHEDULES.some(schedule =>
         window.scheduleBelongsToClass(schedule, cls) &&
@@ -17042,7 +16783,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const test = TEST_BANK.find(item => item.id === testId);
       const price = Number(test?.price) || 0;
       const unlocked = !test || price <= 0 || (currentUser.unlockedTests || []).includes(testId);
-      return Boolean((pathItem || assigned || scheduled) && unlocked);
+      return Boolean((assigned || scheduled) && unlocked);
     }
 
     function openTestHashRoute(route, fromInitialLoad = false) {
@@ -17062,12 +16803,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           return;
         }
 
-        const item = getCurrentStudentClassPathItem(route.id);
-        const cls = CLASSES.find(entry => entry.id === document.getElementById('student-class-select')?.value);
-        const mySubs = SUBMISSIONS.filter(sub => sub.student === currentUser.user && sub.className === (cls?.name || ''));
-        if (item && !isPrerequisiteSatisfied(item, mySubs)) {
+        if (!getCurrentStudentAssignedTest(route.id)) {
           replaceWithDashboardRoute();
-          if (typeof window.showToast === 'function') window.showToast('Locked', 'Complete the prerequisite before starting this test.', 'error');
+          if (typeof window.showToast === 'function') window.showToast('Unavailable', 'This test is not assigned to your current class.', 'error');
           return;
         }
 
@@ -17217,21 +16955,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         // Gather all tests assigned to this student's class
         const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
-        const pathItems = getClassPathItems(cls);
+        const assignedTests = getClassAssignedTests(cls);
         
-        // Strictly filter out tests they have already done, or tests that are locked by prerequisites/gems
-        window.availableSpinTests = pathItems.filter(item => {
-            if (!item.testId) return false;
-            const isCompleted = mySubs.some(s => s.testId === item.testId);
-            const isLocked = !isPrerequisiteSatisfied(item, mySubs);
-            const t = TEST_BANK.find(x => x.id === item.testId);
+        // Keep random practice aligned with the student's assigned Test Bank.
+        window.availableSpinTests = assignedTests.map(testId => {
+            const isCompleted = mySubs.some(s => s.testId === testId);
+            const t = TEST_BANK.find(x => x.id === testId);
             const isPremiumLocked = Boolean(t && Number(t.price) > 0 && !(currentUser.unlockedTests || []).includes(t.id));
-            
-            return !isCompleted && !isLocked && !isPremiumLocked && t; 
-        });
+            return !isCompleted && !isPremiumLocked && t
+                ? { testId, title: t.title, module: t.module }
+                : null;
+        }).filter(Boolean);
 
         if (window.availableSpinTests.length === 0) {
-            window.showToast("All Caught Up!", "You have completed all available materials. Ask your teacher for more!");
+            window.showToast("All Caught Up!", "You have completed all available tests. Ask your teacher for more!");
             return;
         }
 
@@ -19883,7 +19620,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         }
 
         // Check if still legally assigned to their class
-        const item = getCurrentStudentClassPathItem(tid);
+        const item = getCurrentStudentAssignedTest(tid);
         if (!item) {
             renderStudentDashboard();
             if (typeof window.showToast === 'function') window.showToast("Notice", "This test is no longer assigned to your current class.", "error");
@@ -25491,7 +25228,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const completedTestIds = mySubs.map(s => s.testId);
         const classSchedules = SCHEDULES.filter(schedule => window.scheduleBelongsToClass(schedule, cls) && (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)));
         const deadlineTestIds = [...new Set([
-            ...getClassPathItems(cls).map(item => item.testId).filter(Boolean),
+            ...getClassAssignedTests(cls),
             ...classSchedules.flatMap(schedule => schedule.homeworkTests || []),
             ...Object.keys(cls.testSettings || {})
         ])];
