@@ -2729,7 +2729,7 @@
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-dashboard" onclick="window.navigateFromSidebar('student','student/dashboard')"><span>🏠</span><span class="sidebar-label" data-student-en="Overview" data-student-vi="Tổng quan">Overview</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-test-bank" onclick="window.navigateFromSidebar('student','student/test-bank')"><span>📚</span><span class="sidebar-label" data-student-en="Test Bank" data-student-vi="Ngân hàng đề">Test Bank</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-class" onclick="window.navigateFromSidebar('student','student/class')"><span>🏫</span><span class="sidebar-label" data-student-en="Class" data-student-vi="Lớp học">Class</span></button>
-        <button type="button" class="app-sidebar-link" data-sidebar-item="student-flashcards" onclick="window.navigateFromSidebar('student','student/flashcards')"><span>🗂️</span><span class="sidebar-label" data-student-en="Flashcards" data-student-vi="Thẻ ghi nhớ">Flashcards</span></button>
+        <button type="button" class="app-sidebar-link" data-sidebar-item="student-study-tools" onclick="window.navigateFromSidebar('student','student/study-tools')"><span>🧠</span><span class="sidebar-label" data-student-en="Study Tools" data-student-vi="Công cụ học tập">Study Tools</span></button>
         <button type="button" class="app-sidebar-link" onclick="window.closeAppSidebar('student'); window.openStudentProfile()"><span>⚙️</span><span class="sidebar-label">Profile & Goals</span></button>
       </nav>
     </aside>
@@ -2889,34 +2889,52 @@
               </div>
             </div>
             <div id="student-progress-section" class="hidden p-4 pt-0 flex-col gap-4"></div>
+            <div id="student-test-bank-practice-actions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 pt-0">
+              <button type="button" onclick="window.startFullExam()" class="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left text-blue-900 transition hover:bg-blue-100">
+                <span class="text-2xl">🎓</span>
+                <span><span class="block font-black" data-student-en="Mock Exam" data-student-vi="Thi thử">Mock Exam</span><span class="block text-xs font-medium text-blue-700" data-student-en="Start a full-length practice exam." data-student-vi="Bắt đầu bài thi thử đầy đủ.">Start a full-length practice exam.</span></span>
+              </button>
+              <button type="button" onclick="window.openRandomSpinner()" class="flex items-center gap-3 rounded-xl border border-pink-200 bg-pink-50 p-4 text-left text-pink-900 transition hover:bg-pink-100">
+                <span class="text-2xl">🎲</span>
+                <span><span class="block font-black" data-student-en="Spin for Random Practice" data-student-vi="Chọn bài luyện tập ngẫu nhiên">Spin for Random Practice</span><span class="block text-xs font-medium text-pink-700" data-student-en="Pick an available class test at random." data-student-vi="Chọn ngẫu nhiên một bài thi có sẵn của lớp.">Pick an available class test at random.</span></span>
+              </button>
+            </div>
             <!-- Test List grid styling -->
             <div id="student-tests-list" class="p-3 xl:p-4 bg-white flex flex-col gap-3 max-h-[620px] overflow-y-auto stagger-fade-in"></div>
           </div>
+
+          <section id="student-study-tools-section" class="hidden bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/70">
+              <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>🧠</span><span data-student-en="Study Tools" data-student-vi="Công cụ học tập">Study Tools</span></h2>
+              <p class="mt-1 text-xs font-semibold text-slate-500" data-student-en="Revisit teacher strategies and build vocabulary and grammar with flashcards." data-student-vi="Xem lại chiến lược của giáo viên và học từ vựng, ngữ pháp bằng thẻ ghi nhớ.">Revisit teacher strategies and build vocabulary and grammar with flashcards.</p>
+            </div>
+            <div class="space-y-6 p-4">
+              <section>
+                <h3 class="mb-3 font-black text-slate-800" data-student-en="Test-taking techniques" data-student-vi="Kỹ thuật làm bài">Test-taking techniques</h3>
+                <div id="student-strategy-templates" class="grid grid-cols-1 xl:grid-cols-2 gap-3"></div>
+              </section>
+              <section>
+                <div class="mb-3">
+                  <h3 class="font-black text-slate-800" data-student-en="Flashcards" data-student-vi="Thẻ ghi nhớ">Flashcards</h3>
+                  <p class="mt-1 text-xs text-slate-500" data-student-en="Practice class vocabulary and grammar, or review your personal decks." data-student-vi="Luyện từ vựng và ngữ pháp của lớp, hoặc ôn tập bộ thẻ cá nhân.">Practice class vocabulary and grammar, or review your personal decks.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <button type="button" onclick="window.openStudentFlashcards('vocab')" class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-left font-black text-blue-900 hover:bg-blue-100"><span class="mr-2">📘</span><span data-student-en="Vocabulary" data-student-vi="Từ vựng">Vocabulary</span></button>
+                  <button type="button" onclick="window.openStudentFlashcards('grammar')" class="rounded-xl border border-violet-200 bg-violet-50 p-4 text-left font-black text-violet-900 hover:bg-violet-100"><span class="mr-2">📝</span><span data-student-en="Grammar" data-student-vi="Ngữ pháp">Grammar</span></button>
+                  <button type="button" onclick="window.openStudentFlashcards('personal')" class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-left font-black text-emerald-900 hover:bg-emerald-100"><span class="mr-2">🗂️</span><span data-student-en="My Flashcards" data-student-vi="Thẻ của tôi">My Flashcards</span></button>
+                </div>
+              </section>
+              <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500" data-student-en="More study tools can be added here later." data-student-vi="Có thể bổ sung thêm công cụ học tập tại đây sau.">More study tools can be added here later.</div>
+            </div>
+          </section>
 
         </div>
 
         <!-- RIGHT/SIDE COLUMN: Analytics & Actions (Secondary Focus) -->
         <div id="student-dashboard-sidebar-content" class="lg:col-span-4 xl:col-span-4 flex flex-col gap-4 xl:gap-5 order-1 lg:order-2">
           
-          <!-- Study Tools -->
           <div id="student-quick-actions" class="order-1 hidden bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex-col gap-3 relative overflow-hidden">
-              <h2 class="font-black text-xs text-slate-400 uppercase tracking-widest mb-1 z-10 flex items-center gap-2"><span data-student-en="⚡ Study Tools" data-student-vi="⚡ Công cụ học tập">⚡ Study Tools</span></h2>
-              
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 z-10">
-                  <button onclick="window.startFullExam()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
-                      <span class="text-2xl drop-shadow-sm">🎓</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight" data-student-en="Mock Exam" data-student-vi="Thi thử">Mock<br>Exam</span>
-                  </button>
-                  <button onclick="window.toggleStudentFlashcardPanel()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
-                      <span class="text-2xl drop-shadow-sm">🧠</span>
-                      <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight" data-student-en="Study Cards" data-student-vi="Thẻ học">Study<br>Cards</span>
-                  </button>
-              </div>
-
-              <button onclick="window.openRandomSpinner()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-black py-3.5 px-5 rounded-xl transition shadow-md flex justify-center items-center gap-2 z-10 border border-pink-400/50 hover:-translate-y-0.5 active:scale-95 mt-1">
-                  <span class="text-2xl drop-shadow-sm">🎲</span> Spin for Random Practice
-              </button>
-
+              <h2 class="font-black text-xs text-slate-400 uppercase tracking-widest mb-1 z-10 flex items-center gap-2"><span data-student-en="Get the app" data-student-vi="Cài đặt ứng dụng">Get the app</span></h2>
               <button onclick="window.installPWA()" id="btn-install-pwa" class="hidden w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-black hover:to-black text-white font-bold py-3.5 px-5 rounded-xl transition shadow-md flex justify-between items-center z-10 border border-slate-700 text-sm mt-1">
                   <span class="flex items-center gap-2"><span class="text-lg">📱</span> Install App</span>
                   <span class="text-slate-400">&darr;</span>
@@ -7751,8 +7769,8 @@
                     if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid();
                     if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
                 }),
-                ...(['teacher', 'collaborator'].includes(currentUser?.role)
-                  ? [waitForInitialSnapshot('teacher templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
+                ...(currentUser
+                  ? [waitForInitialSnapshot('study templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
                     TEACHER_TEMPLATES = [];
                     TEACHER_TEMPLATE_ASSIGNMENTS = {};
                     if (snap.exists()) {
@@ -16162,6 +16180,99 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }
     };
 
+    function getStudentStudyCardDecks() {
+      const classId = document.getElementById('student-class-select')?.value;
+      const cls = CLASSES.find(item => item.id === classId);
+      if (!cls) return {};
+      const decks = {};
+      getClassAssignedTests(cls).forEach(testId => {
+        const test = TEST_BANK.find(item => item.id === testId);
+        if (!test) return;
+        const price = Number(test.price) || 0;
+        if (price > 0 && !(currentUser.unlockedTests || []).includes(test.id)) return;
+        const vocabCards = (Array.isArray(test.vocab) ? test.vocab : [])
+          .filter(card => card?.term)
+          .map((card, index) => ({
+            id: `vocab_${index}`,
+            term: String(card.term),
+            def: [card.eng ? `EN: ${card.eng}` : '', card.vi ? `VI: ${card.vi}` : '', card.def || ''].filter(Boolean).join('\n'),
+            context: card.example || card.context || ''
+          }));
+        const grammarCards = (Array.isArray(test.grammar) ? test.grammar : [])
+          .filter(card => card?.term)
+          .map((card, index) => ({
+            id: `grammar_${index}`,
+            term: String(card.term),
+            def: [card.type, card.expl].filter(Boolean).join('\n'),
+            context: card.example || card.context || ''
+          }));
+        if (vocabCards.length) {
+          const id = `teacher_vocab_${encodeURIComponent(test.id)}`;
+          decks[id] = { label: `Vocabulary · ${test.title || test.id}`, kind: 'vocab', cards: vocabCards };
+        }
+        if (grammarCards.length) {
+          const id = `teacher_grammar_${encodeURIComponent(test.id)}`;
+          decks[id] = { label: `Grammar · ${test.title || test.id}`, kind: 'grammar', cards: grammarCards };
+        }
+      });
+      return decks;
+    }
+
+    function appendSafeTemplateContent(container, html) {
+      const allowedTags = new Set(['div', 'p', 'span', 'strong', 'b', 'em', 'i', 'u', 'ul', 'ol', 'li', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'hr']);
+      const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
+      const copyNode = node => {
+        if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.nodeValue || '');
+        if (node.nodeType !== Node.ELEMENT_NODE || !allowedTags.has(node.tagName.toLowerCase())) return null;
+        const copy = document.createElement(node.tagName.toLowerCase());
+        Array.from(node.attributes).forEach(attribute => {
+          const name = attribute.name.toLowerCase();
+          if (name === 'class' && /^[a-zA-Z0-9_\-\s:/\[\].%#]+$/.test(attribute.value)) {
+            copy.setAttribute('class', attribute.value);
+          } else if (['colspan', 'rowspan', 'scope', 'title'].includes(name)) {
+            copy.setAttribute(name, attribute.value);
+          }
+        });
+        Array.from(node.childNodes).forEach(child => {
+          const safeChild = copyNode(child);
+          if (safeChild) copy.appendChild(safeChild);
+        });
+        return copy;
+      };
+      Array.from(parsed.body.childNodes).forEach(node => {
+        const safeNode = copyNode(node);
+        if (safeNode) container.appendChild(safeNode);
+      });
+    }
+
+    function renderStudentStudyTools() {
+      const container = document.getElementById('student-strategy-templates');
+      if (!container) return;
+      const templates = Array.isArray(TEACHER_TEMPLATES)
+        ? TEACHER_TEMPLATES.filter(template => template && typeof template === 'object')
+        : [];
+      container.replaceChildren();
+      if (!templates.length) {
+        const emptyState = document.createElement('p');
+        emptyState.className = 'col-span-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500';
+        emptyState.textContent = window.studentText('No teacher strategies are available yet.', 'Chưa có chiến lược nào từ giáo viên.');
+        container.appendChild(emptyState);
+        return;
+      }
+      templates.forEach(template => {
+        const article = document.createElement('article');
+        article.className = 'rounded-xl border border-slate-200 bg-white p-4 shadow-sm';
+        const title = document.createElement('h4');
+        title.className = 'mb-3 font-black text-slate-800';
+        title.textContent = template.name || 'Study strategy';
+        const content = document.createElement('div');
+        content.className = 'prose prose-sm max-w-none text-slate-700';
+        appendSafeTemplateContent(content, template.html);
+        article.append(title, content);
+        container.appendChild(article);
+      });
+    }
+
     window.renderStudentDashboard = function renderStudentDashboard() {
       if (!hasActiveStudentAccess(currentUser)) {
           window.initStudentDashboard();
@@ -16181,23 +16292,28 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       const classOverviewContent = document.getElementById('student-class-overview-content');
       const classInfoSection = document.getElementById('student-class-info-section');
       const testBankSection = document.getElementById('student-test-bank-section');
+      const testBankPracticeActions = document.getElementById('student-test-bank-practice-actions');
       const dashboardSidebarContent = document.getElementById('student-dashboard-sidebar-content');
       const routeSection = normalizeAppRoute().section;
       const isClassRoute = routeSection === 'class' || routeSection === 'timetable';
       const isTestBankRoute = routeSection === 'test-bank';
-      overviewSection?.classList.toggle('hidden', isClassRoute || isTestBankRoute);
+      const isStudyToolsRoute = routeSection === 'study-tools' || routeSection === 'flashcards';
+      const studyToolsSection = document.getElementById('student-study-tools-section');
+      overviewSection?.classList.toggle('hidden', isClassRoute || isTestBankRoute || isStudyToolsRoute);
       classOverviewSection?.classList.toggle('hidden', !isClassRoute);
       testBankSection?.classList.toggle('hidden', !isTestBankRoute);
+      studyToolsSection?.classList.toggle('hidden', !isStudyToolsRoute);
       classInfoSection?.classList.toggle('hidden', !isClassRoute);
-      dashboardSidebarContent?.classList.toggle('hidden', isTestBankRoute);
-      bottomSec?.classList.toggle('lg:col-span-8', !isTestBankRoute && !isClassRoute);
-      bottomSec?.classList.toggle('xl:col-span-8', !isTestBankRoute && !isClassRoute);
-      bottomSec?.classList.toggle('col-span-full', isTestBankRoute || isClassRoute);
+      dashboardSidebarContent?.classList.toggle('hidden', isTestBankRoute || isStudyToolsRoute);
+      bottomSec?.classList.toggle('lg:col-span-8', !isTestBankRoute && !isClassRoute && !isStudyToolsRoute);
+      bottomSec?.classList.toggle('xl:col-span-8', !isTestBankRoute && !isClassRoute && !isStudyToolsRoute);
+      bottomSec?.classList.toggle('col-span-full', isTestBankRoute || isClassRoute || isStudyToolsRoute);
       dashboardSidebarContent?.classList.toggle('lg:col-span-12', isClassRoute);
       dashboardSidebarContent?.classList.toggle('xl:col-span-12', isClassRoute);
       dashboardSidebarContent?.classList.toggle('lg:col-span-4', !isClassRoute);
       dashboardSidebarContent?.classList.toggle('xl:col-span-4', !isClassRoute);
       const scheduleEmptyState = document.getElementById('student-schedule-empty-state');
+      renderStudentStudyTools();
       
       if(mainContent) mainContent.classList.remove('hidden');
       
@@ -16207,7 +16323,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           if (classOverviewContent) classOverviewContent.innerHTML = `<div class="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm font-medium text-blue-800">${st('Select an active enrollment above to view your classmates, timetable, and class updates.', 'Chọn lớp đang theo học ở trên để xem bạn cùng lớp, thời khóa biểu và thông tin lớp.')}</div>`;
           if (classInfoSection) classInfoSection.innerHTML = '';
           if(list) list.innerHTML = `<div class="p-6 text-slate-500 col-span-full">${st('Please select a class to view tests.', 'Vui lòng chọn lớp để xem bài thi.')}</div>`;
-          if(bottomSec) { bottomSec.classList.toggle('hidden', !isClassRoute && !isTestBankRoute); bottomSec.classList.toggle('flex', isClassRoute || isTestBankRoute); }
+          testBankPracticeActions?.classList.add('hidden');
+          if(bottomSec) { bottomSec.classList.toggle('hidden', !isClassRoute && !isTestBankRoute && !isStudyToolsRoute); bottomSec.classList.toggle('flex', isClassRoute || isTestBankRoute || isStudyToolsRoute); }
           if(schedSec) { schedSec.classList.toggle('hidden', !isClassRoute); schedSec.classList.toggle('flex', isClassRoute); }
           if(scheduleEmptyState) {
               scheduleEmptyState.textContent = st('No class is enrolled yet. Please contact your teacher to be added to a class timetable.', 'Bạn chưa tham gia lớp nào. Vui lòng liên hệ giáo viên để được thêm vào thời khóa biểu lớp.');
@@ -16226,6 +16343,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       }
       
       if(bottomSec) { bottomSec.classList.remove('hidden'); bottomSec.classList.add('flex'); }
+      testBankPracticeActions?.classList.remove('hidden');
       if(quickActions) { quickActions.classList.remove('hidden'); quickActions.classList.add('flex'); }
       if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
 
@@ -16689,6 +16807,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           ? 'test-bank'
           : ['leaderboard', 'timetable'].includes(routeParts[1])
             ? 'class'
+            : routeParts[1] === 'flashcards'
+              ? 'study-tools'
             : (routeParts[1] || 'dashboard');
         item = `student-${section}`;
       }
@@ -16852,9 +16972,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           enableStudentSectionResizing('class', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
           requestAnimationFrame(() => document.getElementById('student-schedule-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-        } else if (route.section === 'dashboard' || !['class', 'test-bank', 'history', 'flashcards', 'peer-review', 'leaderboard', 'review', 'timetable'].includes(route.section)) {
+        } else if (route.section === 'dashboard' || !['class', 'test-bank', 'study-tools', 'history', 'flashcards', 'peer-review', 'leaderboard', 'review', 'timetable'].includes(route.section)) {
           route = { role: 'student', section: 'dashboard' };
           enableStudentSectionResizing('dashboard', '#student-dashboard-content');
+          if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
+        } else if (route.section === 'study-tools') {
+          enableStudentSectionResizing('study-tools', '#student-dashboard-content');
           if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
         } else if (route.section === 'test-bank') {
           enableStudentSectionResizing('test-bank', '#student-dashboard-content');
@@ -16863,6 +16986,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           window.openStudentHistory();
           enableStudentSectionResizing('history', '#student-history-modal > div');
         } else if (route.section === 'flashcards') {
+          if (typeof window.renderStudentDashboard === 'function') window.renderStudentDashboard();
           window.toggleStudentFlashcardPanel(true);
           enableStudentSectionResizing('flashcards', '#student-fc-panel > div');
         } else if (route.section === 'peer-review') {
@@ -16928,6 +17052,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         ? 'teacher/bank/tests'
         : route.section === 'leaderboard'
           ? 'student/class'
+          : route.section === 'flashcards'
+            ? (window.studentFlashcardReturnRoute || 'student/dashboard')
           : ['history', 'peer-review', 'review'].includes(route.section)
             ? 'student/test-bank'
             : 'student/dashboard';
@@ -20594,7 +20720,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           document.getElementById('exam-ui')?.classList.contains('hidden') &&
           document.getElementById('review-ui')?.classList.contains('hidden')) {
         const panel = document.getElementById('student-fc-panel');
-        window.navigateAppRoute(panel?.classList.contains('hidden') ? 'student/flashcards' : 'student/dashboard');
+        window.navigateAppRoute(panel?.classList.contains('hidden')
+          ? 'student/flashcards'
+          : (window.studentFlashcardReturnRoute || 'student/dashboard'));
         return;
       }
       const p = document.getElementById('student-fc-panel');
@@ -20603,25 +20731,38 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if (forceOpen || p.classList.contains('hidden')) {
         p.classList.remove('hidden');
         const sel = document.getElementById('panel-fc-list-select');
-        
-        let testVocabOpts = '';
+        const teacherDecks = getStudentStudyCardDecks();
+        const kind = window.studentFlashcardKind || 'all';
+        const escapeHtml = value => String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const teacherOptions = Object.entries(teacherDecks)
+          .filter(([, deck]) => kind === 'all' || deck.kind === kind)
+          .map(([id, deck]) => `<option value="${escapeHtml(id)}">${escapeHtml(deck.label)}</option>`)
+          .join('');
+        let examVocabOptions = '';
         const isExamActive = document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden');
-        
         if (isExamActive && APP_DATA && APP_DATA.vocab && APP_DATA.vocab.length > 0) {
             const partsWithVocab = [...new Set(APP_DATA.vocab.map(v => v.part || 'Global'))];
-            testVocabOpts = partsWithVocab.map(part => `<option value="tv_${part}">📌 Test Vocab: ${part}</option>`).join('');
+            examVocabOptions = partsWithVocab.map(part => `<option value="tv_${escapeHtml(part)}">📌 Test Vocab: ${escapeHtml(part)}</option>`).join('');
         }
-
-        sel.innerHTML = testVocabOpts + Object.keys(FLASHCARDS).map(k => `<option value="${k}">📁 My Deck: ${k}</option>`).join('');
+        const personalOptions = (kind === 'all' || kind === 'personal')
+          ? Object.keys(FLASHCARDS).filter(id => id !== 'temp_test_deck').map(id => `<option value="${escapeHtml(id)}">📁 My Deck: ${escapeHtml(id)}</option>`).join('')
+          : '';
+        sel.innerHTML = examVocabOptions + teacherOptions + personalOptions;
         
         if (sel.options.length === 0) {
-            sel.innerHTML = '<option value="">No Decks Available</option>';
+            sel.innerHTML = `<option value="">${kind === 'grammar' ? 'No grammar cards available' : kind === 'vocab' ? 'No vocabulary cards available' : 'No decks available'}</option>`;
         }
         
         window.renderFlashcardPanel();
       } else {
         p.classList.add('hidden');
       }
+    };
+
+    window.openStudentFlashcards = function(kind = 'all') {
+      window.studentFlashcardKind = ['vocab', 'grammar', 'personal'].includes(kind) ? kind : 'all';
+      window.studentFlashcardReturnRoute = 'student/study-tools';
+      window.toggleStudentFlashcardPanel(true);
     };
     
     function promptCreateFcList() {
@@ -20726,7 +20867,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         const activeList = select.value || lists[0];
         const dueCards = window.getCardsDueForReview(activeList);
-        const isTeacherDeck = activeList.startsWith('tv_');
+        const isTeacherDeck = activeList.startsWith('tv_') || activeList.startsWith('teacher_');
 
         if (dueCards.length === 0) {
             container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center animate-scale-up"><span class="text-7xl mb-4 block drop-shadow-md">🎉</span><h3 class="text-3xl font-black text-slate-800 mb-2 tracking-tight">All Caught Up!</h3><p class="text-slate-500 font-medium text-lg">You have reviewed all flashcards in this deck for today.</p></div>`;
@@ -20741,11 +20882,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         container.innerHTML = `
             <div class="flex flex-col w-full max-w-4xl mx-auto h-full animate-fade-in">
                 <div class="text-sm font-black text-slate-400 uppercase tracking-widest text-center mb-4 mt-2 shrink-0">
-                    \${isTeacherDeck ? 'Reviewing Teacher Vocab' : \`Due Reviews Left: <span class="text-blue-600">\${dueCards.length}</span>\`}
+                    \${isTeacherDeck ? \`Reviewing Teacher \${activeList.startsWith('teacher_grammar_') ? 'Grammar' : 'Vocabulary'}\` : \`Due Reviews Left: <span class="text-blue-600">\${dueCards.length}</span>\`}
                 </div>
                 
                 <div class="flip-card perspective-1000 flex-1 flex items-stretch justify-center my-2 cursor-pointer group relative w-full shrink-0 min-h-[350px]" onclick="this.classList.toggle('flipped')">
-                    \${isTeacherDeck ? \`<button onclick="event.stopPropagation(); window.importCardToMine('\${safeTerm}')" class="absolute -top-4 -right-4 w-12 h-12 bg-blue-600 text-white rounded-full font-black shadow-lg opacity-0 group-hover:opacity-100 transition z-20 text-3xl leading-none flex items-center justify-center hover:scale-110 hover:bg-blue-700">+</button>\` : ''}
+                    \${isTeacherDeck ? \`<button onclick="event.stopPropagation(); window.importCardToMine('\${safeTerm}', '\${safeList}', '\${safeId}')" class="absolute -top-4 -right-4 w-12 h-12 bg-blue-600 text-white rounded-full font-black shadow-lg opacity-0 group-hover:opacity-100 transition z-20 text-3xl leading-none flex items-center justify-center hover:scale-110 hover:bg-blue-700" aria-label="Save to my flashcards">+</button>\` : ''}
                     
                     <div class="flip-card-inner relative w-full h-full text-center transition-transform duration-500 rounded-[2.5rem] shadow-xl" style="transform-style: preserve-3d;">
                         
@@ -20776,8 +20917,14 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         `;
     };
 
-    window.importCardToMine = async function(term) {
-      const v = APP_DATA.vocab.find(x => x.term === term); if(!v) return;
+    window.importCardToMine = async function(term, sourceListId, sourceCardId) {
+      const sourceDeck = sourceListId ? getStudentStudyCardDecks()[sourceListId] : null;
+      const v = sourceDeck?.cards.find(card => card.id === sourceCardId)
+        || (APP_DATA?.vocab || []).find(card => card.term === term);
+      if (!v) {
+          window.showToast('Card unavailable', 'This study card could not be found. Refresh the page and try again.');
+          return;
+      }
       let textLines = [];
       if(v.lvl) textLines.push(`Level: ${v.lvl}`);
       if(v.pron) textLines.push(`[${v.pron}]`);
@@ -20785,6 +20932,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if(v.vi) textLines.push(`VI: ${v.vi}`);
       if(v.syn) textLines.push(`Syn: ${v.syn}`);
       if(v.ant) textLines.push(`Ant: ${v.ant}`);
+      if (v.def && !v.eng && !v.vi) textLines.push(v.def);
       const listIds = Object.keys(FLASHCARDS).filter(id => id !== 'temp_test_deck');
       let defaultList = listIds[0];
       if (!defaultList) {
@@ -20813,6 +20961,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     
     window.getCardsDueForReview = function(listId) {
         if (!listId) return [];
+        if (listId.startsWith('teacher_')) {
+            return getStudentStudyCardDecks()[listId]?.cards || [];
+        }
         if (listId.startsWith('tv_')) {
             const partName = listId.replace('tv_', '');
             return (APP_DATA.vocab || []).filter(v => (v.part || 'Global') === partName).map((c, idx) => ({
@@ -20849,7 +21000,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     };
 
     window.submitFlashcardReview = async function(listId, cardId, quality, cardTerm) {
-        if (listId.startsWith('tv_')) {
+        if (listId.startsWith('tv_') || listId.startsWith('teacher_')) {
             window.showModalMsg("Teacher Deck", "To use Spaced Repetition tracking, please click the '+' button on the flashcard to save it to your personal list first.");
             return;
         }
@@ -20910,9 +21061,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
         const teacherOptions = Array.from(select.options)
-            .filter(option => option.value.startsWith('tv_'))
+            .filter(option => option.value.startsWith('tv_') || option.value.startsWith('teacher_'))
             .map(option => ({ value: option.value, label: option.textContent }));
-        const listIds = Object.keys(FLASHCARDS || {}).filter(id => id !== 'temp_test_deck');
+        const kind = window.studentFlashcardKind || 'all';
+        const listIds = kind === 'all' || kind === 'personal'
+            ? Object.keys(FLASHCARDS || {}).filter(id => id !== 'temp_test_deck')
+            : [];
         const previousSelection = select.value;
         select.innerHTML = [
             ...teacherOptions.map(option => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`),
@@ -20920,8 +21074,20 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         ].join('');
 
         if (!select.options.length) {
-            select.innerHTML = '<option value="">Create a deck to start</option>';
-            container.innerHTML = '<div class="p-8 text-center text-slate-600"><p class="font-bold text-lg mb-2">Start learning phrases as chunks</p><p class="text-sm">Create a deck, then add collocations, phrasal verbs, idioms, or sentence frames with an example sentence.</p></div>';
+            const emptyLabel = kind === 'grammar'
+                ? window.studentText('No grammar cards available', 'Không có thẻ ngữ pháp')
+                : kind === 'vocab'
+                    ? window.studentText('No vocabulary cards available', 'Không có thẻ từ vựng')
+                    : window.studentText('No decks available', 'Không có bộ thẻ');
+            select.innerHTML = `<option value="">${escapeHtml(emptyLabel)}</option>`;
+        }
+        if (select.options.length === 1 && !select.options[0].value) {
+            const emptyMessage = kind === 'grammar'
+                ? window.studentText('No grammar flashcards are available for your class yet.', 'Lớp của bạn chưa có thẻ ngữ pháp.')
+                : kind === 'vocab'
+                    ? window.studentText('No vocabulary flashcards are available for your class yet.', 'Lớp của bạn chưa có thẻ từ vựng.')
+                    : window.studentText('No flashcard decks are available yet.', 'Chưa có bộ thẻ ghi nhớ nào.');
+            container.innerHTML = `<div class="p-8 text-center text-slate-600"><p class="font-bold text-lg mb-2">${escapeHtml(emptyMessage)}</p></div>`;
             return;
         }
         if ([...select.options].some(option => option.value === previousSelection)) select.value = previousSelection;
@@ -20929,7 +21095,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const activeList = select.value;
         window.activeFlashcardList = activeList;
         const dueCards = window.getCardsDueForReview(activeList);
-        const isTeacherDeck = activeList.startsWith('tv_');
+        const isTeacherDeck = activeList.startsWith('tv_') || activeList.startsWith('teacher_');
         const deck = FLASHCARDS[activeList] || [];
         const escapeRegExp = value => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const firstDueCard = dueCards[0];
@@ -20964,7 +21130,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             <div class="w-full max-w-4xl mx-auto animate-fade-in">
                 ${statsHtml}
                 ${dueCards.length ? `
-                    <div class="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-3">${isTeacherDeck ? 'Teacher vocabulary · save a phrase to track recall' : `Due reviews · ${dueCards.length} remaining`}</div>
+                    <div class="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-3">${isTeacherDeck ? `Teacher ${activeList.startsWith('teacher_grammar_') ? 'grammar' : 'vocabulary'} · save a card to track recall` : `Due reviews · ${dueCards.length} remaining`}</div>
                     <div class="flip-card perspective-1000 w-full min-h-[300px] md:min-h-[360px] cursor-pointer group relative mb-5" onclick="this.classList.toggle('flipped')">
                         ${isTeacherDeck ? '<button id="flashcard-import-current" type="button" class="absolute top-3 right-3 z-20 w-11 h-11 bg-blue-600 text-white rounded-full font-black shadow-lg text-2xl">+</button>' : ''}
                         <div class="flip-card-inner relative w-full h-full min-h-[300px] md:min-h-[360px] text-center transition-transform duration-500" style="transform-style:preserve-3d">
@@ -20998,7 +21164,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if (importButton) {
             importButton.addEventListener('click', event => {
                 event.stopPropagation();
-                window.importCardToMine(dueCards[0].term);
+                window.importCardToMine(dueCards[0].term, activeList, dueCards[0].id);
             });
         }
         const recallCard = container.querySelector('.flip-card');
