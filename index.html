@@ -2814,11 +2814,17 @@
       <!-- MAIN DASHBOARD GRID -->
     <div id="student-main-content" class="grid grid-cols-1 lg:grid-cols-12 gap-4 xl:gap-5 hidden animate-fade-in-up items-start">
           <section id="student-overview-section" class="col-span-full bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/70">
-              <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>📌</span> <span data-student-en="Overview" data-student-vi="Tổng quan">Overview</span></h2>
-              <p class="text-xs font-semibold text-slate-500 mt-1" data-student-en="Your urgent homework, next lesson, preparation, and quick actions." data-student-vi="Bài tập cần ưu tiên, buổi học tiếp theo, nội dung chuẩn bị và thao tác nhanh.">Your urgent homework, next lesson, preparation, and quick actions.</p>
+            <div class="relative overflow-hidden border-b border-blue-100 bg-gradient-to-r from-blue-50 via-white to-indigo-50 px-5 py-5 sm:px-7">
+              <div class="absolute -right-8 -top-12 h-36 w-36 rounded-full bg-blue-200/30 blur-2xl pointer-events-none"></div>
+              <div class="relative flex items-center gap-3">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-xl text-white shadow-md shadow-blue-200">📌</span>
+                <div>
+                  <h2 class="text-xl font-black tracking-tight text-slate-900" data-student-en="Overview" data-student-vi="Tổng quan">Overview</h2>
+                  <p class="mt-1 text-sm font-medium text-slate-500" data-student-en="Your urgent homework, next lesson, preparation, and quick actions." data-student-vi="Bài tập cần ưu tiên, buổi học tiếp theo, nội dung chuẩn bị và thao tác nhanh.">Your urgent homework, next lesson, preparation, and quick actions.</p>
+                </div>
+              </div>
             </div>
-            <div id="student-overview-content" class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4"></div>
+            <div id="student-overview-content" class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-5 sm:gap-5 sm:p-6"></div>
           </section>
         
           <!-- LEFT/MAIN COLUMN: Student Sections -->
@@ -16410,7 +16416,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       if(mainContent) mainContent.classList.remove('hidden');
       
       if(!cid) { 
-          if (overviewContent) overviewContent.innerHTML = `<article class="lg:col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-5"><div class="font-black text-amber-900">${st('⚠️ No active class enrollment', '⚠️ Chưa có lớp đang theo học')}</div><p class="text-sm text-amber-800 mt-1">${st('Choose an active enrollment in the Class section to see your next lesson, preparation, meeting link, and homework deadlines.', 'Chọn lớp đang theo học trong mục Lớp học để xem buổi học tiếp theo, nội dung chuẩn bị, liên kết họp và hạn bài tập.')}</p><button type="button" data-student-class class="mt-3 text-sm font-black text-amber-900 hover:underline">${st('Open Class →', 'Mở Lớp học →')}</button></article>`;
+          if (overviewContent) overviewContent.innerHTML = `<article class="lg:col-span-2 flex items-start gap-4 rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white p-6 shadow-sm"><span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-2xl">🏫</span><div><div class="font-black text-amber-950 text-lg">${st('No active class enrollment', 'Chưa có lớp đang theo học')}</div><p class="text-sm text-amber-800 mt-1">${st('Choose an active enrollment in the Class section to see your next lesson, preparation, meeting link, and homework deadlines.', 'Chọn lớp đang theo học trong mục Lớp học để xem buổi học tiếp theo, nội dung chuẩn bị, liên kết họp và hạn bài tập.')}</p><button type="button" data-student-class class="mt-3 inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-2 text-xs font-black text-white transition hover:bg-amber-700">${st('Open Class →', 'Mở Lớp học →')}</button></div></article>`;
           overviewContent?.querySelector('[data-student-class]')?.addEventListener('click', () => window.navigateAppRoute('student/class'));
           if (classOverviewContent) classOverviewContent.innerHTML = `<div class="md:col-span-2 xl:col-span-3 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm font-medium text-blue-800">${st('Select an active enrollment above to view your classmates, timetable, and class updates.', 'Chọn lớp đang theo học ở trên để xem bạn cùng lớp, thời khóa biểu và thông tin lớp.')}</div>`;
           if (classInfoSection) classInfoSection.innerHTML = '';
@@ -16436,7 +16442,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
       
       if(bottomSec) { bottomSec.classList.remove('hidden'); bottomSec.classList.add('flex'); }
       testBankPracticeActions?.classList.remove('hidden');
-      if(quickActions) { quickActions.classList.remove('hidden'); quickActions.classList.add('flex'); }
+      if(quickActions) { quickActions.classList.add('hidden'); quickActions.classList.remove('flex'); }
       if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
 
       const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
@@ -16600,8 +16606,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           : [];
       const dateLocale = studentLanguage === 'vi' ? 'vi-VN' : 'en-US';
       const nextLessonHtml = nextLesson ? `
-          <article class="rounded-xl border border-indigo-200 bg-indigo-50/70 p-4">
-            <div class="text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-2">📅 ${st('Next lesson', 'Buổi học tiếp theo')}</div>
+          <article class="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-5 shadow-sm transition hover:shadow-md">
+            <div class="mb-3 flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-lg text-white shadow-sm">📅</span><div class="text-[10px] font-black uppercase tracking-widest text-indigo-600">${st('Next lesson', 'Buổi học tiếp theo')}</div></div>
             <h3 class="font-black text-indigo-950 text-lg">${escapeForumHtml(nextSchedule.topic || st('Class lesson', 'Buổi học'))}</h3>
             <p class="text-sm font-bold text-indigo-800 mt-1">${nextLesson.startsAt.toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}</p>
             <p class="text-xs text-slate-600 mt-1">${escapeForumHtml(window.getScheduleClassLabel(nextSchedule) || cls.name)}</p>
@@ -16613,48 +16619,49 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 </div>`).join('')}</div></div>` : ''}
             ${nextSchedule.link || cls.meetLink ? `<button type="button" data-student-next-lesson="${escapeForumHtml(nextSchedule.id)}" class="mt-3 w-full rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 text-sm font-black transition">🎥 ${st('Join Google Meet', 'Tham gia Google Meet')}</button>` : `<p class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">${st('The teacher has not added a meeting link yet.', 'Giáo viên chưa thêm liên kết họp.')}</p>`}
           </article>` : `
-          <article class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">📅 ${st('Next lesson', 'Buổi học tiếp theo')}</div>
-            <p class="font-bold text-slate-700">${st('No upcoming lessons are scheduled.', 'Chưa có buổi học sắp tới.')}</p>
-            <p class="text-xs text-slate-500 mt-1">${st('Check your timetable or contact your teacher for the next class time.', 'Kiểm tra thời khóa biểu hoặc liên hệ giáo viên để biết lịch học tiếp theo.')}</p>
+          <article class="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm">
+            <div class="mb-3 flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-200 text-lg">📅</span><div class="text-[10px] font-black uppercase tracking-widest text-slate-500">${st('Next lesson', 'Buổi học tiếp theo')}</div></div>
+            <p class="font-black text-slate-800">${st('No upcoming lessons are scheduled.', 'Chưa có buổi học sắp tới.')}</p>
+            <p class="mt-1 text-xs text-slate-500">${st('Check your timetable or contact your teacher for the next class time.', 'Kiểm tra thời khóa biểu hoặc liên hệ giáo viên để biết lịch học tiếp theo.')}</p>
           </article>`;
       const deadlineOverviewHtml = pendingDeadlines.length ? `
-          <article class="rounded-xl border ${pendingDeadlines[0].dueAt < now ? 'border-rose-200 bg-rose-50/70' : 'border-amber-200 bg-amber-50/70'} p-4">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <div class="text-[10px] font-black uppercase tracking-widest text-rose-700">⏰ ${st('Homework deadlines', 'Hạn nộp bài tập')}</div>
+          <article class="rounded-2xl border ${pendingDeadlines[0].dueAt < now ? 'border-rose-200 bg-gradient-to-br from-rose-50 to-white' : 'border-amber-200 bg-gradient-to-br from-amber-50 to-white'} p-5 shadow-sm transition hover:shadow-md">
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${pendingDeadlines[0].dueAt < now ? 'bg-rose-600' : 'bg-amber-500'} text-lg text-white shadow-sm">⏰</span><div class="text-[10px] font-black uppercase tracking-widest text-rose-700">${st('Homework deadlines', 'Hạn nộp bài tập')}</div></div>
               <span class="text-[10px] font-black bg-white/80 rounded-full px-2 py-1 text-slate-600">${pendingDeadlines.length} ${st('pending', 'đang chờ')}</span>
             </div>
-            <div class="space-y-2">${pendingDeadlines.slice(0, 4).map(({ testId, settings, dueAt }) => {
+            <div class="space-y-2.5">${pendingDeadlines.slice(0, 4).map(({ testId, settings, dueAt }) => {
                 const test = TEST_BANK.find(item => item.id === testId);
                 const overdue = dueAt < now;
-                return `<div class="rounded-lg bg-white border ${overdue ? 'border-rose-200' : 'border-amber-100'} p-3">
-                    <div class="font-bold text-sm text-slate-800">${escapeForumHtml(test?.title || 'Homework / Test')}</div>
+                return `<div class="rounded-xl bg-white border ${overdue ? 'border-rose-200' : 'border-amber-100'} p-3.5 shadow-sm">
+                    <div class="font-black text-sm text-slate-800">${escapeForumHtml(test?.title || 'Homework / Test')}</div>
                     <div class="text-[11px] font-black ${overdue ? 'text-rose-700' : 'text-amber-700'} mt-1">${overdue ? `${st('OVERDUE', 'QUÁ HẠN')} · ` : `${st('Due', 'Hạn nộp')} · `}${dueAt.toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}</div>
                     ${test && getCurrentStudentAssignedTest(testId) ? `<button type="button" data-student-overview-test="${escapeForumHtml(testId)}" class="mt-2 text-xs font-black text-blue-700 hover:text-blue-900">${st('Open test →', 'Mở bài thi →')}</button>` : ''}
                 </div>`;
             }).join('')}</div>
             ${pendingDeadlines.length > 4 ? `<p class="text-[11px] font-bold text-slate-500 mt-2">+ ${pendingDeadlines.length - 4} more pending</p>` : ''}
           </article>` : `
-          <article class="rounded-xl border border-emerald-200 bg-emerald-50/70 p-4">
-            <div class="text-[10px] font-black uppercase tracking-widest text-emerald-700 mb-2">⏰ ${st('Homework deadlines', 'Hạn nộp bài tập')}</div>
-            <p class="font-bold text-emerald-900">${st('No pending homework deadlines.', 'Không có bài tập nào sắp đến hạn.')}</p>
+          <article class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
+            <div class="mb-3 flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-lg text-white shadow-sm">✓</span><div class="text-[10px] font-black uppercase tracking-widest text-emerald-700">${st('Homework deadlines', 'Hạn nộp bài tập')}</div></div>
+            <p class="font-black text-emerald-900">${st('No pending homework deadlines.', 'Không có bài tập nào sắp đến hạn.')}</p>
             <p class="text-xs text-emerald-800 mt-1">${st('You’re all caught up.', 'Bạn đã hoàn thành đầy đủ.')}</p>
           </article>`;
       if (overviewContent) {
           overviewContent.innerHTML = `
             ${deadlineOverviewHtml}
             ${nextLessonHtml}
-            <article class="rounded-xl border border-blue-200 bg-blue-50/70 p-4">
-              <div class="text-[10px] font-black uppercase tracking-widest text-blue-700 mb-2">📚 ${st('Test Bank', 'Ngân hàng đề')}</div>
-              <p class="font-black text-blue-950 text-lg">${st(`${totalTests} assigned test${totalTests === 1 ? '' : 's'}`, `${totalTests} bài được giao`)}</p>
+            <article class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm transition hover:shadow-md">
+              <div class="mb-4 flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-lg text-white shadow-sm">📚</span><div class="text-[10px] font-black uppercase tracking-widest text-blue-700">${st('Test Bank', 'Ngân hàng đề')}</div></div>
+              <p class="font-black text-blue-950 text-xl">${st(`${totalTests} assigned test${totalTests === 1 ? '' : 's'}`, `${totalTests} bài được giao`)}</p>
               <p class="text-sm text-blue-800 mt-1">${completedCount} ${st('completed', 'đã hoàn thành')} · ${Math.max(0, totalTests - completedCount)} ${st('remaining', 'còn lại')}</p>
-              <button type="button" data-student-test-bank class="mt-3 text-xs font-black text-blue-700 hover:text-blue-900">${st('Open Test Bank →', 'Mở Ngân hàng đề →')}</button>
+              <div class="mt-4 h-2 overflow-hidden rounded-full bg-blue-100" role="progressbar" aria-label="Test completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progressPct}"><div class="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all" style="width:${progressPct}%"></div></div>
+              <button type="button" data-student-test-bank class="mt-4 inline-flex items-center gap-1 text-xs font-black text-blue-700 hover:text-blue-900">${st('Open Test Bank →', 'Mở Ngân hàng đề →')}</button>
             </article>
-            <article class="rounded-xl border border-indigo-200 bg-indigo-50/70 p-4">
-              <div class="text-[10px] font-black uppercase tracking-widest text-indigo-700 mb-2">🏫 ${st('Class', 'Lớp học')}</div>
-              <p class="font-black text-indigo-950 text-lg">${escapeForumHtml(displayClassName)}</p>
+            <article class="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-5 shadow-sm transition hover:shadow-md">
+              <div class="mb-4 flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg text-white shadow-sm">🏫</span><div class="text-[10px] font-black uppercase tracking-widest text-indigo-700">${st('Class', 'Lớp học')}</div></div>
+              <p class="font-black text-indigo-950 text-xl">${escapeForumHtml(displayClassName)}</p>
               <p class="text-sm text-indigo-800 mt-1">${nextLesson ? `${st('Next lesson:', 'Buổi học tiếp theo:')} ${nextLesson.startsAt.toLocaleString(dateLocale, { dateStyle: 'medium', timeStyle: 'short' })}` : st('View your classmates, timetable, preparation, and homework.', 'Xem bạn cùng lớp, thời khóa biểu, nội dung chuẩn bị và bài tập.')}</p>
-              <button type="button" data-student-class class="mt-3 text-xs font-black text-indigo-700 hover:text-indigo-900">${st('Open Class →', 'Mở Lớp học →')}</button>
+              <button type="button" data-student-class class="mt-4 inline-flex items-center gap-1 text-xs font-black text-indigo-700 hover:text-indigo-900">${st('Open Class →', 'Mở Lớp học →')}</button>
             </article>`;
           overviewContent.querySelector('[data-student-test-bank]')?.addEventListener('click', () => window.navigateAppRoute('student/test-bank'));
           overviewContent.querySelector('[data-student-class]')?.addEventListener('click', () => window.navigateAppRoute('student/class'));
