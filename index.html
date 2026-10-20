@@ -27140,7 +27140,7 @@ Write the transcript here. The answer is \drop{correct option}.
         const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         })[char]);
-        const formatPreviewText = value => window.formatIELTSMarkdown(escapeHtml(value));
+        const formatPreviewText = value => window.formatIELTSLatexImportText(escapeHtml(value));
         const questionCount = question => {
             if (question.type === 'fill_blanks' || question.type === 'dnd_list') return question.gaps.length;
             if (question.type === 'matching_endings') return question.items.length;
@@ -27213,7 +27213,7 @@ Write the transcript here. The answer is \drop{correct option}.
                     offset = gapPattern.lastIndex;
                 }
                 body += escapeHtml(parsed.passage.text.slice(offset));
-                passageHtml += `<div class="leading-relaxed whitespace-pre-wrap">${window.formatIELTSMarkdown(body)}</div>`;
+                passageHtml += `<div class="leading-relaxed whitespace-pre-wrap">${window.formatIELTSLatexImportText(body)}</div>`;
             }
             let renderedPassage = false;
             parsed.previewOrder.forEach(question => {
@@ -27398,7 +27398,7 @@ Write the transcript here. The answer is \drop{correct option}.
             if (value === null || value === undefined) return '';
             const raw = String(value).replace(/\r\n/g, '\n').trim();
             if (!raw) return '';
-            return window.formatIELTSMarkdown(escapeHtml(raw));
+            return window.formatIELTSLatexImportText(escapeHtml(raw));
         };
         let nextId = Math.max(0, ...usedIds) + 1;
         const newBlocks = [];
@@ -27731,6 +27731,22 @@ Write the transcript here. The answer is \drop{correct option}.
         if (inOl) out.push('</ol>');
 
         return out.join('').replace(/<p><\/p>/g, '<p><br></p>');
+    };
+
+    window.formatIELTSLatexImportText = function(text) {
+        if (!text) return '';
+        const compactSource = String(text)
+            .replace(/\r\n/g, '\n')
+            .replace(/[ \t]+\n/g, '\n')
+            .replace(/\n[ \t]*\n+/g, '\n')
+            .trim();
+        if (!compactSource) return '';
+        return window.formatIELTSMarkdown(compactSource)
+            .replace(/<p><br><\/p>/g, '')
+            .replace(/<p>/g, '<p style="margin:0">')
+            .replace(/<ul>/g, '<ul style="margin:0;padding-left:1.25rem">')
+            .replace(/<ol>/g, '<ol style="margin:0;padding-left:1.25rem">')
+            .replace(/class="border-collapse border border-slate-300 mb-4 bg-white w-full"/g, 'class="border-collapse border border-slate-300 bg-white w-full"');
     };
 
     window.compileIML = function() {
