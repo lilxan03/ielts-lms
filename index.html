@@ -2025,7 +2025,7 @@
             <span class="self-center text-[11px] text-slate-500">Paste formatted text or select text and apply formatting.</span>
           </div>
           <div id="ielts-latex-input" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="ielts-latex-source-label" spellcheck="false" onkeyup="window.saveIeltsLatexSelection()" onmouseup="window.saveIeltsLatexSelection()" oninput="window.saveIeltsLatexSelection(); window.updateIeltsLatexPreview()" class="latex-source-editor rich-editor flex-1 min-h-[220px] resize-none overflow-y-auto border-2 border-slate-200 rounded-xl p-4 font-mono text-sm leading-relaxed outline-none focus:border-blue-500" data-placeholder="Paste or type IELTS macros here. Use the toolbar to format text."></div>
-          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; use Markdown pipe tables or <code>\begin{tabular}{...} ... \end{tabular}</code> for table-completion gaps. Table cells support <code>\textbf{...}</code>, <code>\textit{...}</code>, <code>\emph{...}</code>, and <code>\underline{...}</code>. <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, and for Reading matching tasks <code>\matchingheadings</code>, <code>\matchinginfo</code>, or <code>\matchingendings{instruction}{\item{stem}{A}}{\ending{A}{ending text}}</code>; matching tasks are not available for Listening. <code>\mapgrid</code> and <code>\maphotspots</code> handle map tasks. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
+          <p class="text-xs text-slate-500 mt-3 leading-relaxed"><code>\gap[alternative]{answer}</code> or <code>\drop[alternative]{answer}</code> makes inline blanks; for drag-and-drop banks, add an <code>Options:</code> line followed by labelled choices such as <code>A first option</code>, then use the label in <code>\drop{A}</code>. The complete labelled choices are kept in the answer bank. Use Markdown pipe tables or <code>\begin{tabular}{...} ... \end{tabular}</code> for table-completion gaps. Table cells support <code>\textbf{...}</code>, <code>\textit{...}</code>, <code>\emph{...}</code>, and <code>\underline{...}</code>. <code>time=01:23</code> marks a listening blank. Use <code>\shortanswer{question}{answer}</code>, <code>\passage{title}{text}</code>, <code>\mcq{question}{\choice{...}\correct{...}}</code> or <code>\mcq[select=2]{question}{...}</code>, <code>\tfng{statement}{TRUE}[explanation]</code>, and for Reading matching tasks <code>\matchingheadings</code>, <code>\matchinginfo</code>, or <code>\matchingendings{instruction}{\item{stem}{A}}{\ending{A}{ending text}}</code>; matching tasks are not available for Listening. <code>\mapgrid</code> and <code>\maphotspots</code> handle map tasks. Writing uses <code>\writingtask[task=1]{title}{prompt}</code>; Speaking uses <code>\speaking{title}{cue card}{follow-up questions}</code> and optional <code>\notes{text}</code>. <code>\audio{URL}</code> assigns a Listening audio source. Imports must match the current skill; passage content replaces the current part after confirmation.</p>
         </div>
         <div class="p-5 flex flex-col min-h-0 bg-slate-50">
           <div class="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Live preview</div>
@@ -26749,7 +26749,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const gaps = [];
         const gapModes = new Set();
         let nextPreviewId = 1;
-        const passageHtmlSource = passageNodes.map(node => {
+        let passageHtmlSource = passageNodes.map(node => {
             if (node.type === 'text') return node.value;
             const gap = { ...node, id: nextPreviewId++ };
             gaps.push(gap);
@@ -26761,9 +26761,34 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         if (gaps.length) {
             const firstGapIndex = passageHtmlSource.search(/\{(?:blank|drop):/);
             const gapPrefix = passageHtmlSource.slice(0, firstGapIndex);
-            const questionNumbers = parseQuestionNumbers(gapPrefix, gaps.length);
+            let gapOptions = [];
+            let gapPrefixWithoutOptions = gapPrefix;
+            if (gapModes.has('drop')) {
+                const prefixLines = gapPrefix.split('\n');
+                const optionsHeaderIndex = prefixLines.findIndex(line => /^\s*options?\s*:\s*$/i.test(line));
+                if (optionsHeaderIndex >= 0) {
+                    const optionEntries = [];
+                    let optionEndIndex = optionsHeaderIndex + 1;
+                    while (optionEndIndex < prefixLines.length) {
+                        const line = prefixLines[optionEndIndex];
+                        if (!line.trim()) {
+                            optionEndIndex++;
+                            continue;
+                        }
+                        if (!/^\s*[A-Z]\s*(?:[.)\-]\s*|\s+)\S/i.test(line)) break;
+                        optionEntries.push(line.trim());
+                        optionEndIndex++;
+                    }
+                    if (optionEntries.length) {
+                        gapOptions = optionEntries;
+                        prefixLines.splice(optionsHeaderIndex, optionEndIndex - optionsHeaderIndex);
+                        gapPrefixWithoutOptions = prefixLines.join('\n');
+                    }
+                }
+            }
+            const questionNumbers = parseQuestionNumbers(gapPrefixWithoutOptions, gaps.length) || parseQuestionNumbers(gapPrefix, gaps.length);
             const instructionPattern = /^\s*(?:(?:questions?\s+\d+(?:\s*(?:-|–|—|to|,|and|&)\s*\d+)*)\s*[:.)-]\s*)?(?:complete|fill|choose|write|use|answer|select|label|match|circle|tick|mark|enter|record|put)\b/i;
-            const prefixLines = gapPrefix.split('\n');
+            const prefixLines = gapPrefixWithoutOptions.split('\n');
             const instructionLines = [];
             let firstContentLine = 0;
             while (firstContentLine < prefixLines.length) {
@@ -26779,7 +26804,8 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const instruction = instructionLines.join('\n');
             const passageText = instructionLines.length
                 ? [...prefixLines.slice(firstContentLine), passageHtmlSource.slice(firstGapIndex)].join('\n')
-                : passageHtmlSource;
+                : gapPrefixWithoutOptions + passageHtmlSource.slice(firstGapIndex);
+            passageHtmlSource = passageText;
             const titleInstruction = passageTitle.trim();
             const instructionFromTitle = !!(titleInstruction && instructionPattern.test(titleInstruction));
             const resolvedInstruction = instruction || (instructionFromTitle ? titleInstruction : '');
@@ -26792,6 +26818,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 text: passageText,
                 instruction: resolvedInstruction,
                 gaps,
+                options: gapOptions,
                 questionNumbers: resolvedQuestionNumbers,
                 numberedInPassage: !!resolvedQuestionNumbers,
                 instructionMovedFromTitle: instructionFromTitle
@@ -26858,8 +26885,14 @@ Leaves & Up to 6 metres long & Used to make \gap{brushes} \\
 }`],
                 ['Short-answer questions', String.raw`\shortanswer{When was the research first published?}{1998}
 \shortanswer[alt=the year 1998]{What year did the research begin?}{1998}`],
-                ['Drag-and-drop completion', String.raw`\passage{Passage title}{
-Write the passage here. The answer is \drop{correct option}.
+                ['Drag-and-drop completion with options', String.raw`\passage{Passage title}{
+Options:
+A first option
+B second option
+C unused option
+
+Complete the sentence using one option.
+The answer is \drop{B}.
 }`],
                 ['Multiple choice', String.raw`\mcq{Write the question here}{
   \choice{Incorrect option}
@@ -26953,8 +26986,14 @@ Complete the table with the information you hear.
                 ['Short-answer questions', String.raw`\audio{https://example.com/audio.mp3}
 \shortanswer{What is the name of the booking website?}{City Breaks}
 \shortanswer[time=02:15;alt=the west entrance]{Which entrance should visitors use?}{West entrance}`],
-                ['Drag-and-drop completion', String.raw`\passage{Listening Part 1}{
-Write the transcript here. The answer is \drop{correct option}.
+                ['Drag-and-drop completion with options', String.raw`\passage{Listening Part 1}{
+Options:
+A first option
+B second option
+C unused option
+
+Complete the sentence using one option.
+The speaker says \drop{B}.
 }`],
                 ['Multiple choice', String.raw`\mcq{Write the question here}{
   \choice{Incorrect option}
@@ -27249,7 +27288,7 @@ Write the transcript here. The answer is \drop{correct option}.
                         return;
                     }
                     const options = question.type === 'dnd_list'
-                        ? `<div class="mt-2 flex flex-wrap gap-2">${[...new Set(question.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]))].map(option => `<span class="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-800">${escapeHtml(option)}</span>`).join('')}</div>`
+                        ? `<div class="mt-2 flex flex-wrap gap-2">${[...new Set(question.options?.length ? question.options : question.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]))].map(option => `<span class="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs text-indigo-800">${escapeHtml(option)}</span>`).join('')}</div>`
                         : '';
                     html += `<section class="border-t border-slate-200 pt-4"><p class="font-bold">${question.instruction ? formatPreviewText(question.instruction) : `${question.numberedInPassage ? '' : `${questionLabel}. `}${question.type === 'dnd_list' ? 'Complete the blanks using the options.' : 'Fill in the blanks.'}`}</p><p class="text-sm text-slate-500 mt-1">${question.gaps.length} question${question.gaps.length === 1 ? '' : 's'} in the passage above.</p>${options}</section>`;
                     return;
@@ -27437,11 +27476,28 @@ Write the transcript here. The answer is \drop{correct option}.
             const text = gapBlock.text.replace(/\{(?:blank|drop):(\d+)\}/g, (_, id) => `{${marker}:${gapIds[id]}}`);
             const correctAnswers = {};
             const timestamps = {};
+            const dropOptions = Array.isArray(gapBlock.options) ? gapBlock.options : [];
+            const dropOptionByLabel = new Map(dropOptions.map(option => {
+                const match = String(option).match(/^\s*([A-Z])(?:[.)\-]|\s)\s*(.+)$/i);
+                return match ? [match[1].toUpperCase(), option] : null;
+            }).filter(Boolean));
+            const resolveDropAnswer = answer => {
+                const value = String(answer || '').trim();
+                const label = value.match(/^([A-Z])(?:[.)])?$/i)?.[1]?.toUpperCase();
+                return label ? (dropOptionByLabel.get(label) || value) : value;
+            };
             gapBlock.gaps.forEach(gap => {
                 const id = gapIds[gap.id];
-                correctAnswers[id] = [gap.answer, ...gap.alternatives].join('/');
+                const answers = [gap.answer, ...gap.alternatives].map(answer =>
+                    gapBlock.type === 'dnd_list' ? resolveDropAnswer(answer) : answer);
+                correctAnswers[id] = [...new Set(answers)].join('/');
                 if (gap.time !== null) timestamps[id] = gap.time;
             });
+            const options = gapBlock.type === 'dnd_list'
+                ? [...new Set(dropOptions.length
+                    ? dropOptions
+                    : gapBlock.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]).map(resolveDropAnswer))]
+                : [];
             const block = {
                 blockId: 'b_' + Date.now() + Math.random().toString(36).slice(2, 7),
                 type: gapBlock.type,
@@ -27449,7 +27505,7 @@ Write the transcript here. The answer is \drop{correct option}.
                 points: ids.length,
                 instruction: formatText(gapBlock.instruction || (gapBlock.type === 'dnd_list' ? 'Complete the sentences using the options.' : 'Fill in the blanks.')),
                 text: formatText(text),
-                options: gapBlock.type === 'dnd_list' ? [...new Set(gapBlock.gaps.flatMap(gap => [gap.answer, ...gap.alternatives]))] : [],
+                options,
                 correctAnswers,
                 reusable: false,
                 ...(gapBlock.type === 'dnd_list' ? { latexSource: true } : {})
