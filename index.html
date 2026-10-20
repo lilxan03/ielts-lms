@@ -26770,13 +26770,21 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             const passageText = instructionLines.length
                 ? [...prefixLines.slice(firstContentLine), passageHtmlSource.slice(firstGapIndex)].join('\n')
                 : passageHtmlSource;
+            const titleInstruction = passageTitle.trim();
+            const instructionFromTitle = !!(titleInstruction && instructionPattern.test(titleInstruction));
+            const resolvedInstruction = instruction || (instructionFromTitle ? titleInstruction : '');
+            const resolvedQuestionNumbers = questionNumbers || (instructionFromTitle
+                ? parseQuestionNumbers(titleInstruction, gaps.length)
+                : null);
+            if (instructionFromTitle) passageTitle = '';
             gapQuestion = {
                 type: gapModes.has('drop') ? 'dnd_list' : 'fill_blanks',
                 text: passageText,
-                instruction,
+                instruction: resolvedInstruction,
                 gaps,
-                questionNumbers,
-                numberedInPassage: !!questionNumbers
+                questionNumbers: resolvedQuestionNumbers,
+                numberedInPassage: !!resolvedQuestionNumbers,
+                instructionMovedFromTitle: instructionFromTitle
             };
         }
         const questions = questionOrder
@@ -26792,6 +26800,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         return {
             passage: {
                 title: passageTitle,
+                instructionMovedFromTitle: !!gapQuestion?.instructionMovedFromTitle,
                 text: passageHtmlSource,
                 hasGaps: gaps.length > 0
             },
@@ -27600,7 +27609,8 @@ Write the transcript here. The answer is \drop{correct option}.
         });
 
         if (hasImportedPassage) {
-            part.title = parsed.passage.title ? escapeHtml(parsed.passage.title) : part.title;
+            if (parsed.passage.instructionMovedFromTitle) part.title = '';
+            else if (parsed.passage.title) part.title = escapeHtml(parsed.passage.title);
             part.text = parsed.gapCount ? '' : formatText(parsed.passage.text);
         }
         if (parsed.writingTask) part.writingTask = parsed.writingTask;
