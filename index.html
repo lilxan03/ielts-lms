@@ -26136,71 +26136,70 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     // ==========================================
     
     window.parseIeltsLatex = function(source) {
+        const normalizeLatexInlineFormatting = value => {
+            const readGroup = start => {
+                let depth = 1;
+                let index = start + 1;
+                let content = '';
+                while (index < value.length && depth > 0) {
+                    const char = value[index];
+                    if (char === '\\' && index + 1 < value.length) {
+                        content += value.slice(index, index + 2);
+                        index += 2;
+                        continue;
+                    }
+                    if (char === '{') depth++;
+                    else if (char === '}') {
+                        depth--;
+                        if (!depth) break;
+                    }
+                    content += char;
+                    index++;
+                }
+                return depth === 0 ? { content, end: index + 1 } : null;
+            };
+            let output = '';
+            for (let index = 0; index < value.length;) {
+                if (value[index] !== '\\') {
+                    output += value[index++];
+                    continue;
+                }
+                const match = value.slice(index + 1).match(/^[A-Za-z]+/);
+                if (!match) {
+                    output += value.slice(index, index + 2);
+                    index += 2;
+                    continue;
+                }
+                const command = match[0];
+                const commandEnd = index + command.length + 1;
+                const supported = ['textbf', 'textit', 'emph', 'underline', 'textrm', 'textsf', 'textnormal', 'texttt'];
+                if (!supported.includes(command)) {
+                    output += value.slice(index, commandEnd);
+                    index = commandEnd;
+                    continue;
+                }
+                let groupStart = commandEnd;
+                while (/\s/.test(value[groupStart] || '') && groupStart < value.length) groupStart++;
+                const group = value[groupStart] === '{' ? readGroup(groupStart) : null;
+                if (!group) {
+                    output += value.slice(index, commandEnd);
+                    index = commandEnd;
+                    continue;
+                }
+                const content = normalizeLatexInlineFormatting(group.content);
+                if (command === 'textbf') output += `**${content}**`;
+                else if (command === 'textit' || command === 'emph') output += `*${content}*`;
+                else if (command === 'underline') output += `__${content}__`;
+                else output += content;
+                index = group.end;
+            }
+            return output;
+        };
         const normalizeTabularEnvironments = source => {
             const startPattern = /\\begin\s*\{tabular\}\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g;
             let normalized = '';
             let sourceOffset = 0;
             let environment;
-
-            const normalizeCellFormatting = value => {
-                const readGroup = start => {
-                    let depth = 1;
-                    let index = start + 1;
-                    let content = '';
-                    while (index < value.length && depth > 0) {
-                        const char = value[index];
-                        if (char === '\\' && index + 1 < value.length) {
-                            content += value.slice(index, index + 2);
-                            index += 2;
-                            continue;
-                        }
-                        if (char === '{') depth++;
-                        else if (char === '}') {
-                            depth--;
-                            if (!depth) break;
-                        }
-                        content += char;
-                        index++;
-                    }
-                    return depth === 0 ? { content, end: index + 1 } : null;
-                };
-                let output = '';
-                for (let index = 0; index < value.length;) {
-                    if (value[index] !== '\\') {
-                        output += value[index++];
-                        continue;
-                    }
-                    const match = value.slice(index + 1).match(/^[A-Za-z]+/);
-                    if (!match) {
-                        output += value.slice(index, index + 2);
-                        index += 2;
-                        continue;
-                    }
-                    const command = match[0];
-                    const commandEnd = index + command.length + 1;
-                    const supported = ['textbf', 'textit', 'emph', 'underline', 'textrm', 'textsf', 'textnormal', 'texttt'];
-                    if (!supported.includes(command)) {
-                        output += value.slice(index, commandEnd);
-                        index = commandEnd;
-                        continue;
-                    }
-                    let groupStart = commandEnd;
-                    while (/\s/.test(value[groupStart] || '') && groupStart < value.length) groupStart++;
-                    const group = value[groupStart] === '{' ? readGroup(groupStart) : null;
-                    if (!group) {
-                        output += value.slice(index, commandEnd);
-                        index = commandEnd;
-                        continue;
-                    }
-                    const content = normalizeCellFormatting(group.content);
-                    if (command === 'textbf') output += `**${content}**`;
-                    else if (command === 'textit' || command === 'emph') output += `*${content}*`;
-                    else if (command === 'underline') output += `__${content}__`;
-                    else output += content;
-                    index = group.end;
-                }
-                return output;
-            };
 
             const convertRows = body => {
                 const rows = [];
@@ -26277,7 +26276,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
                 const columnCount = Math.max(0, ...rows.map(row => row.length));
                 if (!columnCount) return '';
-                const formatRow = row => `| ${Array.from({ length: columnCount }, (_, index) => normalizeCellFormatting(row[index] || '')).join(' | ')} |`;
+                const formatRow = row => `| ${Array.from({ length: columnCount }, (_, index) => normalizeLatexInlineFormatting(row[index] || '')).join(' | ')} |`;
                 return `\n${formatRow(rows[0])}\n| ${Array(columnCount).fill('---').join(' | ')} |${rows.length > 1 ? `\n${rows.slice(1).map(formatRow).join('\n')}` : ''}\n`;
             };
 
@@ -26293,7 +26292,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
             return normalized + source.slice(sourceOffset);
         };
-        const input = normalizeTabularEnvironments(String(source || ''));
+        const input = normalizeTabularEnvironments(normalizeLatexInlineFormatting(String(source || '')));
         let cursor = 0;
 
         const fail = (message, at = cursor) => {
@@ -27395,7 +27394,12 @@ Write the transcript here. The answer is \drop{correct option}.
         const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         })[char]);
-        const formatText = value => window.formatIELTSMarkdown(escapeHtml(value));
+        const formatText = value => {
+            if (value === null || value === undefined) return '';
+            const raw = String(value).replace(/\r\n/g, '\n').trim();
+            if (!raw) return '';
+            return window.formatIELTSMarkdown(escapeHtml(raw));
+        };
         let nextId = Math.max(0, ...usedIds) + 1;
         const newBlocks = [];
 
@@ -27603,8 +27607,14 @@ Write the transcript here. The answer is \drop{correct option}.
         if (parsed.hasSpeaking) part.speakingQuestions = formatText(parsed.speakingQuestions);
         if (parsed.audioUrl) part.audioUrl = parsed.audioUrl;
         part.questions.push(...newBlocks);
-        part.questions = part.questions
-            .map((question, index) => ({ question, index, firstId: Math.min(...(question.ids || []).map(Number)) }))
+        part.questions = (Array.isArray(part.questions) ? part.questions : [])
+            .map((question, index) => ({
+                question,
+                index,
+                firstId: Array.isArray(question?.ids) && question.ids.length
+                    ? Math.min(...question.ids.map(Number).filter(Number.isFinite))
+                    : Number.MAX_SAFE_INTEGER
+            }))
             .sort((left, right) => left.firstId - right.firstId || left.index - right.index)
             .map(({ question }) => question);
         if (rapidImport) {
