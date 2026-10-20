@@ -126,6 +126,35 @@
     }
     .rich-editor p { margin-bottom: 0.5rem; }
     .rich-editor:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
+    .map-grid-question-container {
+      width: 100%;
+      min-width: 0;
+      container-type: inline-size;
+    }
+    .map-grid-question-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+      align-items: start;
+      min-width: 0;
+      width: 100%;
+    }
+    .map-grid-question-map,
+    .map-grid-question-table {
+      width: 100%;
+      min-width: 0;
+    }
+    #resizer,
+    #review-resizer,
+    #builder-resizer {
+      touch-action: none;
+      user-select: none;
+    }
+    @container (min-width: 900px) {
+      .map-grid-question-layout {
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      }
+    }
 
     .youtube-embed-shell {
       display: flex;
@@ -18001,54 +18030,45 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
       const attachDragLogic = (r, l, s) => {
           if (!r || !l || !s) return;
-          let drag = false;
-          
-          const startDrag = (e) => { 
-              drag = true; 
-              document.body.style.cursor = window.innerWidth <= 768 ? 'row-resize' : 'col-resize'; 
-              l.style.userSelect = 'none'; 
-              r.style.background = '#60a5fa'; // Highlight blue on grab
-          };
-          
-          const onDrag = (e) => { 
-              if(!drag) return;
-              
-              // Only prevent default during active drag to stop page from scrolling behind the bar
-              if (e.cancelable) e.preventDefault(); 
-              
-              const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-              const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-              const rect = s.getBoundingClientRect();
-              
-              if (window.innerWidth <= 768) {
-                  // Calculate dynamic percentage relative to the screen height
-                  let h = ((clientY - rect.top) / rect.height) * 100; 
-                  l.style.height = `${Math.max(15, Math.min(h, 85))}%`; 
-                  l.style.flex = 'none'; // Ensure flexbox doesn't override the set height
-              } else {
-                  // Standard desktop horizontal width
-                  let w = ((clientX - rect.left) / rect.width) * 100; 
-                  l.style.width = `${Math.max(15, Math.min(w, 85))}%`; 
-                  l.style.flex = 'none';
-              }
-          };
-          
-          const endDrag = () => { 
-              if(drag) { 
-                  drag = false; 
-                  document.body.style.cursor = ''; 
-                  l.style.userSelect = ''; 
-                  r.style.background = ''; // reset highlight
-              } 
+          let activePointerId = null;
+          const startDrag = event => {
+              if (event.button !== undefined && event.button !== 0) return;
+              activePointerId = event.pointerId;
+              event.preventDefault();
+              document.body.style.cursor = getComputedStyle(s).flexDirection.startsWith('column') ? 'row-resize' : 'col-resize';
+              l.style.userSelect = 'none';
+              r.style.background = '#60a5fa';
           };
 
-          r.onmousedown = startDrag;
-          document.addEventListener('mousemove', onDrag, { passive: false });
-          document.addEventListener('mouseup', endDrag);
-          
-          r.addEventListener('touchstart', startDrag, { passive: true });
-          document.addEventListener('touchmove', onDrag, { passive: false });
-          document.addEventListener('touchend', endDrag);
+          const onDrag = event => {
+              if (activePointerId === null || event.pointerId !== activePointerId) return;
+              event.preventDefault();
+              const rect = s.getBoundingClientRect();
+              const isVertical = getComputedStyle(s).flexDirection.startsWith('column');
+              const size = isVertical ? rect.height : rect.width;
+              const offset = isVertical ? event.clientY - rect.top : event.clientX - rect.left;
+              if (!size) return;
+              const percentage = Math.max(15, Math.min((offset / size) * 100, 85));
+              if (isVertical) {
+                  l.style.height = `${percentage}%`;
+              } else {
+                  l.style.width = `${percentage}%`;
+              }
+              l.style.flex = 'none';
+          };
+
+          const endDrag = event => {
+              if (activePointerId === null || event.pointerId !== activePointerId) return;
+              activePointerId = null;
+              document.body.style.cursor = '';
+              l.style.userSelect = '';
+              r.style.background = '';
+          };
+
+          r.addEventListener('pointerdown', startDrag);
+          document.addEventListener('pointermove', onDrag, { passive: false });
+          document.addEventListener('pointerup', endDrag);
+          document.addEventListener('pointercancel', endDrag);
       };
 
       attachDragLogic(examResizer, examLeft, examSplit);
@@ -19120,7 +19140,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
            const places = (rawText).split('\n').filter(Boolean);
            const opts = q.options || [];
            
-           let mapHtml = q.image ? `<div class="w-full lg:w-1/2 shrink-0 text-center bg-slate-50 p-4 rounded-lg border border-slate-200"><img src="${q.image}" class="max-w-full inline-block rounded border border-slate-300 shadow-sm"></div>` : '';
+           let mapHtml = q.image ? `<div class="map-grid-question-map text-center bg-slate-50 p-4 rounded-lg border border-slate-200"><img src="${q.image}" class="max-w-full inline-block rounded border border-slate-300 shadow-sm"></div>` : '';
 
            let table = `<div class="overflow-x-auto shadow-sm rounded border border-slate-300 w-full"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-[#c2d4ec]">`;
            table += `<th class="border border-slate-300 px-4 py-3 font-bold text-slate-800 min-w-[150px]"></th>`;
@@ -19148,7 +19168,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
            });
            table += `</tbody></table></div>`;
            
-           content = `<div class="flex flex-col lg:flex-row gap-8 items-start w-full">${mapHtml}<div class="flex-1 w-full">${table}</div></div>`;
+           content = `<div class="map-grid-question-container"><div class="map-grid-question-layout">${mapHtml}<div class="map-grid-question-table">${table}</div></div></div>`;
         } else if(q.type === 'matching_info') {
            const statements = (rawText).split('\n').filter(Boolean);
            const cols = q.options || [];
@@ -20449,7 +20469,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               const places = (q.text || '').split('\n').filter(Boolean);
               const opts = q.options || [];
               
-              let mapHtml = q.image ? `<div class="w-full lg:w-1/2 shrink-0 text-center bg-slate-50 p-4 rounded-xl border border-slate-200"><img src="${q.image}" class="max-w-full inline-block rounded shadow-sm"></div>` : '';
+              let mapHtml = q.image ? `<div class="map-grid-question-map text-center bg-slate-50 p-4 rounded-xl border border-slate-200"><img src="${q.image}" class="max-w-full inline-block rounded shadow-sm"></div>` : '';
 
               let table = `<div class="overflow-x-auto shadow-sm rounded-xl border border-slate-300 w-full"><table class="w-full text-left border-collapse bg-white"><thead><tr class="bg-slate-100"><th class="border-b border-r border-slate-300 px-4 py-3 font-bold text-slate-800 text-[15px] min-w-[150px]"></th>`;
               opts.forEach(c => {
@@ -20495,7 +20515,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
               });
               table += `</tbody></table></div>`;
               
-              qTextHtml = `<div class="flex flex-col lg:flex-row gap-8 items-start w-full mb-4">${mapHtml}<div class="flex-1 w-full">${table}</div></div>`;
+              qTextHtml = `<div class="map-grid-question-container mb-4"><div class="map-grid-question-layout">${mapHtml}<div class="map-grid-question-table">${table}</div></div></div>`;
           }
           else if (q.type === 'map_labelling_hotspots' && q.image) {
               qImageHtml = `<div class="mb-6 text-center bg-slate-50 p-6 border border-slate-200 rounded-xl overflow-x-auto shadow-sm"><div class="relative inline-block max-w-full">
