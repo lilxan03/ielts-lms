@@ -19,7 +19,7 @@
         const openingMessage = String(profile.openingMessage || '').trim();
         const logoUrl = profile.appLogo || '';
 
-        document.title = `${appName} - Cloud Connected`;
+        document.title = `${appName} | Khóa học IELTS`;
         const appNameElement = document.getElementById('startup-app-name');
         if (appNameElement) appNameElement.textContent = appName;
         const openingTitleElement = document.getElementById('startup-opening-title');
