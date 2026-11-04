@@ -206,7 +206,7 @@
                     if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid();
                     if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
                 }),
-                ...(currentUser
+                ...(['teacher', 'collaborator'].includes(currentUser?.role)
                   ? [waitForInitialSnapshot('study templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
                     TEACHER_TEMPLATES = [];
                     TEACHER_TEMPLATE_ASSIGNMENTS = {};
@@ -351,6 +351,16 @@
                         });
                     } else {
                         firstMessageSnapshots.add(index);
+                    }
+                }).catch(error => {
+                    console.error('Unable to load staff forum messages:', error);
+                    if (!window._forumPermissionWarningShown) {
+                        window._forumPermissionWarningShown = true;
+                        window.showToast?.(
+                            'Forum messages unavailable',
+                            error.message || 'Check the account forum permissions and deploy the latest Firestore rules.',
+                            'error'
+                        );
                     }
                 }));
             });
@@ -582,6 +592,16 @@
                             });
                         }
                         isMyMsgInitial = false;
+                    }).catch(error => {
+                        console.error(`Unable to load messages for class ${cls.id}:`, error);
+                        if (!window._forumPermissionWarningShown) {
+                            window._forumPermissionWarningShown = true;
+                            window.showToast?.(
+                                'Class forum unavailable',
+                                'You can still use the LMS, but your class forum could not be loaded. Ask your teacher to check enrollment and Firestore rules.',
+                                'error'
+                            );
+                        }
                     }));
                 }
             } else {
@@ -995,8 +1015,10 @@
             }
             let userDoc;
             try {
-                userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
-                if (!userDoc.exists()) {
+                if (!u.includes('@')) {
+                    userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
+                }
+                if (!userDoc?.exists()) {
                     const ownedProfileQuery = window.fsQuery(
                         window.fsCollection(window.db, window.fPath('users')),
                         window.fsWhere('uid', '==', credential.user.uid),
