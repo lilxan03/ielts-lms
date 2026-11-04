@@ -61,7 +61,7 @@
               <button onclick="window.showAuthFromLanding()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xl px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                   Create Free Account to Start &rarr;
               </button>
-              <button onclick="window.loginAsDemo()" class="hidden text-indigo-600 hover:text-indigo-800 font-black text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-6 py-2.5 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
+              <button data-auth-action="demo-login" class="hidden text-indigo-600 hover:text-indigo-800 font-black text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-6 py-2.5 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
                   🕹️ Try Demo Student Account
               </button>
               <p class="text-sm text-slate-500 font-bold">🎁 Sign up today and get 50 Free Gems!</p>
@@ -85,7 +85,7 @@
   </div>
 
   <!-- LIGHTBOX MODAL -->
-  <div id="image-lightbox" class="hidden fixed inset-0 bg-slate-900/95 z-[999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity cursor-zoom-out" onclick="this.classList.add('hidden')">
+  <div id="image-lightbox" class="hidden fixed inset-0 bg-slate-900/95 z-[999] flex items-center justify-center p-4 backdrop-blur-sm transition-opacity cursor-zoom-out">
       <button class="absolute top-6 right-6 text-white text-4xl font-bold hover:text-rose-500 transition">&times;</button>
       <img id="lightbox-img" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl pointer-events-none select-none" style="-webkit-user-drag: none;">
   </div>
@@ -98,36 +98,36 @@
     
     <div class="auth-card bg-white/95 backdrop-blur-sm rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-10 animate-fade-in-up border border-white/20">
       <section class="auth-brand-panel">
-        <button type="button" id="app-logo-auth-container" onclick="window.goToAppHome('student')" class="flex justify-center mb-2 min-h-[40px] cursor-pointer" aria-label="Go to Homepage">
+        <button type="button" id="app-logo-auth-container" data-auth-action="home" class="flex justify-center mb-2 min-h-[40px] cursor-pointer" aria-label="Go to Homepage">
             <span id="app-logo-auth-text" class="block text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">Khanh LMS</span>
             <img id="app-logo-auth-img" src="" class="h-16 object-contain hidden">
         </button>
-        <p class="text-center text-slate-500 font-medium" id="auth-subtitle">Login to your account</p>
+        <h1 class="text-center text-slate-500 font-medium" id="auth-subtitle">Login to your account</h1>
         <p class="auth-brand-caption">Sign in to continue your learning journey.</p>
       </section>
 
       <section class="auth-form-panel">
-        <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center"></div>
+        <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-        <div class="space-y-5">
+        <form id="auth-form" class="space-y-5" novalidate>
         <div>
-          <label class="block text-sm font-bold text-slate-700 mb-1">Username</label>
-          <input type="text" id="auth-user" onkeydown="if(event.key==='Enter') handleAuthSubmit()" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="e.g. student123">
+          <label for="auth-user" class="block text-sm font-bold text-slate-700 mb-1">Username</label>
+          <input type="text" id="auth-user" name="username" autocomplete="username" required aria-describedby="auth-error" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors" placeholder="e.g. student123">
         </div>
         <div>
-          <label class="block text-sm font-bold text-slate-700 mb-1">Password</label>
+          <label for="auth-pass" class="block text-sm font-bold text-slate-700 mb-1">Password</label>
           <div class="relative">
-              <input type="password" id="auth-pass" onkeydown="if(event.key==='Enter') handleAuthSubmit()" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 pr-10 focus:border-blue-500 focus:ring-0 outline-none transition-colors" placeholder="••••••••">
-              <button type="button" onclick="window.togglePasswordVisibility('auth-pass', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 transition-colors" title="Toggle password visibility">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+              <input type="password" id="auth-pass" name="password" autocomplete="current-password" required aria-describedby="auth-error" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 pr-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors" placeholder="••••••••">
+              <button type="button" data-auth-action="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 transition-colors" aria-label="Show password" aria-pressed="false">
+                  <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
               </button>
           </div>
           <div class="text-right mt-1.5">
-              <button onclick="window.promptForgotPassword()" class="text-xs font-bold text-blue-600 hover:underline transition">Forgot password?</button>
+              <button type="button" data-auth-action="forgot-password" class="text-xs font-bold text-blue-600 hover:underline transition">Forgot password?</button>
           </div>
         </div>
 
-        <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
+        <button type="submit" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
         
         <!-- ✨ NEW: Google Sign In Button -->
         <div class="relative flex py-5 items-center">
@@ -135,18 +135,18 @@
             <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold uppercase tracking-widest">Or</span>
             <div class="flex-grow border-t border-slate-200"></div>
         </div>
-        <button onclick="window.handleGoogleLogin()" id="auth-google-btn" class="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-lg shadow-sm transition-all text-base">
-            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <button type="button" data-auth-action="google-login" id="auth-google-btn" class="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-lg shadow-sm transition-all text-base">
+            <svg aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Sign in with Google
         </button>
         
         <div class="text-center mt-5 pt-5 border-t border-slate-100 flex flex-col gap-4">
-            <button onclick="window.loginAsDemo()" type="button" class="hidden w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg border border-slate-200 transition text-sm flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
+            <button type="button" data-auth-action="demo-login" class="hidden w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg border border-slate-200 transition text-sm flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
                 🕹️ Try Demo Student Account
             </button>
-            <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
+            <button type="button" data-auth-action="toggle-mode" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
         </div>
-        </div>
+        </form>
       </section>
 
     </div>
@@ -353,30 +353,30 @@
   </div>
 
   <!-- MODE SELECTION MODAL -->
-  <div id="test-mode-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-md md:p-6">
+  <div id="test-mode-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-md md:p-6" role="dialog" aria-modal="true" aria-labelledby="test-mode-title">
     <div class="bg-white md:rounded-[2rem] p-6 md:p-10 w-full max-w-4xl h-full md:h-[90vh] shadow-2xl animate-fade-in-up flex flex-col border border-slate-200">
-      <h2 class="text-2xl md:text-3xl font-black mb-5 text-slate-900 border-b border-slate-100 pb-4 tracking-tight shrink-0">Select Practice Mode</h2>
+      <h2 id="test-mode-title" class="text-2xl md:text-3xl font-black mb-5 text-slate-900 border-b border-slate-100 pb-4 tracking-tight shrink-0">Select Practice Mode</h2>
       
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-        <button type="button" id="mode-btn-free" onclick="selectTestMode('free')" class="border-2 border-slate-200 rounded-xl p-5 text-left transition hover:border-blue-300">
+      <div role="group" aria-label="Test time mode" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <button type="button" id="mode-btn-free" data-test-action="select-mode" data-mode="free" aria-pressed="false" class="border-2 border-slate-200 rounded-xl p-5 text-left transition hover:border-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
           <div class="font-black text-slate-800 text-lg">🕊️ Time-Free</div>
           <div class="text-xs font-medium text-slate-500 mt-1.5 leading-snug">Study vocab in-context. Instant check.</div>
         </button>
         
-        <div id="mode-btn-restricted" onclick="selectTestMode('restricted')" class="border-2 border-blue-500 bg-blue-50 rounded-xl p-5 text-left transition hover:border-blue-400 cursor-pointer flex flex-col">
+        <button type="button" id="mode-btn-restricted" data-test-action="select-mode" data-mode="restricted" aria-pressed="true" class="border-2 border-blue-500 bg-blue-50 rounded-xl p-5 text-left transition hover:border-blue-400 cursor-pointer flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
           <div class="font-black text-slate-800 text-lg">⏱️ Time-Restricted</div>
           <div class="text-xs font-medium text-slate-500 mt-1.5 leading-snug">Simulate real exam conditions.</div>
-          
-          <div id="custom-time-container" class="mt-4 pt-4 border-t border-blue-200 flex items-center gap-3" onclick="event.stopPropagation()">
-             <label class="text-xs font-black text-slate-600 uppercase tracking-widest">Limit:</label>
-             <input type="number" id="custom-time-input" min="1" max="180" placeholder="Default" class="w-20 border-2 border-white shadow-sm rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-black text-blue-700 bg-white text-center">
-             <span class="text-xs font-bold text-slate-500">min</span>
-          </div>
-        </div>
+        </button>
+      </div>
+
+      <div id="custom-time-container" class="mt-1 mb-3 pt-3 border-t border-blue-200 flex items-center gap-3">
+         <label for="custom-time-input" class="text-xs font-black text-slate-600 uppercase tracking-widest">Time limit:</label>
+         <input type="number" id="custom-time-input" min="1" max="180" placeholder="Default" aria-label="Custom time limit in minutes" class="w-24 border-2 border-slate-200 shadow-sm rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-black text-blue-700 bg-white text-center">
+         <span class="text-xs font-bold text-slate-500" aria-hidden="true">minutes</span>
       </div>
 
       <!-- ✨ NEW: Dynamic Activities Button -->
-      <button type="button" onclick="window.openTestActivities()" class="w-full border-2 border-fuchsia-200 bg-fuchsia-50 rounded-xl p-5 text-left transition hover:border-fuchsia-400 hover:bg-fuchsia-100 cursor-pointer mb-6 group flex items-center justify-between shadow-sm">
+      <button type="button" data-test-action="activities" class="w-full border-2 border-fuchsia-200 bg-fuchsia-50 rounded-xl p-5 text-left transition hover:border-fuchsia-400 hover:bg-fuchsia-100 cursor-pointer mb-6 group flex items-center justify-between shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
           <div>
               <div class="font-black text-fuchsia-900 text-lg flex items-center gap-2"><span class="text-2xl drop-shadow-sm">🎮</span> Classroom Activities</div>
               <div class="text-xs font-bold text-fuchsia-700 mt-1.5 opacity-90">Instantly transform this test into a multiplayer vocab game, roleplay, or debate.</div>
@@ -393,8 +393,8 @@
       </div>
 
       <div class="flex justify-end gap-3 border-t border-slate-100 pt-5 mt-auto shrink-0">
-        <button onclick="window.cancelTestRouteStart()" class="px-6 py-4 text-slate-500 hover:bg-slate-100 rounded-xl font-bold transition">Cancel</button>
-        <button onclick="confirmStartTest()" class="px-10 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-black shadow-md transition hover:-translate-y-0.5 text-lg">Start Test 🚀</button>
+        <button type="button" data-test-action="cancel" class="px-6 py-4 text-slate-500 hover:bg-slate-100 rounded-xl font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">Cancel</button>
+        <button type="button" data-test-action="start" class="px-10 py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-black shadow-md transition hover:-translate-y-0.5 text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">Start Test 🚀</button>
       </div>
     </div>
   </div>
@@ -2618,6 +2618,7 @@
   <script src="js/study-tools.js"></script>
   <script src="js/teacher-tools.js"></script>
   <script src="js/scheduling.js"></script>
+  <script src="js/auth-helpers.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/teacher-dashboard.js"></script>
   <script src="js/teacher-builder.js"></script>
@@ -2636,5 +2637,6 @@
   <script src="js/latex-import.js"></script>
 <!-- SECURITY: Anti-Inspect and View Source Protection -->
   <script src="js/admin-actions.js"></script>
+<script type="module" src="js/app-events.js"></script>
 </body>
 </html>

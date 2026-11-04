@@ -1,9 +1,11 @@
 const { onRequest } = require('firebase-functions/v2/https');
+const { onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
 const OpenAI = require('openai');
 const { toFile } = require('openai/uploads');
 const { Readable } = require('node:stream');
+const { buildStudentTestAccess } = require('./test-access-index');
 
 admin.initializeApp();
 const openaiApiKey = defineSecret('OPENAI_API_KEY');
@@ -13,6 +15,157 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
+
+async function syncStudentTestAccess() {
+  const db = admin.firestore();
+  const [accountsSnapshot, classesSnapshot, schedulesSnapshot] = await Promise.all([
+    db.collection('account_access').get(),
+    db.collection('classes').get(),
+    db.collection('schedules').get()
+  ]);
+  const accounts = accountsSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+  const classes = classesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+  const scheduleClassMigrations = [];
+  const schedules = schedulesSnapshot.docs.map(scheduleDoc => ({ ...scheduleDoc.data(), id: scheduleDoc.id }));
+  const classesByName = new Map();
+  classes.forEach(cls => {
+    if (!cls.name) return;
+    const matches = classesByName.get(cls.name) || [];
+    matches.push(cls);
+    classesByName.set(cls.name, matches);
+  });
+  schedules.forEach(schedule => {
+    let classMatches = schedule.classId
+      ? [classes.find(cls => cls.id === schedule.classId)].filter(Boolean)
+      : classesByName.get(schedule.className) || [];
+    if (classMatches.length !== 1) return;
+    const cls = classMatches[0];
+    if (!schedule.classId) {
+      schedule.classId = cls.id;
+      scheduleClassMigrations.push(
+        db.collection('schedules').doc(schedule.id).update({ classId: cls.id })
+      );
+    }
+  });
+  await Promise.all(scheduleClassMigrations);
+
+  const desired = new Map(
+    buildStudentTestAccess(accounts, classes, schedules)
+      .map(entry => [`${entry.uid}/${entry.testId}`, entry])
+  );
+  const batchWrites = [];
+  const studentsByUid = new Set(accounts.filter(account => account.role === 'student').map(account => account.uid));
+  for (const uid of studentsByUid) {
+    const collection = db.collection('student_test_access').doc(uid).collection('tests');
+    const existingSnapshot = await collection.get();
+    existingSnapshot.forEach(doc => {
+      const desiredEntry = desired.get(`${uid}/${doc.id}`);
+      if (!desiredEntry) batchWrites.push({ ref: doc.ref, data: null });
+    });
+  }
+  desired.forEach(entry => {
+    const ref = db.collection('student_test_access').doc(entry.uid).collection('tests').doc(entry.testId);
+    batchWrites.push({ ref, data: entry });
+  });
+
+  for (let offset = 0; offset < batchWrites.length; offset += 450) {
+    const batch = db.batch();
+    batchWrites.slice(offset, offset + 450).forEach(write => {
+      if (write.data) batch.set(write.ref, write.data);
+      else batch.delete(write.ref);
+    });
+    await batch.commit();
+  }
+}
+
+async function migrateLegacyMessages() {
+  const db = admin.firestore();
+  const legacyMessages = await db.collection('messages').get();
+  const writes = [];
+  for (const snapshot of legacyMessages.docs) {
+    const message = snapshot.data();
+    let destination;
+    if (typeof message.classId === 'string' && message.classId) {
+      const classSnapshot = await db.collection('classes').doc(message.classId).get();
+      if (!classSnapshot.exists) continue;
+      destination = db.collection('classes').doc(message.classId).collection('messages').doc(snapshot.id);
+    } else {
+      destination = db.collection('public_messages').doc(snapshot.id);
+    }
+    if (!(await destination.get()).exists) writes.push({ ref: destination, data: message });
+  }
+
+  for (let offset = 0; offset < writes.length; offset += 450) {
+    const batch = db.batch();
+    writes.slice(offset, offset + 450).forEach(write => batch.set(write.ref, write.data));
+    await batch.commit();
+  }
+}
+
+async function migrateLegacyStudentStudyData() {
+  const db = admin.firestore();
+  const accountSnapshot = await db.collection('account_access').get();
+  const usernames = accountSnapshot.docs
+    .map(doc => doc.data().username)
+    .filter(username => typeof username === 'string')
+    .sort((a, b) => b.length - a.length);
+  const writes = [];
+
+  for (const collectionName of ['notes', 'flashcards']) {
+    const snapshot = await db.collection(collectionName).get();
+    snapshot.forEach(doc => {
+      if (doc.data().owner) return;
+      const owner = usernames.find(username => doc.id === username || doc.id.startsWith(`${username}_`));
+      if (owner) writes.push({ ref: doc.ref, owner });
+    });
+  }
+
+  for (let offset = 0; offset < writes.length; offset += 450) {
+    const batch = db.batch();
+    writes.slice(offset, offset + 450).forEach(write => batch.update(write.ref, { owner: write.owner }));
+    await batch.commit();
+  }
+}
+
+async function authorizeStaffRequest(req) {
+  const authHeader = req.get('Authorization') || '';
+  if (!authHeader.startsWith('Bearer ')) return false;
+  try {
+    const identity = await admin.auth().verifyIdToken(authHeader.slice(7));
+    if (identity.email === 'lyquockhanh03@gmail.com') return true;
+    const access = (await admin.firestore().collection('account_access').doc(identity.uid).get()).data();
+    return Boolean(access && ['teacher', 'collaborator'].includes(access.role));
+  } catch (error) {
+    console.error('Unable to verify test-access maintenance request:', error);
+    return false;
+  }
+}
+
+exports.syncStudentTestAccessOnClassWrite = onDocumentWritten('classes/{classId}', async () => {
+  await syncStudentTestAccess();
+});
+
+exports.syncStudentTestAccessOnScheduleWrite = onDocumentWritten('schedules/{scheduleId}', async () => {
+  await syncStudentTestAccess();
+});
+
+exports.syncStudentTestAccessOnAccountWrite = onDocumentWritten('account_access/{uid}', async () => {
+  await syncStudentTestAccess();
+});
+
+exports.rebuildStudentTestAccess = onRequest({ cors: true, timeoutSeconds: 300 }, async (req, res) => {
+  if (req.method !== 'POST') return sendJson(res, 405, { error: 'POST required' });
+  if (!(await authorizeStaffRequest(req))) return sendJson(res, 403, { error: 'Staff access required' });
+  try {
+    await migrateLegacyMessages();
+    await migrateLegacyStudentStudyData();
+    await syncStudentTestAccess();
+    return sendJson(res, 200, { ok: true });
+  } catch (error) {
+    console.error('Student test-access rebuild failed:', error);
+    return sendJson(res, 500, { error: 'Could not rebuild student test access' });
+  }
+});
 
 function sendJson(res, status, body) {
   Object.entries(corsHeaders).forEach(([key, value]) => res.set(key, value));

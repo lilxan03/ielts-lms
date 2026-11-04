@@ -6,6 +6,10 @@ This function grades Writing responses and transcribes/grades Speaking recording
 
 The browser app is served from `index.html`. Shared styles are in `css/app.css`, Firebase initialization is in `js/firebase.js`, and the classic scripts in `js/` are loaded in order from `index.html`. These scripts share the existing global LMS state, so keep their references and load order in sync when adding or moving code. There is no frontend build step.
 
+Run the frontend helper and student-flow tests with `npm test`. The flow tests load the real sign-in and submission scripts with local Firebase fakes, so they do not access production accounts or data. They also check sign-in and test-mode accessibility, including keyboard focus and Escape handling.
+
+Firestore access rules have separate emulator tests: install Java 21 or newer, then run `npm run test:rules`. The first run downloads the Firestore emulator. These tests use a demo project and local fixtures only; they do not connect to production.
+
 ## Deploy
 
 From this directory:
@@ -38,10 +42,18 @@ Firestore Rules allow an authenticated user to read only their own profile and o
 
 The checkout reads public course names and lesson fees from `course_catalog`; a staff LMS session synchronizes this limited catalog from the private `classes` collection. Packages are loaded from the public-readable `packages` collection. The `account_access/{uid}` document is the only source of truth for staff role and student access. Students can create only an unpaid student access record for themselves; only the administrator account below can grant or revoke paid access. New usernames are normalized to lowercase and must contain 1-40 ASCII letters, numbers, underscores, or hyphens.
 
-The Firestore rules use the administrator email already configured in the application (`lyquockhanh03@gmail.com`) and the Firebase project ID in the web app configuration (`khanh-ielts-v2`). Review both values before deployment. From this directory, deploy with:
+Students receive tests through a server-maintained `student_test_access/{uid}/tests/{testId}` index. Class and schedule changes keep this index current, and test reads also re-check current enrollment and assignment. Global forum posts are stored in `public_messages`; class posts are stored under `classes/{classId}/messages`. Personal notes and flashcards carry an owner field and are queried only by that owner. The staff-only `rebuildStudentTestAccess` endpoint builds the initial index and migrates legacy messages, schedules, notes, and flashcards.
+
+The Firestore rules use the administrator email already configured in the application (`lyquockhanh03@gmail.com`) and the Firebase project ID in the web app configuration (`khanh-ielts-v2`). Review both values before deployment. Deploy the index and migration functions first, then deploy the updated frontend and sign in as staff once so it can initialize existing data. Verify the setup toast is not shown before deploying the rules:
 
 ```powershell
 firebase login
+firebase deploy --only functions:syncStudentTestAccessOnClassWrite,functions:syncStudentTestAccessOnScheduleWrite,functions:syncStudentTestAccessOnAccountWrite,functions:rebuildStudentTestAccess
+```
+
+After staff initialization succeeds, deploy the rules:
+
+```powershell
 firebase deploy --only firestore:rules
 ```
 

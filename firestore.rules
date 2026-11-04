@@ -14,6 +14,18 @@ service cloud.firestore {
       return /databases/$(database)/documents/account_access/$(uid);
     }
 
+    function classPath(classId) {
+      return /databases/$(database)/documents/classes/$(classId);
+    }
+
+    function schedulePath(scheduleId) {
+      return /databases/$(database)/documents/schedules/$(scheduleId);
+    }
+
+    function studentTestAccessPath(uid, testId) {
+      return /databases/$(database)/documents/student_test_access/$(uid)/tests/$(testId);
+    }
+
     function hasAccessRecord() {
       return signedIn() && exists(accessPath(request.auth.uid));
     }
@@ -35,6 +47,108 @@ service cloud.firestore {
           && (!('billingExpiresAt' in accountAccess())
             || accountAccess().billingExpiresAt == null
             || accountAccess().billingExpiresAt > request.time));
+    }
+
+    function isClassMember(classId, username) {
+      return classId is string
+        && exists(classPath(classId))
+        && get(classPath(classId)).data.get('enrolledStudents', []).hasAny([username]);
+    }
+
+    function classHasTest(classId, testId) {
+      let cls = get(classPath(classId)).data;
+      let parentId = cls.get('parentClassId', null);
+      return (cls.get('assignedTests', []).hasAny([testId])
+          || testId in cls.get('testSettings', {}).keys())
+        || (parentId is string
+          && exists(classPath(parentId))
+          && (get(classPath(parentId)).data.get('assignedTests', []).hasAny([testId])
+            || testId in get(classPath(parentId)).data.get('testSettings', {}).keys()));
+    }
+
+    function scheduleHasTest(scheduleId, classId, username, testId) {
+      return exists(schedulePath(scheduleId))
+        && get(schedulePath(scheduleId)).data.get('classId', null) == classId
+        && (
+          get(schedulePath(scheduleId)).data.get('assignedTests', []).hasAny([testId])
+          || get(schedulePath(scheduleId)).data.get('materialIds', []).hasAny([testId])
+          || get(schedulePath(scheduleId)).data.get('homeworkTests', []).hasAny([testId])
+        )
+        && (!('attendingStudents' in get(schedulePath(scheduleId)).data)
+          || get(schedulePath(scheduleId)).data.attendingStudents.hasAny([username]));
+    }
+
+    function hasTestAssignmentForClass(classId, username, testId, scheduleId) {
+      return isClassMember(classId, username)
+        && (classHasTest(classId, testId)
+          || (scheduleId is string
+            && scheduleHasTest(scheduleId, classId, username, testId)));
+    }
+
+    function hasCurrentTestAssignment(testId) {
+      let path = studentTestAccessPath(request.auth.uid, testId);
+      let access = get(path).data;
+      return hasPaidAccess()
+        && exists(path)
+        && access.get('uid', null) == request.auth.uid
+        && access.get('username', null) == accountAccess().username
+        && isClassMember(access.get('classId', null), accountAccess().username)
+        && (
+          (access.get('source', null) == 'class'
+            && classHasTest(access.classId, testId))
+          || (access.get('source', null) == 'schedule'
+            && scheduleHasTest(access.get('scheduleId', ''), access.classId, access.username, testId))
+        );
+    }
+
+    function safeStudentMessageCreate() {
+      return request.resource.data.get('author', null) == accountAccess().username
+        && request.resource.data.get('role', null) == accountAccess().role
+        && request.resource.data.keys().hasOnly([
+          'id', 'kind', 'parentId', 'threadId', 'title', 'text',
+          'author', 'avatar', 'role', 'timestamp', 'classId'
+        ]);
+    }
+
+    function safeStudentPublicMessageCreate() {
+      return safeStudentMessageCreate()
+        && request.resource.data.get('classId', null) == null;
+    }
+
+    function safeStudentSubmissionUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly(['studentReply', 'teacherReadReply'])
+        && (!changed.hasAny(['teacherReadReply'])
+          || (request.resource.data.teacherReadReply == false
+            && changed.hasAny(['studentReply'])));
+    }
+
+    function safeStudentSubmissionCreate() {
+      return request.resource.data.student == accountAccess().username
+        && request.resource.data.testId is string
+        && hasCurrentTestAssignment(request.resource.data.testId)
+        && request.resource.data.classId is string
+        && hasTestAssignmentForClass(
+          request.resource.data.classId,
+          accountAccess().username,
+          request.resource.data.testId,
+          request.resource.data.get('scheduleId', null)
+        )
+        && request.resource.data.className == get(classPath(request.resource.data.classId)).data.name
+        && request.resource.data.keys().hasOnly([
+          'id', 'student', 'testId', 'testName', 'classId', 'className', 'scheduleId', 'date',
+          'answers', 'score', 'syntheticData', 'questionAnalytics', 'secureInfractions'
+        ]);
+    }
+
+    function safeStudentMessageUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['title', 'text', 'editedAt', 'editedBy'])
+        && request.resource.data.get('author', null) == resource.data.get('author', null)
+        && request.resource.data.get('classId', null) == resource.data.get('classId', null)
+        && request.resource.data.get('parentId', null) == resource.data.get('parentId', null)
+        && request.resource.data.get('threadId', null) == resource.data.get('threadId', null)
+        && request.resource.data.get('kind', null) == resource.data.get('kind', null);
     }
 
     function ownAccount(username) {
@@ -144,17 +258,37 @@ service cloud.firestore {
     }
 
     match /tests/{testId} {
-      allow read: if hasPaidAccess();
+      allow get: if isStaff() || hasCurrentTestAssignment(testId);
+      allow list: if isStaff();
       allow write: if isStaff();
     }
 
     match /classes/{classId} {
-      allow read: if hasPaidAccess();
+      allow get, list: if isStaff()
+        || (hasPaidAccess()
+          && resource.data.get('enrolledStudents', []).hasAny([accountAccess().username]));
       allow write: if isStaff();
+
+      match /messages/{messageId} {
+        allow get, list: if isStaff()
+          || (hasPaidAccess() && isClassMember(classId, accountAccess().username));
+        allow create: if isStaff()
+          || (hasPaidAccess()
+            && isClassMember(classId, accountAccess().username)
+            && safeStudentMessageCreate()
+            && request.resource.data.get('classId', classId) == classId);
+        allow update: if isStaff()
+          || (hasPaidAccess()
+            && isClassMember(classId, accountAccess().username)
+            && resource.data.get('author', null) == accountAccess().username
+            && safeStudentMessageUpdate());
+        allow delete: if isStaff();
+      }
     }
 
     match /schedules/{scheduleId} {
-      allow read: if hasPaidAccess();
+      allow read: if isStaff()
+        || (hasPaidAccess() && isClassMember(resource.data.get('classId', null), accountAccess().username));
       allow write: if isStaff();
     }
 
@@ -165,40 +299,81 @@ service cloud.firestore {
     }
 
     match /class_presence/{presenceId} {
-      allow read: if hasPaidAccess();
-      allow write: if isStaff()
-        || (hasPaidAccess() && request.resource.data.student == accountAccess().username);
+      allow read: if isStaff()
+        || (hasPaidAccess() && isClassMember(resource.data.get('classId', null), accountAccess().username));
+      allow create: if isStaff()
+        || (hasPaidAccess()
+          && request.resource.data.student == accountAccess().username
+          && isClassMember(request.resource.data.get('classId', null), accountAccess().username));
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && resource.data.student == accountAccess().username
+          && request.resource.data.student == resource.data.student
+          && request.resource.data.classId == resource.data.classId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastActiveAt'])
+          && isClassMember(resource.data.get('classId', null), accountAccess().username));
+      allow delete: if isStaff();
     }
 
     match /submissions/{submissionId} {
       allow read: if isStaff()
         || (hasPaidAccess() && resource.data.student == accountAccess().username);
-      allow create: if isStaff()
-        || (hasPaidAccess() && request.resource.data.student == accountAccess().username);
+      allow create: if isStaff() || (hasPaidAccess() && safeStudentSubmissionCreate());
       allow update: if isStaff()
         || (hasPaidAccess() && resource.data.student == accountAccess().username
-          && request.resource.data.student == resource.data.student);
+          && request.resource.data.student == resource.data.student
+          && safeStudentSubmissionUpdate());
       allow delete: if isStaff();
     }
 
     match /messages/{messageId} {
+      allow read, write: if isStaff();
+    }
+
+    match /public_messages/{messageId} {
       allow read: if hasPaidAccess();
       allow create: if isStaff()
-        || (hasPaidAccess() && request.resource.data.author == accountAccess().username);
-      allow update, delete: if isStaff()
-        || (hasPaidAccess() && resource.data.author == accountAccess().username);
+        || (hasPaidAccess() && safeStudentPublicMessageCreate());
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && resource.data.author == accountAccess().username
+          && safeStudentMessageUpdate());
+      allow delete: if isStaff();
+    }
+
+    match /student_test_access/{uid}/tests/{testId} {
+      allow get, list: if isStaff() || (hasPaidAccess() && request.auth.uid == uid);
+      allow write: if false;
     }
 
     match /notes/{noteId} {
-      allow read: if hasPaidAccess();
-      allow write: if isStaff()
-        || (hasPaidAccess() && noteId.matches('^' + accountAccess().username + '(_.*)?$'));
+      allow get, list: if isStaff()
+        || (hasPaidAccess() && resource.data.get('owner', null) == accountAccess().username);
+      allow create: if isStaff()
+        || (hasPaidAccess()
+          && noteId.matches('^' + accountAccess().username + '(_.*)?$')
+          && request.resource.data.owner == accountAccess().username);
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && noteId.matches('^' + accountAccess().username + '(_.*)?$')
+          && resource.data.get('owner', null) == accountAccess().username
+          && request.resource.data.owner == resource.data.owner);
+      allow delete: if isStaff();
     }
 
     match /flashcards/{deckId} {
-      allow read: if hasPaidAccess();
-      allow write: if isStaff()
-        || (hasPaidAccess() && deckId.matches('^' + accountAccess().username + '(_.*)?$'));
+      allow get, list: if isStaff()
+        || (hasPaidAccess() && resource.data.get('owner', null) == accountAccess().username);
+      allow create: if isStaff()
+        || (hasPaidAccess()
+          && deckId.matches('^' + accountAccess().username + '(_.*)?$')
+          && request.resource.data.owner == accountAccess().username);
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && deckId.matches('^' + accountAccess().username + '(_.*)?$')
+          && resource.data.get('owner', null) == accountAccess().username
+          && request.resource.data.owner == resource.data.owner);
+      allow delete: if isStaff();
     }
 
     match /referral_codes/{code} {
