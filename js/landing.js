@@ -7,12 +7,13 @@
         
         // Handle Hero Image
         window.tempPPHero = PUBLIC_PROFILE.heroImage || null;
-        if(window.tempPPHero) {
-            document.getElementById('pp-hero-preview').src = window.tempPPHero;
-            document.getElementById('pp-hero-preview').classList.remove('hidden');
-        } else {
-            document.getElementById('pp-hero-preview').src = '';
-            document.getElementById('pp-hero-preview').classList.add('hidden');
+        window.tempPPHeroRevision = Number(PUBLIC_PROFILE.heroImageRevision) || 0;
+        const heroPreview = document.getElementById('pp-hero-preview');
+        if (heroPreview) {
+            heroPreview.src = window.tempPPHeroRevision >= 2 && window.tempPPHero
+                ? window.tempPPHero
+                : 'assets/teacher-graduation.png';
+            heroPreview.classList.remove('hidden');
         }
 
         // Handle TRF Image
@@ -74,8 +75,9 @@
     window.handlePPHero = function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        window.compressProfileImage(file, 800, 0.5, (base64) => {
+        window.compressProfileImage(file, 1200, 0.82, (base64) => {
             window.tempPPHero = base64;
+            window.tempPPHeroRevision = 2;
             document.getElementById('pp-hero-preview').src = base64;
             document.getElementById('pp-hero-preview').classList.remove('hidden');
         });
@@ -270,6 +272,7 @@
             missionTitle: document.getElementById('pp-title').value.trim(),
             missionText: document.getElementById('pp-mission').value.trim(),
             heroImage: window.tempPPHero,
+            heroImageRevision: Number(window.tempPPHeroRevision) || 0,
             trfImage: window.tempPPTrf,
             bio: window.tempPPBio.trim(),
             specialties: window.tempPPSpecialties.filter(s => s.trim()),
@@ -1315,9 +1318,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.renderPublicProfile = function() {
         const c = document.getElementById('public-profile-content');
         if(!c) return;
-        
-        const teacherImageHtml = PUBLIC_PROFILE.heroImage
-            ? `<img src="${PUBLIC_PROFILE.heroImage}" alt="${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Giáo viên IELTS')}" class="w-full aspect-[4/5] max-h-[34rem] object-cover rounded-[2rem] shadow-2xl border border-white/15">`
+
+        const teacherImageUrl = Number(PUBLIC_PROFILE.heroImageRevision) >= 2 && PUBLIC_PROFILE.heroImage
+            ? PUBLIC_PROFILE.heroImage
+            : 'assets/teacher-graduation.png';
+        const teacherImageHtml = teacherImageUrl
+            ? `<img src="${lmsEscapeHtml(teacherImageUrl)}" alt="${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Giáo viên IELTS')}" class="w-full aspect-[4/5] max-h-[34rem] object-cover rounded-[2rem] shadow-2xl border border-white/15">`
             : `<div class="aspect-[4/5] max-h-[34rem] rounded-[2rem] border border-white/15 bg-gradient-to-br from-blue-500/30 via-indigo-500/20 to-cyan-400/20 shadow-2xl flex flex-col items-center justify-center p-8 text-center">
                    <div class="text-7xl sm:text-8xl font-black tracking-tighter text-white/90">IELTS</div>
                    <div class="mt-6 flex flex-wrap justify-center gap-2">${['Reading', 'Listening', 'Writing', 'Speaking'].map(skill => `<span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-blue-50">${skill}</span>`).join('')}</div>
@@ -1356,9 +1362,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const specialties = PUBLIC_PROFILE.specialties || [];
         const credentials = PUBLIC_PROFILE.credentials || [];
         const hasTeacherDetails = Boolean(PUBLIC_PROFILE.bio || PUBLIC_PROFILE.philosophy || specialties.length || credentials.length);
-        const teacherProfileImageHtml = PUBLIC_PROFILE.heroImage
-            ? `<img src="${lmsEscapeHtml(PUBLIC_PROFILE.heroImage)}" alt="${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Giáo viên IELTS')}" class="h-full min-h-[18rem] w-full object-cover">`
-            : '';
+        const teacherProfileImageHtml = `<img src="${lmsEscapeHtml(teacherImageUrl)}" alt="${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Giáo viên IELTS')}" class="h-full min-h-[18rem] w-full object-cover">`;
         const teacherDetailsHtml = `<section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby="public-teacher-method-heading">
                 <div class="grid ${teacherProfileImageHtml ? 'md:grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.5fr)]' : ''}">
                     ${teacherProfileImageHtml ? `<div class="max-h-[34rem] overflow-hidden bg-slate-100">${teacherProfileImageHtml}</div>` : ''}
