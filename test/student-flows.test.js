@@ -41,6 +41,8 @@ function createAuthContext() {
         ['auth-submit-btn', createElement()]
     ]);
     const storedValues = new Map();
+    const profileLookups = [];
+    let ownedProfileLookups = 0;
     const context = {
         console,
         Date,
@@ -56,6 +58,8 @@ function createAuthContext() {
         currentUser: null,
         window: null,
         document: { getElementById: id => elements.get(id) || createElement() },
+        profileLookups,
+        get ownedProfileLookups() { return ownedProfileLookups; },
         sessionStorage: {
             setItem: (key, value) => storedValues.set(key, value),
             getItem: key => storedValues.get(key) || null,
@@ -69,18 +73,43 @@ function createAuthContext() {
     context.db = {};
     context.fPath = collection => collection;
     context.fsDoc = (database, collection, id) => ({ collection, id });
-    context.fsGetDoc = async reference => ({
-        exists: () => reference.collection === 'users',
-        data: () => ({
-            user: 'student_01',
-            uid: 'student-uid',
-            role: 'student',
-            status: 'approved',
-            isPaid: true,
-            referralCode: 'STUDENT01'
-        }),
-        ref: reference
-    });
+    context.fsGetDoc = async reference => {
+        profileLookups.push(reference.id);
+        return {
+            exists: () => reference.collection === 'users' && reference.id === 'student_01',
+            data: () => ({
+                user: 'student_01',
+                uid: 'student-uid',
+                role: 'student',
+                status: 'approved',
+                isPaid: true,
+                referralCode: 'STUDENT01'
+            }),
+            ref: reference
+        };
+    };
+    context.fsCollection = (database, collection) => ({ collection });
+    context.fsWhere = (field, operator, value) => ({ field, operator, value });
+    context.fsLimit = count => ({ count });
+    context.fsQuery = (collection, ...constraints) => ({ collection, constraints });
+    context.fsGetDocs = async () => {
+        ownedProfileLookups++;
+        return {
+            empty: false,
+            docs: [{
+                exists: () => true,
+                data: () => ({
+                    user: 'student_01',
+                    uid: 'student-uid',
+                    role: 'student',
+                    status: 'approved',
+                    isPaid: true,
+                    referralCode: 'STUDENT01'
+                }),
+                ref: { collection: 'users', id: 'student_01' }
+            }]
+        };
+    };
     context.fsAuthSignIn = async (auth, email) => {
         auth.currentUser = { uid: 'student-uid', email };
         return { user: auth.currentUser };
@@ -200,6 +229,8 @@ test('student sign-in accepts an email address directly', async () => {
     assert.equal(context.auth.currentUser.email, 'student@gmail.com');
     assert.equal(context.currentUser.user, 'student_01');
     assert.equal(context.booted, true);
+    assert.deepEqual(context.profileLookups, []);
+    assert.equal(context.ownedProfileLookups, 1);
 });
 
 test('sign-in validation marks missing fields for assistive technology', async () => {
