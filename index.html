@@ -10649,7 +10649,18 @@
             return;
         }
         
-        const opts = availableStudents.map(u => `<option value="${u.user}">${u.user}</option>`).join('');
+        const opts = availableStudents.map(u => {
+            const username = String(u.username || u.user || '').trim();
+            const isUidUsername = Boolean(username && (
+                (u.uid && username === String(u.uid)) ||
+                /^[A-Za-z0-9_-]{20,}$/.test(username)
+            ));
+            const email = String(u.email || '').trim();
+            const readableEmail = email && !email.toLowerCase().endsWith('@khanhlms.com') ? email : '';
+            const label = (isUidUsername ? '' : username) ||
+                readableEmail || String(u.realName || '').trim() || 'Username unavailable';
+            return `<option value="${escapeHtmlAttributeValue(u.user)}">${escapeHtmlAttributeValue(label)}</option>`;
+        }).join('');
         document.getElementById('modal-title').textContent = `Assign User to: ${cls.name}`;
         document.getElementById('modal-message').innerHTML = `<p class="mb-2 text-sm text-slate-500">Select a student from the system to grant them access to this class.</p><select id="enroll-student-select" class="w-full border-2 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-800 bg-slate-50">${opts}</select>`;
         
