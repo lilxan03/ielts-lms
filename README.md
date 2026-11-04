@@ -2,6 +2,10 @@
 
 This function grades Writing responses and transcribes/grades Speaking recordings. The browser only calls the function; the model key stays in Firebase Secret Manager.
 
+## Frontend files
+
+The browser app is served from `index.html`. Shared styles are in `css/app.css`, Firebase initialization is in `js/firebase.js`, and the classic scripts in `js/` are loaded in order from `index.html`. These scripts share the existing global LMS state, so keep their references and load order in sync when adding or moving code. There is no frontend build step.
+
 ## Deploy
 
 From this directory:
