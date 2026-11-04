@@ -191,6 +191,17 @@ test('student sign-in authenticates, loads access, and starts the LMS', async ()
     assert.equal(elements.get('auth-pass').getAttribute('aria-invalid'), 'false');
 });
 
+test('student sign-in accepts an email address directly', async () => {
+    const { context, elements } = createAuthContext();
+    elements.get('auth-user').value = 'student@gmail.com';
+
+    await context.runAuthSubmitForTest();
+
+    assert.equal(context.auth.currentUser.email, 'student@gmail.com');
+    assert.equal(context.currentUser.user, 'student_01');
+    assert.equal(context.booted, true);
+});
+
 test('sign-in validation marks missing fields for assistive technology', async () => {
     const { context, elements } = createAuthContext();
     elements.get('auth-user').value = '';
