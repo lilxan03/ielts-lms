@@ -386,7 +386,7 @@
         document.getElementById('bill-fee').value = BILLING_SETTINGS.feePerLesson || 100000;
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
-        document.getElementById('bill-disc-course').value = BILLING_SETTINGS.discCourse || 20;
+        document.getElementById('bill-disc-course').value = 20;
 
         if (BILLING_SETTINGS.customQR) {
             tempCustomQRBase64 = BILLING_SETTINGS.customQR;
@@ -923,6 +923,44 @@
         };
     };
 
+    function renderPackagePublicDetailsFields(pkg = {}) {
+        const fields = [
+            ['targetAudience', 'Học viên phù hợp', 'Ví dụ: band đầu vào hoặc mục tiêu học viên đã xác nhận'],
+            ['goal', 'Mục tiêu khóa học', 'Mục tiêu cụ thể đã được xác nhận'],
+            ['curriculum', 'Nội dung / kỹ năng học', 'Các nội dung và kỹ năng thực tế của khóa học'],
+            ['duration', 'Thời lượng khóa học', 'Ví dụ: số tuần hoặc số tháng'],
+            ['lessonCount', 'Số buổi học', 'Tổng số buổi của khóa'],
+            ['format', 'Hình thức học', 'Ví dụ: trực tuyến, trực tiếp hoặc kết hợp'],
+            ['schedule', 'Lịch học dự kiến', 'Ngày, giờ hoặc cách xếp lịch đã thống nhất'],
+            ['classSize', 'Sĩ số lớp', 'Số lượng học viên nếu đã xác định']
+        ];
+        return `
+            <div class="mt-4 max-h-[50vh] space-y-3 overflow-y-auto pr-1">
+                <p class="text-xs leading-relaxed text-slate-500">Thông tin bên dưới sẽ hiển thị công khai. Chỉ điền nội dung đã được xác nhận; trường để trống sẽ không xuất hiện trên trang chủ.</p>
+                ${fields.map(([key, label, placeholder]) => {
+                    const value = lmsEscapeHtml(pkg[key] || '');
+                    const isLongText = key === 'curriculum';
+                    return `
+                        <label class="block text-xs font-bold text-slate-600">
+                            ${label}
+                            ${isLongText
+                                ? `<textarea id="pkg-detail-${key}" rows="3" placeholder="${placeholder}" class="mt-1 w-full resize-y rounded border border-slate-200 p-2 text-sm font-normal text-slate-800 focus:border-purple-500 focus:outline-none">${value}</textarea>`
+                                : `<input type="text" id="pkg-detail-${key}" value="${value}" placeholder="${placeholder}" class="mt-1 w-full rounded border border-slate-200 p-2 text-sm font-normal text-slate-800 focus:border-purple-500 focus:outline-none">`}
+                        </label>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    function readPackagePublicDetailsFromForm() {
+        return ['targetAudience', 'goal', 'curriculum', 'duration', 'lessonCount', 'format', 'schedule', 'classSize']
+            .reduce((details, key) => {
+                details[key] = document.getElementById(`pkg-detail-${key}`).value.trim();
+                return details;
+            }, {});
+    }
+
     // Modal to create packages
     window.promptCreatePackage = function() {
         if(CLASSES.length === 0) { showModalMsg("Error", "Create some classes first before grouping them into a package."); return; }
@@ -948,6 +986,7 @@
                 <label class="block text-xs font-bold text-slate-500 mb-2">Select Courses to Include:</label>
                 <div class="max-h-40 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-200 shadow-inner">${classChecks}</div>
             </div>
+            ${renderPackagePublicDetailsFields()}
         `;
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.remove('hidden');
@@ -960,7 +999,13 @@
             const selectedClasses = Array.from(document.querySelectorAll('.pkg-class-cb:checked')).map(cb => cb.value);
 
             if(name && fee > 0 && selectedClasses.length > 0) {
-                const newPkg = { id: 'pkg_' + Date.now(), name, feePerLesson: fee, classes: selectedClasses };
+                const newPkg = {
+                    id: 'pkg_' + Date.now(),
+                    name,
+                    feePerLesson: fee,
+                    classes: selectedClasses,
+                    ...readPackagePublicDetailsFromForm()
+                };
                 PACKAGES.push(newPkg);
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('packages'), newPkg.id), newPkg);
                 document.getElementById('custom-modal').classList.add('hidden');
@@ -992,6 +1037,7 @@
                 <label class="block text-xs font-bold text-slate-500 mb-2">Select Courses to Include:</label>
                 <div class="max-h-40 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-200 shadow-inner">${classChecks}</div>
             </div>
+            ${renderPackagePublicDetailsFields(pkg)}
             <p class="text-[10px] text-slate-400 mt-2 italic">Note: You can change the Fee/Lesson directly on the package card.</p>
         `;
         document.getElementById('modal-input').classList.add('hidden');
@@ -1006,6 +1052,7 @@
             if(name && selectedClasses.length > 0) {
                 pkg.name = name;
                 pkg.classes = selectedClasses;
+                Object.assign(pkg, readPackagePublicDetailsFromForm());
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('packages'), pkg.id), pkg);
                 document.getElementById('custom-modal').classList.add('hidden');
                 if (typeof window.renderPaymentsView === 'function') window.renderPaymentsView();
@@ -1034,7 +1081,7 @@
             feePerLesson: Number(document.getElementById('bill-fee').value) || 100000,
             lessonsPerMonth: Number(document.getElementById('bill-lpm').value) || 12,
             discCombo: Number(document.getElementById('bill-disc-combo').value) || 0,
-            discCourse: Number(document.getElementById('bill-disc-course').value) || 0,
+            discCourse: 20,
             customQR: tempCustomQRBase64
         };
 

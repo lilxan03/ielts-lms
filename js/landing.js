@@ -1,3 +1,20 @@
+const DEFAULT_PUBLIC_TEACHER_COPY = {
+    bio: 'Là giáo viên tiếng Anh và luyện thi IELTS với nền tảng học thuật bài bản theo định hướng sư phạm, đồng thời có kinh nghiệm thực tế trong giảng dạy. Phong cách làm việc tập trung vào sự rõ ràng, hiệu quả và đồng hành sát sao để người học đạt mục tiêu điểm số cũng như sử dụng tiếng Anh tự nhiên hơn.\n\nĐã trực tiếp giảng dạy và đồng hành cùng hơn 100 học viên qua các lớp 1:1 và nhóm nhỏ. Giáo viên tự xây dựng và vận hành hệ thống LMS riêng để số hóa tài liệu, bài tập tương tác, flashcard lặp lại ngắt quãng và theo dõi tiến độ học tập.',
+    specialties: [
+        'IELTS toàn diện 4 kỹ năng',
+        'Tư duy xử lý đề Listening và Reading',
+        'Phát triển ý tưởng cho Speaking và Writing',
+        'Cá nhân hóa lộ trình học'
+    ],
+    credentials: [
+        'Cử nhân Ngôn ngữ Anh (Định hướng Sư phạm), loại Giỏi – Trường Đại học Tôn Đức Thắng',
+        'IELTS Overall 8.0 (đạt 3 lần); điểm thành phần cao nhất: Reading 9.0, Listening 8.5, Speaking 8.0, Writing 7.0',
+        'Điểm 10 môn Tiếng Anh kỳ thi Tốt nghiệp THPT Quốc gia',
+        'Top 3 cuộc thi Tranh biện Tiếng Anh cấp Khoa Ngoại ngữ, Đại học Tôn Đức Thắng'
+    ],
+    philosophy: 'Cá nhân hóa lộ trình: Tập trung vào điểm cần cải thiện của từng học viên thay vì áp dụng một giáo trình rập khuôn.\n\nTư duy logic và bản chất ngôn ngữ: Giúp người học hiểu cách paraphrase, nhận diện bẫy thông tin và lý do đằng sau mỗi dạng bài thay vì chỉ học mẹo.\n\nỨng dụng công nghệ: Kết hợp sửa bài chi tiết, tương tác qua bảng số và lưu trữ dữ liệu học tập để học viên chủ động ôn tập.'
+};
+
     window.populateLandingPageEditor = function() {
         document.getElementById('pp-app-name').value = PUBLIC_PROFILE.appName || '';
         document.getElementById('pp-opening-title').value = PUBLIC_PROFILE.openingTitle || '';
@@ -33,10 +50,10 @@
         window.tempPPFeatures = [...(PUBLIC_PROFILE.features || [])];
         window.tempPPAchievements = [...(PUBLIC_PROFILE.achievements || [])];
         window.tempPPPdfs = [...(PUBLIC_PROFILE.pdfs || [])];
-        window.tempPPBio = PUBLIC_PROFILE.bio || '';
-        window.tempPPSpecialties = [...(PUBLIC_PROFILE.specialties || [])];
-        window.tempPPCredentials = [...(PUBLIC_PROFILE.credentials || [])];
-        window.tempPPPhilosophy = PUBLIC_PROFILE.philosophy || '';
+        window.tempPPBio = PUBLIC_PROFILE.bio || DEFAULT_PUBLIC_TEACHER_COPY.bio;
+        window.tempPPSpecialties = PUBLIC_PROFILE.specialties?.length ? [...PUBLIC_PROFILE.specialties] : [...DEFAULT_PUBLIC_TEACHER_COPY.specialties];
+        window.tempPPCredentials = PUBLIC_PROFILE.credentials?.length ? [...PUBLIC_PROFILE.credentials] : [...DEFAULT_PUBLIC_TEACHER_COPY.credentials];
+        window.tempPPPhilosophy = PUBLIC_PROFILE.philosophy || DEFAULT_PUBLIC_TEACHER_COPY.philosophy;
         window.tempPPClasses = [...(PUBLIC_PROFILE.classes || [])];
         window.tempPPServices = [...(PUBLIC_PROFILE.services || [])];
         window.tempPPHighlights = [...(PUBLIC_PROFILE.highlights || [])];
@@ -1264,9 +1281,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         window.renderPublicProfile();
         window.publicLandingDataPromise = (async () => {
-            const [profileResult, packagesResult, hallOfFameResult] = await Promise.allSettled([
+            const [profileResult, packagesResult, courseCatalogResult, hallOfFameResult] = await Promise.allSettled([
                 window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'public_profile')),
                 window.fsGetDocs(window.fsCollection(window.db, window.fPath('packages'))),
+                window.fsGetDocs(window.fsCollection(window.db, window.fPath('course_catalog'))),
                 window.fsGetDocs(window.fsCollection(window.db, window.fPath('hall_of_fame')))
             ]);
             const failures = [];
@@ -1283,6 +1301,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 PACKAGES = packagesResult.value.docs.map(doc => doc.data());
             } else {
                 failures.push(['packages', packagesResult.reason]);
+            }
+
+            if (courseCatalogResult.status === 'fulfilled') {
+                CLASSES = courseCatalogResult.value.docs.map(doc => doc.data());
+            } else {
+                failures.push(['course_catalog', courseCatalogResult.reason]);
             }
 
             if (hallOfFameResult.status === 'fulfilled') {
@@ -1313,6 +1337,40 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     window.scrollToPublicPackages = function() {
         document.getElementById('public-packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.updatePublicPackagePricing = function() {
+        const lessonsInput = document.getElementById('public-lessons-per-month');
+        const lessonsPerMonth = Number(lessonsInput?.value);
+        const hasValidLessonCount = Number.isInteger(lessonsPerMonth) && lessonsPerMonth >= 1 && lessonsPerMonth <= 100;
+
+        document.querySelectorAll('.public-package-pricing-summary').forEach(summary => {
+            const feePerLesson = Number(summary.dataset.feePerLesson);
+            const prompt = summary.querySelector('[data-estimate-prompt]');
+            const results = summary.querySelector('[data-estimate-results]');
+
+            if (!Number.isFinite(feePerLesson) || feePerLesson <= 0) {
+                prompt.textContent = 'Liên hệ để được tư vấn mức học phí và dự toán.';
+                results.classList.add('hidden');
+                return;
+            }
+
+            if (!hasValidLessonCount) {
+                prompt.textContent = 'Nhập số buổi học dự kiến mỗi tháng để xem dự toán.';
+                results.classList.add('hidden');
+                return;
+            }
+
+            const monthlyTotal = feePerLesson * lessonsPerMonth;
+            const fourMonthTotal = monthlyTotal * 4;
+            const fullCourseSavings = Math.round(fourMonthTotal * 0.2);
+            prompt.textContent = '';
+            summary.querySelector('[data-monthly-total]').textContent = formatVND(monthlyTotal);
+            summary.querySelector('[data-full-course-before]').textContent = formatVND(fourMonthTotal);
+            summary.querySelector('[data-full-course-savings]').textContent = `−${formatVND(fullCourseSavings)}`;
+            summary.querySelector('[data-full-course-total]').textContent = formatVND(fourMonthTotal - fullCourseSavings);
+            results.classList.remove('hidden');
+        });
     };
 
     window.renderPublicProfile = function() {
@@ -1353,15 +1411,58 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             `;
         }
 
-        // ✨ NEW: HOF Button now opens the massive separate UI
-        let hofButtonHtml = '';
-        if (HOF_STUDENTS && HOF_STUDENTS.length > 0) {
-            hofButtonHtml = `<button onclick="window.openHOFScreen()" class="mt-10 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 font-black px-8 py-3.5 rounded-full shadow-[0_10px_25px_-5px_rgba(245,158,11,0.5)] transition hover:-translate-y-1 flex items-center justify-center gap-3 mx-auto border-2 border-amber-300"><span class="text-2xl drop-shadow-md">🏆</span> Kết quả học viên</button>`;
-        }
+        const sortedHofStudents = [...(HOF_STUDENTS || [])].sort((a, b) => {
+            const scoreA = Number.parseFloat(String(a.score || '').replace(/[^\d.]/g, '')) || 0;
+            const scoreB = Number.parseFloat(String(b.score || '').replace(/[^\d.]/g, '')) || 0;
+            return scoreB - scoreA;
+        });
+        const studentResultsHtml = sortedHofStudents.length
+            ? `<section class="rounded-3xl border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-6 shadow-sm sm:p-8" aria-labelledby="public-student-results-heading">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="text-sm font-black uppercase tracking-[0.16em] text-amber-700">Hành trình học tập</p>
+                        <h2 id="public-student-results-heading" class="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Kết quả học viên</h2>
+                        <p class="mt-2 text-slate-600">Một số học viên được giới thiệu.</p>
+                    </div>
+                    <button type="button" onclick="window.openHOFScreen()" class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-amber-300 bg-white px-5 py-2.5 font-bold text-amber-900 transition hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-200">Xem tất cả kết quả <span class="ml-2" aria-hidden="true">→</span></button>
+                </div>
+                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    ${sortedHofStudents.slice(0, 3).map(student => {
+                        const name = lmsEscapeHtml(student.name || 'Học viên');
+                        const score = lmsEscapeHtml(String(student.score || '').trim());
+                        const avatar = typeof student.avatar === 'string' ? student.avatar.trim() : '';
+                        const quote = typeof student.quote === 'string' ? student.quote.trim() : '';
+                        const trf = typeof student.trf === 'string' ? student.trf.trim() : '';
+                        return `<article class="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="flex items-center gap-4">
+                                ${avatar
+                                    ? `<img src="${lmsEscapeHtml(avatar)}" alt="" class="h-14 w-14 shrink-0 rounded-full border border-slate-200 object-cover">`
+                                    : `<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xl font-black text-amber-800" aria-hidden="true">${name.charAt(0)}</div>`}
+                                <div class="min-w-0">
+                                    <h3 class="truncate font-black text-slate-900">${name}</h3>
+                                    ${score ? `<p class="mt-1 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-sm font-black text-amber-900">IELTS ${score}</p>` : ''}
+                                </div>
+                            </div>
+                            ${quote ? `<blockquote class="mt-4 flex-1 whitespace-pre-line text-sm leading-relaxed text-slate-600">“${lmsEscapeHtml(quote)}”</blockquote>` : ''}
+                            ${trf ? `<button type="button" data-image-src="${lmsEscapeHtml(trf)}" onclick="window.openLightbox(this.dataset.imageSrc, event)" class="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-blue-800 transition hover:bg-blue-50">Xem chứng chỉ</button>` : ''}
+                        </article>`;
+                    }).join('')}
+                </div>
+            </section>`
+            : '';
 
-        const specialties = PUBLIC_PROFILE.specialties || [];
-        const credentials = PUBLIC_PROFILE.credentials || [];
-        const hasTeacherDetails = Boolean(PUBLIC_PROFILE.bio || PUBLIC_PROFILE.philosophy || specialties.length || credentials.length);
+        const bio = PUBLIC_PROFILE.bio || DEFAULT_PUBLIC_TEACHER_COPY.bio;
+        const specialties = PUBLIC_PROFILE.specialties?.length ? PUBLIC_PROFILE.specialties : DEFAULT_PUBLIC_TEACHER_COPY.specialties;
+        const credentials = PUBLIC_PROFILE.credentials?.length ? PUBLIC_PROFILE.credentials : DEFAULT_PUBLIC_TEACHER_COPY.credentials;
+        const philosophy = PUBLIC_PROFILE.philosophy || DEFAULT_PUBLIC_TEACHER_COPY.philosophy;
+        const savedMissionTitle = String(PUBLIC_PROFILE.missionTitle || '').trim();
+        const missionTitle = savedMissionTitle === 'Master IELTS with Mr. Khanh'
+            ? 'Chinh phục IELTS cùng thầy Khanh'
+            : savedMissionTitle || 'Học IELTS bài bản, tiến bộ từng bước';
+        const savedMissionText = String(PUBLIC_PROFILE.missionText || '').trim();
+        const missionText = savedMissionText === 'Your result, our journey.'
+            ? 'Đồng hành cùng bạn trên hành trình chinh phục IELTS.'
+            : savedMissionText || 'Tìm khóa học và lộ trình phù hợp với mục tiêu IELTS của bạn.';
         const teacherProfileImageHtml = `<img src="${lmsEscapeHtml(teacherImageUrl)}" alt="${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Giáo viên IELTS')}" class="h-full min-h-[18rem] w-full object-cover">`;
         const teacherDetailsHtml = `<section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby="public-teacher-method-heading">
                 <div class="grid ${teacherProfileImageHtml ? 'md:grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.5fr)]' : ''}">
@@ -1370,11 +1471,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                         <p class="text-sm font-black uppercase tracking-[0.16em] text-blue-700">Đội ngũ giảng dạy</p>
                         <h2 id="public-teacher-method-heading" class="mt-2 text-2xl sm:text-3xl font-black text-slate-900">Giới thiệu giáo viên &amp; phương pháp</h2>
                         <p class="mt-2 text-slate-500">Tìm hiểu chuyên môn và định hướng giảng dạy.</p>
-                        ${PUBLIC_PROFILE.bio ? `<p class="mt-6 whitespace-pre-line text-base leading-relaxed text-slate-700">${lmsEscapeHtml(PUBLIC_PROFILE.bio)}</p>` : ''}
+                        ${bio ? `<p class="mt-6 whitespace-pre-line text-base leading-relaxed text-slate-700">${lmsEscapeHtml(bio)}</p>` : ''}
                         ${specialties.length ? `<div class="mt-6"><h3 class="text-sm font-bold uppercase tracking-wider text-slate-500">Chuyên môn</h3><div class="mt-3 flex flex-wrap gap-2">${specialties.map(s => `<span class="rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-900">${lmsEscapeHtml(s)}</span>`).join('')}</div></div>` : ''}
-                        ${PUBLIC_PROFILE.philosophy ? `<div class="mt-6 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 p-5"><h3 class="font-bold text-emerald-900">Phương pháp giảng dạy</h3><p class="mt-2 whitespace-pre-line leading-relaxed text-slate-700">${lmsEscapeHtml(PUBLIC_PROFILE.philosophy)}</p></div>` : ''}
+                        ${philosophy ? `<div class="mt-6 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 p-5"><h3 class="font-bold text-emerald-900">Phương pháp giảng dạy</h3><p class="mt-2 whitespace-pre-line leading-relaxed text-slate-700">${lmsEscapeHtml(philosophy)}</p></div>` : ''}
                         ${credentials.length ? `<div class="mt-6"><h3 class="text-sm font-bold uppercase tracking-wider text-slate-500">Chứng chỉ &amp; bằng cấp</h3><ul class="mt-3 space-y-2">${credentials.map(credential => `<li class="flex items-start gap-2 text-slate-700"><span class="mt-1 text-amber-600" aria-hidden="true">●</span><span>${lmsEscapeHtml(credential)}</span></li>`).join('')}</ul></div>` : ''}
-                        ${!hasTeacherDetails ? `<p class="mt-6 rounded-xl bg-slate-50 p-4 text-slate-600">Thông tin giới thiệu giáo viên và phương pháp giảng dạy chưa được cập nhật.</p>` : ''}
                     </div>
                 </div>
             </section>`;
@@ -1386,6 +1486,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
         const detailSections = [];
         if (teacherDetailsHtml) detailSections.push(teacherDetailsHtml);
+        if (studentResultsHtml) detailSections.push(studentResultsHtml);
         if (cvSections.length) detailSections.push(`<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">${cvSections.join('')}</div>`);
         if ((PUBLIC_PROFILE.achievements || []).length || (PUBLIC_PROFILE.features || []).length) {
             detailSections.push(`<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1393,7 +1494,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 ${(PUBLIC_PROFILE.features || []).length ? `<section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="text-xl font-bold text-emerald-800 mb-4">🚀 Nền tảng học tập</h3><ul class="space-y-3">${PUBLIC_PROFILE.features.map(item => `<li class="flex items-start gap-3 text-slate-700"><span class="mt-1 text-emerald-600">✓</span><span class="leading-snug">${item}</span></li>`).join('')}</ul></section>` : ''}
             </div>`);
         }
-        if (hofButtonHtml) detailSections.push(`<div class="text-center">${hofButtonHtml}</div>`);
         if (resourcesHtml) detailSections.push(resourcesHtml);
 
         c.innerHTML = `
@@ -1402,13 +1502,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     <div class="inline-flex items-center gap-2 rounded-full border border-blue-300/25 bg-white/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-blue-100">
                         <span class="h-2 w-2 rounded-full bg-cyan-300"></span>${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Lộ trình học IELTS')}
                     </div>
-                    <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm">${PUBLIC_PROFILE.missionTitle || 'Học IELTS bài bản, tiến bộ từng bước'}</h1>
-                    <p class="mt-5 max-w-xl text-lg sm:text-xl leading-relaxed text-blue-100">${PUBLIC_PROFILE.missionText || 'Tìm khóa học và lộ trình phù hợp với mục tiêu IELTS của bạn.'}</p>
+                    <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm">${lmsEscapeHtml(missionTitle)}</h1>
+                    <p class="mt-5 max-w-xl text-lg sm:text-xl leading-relaxed text-blue-100">${lmsEscapeHtml(missionText)}</p>
                     <div class="mt-8 flex flex-col sm:flex-row gap-3">
                         <button type="button" onclick="window.scrollToPublicPackages()" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-black text-blue-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Xem khóa học <span class="ml-2" aria-hidden="true">↓</span></button>
-                        <button type="button" onclick="window.showAuthFromLanding()" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Đăng nhập / đăng ký</button>
+                        <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Tư vấn qua Zalo</a>
                     </div>
-                    <p class="mt-4 text-sm text-blue-200">Xem thông tin khóa học trước khi đăng ký.</p>
+                    <p class="mt-4 text-sm text-blue-200">Bạn đã có tài khoản? <button type="button" onclick="window.showAuthFromLanding()" class="font-bold text-white underline decoration-white/50 underline-offset-4 hover:decoration-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Đăng nhập / đăng ký</button></p>
                 </div>
                 <div class="relative mx-auto w-full max-w-md pb-8 md:pb-10">
                     ${teacherImageHtml}
@@ -1425,32 +1525,70 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         const pgrid = document.getElementById('public-packages-grid');
         if (pgrid) {
             if (PACKAGES.length === 0) {
-                pgrid.innerHTML = `<div class="col-span-full text-center text-slate-500 italic bg-white p-10 rounded-2xl border border-slate-200">Course bundles opening soon. Check back later!</div>`;
+                pgrid.innerHTML = `<div class="col-span-full rounded-2xl border border-blue-100 bg-blue-50 p-8 text-center sm:p-10">
+                    <h3 class="text-xl font-black text-slate-900">Chưa có gói học được đăng công khai</h3>
+                    <p class="mx-auto mt-2 max-w-xl text-slate-600">Liên hệ để được tư vấn về lớp học và học phí phù hợp với mục tiêu của bạn.</p>
+                    <div class="mt-5 flex flex-wrap justify-center gap-3">
+                        <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="rounded-xl bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800">Tư vấn qua Zalo</a>
+                        <a href="tel:+84913980712" class="rounded-xl border border-blue-200 bg-white px-5 py-3 font-bold text-blue-900 transition hover:bg-blue-50">Gọi 0913 980 712</a>
+                    </div>
+                </div>`;
             } else {
                 pgrid.innerHTML = PACKAGES.map(p => {
                     const classNames = (p.classes || []).map(cid => {
                         const found = CLASSES.find(c => c.id === cid);
                         return found && !window.isTemplateClass(found) ? found.name : '';
                     }).filter(Boolean);
+                    const feePerLesson = Number(p.feePerLesson);
+                    const hasPackageFee = Number.isFinite(feePerLesson) && feePerLesson > 0;
+                    const packageDetails = [
+                        ['Học viên phù hợp', p.targetAudience],
+                        ['Mục tiêu khóa học', p.goal],
+                        ['Nội dung / kỹ năng học', p.curriculum],
+                        ['Thời lượng', p.duration],
+                        ['Số buổi', p.lessonCount],
+                        ['Hình thức học', p.format],
+                        ['Lịch học dự kiến', p.schedule],
+                        ['Sĩ số lớp', p.classSize]
+                    ].filter(([, value]) => String(value || '').trim());
                     
                     return `
                     <div class="bg-white border-2 border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all flex flex-col transform hover:-translate-y-1 relative overflow-hidden group">
                         <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div class="relative z-10 flex flex-col h-full">
-                            <h3 class="text-xl font-black text-blue-950 mb-2">${p.name}</h3>
-                            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded inline-block w-max mb-4 border border-emerald-200">${classNames.length} Courses Included</p>
-                            <ul class="space-y-2 mb-6 flex-1">
-                                ${classNames.map(n => `<li class="text-sm font-medium text-slate-600 flex items-start gap-2"><span class="text-blue-500 mt-0.5 font-bold">✓</span> ${n}</li>`).join('')}
-                            </ul>
-                            <div class="mt-auto border-t border-slate-100 pt-4 flex items-center justify-between mb-4">
-                                <span class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Base Tuition</span>
-                                <span class="text-lg font-black text-emerald-600">${formatVND(p.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000)}<span class="text-xs text-slate-400 font-bold">/lesson</span></span>
+                            <h3 class="text-xl font-black text-blue-950 mb-3">${lmsEscapeHtml(p.name || 'Gói học IELTS')}</h3>
+                            <div class="mb-6 flex-1">
+                                ${classNames.length
+                                    ? `<p class="mb-3 text-sm font-bold text-slate-700">${classNames.length} lớp học trong gói</p><ul class="space-y-2">${classNames.map(name => `<li class="text-sm font-medium text-slate-600 flex items-start gap-2"><span class="text-blue-500 mt-0.5 font-bold" aria-hidden="true">✓</span><span>${lmsEscapeHtml(name)}</span></li>`).join('')}</ul>`
+                                    : `<p class="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Thông tin lớp học trong gói chưa được cập nhật.</p>`}
+                                ${packageDetails.length ? `
+                                    <details class="mt-4 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                                        <summary class="cursor-pointer font-bold text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Chi tiết khóa học</summary>
+                                        <dl class="mt-3 space-y-3">
+                                            ${packageDetails.map(([label, value]) => `<div><dt class="text-xs font-bold uppercase tracking-wide text-slate-500">${label}</dt><dd class="mt-1 whitespace-pre-line text-sm leading-relaxed text-slate-700">${lmsEscapeHtml(value)}</dd></div>`).join('')}
+                                        </dl>
+                                    </details>
+                                ` : ''}
                             </div>
-                            <button onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Đăng ký khóa học</button>
+                            <div class="mt-auto border-t border-slate-100 pt-4 mb-4">
+                                <span class="block text-xs font-bold uppercase tracking-wider text-slate-500">Học phí mỗi buổi</span>
+                                <span class="mt-1 block text-xl font-black text-emerald-700">${hasPackageFee ? `${formatVND(feePerLesson)}<span class="text-sm font-bold text-slate-500"> / buổi</span>` : '<span class="text-base text-slate-600">Liên hệ để được tư vấn</span>'}</span>
+                            </div>
+                            <div class="public-package-pricing-summary mb-4 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm" data-fee-per-lesson="${hasPackageFee ? feePerLesson : ''}">
+                                <p data-estimate-prompt class="text-slate-600"></p>
+                                <dl data-estimate-results class="hidden space-y-2">
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Thanh toán theo tháng</dt><dd data-monthly-total class="text-right font-bold text-slate-900"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Trọn 4 tháng, trước ưu đãi</dt><dd data-full-course-before class="text-right font-semibold text-slate-700"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="font-bold text-emerald-800">Tiết kiệm 20%</dt><dd data-full-course-savings class="text-right font-black text-emerald-800"></dd></div>
+                                    <div class="flex justify-between gap-3 border-t border-emerald-200 pt-2"><dt class="font-bold text-slate-800">Trọn 4 tháng, sau ưu đãi</dt><dd data-full-course-total class="text-right font-black text-emerald-800"></dd></div>
+                                </dl>
+                            </div>
+                            <button type="button" onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Đăng ký khóa học</button>
                         </div>
                     </div>`;
                 }).join('');
             }
+            window.updatePublicPackagePricing();
         }
     };
 

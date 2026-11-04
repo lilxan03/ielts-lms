@@ -399,9 +399,8 @@
             return discounted;
         };
         const configuredComboRate = Number(BILLING_SETTINGS.discCombo);
-        const configuredCourseRate = Number(BILLING_SETTINGS.discCourse);
         const comboRate = Number.isFinite(configuredComboRate) ? configuredComboRate : 10;
-        const courseRate = Number.isFinite(configuredCourseRate) ? configuredCourseRate : 10;
+        const courseRate = 20;
         const p1Raw = fpl * lpm;
         const p2Raw = fpl * lpm * 2;
         const p2Disc = p2Raw * (1 - (comboRate / 100));
