@@ -248,7 +248,7 @@ service cloud.firestore {
     }
 
     match /course_catalog/{classId} {
-      allow read: if signedIn();
+      allow read: if true;
       allow write: if isStaff();
     }
 

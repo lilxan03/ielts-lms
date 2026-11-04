@@ -8,7 +8,9 @@
   <meta name="theme-color" content="#1e293b">
   <meta name="description" content="Khám phá các khóa học IELTS, lộ trình học và phương pháp giảng dạy tại IELTS W KHANH. Xem thông tin khóa học hoặc liên hệ để được tư vấn.">
   <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ielts-with-khanh.vercel.app/">
   <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ielts-with-khanh.vercel.app/">
   <meta property="og:locale" content="vi_VN">
   <meta property="og:site_name" content="IELTS W KHANH">
   <meta property="og:title" content="IELTS W KHANH | Khóa học IELTS">
@@ -20,13 +22,95 @@
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "EducationalOrganization",
-      "name": "IELTS W KHANH",
-      "email": "lyquockhanh03@gmail.com",
-      "telephone": "+84913980712",
-      "sameAs": [
-        "https://web.facebook.com/lilqkhanh/",
-        "https://zalo.me/0913980712"
+      "@graph": [
+        {
+          "@type": "EducationalOrganization",
+          "name": "IELTS W KHANH",
+          "url": "https://ielts-with-khanh.vercel.app/",
+          "@id": "https://ielts-with-khanh.vercel.app/#organization",
+          "description": "Các khóa học IELTS, lộ trình học và phương pháp giảng dạy tiếng Anh.",
+          "email": "lyquockhanh03@gmail.com",
+          "telephone": "+84913980712",
+          "sameAs": [
+            "https://web.facebook.com/lilqkhanh/",
+            "https://zalo.me/0913980712"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "name": "IELTS W KHANH",
+          "url": "https://ielts-with-khanh.vercel.app/",
+          "inLanguage": "vi"
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Làm thế nào để đăng ký khóa học?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Tạo tài khoản hoặc đăng nhập, chọn lớp học và gói thanh toán, chuyển khoản theo mã QR trong trang thanh toán rồi nhấn nút thông báo đã chuyển khoản. Quyền truy cập khóa học được mở sau khi giáo viên xác nhận thanh toán."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Tôi có thể đăng nhập bằng cách nào?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Bạn có thể đăng nhập bằng username và mật khẩu, email và mật khẩu, hoặc Google nếu tài khoản đã liên kết."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Tôi cần tư vấn khóa học hoặc hỗ trợ tài khoản thì làm sao?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Liên hệ trực tiếp qua Zalo, điện thoại, email hoặc Facebook ở mục liên hệ bên cạnh để được hỗ trợ."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Lớp học diễn ra online hay trực tiếp?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Phần lớn lớp học diễn ra online. Một số lớp học trực tiếp tại Quận 7; địa điểm cụ thể sẽ được xác nhận khi tư vấn."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Lịch học được sắp xếp như thế nào?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Lịch học cố định theo từng khóa/lớp và sẽ được thông báo khi bạn đăng ký."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Học phí và thanh toán như thế nào?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Bạn có thể thanh toán theo tháng theo số buổi đã chọn. Gói thanh toán trọn 4 tháng được giảm 20% tổng học phí. Bạn có thể xem ước tính theo số buổi mỗi tháng tại phần Khóa học & học phí; số tiền cuối cùng được hiển thị trước khi thanh toán."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Có cần đánh giá trình độ trước khi đăng ký không?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Bạn sẽ được tư vấn hoặc đánh giá trình độ để xếp lớp phù hợp."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Nếu cần nghỉ buổi, tôi có thể học bù hoặc đổi lịch không?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Buổi đã nghỉ không được học bù hoặc đổi lịch."
+              }
+            }
+          ]
+        }
       ]
     }
   </script>
@@ -79,8 +163,52 @@
       <!-- Packages Section -->
       <div id="public-packages-section" class="max-w-6xl mx-auto px-4 pt-12 pb-20 scroll-mt-8">
           <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-blue-50">
-              <h2 class="text-2xl sm:text-3xl font-black text-center text-blue-950 mb-2">Chọn khóa học phù hợp</h2>
-              <p class="text-center text-slate-500 mb-10 font-medium">Xem các khóa học và gói học hiện có.</p>
+              <h2 class="text-2xl sm:text-3xl font-black text-center text-blue-950 mb-2">Khóa học &amp; học phí</h2>
+              <p class="text-center text-slate-500 mb-10 font-medium">Tham khảo các gói học, lớp học đi kèm và học phí được công bố.</p>
+              <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
+                  <label for="public-lessons-per-month" class="block text-sm font-black text-slate-900">Ước tính học phí theo số buổi học mỗi tháng</label>
+                  <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div class="flex items-center gap-3">
+                          <input id="public-lessons-per-month" type="number" min="1" max="100" step="1" inputmode="numeric" placeholder="Nhập số buổi" aria-describedby="public-pricing-estimate-note" oninput="window.updatePublicPackagePricing()" class="w-36 rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-bold text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                          <span class="text-sm font-semibold text-slate-600">buổi / tháng</span>
+                      </div>
+                      <p id="public-pricing-estimate-note" class="text-sm leading-relaxed text-slate-500">Ước tính dựa trên đơn giá mỗi buổi của từng gói. Gói 4 tháng giảm 20%; chưa tính ưu đãi giới thiệu (nếu có). Số tiền cuối cùng sẽ được xác nhận ở bước thanh toán.</p>
+                  </div>
+              </div>
+              <div class="mb-8 flex flex-col gap-4 rounded-2xl border border-cyan-100 bg-gradient-to-r from-cyan-50 to-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                  <div>
+                      <h3 class="text-lg font-black text-slate-900">Chưa chắc khóa học nào phù hợp?</h3>
+                      <p class="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">Nhắn Zalo để trao đổi về mục tiêu và trình độ hiện tại. Bạn sẽ được tư vấn, đánh giá trình độ và gợi ý lớp phù hợp.</p>
+                  </div>
+                  <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 px-5 py-3 font-black text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">Tư vấn &amp; xếp lớp qua Zalo</a>
+              </div>
+              <section class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="course-operations-heading">
+                  <h3 id="course-operations-heading" class="text-lg font-black text-slate-900">Hình thức học &amp; quy trình đăng ký</h3>
+                  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                      <div class="rounded-xl bg-blue-50 p-4">
+                          <h4 class="font-bold text-blue-950">Hình thức &amp; địa điểm</h4>
+                          <p class="mt-1 text-sm leading-relaxed text-slate-700">Phần lớn lớp học diễn ra online. Một số lớp học trực tiếp tại Quận 7; địa điểm cụ thể sẽ được xác nhận khi tư vấn.</p>
+                      </div>
+                      <div class="rounded-xl bg-indigo-50 p-4">
+                          <h4 class="font-bold text-indigo-950">Lịch học</h4>
+                          <p class="mt-1 text-sm leading-relaxed text-slate-700">Lịch cố định theo từng khóa/lớp và được thông báo khi đăng ký.</p>
+                      </div>
+                      <div class="rounded-xl bg-emerald-50 p-4">
+                          <h4 class="font-bold text-emerald-950">Các bước đăng ký</h4>
+                          <ol class="mt-1 list-inside list-decimal space-y-1 text-sm leading-relaxed text-slate-700">
+                              <li>Tạo tài khoản hoặc đăng nhập.</li>
+                              <li>Chọn lớp học và gói thanh toán.</li>
+                              <li>Chuyển khoản theo mã QR, sau đó thông báo đã chuyển khoản.</li>
+                              <li>Giáo viên xác nhận thanh toán để mở quyền truy cập khóa học.</li>
+                          </ol>
+                      </div>
+                      <div class="rounded-xl bg-amber-50 p-4">
+                          <h4 class="font-bold text-amber-950">Thanh toán &amp; nghỉ buổi</h4>
+                          <p class="mt-1 text-sm leading-relaxed text-slate-700">Có thể thanh toán theo tháng; gói trọn 4 tháng giảm 20%. Buổi đã nghỉ không được học bù hoặc đổi lịch.</p>
+                      </div>
+                  </div>
+                  <p class="mt-4 text-sm text-slate-600">Cần hỏi thêm? <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 underline underline-offset-2 hover:text-blue-900">Nhắn Zalo 0913 980 712</a> hoặc xem các kênh liên hệ bên dưới.</p>
+              </section>
               <div id="public-packages-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <!-- Packages injected via JS -->
               </div>
@@ -98,7 +226,7 @@
                               Làm thế nào để đăng ký khóa học?
                               <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
                           </summary>
-                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Chọn khóa học phù hợp, nhấn “Đăng ký khóa học”, sau đó đăng nhập hoặc tạo tài khoản để tiếp tục theo hướng dẫn.</p>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Tạo tài khoản hoặc đăng nhập, chọn lớp học và gói thanh toán, chuyển khoản theo mã QR trong trang thanh toán rồi nhấn nút thông báo đã chuyển khoản. Quyền truy cập khóa học được mở sau khi giáo viên xác nhận thanh toán.</p>
                       </details>
                       <details class="group py-4">
                           <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
@@ -113,6 +241,41 @@
                               <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
                           </summary>
                           <p class="mt-3 pr-8 leading-relaxed text-slate-600">Liên hệ trực tiếp qua Zalo, điện thoại, email hoặc Facebook ở mục liên hệ bên cạnh để được hỗ trợ.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Lớp học diễn ra online hay trực tiếp?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Phần lớn lớp học diễn ra online. Một số lớp học trực tiếp tại Quận 7; địa điểm cụ thể sẽ được xác nhận khi tư vấn.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Lịch học được sắp xếp như thế nào?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Lịch học cố định theo từng khóa/lớp và sẽ được thông báo khi bạn đăng ký.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Học phí và thanh toán như thế nào?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Bạn có thể thanh toán theo tháng theo số buổi đã chọn. Gói thanh toán trọn 4 tháng được giảm 20% tổng học phí. Bạn có thể xem ước tính theo số buổi mỗi tháng tại phần Khóa học &amp; học phí; số tiền cuối cùng được hiển thị trước khi thanh toán.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Có cần đánh giá trình độ trước khi đăng ký không?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Bạn sẽ được tư vấn hoặc đánh giá trình độ để xếp lớp phù hợp.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Nếu cần nghỉ buổi, tôi có thể học bù hoặc đổi lịch không?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Buổi đã nghỉ không được học bù hoặc đổi lịch.</p>
                       </details>
                   </div>
               </div>
@@ -130,14 +293,17 @@
               </aside>
           </section>
 
-          <div class="mt-12 text-center flex flex-col items-center gap-4">
-              <button onclick="window.showAuthFromLanding()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xl px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+          <div class="mt-12 flex flex-col items-center justify-center gap-4 text-center sm:flex-row">
+              <button onclick="window.showAuthFromLanding()" class="min-h-12 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-black text-white shadow-lg transition-all hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">
                   Tạo tài khoản miễn phí &rarr;
               </button>
+              <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-blue-200 bg-white px-8 py-3 font-bold text-blue-900 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">
+                  Tư vấn qua Zalo
+              </a>
               <button data-auth-action="demo-login" class="hidden text-indigo-600 hover:text-indigo-800 font-black text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-6 py-2.5 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
                   🕹️ Try Demo Student Account
               </button>
-              <p class="text-sm text-slate-500 font-bold">🎁 Sign up today and get 50 Free Gems!</p>
+              <p class="text-sm text-slate-500 font-medium">Tạo tài khoản để bắt đầu học và theo dõi lộ trình của bạn.</p>
           </div>
       </div>
   </div>
@@ -145,13 +311,13 @@
   <!-- ✨ NEW: HOF FULL SCREEN MODAL -->
   <div id="hof-full-screen" class="hidden fixed inset-0 bg-slate-50 z-[250] overflow-y-auto animate-fade-in">
       <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 p-4 sm:p-6 flex justify-between items-center shadow-md sticky top-0 z-30 border-b border-amber-300">
-          <h1 class="text-xl sm:text-2xl font-black drop-shadow-sm flex items-center gap-2">🏆 Student Hall of Fame</h1>
-          <button onclick="window.closeHOFScreen()" class="bg-white/20 hover:bg-white/40 border border-white/40 text-amber-950 px-4 py-2 rounded-xl font-black transition text-sm shadow-sm">&larr; Back to Home</button>
+          <h1 class="text-xl sm:text-2xl font-black drop-shadow-sm flex items-center gap-2">🏆 Kết quả học viên</h1>
+          <button onclick="window.closeHOFScreen()" class="bg-white/20 hover:bg-white/40 border border-white/40 text-amber-950 px-4 py-2 rounded-xl font-black transition text-sm shadow-sm">&larr; Về trang chủ</button>
       </div>
       <div class="max-w-7xl mx-auto px-4 py-12">
           <div class="text-center mb-16">
-              <h2 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight mb-4">Our Success Stories</h2>
-              <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Real students. Real results. Verified by official TRF certificates.</p>
+              <h2 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight mb-4">Hành trình chinh phục IELTS</h2>
+              <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Một số kết quả và chia sẻ của học viên.</p>
           </div>
           <div id="hof-full-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
       </div>
@@ -2129,7 +2295,7 @@
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block" title="Used as base fee for new classes">Default Fee/Lesson</label><input type="number" id="bill-fee" class="w-full border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-xl font-black text-emerald-900 outline-none focus:border-emerald-500 transition"></div>
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Lessons / Month</label><input type="number" id="bill-lpm" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-black text-slate-800 outline-none focus:border-blue-500 transition"></div>
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Combo Disc (%)</label><input type="number" id="bill-disc-combo" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 10"></div>
-                  <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Disc (%)</label><input type="number" id="bill-disc-course" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 20"></div>
+                  <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Discount (4 months)</label><input type="number" id="bill-disc-course" value="20" readonly aria-label="Full course discount fixed at 20 percent" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none"></div>
                </div>
                
                <div class="mb-8 border-t border-slate-100 pt-6">
@@ -2298,28 +2464,28 @@
                 </div>
 
                 <div class="pt-4 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Teacher Bio / CV Intro</label>
-                    <textarea id="pp-bio" oninput="window.tempPPBio = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-28 resize-none" placeholder="Write a short professional bio that sells your teaching background, experience, and student outcomes."></textarea>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Giới thiệu giáo viên</label>
+                    <textarea id="pp-bio" oninput="window.tempPPBio = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-40 resize-y" placeholder="Giới thiệu nền tảng, kinh nghiệm và cách bạn đồng hành cùng học viên."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
-                            Specialties <button type="button" onclick="window.addPPList('specialties')" class="text-blue-600 hover:underline">+ Add</button>
+                            Chuyên môn <button type="button" onclick="window.addPPList('specialties')" class="text-blue-600 hover:underline">+ Thêm</button>
                         </label>
                         <div id="pp-specialties-list" class="space-y-2"></div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
-                            Credentials <button type="button" onclick="window.addPPList('credentials')" class="text-blue-600 hover:underline">+ Add</button>
+                            Bằng cấp &amp; chứng chỉ <button type="button" onclick="window.addPPList('credentials')" class="text-blue-600 hover:underline">+ Thêm</button>
                         </label>
                         <div id="pp-credentials-list" class="space-y-2"></div>
                     </div>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Teaching Philosophy</label>
-                    <textarea id="pp-philosophy" oninput="window.tempPPPhilosophy = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-24 resize-none" placeholder="Explain how you teach, what makes your method effective, and why students trust you."></textarea>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Phương pháp giảng dạy</label>
+                    <textarea id="pp-philosophy" oninput="window.tempPPPhilosophy = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-40 resize-y" placeholder="Mô tả cách bạn cá nhân hóa lộ trình, dạy tư duy làm bài và ứng dụng công nghệ."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
