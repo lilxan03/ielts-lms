@@ -12,5 +12,10 @@
         return `${safeEmailPrefix}@khanhlms.com`;
     }
 
-    return Object.freeze({ isValidUsername, usernameToAuthEmail });
+    function loginIdentifierToAuthEmail(identifier) {
+        const value = String(identifier || '').trim();
+        return value.includes('@') ? value.toLowerCase() : usernameToAuthEmail(value);
+    }
+
+    return Object.freeze({ isValidUsername, usernameToAuthEmail, loginIdentifierToAuthEmail });
 });

@@ -67,7 +67,17 @@
                     if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) {
                         window.renderForumThreads();
                     }
-                }, error => console.error('Unable to load forum messages:', error));
+                }, error => {
+                    console.error('Unable to load forum messages:', error);
+                    if (error.code === 'permission-denied' && !window._forumPermissionWarningShown) {
+                        window._forumPermissionWarningShown = true;
+                        window.showToast?.(
+                            'Forum access denied',
+                            'This account may not have forum access yet. If it is approved, ask the administrator to deploy the latest Firestore rules.',
+                            'error'
+                        );
+                    }
+                });
             });
             window._forumListenerAttached = true;
         }

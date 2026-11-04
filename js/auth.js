@@ -944,7 +944,9 @@
       btn.textContent = "Connecting..."; btn.disabled = true;
 
       // ✨ FIX: 100% safe email generation even for names with spaces and accents (e.g. "Khanh Lý")
-      const mappedEmail = window.LMSAuthHelpers.usernameToAuthEmail(u);
+      const mappedEmail = authMode === 'login'
+          ? window.LMSAuthHelpers.loginIdentifierToAuthEmail(u)
+          : window.LMSAuthHelpers.usernameToAuthEmail(u);
 
       window.authFlowInProgress = true;
       try {
@@ -983,7 +985,7 @@
                 credential = await window.fsAuthSignIn(window.auth, mappedEmail, p);
             } catch (error) {
                 err.textContent = error.code === 'auth/invalid-credential'
-                    ? 'Invalid username or password. Older accounts that were only stored in Firestore must first be created in Firebase Authentication.'
+                    ? 'Invalid username/email or password. For Google-only accounts, use Sign in with Google. Older accounts stored only in Firestore must first be created in Firebase Authentication.'
                     : error.message || 'Invalid username or password';
                 err.classList.remove('hidden');
                 usernameInput.setAttribute('aria-invalid', 'true');
