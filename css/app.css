@@ -235,6 +235,18 @@
         align-items: center;
         justify-content: center;
     }
+    #start-screen.checkout-mode > #student-banner-bg,
+    #start-screen.checkout-mode > #student-dashboard-content {
+        width: 100%;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
+    #start-screen.checkout-mode #student-sidebar,
+    #start-screen.checkout-mode #student-sidebar-backdrop,
+    #start-screen.checkout-mode .app-sidebar-toggle {
+        display: none;
+    }
     #start-screen > #student-banner-bg,
     #start-screen > #student-dashboard-content {
         width: calc(100% - 256px);
