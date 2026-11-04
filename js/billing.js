@@ -52,6 +52,11 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     }
 
+    function getStudentDisplayName(user = currentUser) {
+      return window.LMSAuthHelpers.getStudentDisplayName(user, window.auth?.currentUser);
+    }
+    window.getStudentDisplayName = getStudentDisplayName;
+
     function parseBillingDeadlineDate(value) {
       const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (!match) return null;
@@ -99,7 +104,7 @@
     window.getStudentBillingStatus = getStudentBillingStatus;
 
     window.initStudentDashboard = function initStudentDashboard(preserveCid = null) {
-      document.getElementById('student-name-display').textContent = currentUser.user;
+      document.getElementById('student-name-display').textContent = getStudentDisplayName();
       
       scheduleStudentBillingExpiry();
       const isPaid = hasActiveStudentAccess(currentUser);
@@ -245,63 +250,70 @@
         const lpmDefault = BILLING_SETTINGS.lessonsPerMonth || 12;
         const billingExpiry = getBillingExpiryMillis(currentUser);
         const expiredPlanNotice = billingExpiry !== null && billingExpiry <= Date.now()
-            ? `<p class="text-amber-100 mb-5 font-bold">Your ${currentUser.billingPlanTitle || 'tuition plan'} expired on ${formatBillingDate(billingExpiry)}. Submit your next payment and wait for teacher verification to restore course access.</p>`
+            ? `<p class="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5 font-semibold">Your ${currentUser.billingPlanTitle || 'tuition plan'} expired on ${formatBillingDate(billingExpiry)}. Submit your next payment and wait for teacher verification to restore course access.</p>`
             : '';
 
         document.getElementById('student-payment-warning').innerHTML = `
-         <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl shadow-2xl overflow-hidden border border-blue-500 flex flex-col lg:flex-row">
-            <div class="p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 border border-white/30 rounded-full text-white text-xs font-black uppercase tracking-widest mb-6 w-max shadow-sm">
-                   <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Access Locked
+         <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 flex flex-col lg:flex-row">
+            <div class="p-6 sm:p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center bg-gradient-to-br from-slate-50 to-white">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-100 rounded-full text-blue-700 text-xs font-black uppercase tracking-widest mb-4 w-max">
+                   <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[10px]">1</span> Choose your course
                 </div>
-                <h2 class="text-3xl font-black text-white mb-3">Unlock Your Course</h2>
-                ${hasActiveStudentAccess(currentUser) ? `<button type="button" onclick="window.closeStudentRenewal()" class="text-left text-sm font-bold text-blue-100 hover:text-white mb-3">← Back to my classes</button>` : ''}
-                <p class="text-blue-100 mb-6 font-medium">Customize your study plan below to calculate your tuition.</p>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mb-2">Start your IELTS course</h2>
+                ${hasActiveStudentAccess(currentUser) ? `<button type="button" onclick="window.closeStudentRenewal()" class="text-left text-sm font-bold text-blue-700 hover:text-blue-900 mb-3">← Back to my classes</button>` : ''}
+                <p class="text-slate-600 mb-6 font-medium">Choose a class and study plan. Your total updates automatically before you pay.</p>
                 ${expiredPlanNotice}
                 
-                <div class="flex gap-4 mb-6">
+                <div class="flex flex-col sm:flex-row gap-4 mb-5">
                     <div class="flex-1">
-                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-1.5">Select Course or Bundle</label>
-                        <select id="checkout-course" class="w-full bg-blue-700/50 border border-blue-500 text-white p-2.5 rounded-lg outline-none focus:bg-white focus:text-blue-900 focus:border-white font-bold transition-colors shadow-inner" onchange="window.updateCheckoutMath()">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Course or bundle</label>
+                        <select id="checkout-course" class="w-full bg-white border border-slate-300 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold transition-colors shadow-sm" onchange="window.updateCheckoutMath()">
                             ${classOpts}
                         </select>
                     </div>
-                    <div class="w-[120px]" id="checkout-lpm-container">
-                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-1.5" title="Lessons per month">Lessons/Mo</label>
-                        <input type="number" id="checkout-lpm" value="${lpmDefault}" min="1" max="100" class="w-full bg-blue-700/50 border border-blue-500 text-white p-2.5 rounded-lg outline-none focus:bg-white focus:text-blue-900 focus:border-white font-bold text-center transition-colors shadow-inner" oninput="window.updateCheckoutMath()">
+                    <div class="w-full sm:w-32 shrink-0" id="checkout-lpm-container">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" title="Lessons per month">Lessons / mo</label>
+                        <input type="number" id="checkout-lpm" value="${lpmDefault}" min="1" max="100" class="w-full bg-white border border-slate-300 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold text-center transition-colors shadow-sm" oninput="window.updateCheckoutMath()">
                     </div>
                 </div>
 
-                <div id="checkout-package-info" class="hidden bg-blue-900/40 border border-blue-500/50 rounded-xl p-4 mb-6 shadow-inner"></div>
-                <div class="mb-6 rounded-xl border border-blue-400/50 bg-blue-900/30 p-4">
-                    <label class="block text-xs font-bold text-blue-100 uppercase tracking-widest mb-2">Referral code (optional)</label>
+                <div id="checkout-package-info" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5"></div>
+                <div class="mb-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Referral code <span class="normal-case tracking-normal font-medium">(optional)</span></label>
                     <div class="flex gap-2">
-                        <input id="checkout-referral-code" type="text" maxlength="40" placeholder="Enter a student's code" class="min-w-0 flex-1 bg-white border border-blue-200 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold uppercase">
-                        <button type="button" onclick="window.applyReferralCode()" class="bg-white text-blue-800 hover:bg-blue-50 px-4 rounded-lg font-bold text-sm">Apply</button>
+                        <input id="checkout-referral-code" type="text" maxlength="40" placeholder="Enter a student's code" class="min-w-0 flex-1 bg-white border border-slate-300 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold uppercase">
+                        <button type="button" onclick="window.applyReferralCode()" class="bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100 px-4 rounded-lg font-bold text-sm">Apply</button>
                     </div>
-                    <div id="checkout-referral-status" class="text-xs text-blue-100 mt-2" aria-live="polite"></div>
+                    <div id="checkout-referral-status" class="text-xs text-slate-500 mt-2" aria-live="polite"></div>
                 </div>
 
-                <div class="space-y-4" id="checkout-plans-container"></div>
+                <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-3">Choose a payment plan</h3>
+                <div class="space-y-3" id="checkout-plans-container"></div>
             </div>
-            <div class="bg-white p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-l border-blue-100 relative">
-                <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-400 to-blue-600"></div>
-                <h3 class="text-xl font-black text-blue-900 mb-6 uppercase tracking-wider flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg> Scan to Pay</h3>
+            <div class="bg-white p-6 sm:p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-t lg:border-t-0 lg:border-l border-slate-200 relative">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-700 text-xs font-black uppercase tracking-widest mb-4">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px]">2</span> Complete payment
+                </div>
+                <h3 class="text-xl font-black text-slate-900 mb-2 tracking-tight">Scan to pay</h3>
+                <p class="text-sm text-slate-500 text-center mb-5">Use your banking app to scan this QR code.</p>
                 
-                <div class="p-2 bg-white rounded-xl shadow-lg border-2 border-blue-50 mb-6 relative group">
-                    <img id="vietqr-image" src="" class="w-56 h-56 object-contain rounded-lg transition-all group-hover:scale-105" alt="Bank QR Code">
+                <div class="p-2 bg-white rounded-2xl shadow-md border border-slate-200 mb-5 relative">
+                    <img id="vietqr-image" src="" class="w-52 h-52 sm:w-56 sm:h-56 object-contain rounded-lg" alt="Bank QR Code">
                 </div>
 
-                <div class="text-center w-full mb-6">
+                <div class="text-center w-full mb-5">
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total to Pay</div>
-                    <div id="vietqr-amount" class="text-3xl font-black text-blue-600 tracking-tight">0 ₫</div>
-                    <div class="bg-blue-50 border border-blue-100 rounded p-2 mt-3 font-mono text-sm text-blue-800 break-all shadow-inner">Msg: <span id="vietqr-desc" class="font-bold text-blue-900"></span></div>
+                    <div id="vietqr-amount" class="text-3xl font-black text-blue-700 tracking-tight">0 ₫</div>
+                    <div class="text-left bg-slate-50 border border-slate-200 rounded-xl p-3 mt-4">
+                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Bank transfer note</div>
+                        <div id="vietqr-desc" class="font-mono text-sm font-bold text-slate-800 break-words"></div>
+                    </div>
                 </div>
 
-                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" class="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-black rounded-xl shadow-[0_10px_20px_-10px_rgba(59,130,246,0.5)] transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-lg">
-                    I Have Transferred the Money ✓
+                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-base">
+                    I have completed the transfer
                 </button>
-                <p class="text-[10px] text-slate-400 text-center mt-3 font-medium">Click this button to notify your teacher and request access.</p>
+                <p class="text-xs text-slate-500 text-center mt-3 leading-relaxed">After transferring, select this button to notify your teacher. Your course unlocks after payment verification.</p>
             </div>
          </div>
         `;
@@ -420,7 +432,7 @@
                         ${p.raw > p.final ? `<div id="pkg-raw-${idx}" class="text-sm line-through mb-0.5 text-blue-300 transition-colors font-semibold">${formatVND(p.raw)}</div>` : ''}
                         <div id="pkg-price-${idx}" class="font-black text-xl text-white transition-colors">${formatVND(p.final)}</div>
                         ${p.label !== 'Pay as you go' ? `<div class="text-[10px] font-bold text-blue-900 mt-1.5 uppercase tracking-widest bg-amber-400 px-2 py-0.5 rounded inline-block shadow-sm">${p.label}</div>` : ''}
-                        ${p.groupSize > 1 ? `<div class="text-[10px] font-bold text-blue-200 mt-1">${p.groupSize} students · group rate</div>` : ''}
+                        ${p.groupSize > 1 ? `<div class="text-[10px] font-bold text-slate-500 mt-1">${p.groupSize} students · group rate</div>` : ''}
                         ${p.referralCreditsApplied ? `<div class="text-[10px] font-bold text-emerald-200 mt-1">${p.referralCreditsApplied} × 10% referral discount included</div>` : ''}
                     </div>
                 </div>
@@ -445,19 +457,19 @@
             
             if(card && radio && title && price) {
                 if (i === idx) {
-                    card.className = "relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-white border-white shadow-lg group overflow-hidden transform scale-[1.02]";
+                    card.className = "relative p-4 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-blue-50 border-blue-500 shadow-sm group overflow-hidden";
                     radio.className = "w-4 h-4 rounded-full border-2 border-blue-600 flex items-center justify-center transition-colors shrink-0";
                     radio.innerHTML = `<div class="w-2 h-2 rounded-full bg-blue-600"></div>`;
-                    title.className = "font-bold text-lg text-blue-900 transition-colors";
-                    price.className = "font-black text-xl text-blue-700 transition-colors";
+                    title.className = "font-bold text-base sm:text-lg text-slate-900 transition-colors";
+                    price.className = "font-black text-lg sm:text-xl text-blue-700 transition-colors";
                     if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-slate-400 transition-colors font-semibold";
                 } else {
-                    card.className = "relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-blue-700/40 border-blue-500/50 hover:border-blue-300 group overflow-hidden";
-                    radio.className = "w-4 h-4 rounded-full border-2 border-blue-300 flex items-center justify-center transition-colors shrink-0";
+                    card.className = "relative p-4 rounded-xl border border-slate-200 transition-all cursor-pointer flex justify-between items-center bg-white hover:border-blue-300 hover:bg-slate-50 group overflow-hidden";
+                    radio.className = "w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center transition-colors shrink-0";
                     radio.innerHTML = ``;
-                    title.className = "font-bold text-lg text-white transition-colors";
-                    price.className = "font-black text-xl text-white transition-colors";
-                    if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-blue-300 transition-colors font-semibold";
+                    title.className = "font-bold text-base sm:text-lg text-slate-800 transition-colors";
+                    price.className = "font-black text-lg sm:text-xl text-slate-800 transition-colors";
+                    if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-slate-400 transition-colors font-semibold";
                 }
             }
         });
@@ -467,11 +479,12 @@
         if (courseSel && courseSel.options[courseSel.selectedIndex]) {
             courseName = courseSel.options[courseSel.selectedIndex].text.replace('📦 ', '');
         }
-        const msg = `${currentUser.user} - ${courseName}`;
+        const studentName = getStudentDisplayName();
+        const msg = `${studentName} - ${courseName}`;
         
         if (BILLING_SETTINGS.customQR) {
             document.getElementById('vietqr-image').src = BILLING_SETTINGS.customQR;
-            document.getElementById('vietqr-desc').textContent = "Use Custom QR above & ref: " + currentUser.user;
+            document.getElementById('vietqr-desc').textContent = "Use Custom QR above & ref: " + studentName;
         } else {
             const qrUrl = `https://img.vietqr.io/image/${BILLING_SETTINGS.bankId}-${BILLING_SETTINGS.bankAcc}-compact2.png?amount=${pkg.final}&addInfo=${encodeURIComponent(msg)}&accountName=${encodeURIComponent(BILLING_SETTINGS.bankName)}`;
             document.getElementById('vietqr-image').src = qrUrl;
