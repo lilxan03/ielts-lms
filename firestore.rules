@@ -1,0 +1,396 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'lyquockhanh03@gmail.com';
+    }
+
+    function accessPath(uid) {
+      return /databases/$(database)/documents/account_access/$(uid);
+    }
+
+    function classPath(classId) {
+      return /databases/$(database)/documents/classes/$(classId);
+    }
+
+    function schedulePath(scheduleId) {
+      return /databases/$(database)/documents/schedules/$(scheduleId);
+    }
+
+    function studentTestAccessPath(uid, testId) {
+      return /databases/$(database)/documents/student_test_access/$(uid)/tests/$(testId);
+    }
+
+    function hasAccessRecord() {
+      return signedIn() && exists(accessPath(request.auth.uid));
+    }
+
+    function accountAccess() {
+      return get(accessPath(request.auth.uid)).data;
+    }
+
+    function isStaff() {
+      return isAdmin()
+        || (hasAccessRecord() && accountAccess().role in ['teacher', 'collaborator']);
+    }
+
+    function hasPaidAccess() {
+      return isStaff()
+        || (hasAccessRecord()
+          && accountAccess().role == 'student'
+          && accountAccess().paid == true
+          && (!('billingExpiresAt' in accountAccess())
+            || accountAccess().billingExpiresAt == null
+            || accountAccess().billingExpiresAt > request.time));
+    }
+
+    function isClassMember(classId, username) {
+      return classId is string
+        && exists(classPath(classId))
+        && get(classPath(classId)).data.get('enrolledStudents', []).hasAny([username]);
+    }
+
+    function classHasTest(classId, testId) {
+      let cls = get(classPath(classId)).data;
+      let parentId = cls.get('parentClassId', null);
+      return (cls.get('assignedTests', []).hasAny([testId])
+          || testId in cls.get('testSettings', {}).keys())
+        || (parentId is string
+          && exists(classPath(parentId))
+          && (get(classPath(parentId)).data.get('assignedTests', []).hasAny([testId])
+            || testId in get(classPath(parentId)).data.get('testSettings', {}).keys()));
+    }
+
+    function scheduleHasTest(scheduleId, classId, username, testId) {
+      return exists(schedulePath(scheduleId))
+        && get(schedulePath(scheduleId)).data.get('classId', null) == classId
+        && (
+          get(schedulePath(scheduleId)).data.get('assignedTests', []).hasAny([testId])
+          || get(schedulePath(scheduleId)).data.get('materialIds', []).hasAny([testId])
+          || get(schedulePath(scheduleId)).data.get('homeworkTests', []).hasAny([testId])
+        )
+        && (!('attendingStudents' in get(schedulePath(scheduleId)).data)
+          || get(schedulePath(scheduleId)).data.attendingStudents.hasAny([username]));
+    }
+
+    function hasTestAssignmentForClass(classId, username, testId, scheduleId) {
+      return isClassMember(classId, username)
+        && (classHasTest(classId, testId)
+          || (scheduleId is string
+            && scheduleHasTest(scheduleId, classId, username, testId)));
+    }
+
+    function hasCurrentTestAssignment(testId) {
+      let path = studentTestAccessPath(request.auth.uid, testId);
+      let access = get(path).data;
+      return hasPaidAccess()
+        && exists(path)
+        && access.get('uid', null) == request.auth.uid
+        && access.get('username', null) == accountAccess().username
+        && isClassMember(access.get('classId', null), accountAccess().username)
+        && (
+          (access.get('source', null) == 'class'
+            && classHasTest(access.classId, testId))
+          || (access.get('source', null) == 'schedule'
+            && scheduleHasTest(access.get('scheduleId', ''), access.classId, access.username, testId))
+        );
+    }
+
+    function safeStudentMessageCreate() {
+      return request.resource.data.get('author', null) == accountAccess().username
+        && request.resource.data.get('role', null) == accountAccess().role
+        && request.resource.data.keys().hasOnly([
+          'id', 'kind', 'parentId', 'threadId', 'title', 'text',
+          'author', 'avatar', 'role', 'timestamp', 'classId'
+        ]);
+    }
+
+    function safeStudentPublicMessageCreate() {
+      return safeStudentMessageCreate()
+        && request.resource.data.get('classId', null) == null;
+    }
+
+    function safeStudentSubmissionUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly(['studentReply', 'teacherReadReply'])
+        && (!changed.hasAny(['teacherReadReply'])
+          || (request.resource.data.teacherReadReply == false
+            && changed.hasAny(['studentReply'])));
+    }
+
+    function safeStudentSubmissionCreate() {
+      return request.resource.data.student == accountAccess().username
+        && request.resource.data.testId is string
+        && hasCurrentTestAssignment(request.resource.data.testId)
+        && request.resource.data.classId is string
+        && hasTestAssignmentForClass(
+          request.resource.data.classId,
+          accountAccess().username,
+          request.resource.data.testId,
+          request.resource.data.get('scheduleId', null)
+        )
+        && request.resource.data.className == get(classPath(request.resource.data.classId)).data.name
+        && request.resource.data.keys().hasOnly([
+          'id', 'student', 'testId', 'testName', 'classId', 'className', 'scheduleId', 'date',
+          'answers', 'score', 'syntheticData', 'questionAnalytics', 'secureInfractions'
+        ]);
+    }
+
+    function safeStudentMessageUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['title', 'text', 'editedAt', 'editedBy'])
+        && request.resource.data.get('author', null) == resource.data.get('author', null)
+        && request.resource.data.get('classId', null) == resource.data.get('classId', null)
+        && request.resource.data.get('parentId', null) == resource.data.get('parentId', null)
+        && request.resource.data.get('threadId', null) == resource.data.get('threadId', null)
+        && request.resource.data.get('kind', null) == resource.data.get('kind', null);
+    }
+
+    function ownAccount(username) {
+      return signedIn()
+        && resource.data.user == username
+        && (resource.data.get('uid', null) == request.auth.uid
+          || (resource.data.get('uid', null) == null
+            && hasAccessRecord()
+            && accountAccess().username == username));
+    }
+
+    function safeStudentProfileUpdate() {
+      return !('pass' in request.resource.data)
+        && request.resource.data.get('uid', null) == resource.data.get('uid', null)
+        && request.resource.data.get('user', null) == resource.data.get('user', null)
+        && request.resource.data.get('role', null) == resource.data.get('role', null)
+        && request.resource.data.get('isPaid', null) == resource.data.get('isPaid', null)
+        && request.resource.data.get('status', null) == resource.data.get('status', null)
+        && request.resource.data.get('disabled', null) == resource.data.get('disabled', null)
+        && request.resource.data.get('billingExpiresAt', null) == resource.data.get('billingExpiresAt', null)
+        && request.resource.data.get('billingAccessOverride', null) == resource.data.get('billingAccessOverride', null);
+    }
+
+    function safeLegacyProfileMigration(username) {
+      return signedIn()
+        && resource.data.get('uid', null) == null
+        && resource.data.user == username
+        && hasAccessRecord()
+        && accountAccess().username == username
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.user == username
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uid', 'pass']);
+    }
+
+    match /account_access/{uid} {
+      allow get: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow list: if isStaff();
+      allow create: if isAdmin()
+        || (signedIn()
+          && request.auth.uid == uid
+          && request.resource.data.uid == uid
+          && request.resource.data.role == 'student'
+          && request.resource.data.paid == false
+          && request.resource.data.username.matches('^[A-Za-z0-9_-]{1,40}$')
+          && getAfter(/databases/$(database)/documents/users/$(request.resource.data.username)).data.uid == uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /users/{username} {
+      allow get: if isAdmin() || ownAccount(username);
+      allow list: if isStaff()
+        || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if !('pass' in request.resource.data)
+        && (isAdmin()
+        || (signedIn()
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.user == username
+          && username.matches('^[A-Za-z0-9_-]{1,40}$')
+          && request.resource.data.role == 'student'
+          && request.resource.data.isPaid == false
+          && request.resource.data.paymentStatus == 'unpaid'
+          && request.resource.data.status == 'unpaid'));
+      allow update: if !('pass' in request.resource.data)
+        && (isAdmin()
+          || (ownAccount(username) && safeStudentProfileUpdate())
+          || safeLegacyProfileMigration(username));
+      allow delete: if isAdmin();
+    }
+
+    match /settings/public_profile {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/billing {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /settings/availability {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff();
+    }
+
+    match /settings/templates {
+      allow read, write: if isStaff();
+    }
+
+    match /settings/{documentId} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    match /packages/{packageId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /course_catalog/{classId} {
+      allow read: if signedIn();
+      allow write: if isStaff();
+    }
+
+    match /hall_of_fame/{entryId} {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    match /tests/{testId} {
+      allow get: if isStaff() || hasCurrentTestAssignment(testId);
+      allow list: if isStaff();
+      allow write: if isStaff();
+    }
+
+    match /classes/{classId} {
+      allow get, list: if isStaff()
+        || (hasPaidAccess()
+          && resource.data.get('enrolledStudents', []).hasAny([accountAccess().username]));
+      allow write: if isStaff();
+
+      match /messages/{messageId} {
+        allow get, list: if isStaff()
+          || (hasPaidAccess() && isClassMember(classId, accountAccess().username));
+        allow create: if isStaff()
+          || (hasPaidAccess()
+            && isClassMember(classId, accountAccess().username)
+            && safeStudentMessageCreate()
+            && request.resource.data.get('classId', classId) == classId);
+        allow update: if isStaff()
+          || (hasPaidAccess()
+            && isClassMember(classId, accountAccess().username)
+            && resource.data.get('author', null) == accountAccess().username
+            && safeStudentMessageUpdate());
+        allow delete: if isStaff();
+      }
+    }
+
+    match /schedules/{scheduleId} {
+      allow read: if isStaff()
+        || (hasPaidAccess() && isClassMember(resource.data.get('classId', null), accountAccess().username));
+      allow write: if isStaff();
+    }
+
+    match /attendance/{attendanceId} {
+      allow read: if isStaff()
+        || (hasPaidAccess() && resource.data.student == accountAccess().username);
+      allow write: if isStaff();
+    }
+
+    match /class_presence/{presenceId} {
+      allow read: if isStaff()
+        || (hasPaidAccess() && isClassMember(resource.data.get('classId', null), accountAccess().username));
+      allow create: if isStaff()
+        || (hasPaidAccess()
+          && request.resource.data.student == accountAccess().username
+          && isClassMember(request.resource.data.get('classId', null), accountAccess().username));
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && resource.data.student == accountAccess().username
+          && request.resource.data.student == resource.data.student
+          && request.resource.data.classId == resource.data.classId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isOnline', 'lastActiveAt'])
+          && isClassMember(resource.data.get('classId', null), accountAccess().username));
+      allow delete: if isStaff();
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if isStaff()
+        || (hasPaidAccess() && resource.data.student == accountAccess().username);
+      allow create: if isStaff() || (hasPaidAccess() && safeStudentSubmissionCreate());
+      allow update: if isStaff()
+        || (hasPaidAccess() && resource.data.student == accountAccess().username
+          && request.resource.data.student == resource.data.student
+          && safeStudentSubmissionUpdate());
+      allow delete: if isStaff();
+    }
+
+    match /messages/{messageId} {
+      allow read, write: if isStaff();
+    }
+
+    match /public_messages/{messageId} {
+      allow read: if hasPaidAccess();
+      allow create: if isStaff()
+        || (hasPaidAccess() && safeStudentPublicMessageCreate());
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && resource.data.author == accountAccess().username
+          && safeStudentMessageUpdate());
+      allow delete: if isStaff();
+    }
+
+    match /student_test_access/{uid}/tests/{testId} {
+      allow get, list: if isStaff() || (hasPaidAccess() && request.auth.uid == uid);
+      allow write: if false;
+    }
+
+    match /notes/{noteId} {
+      allow get, list: if isStaff()
+        || (hasPaidAccess() && resource.data.get('owner', null) == accountAccess().username);
+      allow create: if isStaff()
+        || (hasPaidAccess()
+          && noteId.matches('^' + accountAccess().username + '(_.*)?$')
+          && request.resource.data.owner == accountAccess().username);
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && noteId.matches('^' + accountAccess().username + '(_.*)?$')
+          && resource.data.get('owner', null) == accountAccess().username
+          && request.resource.data.owner == resource.data.owner);
+      allow delete: if isStaff();
+    }
+
+    match /flashcards/{deckId} {
+      allow get, list: if isStaff()
+        || (hasPaidAccess() && resource.data.get('owner', null) == accountAccess().username);
+      allow create: if isStaff()
+        || (hasPaidAccess()
+          && deckId.matches('^' + accountAccess().username + '(_.*)?$')
+          && request.resource.data.owner == accountAccess().username);
+      allow update: if isStaff()
+        || (hasPaidAccess()
+          && deckId.matches('^' + accountAccess().username + '(_.*)?$')
+          && resource.data.get('owner', null) == accountAccess().username
+          && request.resource.data.owner == resource.data.owner);
+      allow delete: if isStaff();
+    }
+
+    match /referral_codes/{code} {
+      allow read: if signedIn();
+      allow create, update: if isStaff()
+        || (hasAccessRecord() && request.resource.data.user == accountAccess().username);
+      allow delete: if isStaff();
+    }
+
+    match /game_leaderboards/{recordId} {
+      allow read: if hasPaidAccess();
+      allow write: if isStaff()
+        || (hasPaidAccess() && request.resource.data.student == accountAccess().username);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
