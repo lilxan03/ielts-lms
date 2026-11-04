@@ -108,6 +108,7 @@
       
       scheduleStudentBillingExpiry();
       const isPaid = hasActiveStudentAccess(currentUser);
+      document.getElementById('start-screen')?.classList.toggle('checkout-mode', !isPaid);
       const mainContent = document.getElementById('student-main-content');
       if (mainContent) mainContent.classList.toggle('hidden', !isPaid);
       
@@ -225,6 +226,7 @@
     };
 
     window.renderStudentCheckout = function renderStudentCheckout() {
+        document.getElementById('start-screen')?.classList.add('checkout-mode');
         let classOpts = '';
         const availableClasses = CLASSES.filter(cls => !window.isTemplateClass(cls));
         
@@ -352,8 +354,8 @@
             if (pkg && infoContainer) {
                 const classNames = (pkg.classes || []).map(cid => CLASSES.find(c => c.id === cid)).filter(cls => cls && !window.isTemplateClass(cls)).map(cls => cls.name);
                 infoContainer.innerHTML = `
-                    <h4 class="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-2 flex items-center gap-1">📦 Bundle Includes:</h4>
-                    <ul class="text-sm font-medium text-white space-y-1">
+                    <h4 class="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2 flex items-center gap-1">📦 Bundle Includes:</h4>
+                    <ul class="text-sm font-medium text-slate-700 space-y-1">
                         ${classNames.map(n => `<li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-emerald-400"></span> ${n}</li>`).join('')}
                     </ul>
                 `;
@@ -380,11 +382,11 @@
         if (selectedClass && groupSize > 1) {
             fpl = window.calculateGroupLessonFee(fpl, groupSize);
             if (infoContainer) {
-                infoContainer.innerHTML = `<p class="text-sm font-bold text-white">👥 ${groupSize} students in this small class · ${formatVND(fpl)} per lesson after group discount.</p>`;
+                infoContainer.innerHTML = `<p class="text-sm font-bold text-slate-700">👥 ${groupSize} students in this small class · ${formatVND(fpl)} per lesson after group discount.</p>`;
                 infoContainer.classList.remove('hidden');
             }
         } else if (selectedClass && infoContainer) {
-            infoContainer.innerHTML = `<p class="text-sm font-bold text-white">${selectedClass.parentClassId ? `Small class using shared materials · ${formatVND(fpl)} per lesson.` : `${formatVND(fpl)} per lesson.`}</p>`;
+            infoContainer.innerHTML = `<p class="text-sm font-bold text-slate-700">${selectedClass.parentClassId ? `Small class using shared materials · ${formatVND(fpl)} per lesson.` : `${formatVND(fpl)} per lesson.`}</p>`;
             infoContainer.classList.remove('hidden');
         }
 
@@ -601,6 +603,7 @@
     window.closeStudentRenewal = function() {
         const warning = document.getElementById('student-payment-warning');
         warning.classList.add('hidden');
+        document.getElementById('start-screen')?.classList.remove('checkout-mode');
         window.renderStudentDashboard();
     };
 
