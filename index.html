@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1e293b">
@@ -96,8 +96,8 @@
   </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 
   <style>
     ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -4434,6 +4434,26 @@
     window.FCM_VAPID_KEY = "BLgRyRFqMdkhp0pYPNvi14jQwdmndPV6q55jhb1za3FXlPIQUdGMBF69UYJme8VHPFMWYqt6kqSPLIRjAfbFBxU"; // <--- GET THIS FROM FIREBASE CONSOLE
 
     // CLOUD DATABASE VARIABLES
+    // Shared HTML safety helpers. Use lmsEscapeHtml for plain text inserted via innerHTML,
+    // and lmsSanitizeHtml for teacher-authored rich text (keeps formatting, strips scripts/handlers).
+    function lmsEscapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+    }
+    function lmsSanitizeHtml(html) {
+        const tpl = document.createElement('template');
+        tpl.innerHTML = String(html ?? '');
+        tpl.content.querySelectorAll('script, iframe, object, embed, link, meta, base, form').forEach(el => el.remove());
+        tpl.content.querySelectorAll('*').forEach(el => {
+            [...el.attributes].forEach(attr => {
+                const name = attr.name.toLowerCase();
+                const val = attr.value.replace(/[\s\u0000-\u001f]/g, '').toLowerCase();
+                if (name.startsWith('on') || (['href', 'src', 'xlink:href', 'action', 'formaction'].includes(name) && /^(javascript|vbscript|data:text\/html)/.test(val))) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+        return tpl.innerHTML;
+    }
     let USERS = [];
     let TEST_BANK = [];
     let CLASSES = [];
@@ -6080,11 +6100,11 @@
             <tr class="hover:bg-amber-50/30 transition-colors">
                 <td class="p-4 text-center border-r border-slate-100">${rankBadge}</td>
                 <td class="p-4 font-black text-slate-800 flex items-center gap-2">
-                    <img src="https://ui-avatars.com/api/?name=${s.student}&background=random" class="w-6 h-6 rounded-full shadow-sm">
-                    ${s.student}
+                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(s.student || '')}&background=random" alt="" class="w-6 h-6 rounded-full shadow-sm">
+                    ${lmsEscapeHtml(s.student)}
                 </td>
                 <td class="p-4 text-center">${modeBadge}</td>
-                <td class="p-4 text-center font-black text-blue-700 text-lg">${s.score}</td>
+                <td class="p-4 text-center font-black text-blue-700 text-lg">${lmsEscapeHtml(s.score)}</td>
                 <td class="p-4 text-right pr-8 font-mono text-slate-500 text-sm font-bold">${formattedTime}</td>
             </tr>`;
         }).join('');
@@ -18599,7 +18619,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           passageContainer.style.width = '50%';
           const transcriptPanelHtml = `
               <div id="listening-transcript-panel" class="hidden mt-6 passage-text text-justify">
-                  <div class="passage-text font-bold mb-4">${p.title} (Transcript)</div>
+                  <div class="passage-text font-bold mb-4">${lmsSanitizeHtml(p.title)} (Transcript)</div>
                   ${listeningTranscriptHtml || htmlText}
               </div>
           `;
@@ -18614,7 +18634,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
           passageContainer.style.width = '50%'; 
           
           // ✨ FIX: Grab the Part Title (which acts as the main essay prompt for Writing)
-          const titleHtml = p.title ? `<div class="passage-text font-bold mb-6 text-lg">${p.title}</div>` : '';
+          const titleHtml = p.title ? `<div class="passage-text font-bold mb-6 text-lg">${lmsSanitizeHtml(p.title)}</div>` : '';
           const speakingQuestionsHtml = APP_DATA.module === 'speaking' && p.speakingQuestions
               ? `<section class="passage-text mb-6"><h2 class="font-bold text-base mb-2">Questions</h2><div class="leading-relaxed">${p.speakingQuestions}</div></section>`
               : '';
@@ -18682,7 +18702,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 <input type="number" id="reading-speed-input" value="220" min="50" max="1000" onchange="window.updateSkimmingSpeed()">
             </div>` : '';
 
-          passageContainer.innerHTML = `${advancedReadingControls}${studyToggles}<div class="passage-text font-bold mb-6">${p.title}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
+          passageContainer.innerHTML = `${advancedReadingControls}${studyToggles}<div class="passage-text font-bold mb-6">${lmsSanitizeHtml(p.title)}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           const speedInput = document.getElementById('reading-speed-input');
           if (speedInput) {
               speedInput.value = String(Math.round(window.readingSpeed || 220));
@@ -20300,7 +20320,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
            txt = txt.replace(/\n/g, '<br>');
         }
         
-        lHtml += `<div class="passage-text font-black text-xl mb-6 mt-8 first:mt-0 text-slate-800">${p.title}</div>`;
+        lHtml += `<div class="passage-text font-black text-xl mb-6 mt-8 first:mt-0 text-slate-800">${lmsSanitizeHtml(p.title)}</div>`;
         if (APP_DATA.module === 'speaking' && p.speakingQuestions) {
             lHtml += `<section class="passage-text mb-6"><h2 class="font-bold text-base mb-2">Questions</h2><div class="leading-relaxed">${p.speakingQuestions}</div></section>`;
         }
@@ -20313,7 +20333,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
       let rHtml = '';
       APP_DATA.parts.forEach((p, i) => {
-        rHtml += `<h3 class="font-black text-slate-800 uppercase tracking-widest text-sm mb-4 mt-10 first:mt-0 border-b-2 border-slate-200 pb-2">Results: ${p.title}</h3>`;
+        rHtml += `<h3 class="font-black text-slate-800 uppercase tracking-widest text-sm mb-4 mt-10 first:mt-0 border-b-2 border-slate-200 pb-2">Results: ${lmsSanitizeHtml(p.title)}</h3>`;
         
         p.questions.forEach((q) => {
           let content = '';
