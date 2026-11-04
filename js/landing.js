@@ -1315,17 +1315,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 failures.push(['hall_of_fame', hallOfFameResult.reason]);
             }
 
-            const errorBanner = document.getElementById('public-data-error');
             if (failures.length) {
                 failures.forEach(([path, error]) => console.error(`Unable to load public landing data (${path}):`, error));
-                if (errorBanner) {
-                    errorBanner.textContent = 'Một số thông tin chưa tải được. Vui lòng làm mới trang hoặc nhắn Zalo 0913 980 712 để được hỗ trợ.';
-                    errorBanner.classList.remove('hidden');
-                }
                 window.publicLandingDataPromise = null;
-            } else if (errorBanner) {
-                errorBanner.classList.add('hidden');
-                errorBanner.textContent = '';
             }
 
             window.renderPublicProfile();
