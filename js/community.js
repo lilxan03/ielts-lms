@@ -43,12 +43,31 @@
         enableForumPanelResizing(p);
 
         if (!window._forumListenerAttached && window.db) {
-            window.fsOnSnapshot(window.fsCollection(window.db, window.fPath('messages')), snap => {
-                FORUM_POSTS = snap.docs.map(d => d.data()).filter(m => m.kind === 'forum' || m.parentId || m.threadId || m.postType).sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                CHAT_MESSAGES = [...FORUM_POSTS];
-                if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) {
-                    window.renderForumThreads();
-                }
+            const messageSets = new Map();
+            const messageQueries = [];
+            if (currentUser?.role === 'student') {
+                messageQueries.push(window.fsCollection(window.db, 'public_messages'));
+                (CLASSES || []).forEach(cls => {
+                    if (cls.id) messageQueries.push(window.fsCollection(window.db, 'classes', cls.id, 'messages'));
+                });
+            } else {
+                messageQueries.push(window.fsCollection(window.db, 'public_messages'));
+                (CLASSES || []).forEach(cls => {
+                    if (cls.id) messageQueries.push(window.fsCollection(window.db, 'classes', cls.id, 'messages'));
+                });
+            }
+
+            messageQueries.forEach((messageQuery, index) => {
+                window.fsOnSnapshot(messageQuery, snapshot => {
+                    messageSets.set(index, snapshot.docs.map(doc => doc.data()));
+                    FORUM_POSTS = [...messageSets.values()].flat()
+                        .filter(message => message.kind === 'forum' || message.parentId || message.threadId || message.postType)
+                        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                    CHAT_MESSAGES = [...FORUM_POSTS];
+                    if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) {
+                        window.renderForumThreads();
+                    }
+                }, error => console.error('Unable to load forum messages:', error));
             });
             window._forumListenerAttached = true;
         }
@@ -62,6 +81,12 @@
             p.classList.add('hidden');
         }
     };
+
+    function getForumMessageRef(message) {
+        return message.classId
+            ? window.fsDoc(window.db, 'classes', message.classId, 'messages', message.id)
+            : window.fsDoc(window.db, 'public_messages', message.id);
+    }
 
     window.renderForumThreads = function() {
         const list = document.getElementById('forum-thread-list');
@@ -201,7 +226,7 @@
         window.renderForumThreads();
 
         try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('messages'), post.id), post);
+            await window.fsSetDoc(getForumMessageRef(post), post);
         } catch (e) {
             console.error('Forum post error:', e);
         }
@@ -230,7 +255,7 @@
         window.renderForumThreads();
 
         try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('messages'), reply.id), reply);
+            await window.fsSetDoc(getForumMessageRef(reply), reply);
         } catch (e) {
             console.error('Forum reply error:', e);
         }
@@ -275,7 +300,7 @@
 
         try {
             if (window.db) {
-                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('messages'), postId), post);
+                await window.fsSetDoc(getForumMessageRef(post), post);
             }
         } catch (e) {
             console.error('Forum edit error:', e);

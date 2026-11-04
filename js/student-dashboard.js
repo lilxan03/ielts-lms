@@ -810,6 +810,7 @@
       }
       
       document.getElementById('test-mode-modal').classList.remove('hidden');
+      window.focusTestModeDialog(document.activeElement);
     }
 
     function confirmStartTest() {
@@ -823,10 +824,12 @@
       }
       
       document.getElementById('test-mode-modal').classList.add('hidden');
+      window.clearTestModeDialogFocus();
       if (pendingTestId) {
           startTest(pendingTestId, selectedParts); // Pass the chosen parts!
       }
     }
+    window.confirmStartTest = confirmStartTest;
 
     let activeTestRoute = false;
     let directTestRoutePending = null;
@@ -1254,6 +1257,7 @@
 
     window.cancelTestRouteStart = function() {
       document.getElementById('test-mode-modal').classList.add('hidden');
+      window.restoreTestModeDialogFocus();
       if (directTestRoutePending) replaceWithDashboardRoute();
     };
 
@@ -1269,6 +1273,7 @@
         }
       } else if (directTestRoutePending) {
         document.getElementById('test-mode-modal').classList.add('hidden');
+        window.restoreTestModeDialogFocus();
         directTestRoutePending = null;
       } else if (activeTestRoute) {
         const examVisible = !document.getElementById('exam-ui').classList.contains('hidden');
@@ -1463,6 +1468,7 @@
         APP_DATA = JSON.parse(JSON.stringify(t));
         
         document.getElementById('test-mode-modal').classList.add('hidden');
+        window.clearTestModeDialogFocus();
         document.getElementById('activity-mode-test-name').textContent = APP_DATA.title;
         document.getElementById('test-activities-modal').classList.remove('hidden');
         
@@ -1710,16 +1716,21 @@
 
     function selectTestMode(m) {
       testMode = m; isTimeFree = (m === 'free');
-      document.getElementById('mode-btn-free').classList.toggle('border-blue-500', isTimeFree);
-      document.getElementById('mode-btn-free').classList.toggle('bg-blue-50', isTimeFree);
-      document.getElementById('mode-btn-restricted').classList.toggle('border-blue-500', !isTimeFree);
-      document.getElementById('mode-btn-restricted').classList.toggle('bg-blue-50', !isTimeFree);
+      const freeModeButton = document.getElementById('mode-btn-free');
+      const restrictedModeButton = document.getElementById('mode-btn-restricted');
+      freeModeButton.classList.toggle('border-blue-500', isTimeFree);
+      freeModeButton.classList.toggle('bg-blue-50', isTimeFree);
+      restrictedModeButton.classList.toggle('border-blue-500', !isTimeFree);
+      restrictedModeButton.classList.toggle('bg-blue-50', !isTimeFree);
+      freeModeButton.setAttribute('aria-pressed', String(isTimeFree));
+      restrictedModeButton.setAttribute('aria-pressed', String(!isTimeFree));
       
       const timeContainer = document.getElementById('custom-time-container');
       if (timeContainer) {
           timeContainer.classList.toggle('hidden', isTimeFree);
       }
     }
+    window.selectTestMode = selectTestMode;
 
     // ✨ SECURE BROWSER MODE ENGINE
     window.isSecureModeActive = false;

@@ -804,7 +804,7 @@
       if (!currentUser || !APP_DATA || !APP_DATA.id || isPreviewMode) return;
       const noteKey = `${currentUser.user}_${APP_DATA.id}`;
       ALL_NOTES[noteKey] = currentNotes;
-      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('notes'), noteKey), { data: currentNotes });
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('notes'), noteKey), { owner: currentUser.user, data: currentNotes });
     }
 
     function highlightSelection(e, colorClass = 'bg-yellow-300') {

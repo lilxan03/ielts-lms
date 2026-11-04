@@ -2019,7 +2019,7 @@
       });
     };
 
-    window.exitTest = function(autoSubmit = false) {
+    window.exitTest = async function(autoSubmit = false) {
       const proceed = async () => {
         finalizeCurrentQuestionTiming();
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
@@ -2062,6 +2062,13 @@
         
         if (!isPreviewMode) {
           const clsId = document.getElementById('student-class-select').value;
+          const submissionClass = CLASSES.find(cls => cls.id === clsId);
+          const availableSchedules = typeof SCHEDULES === 'undefined' ? [] : SCHEDULES;
+          const submissionSchedule = availableSchedules.find(schedule =>
+              window.scheduleBelongsToClass(schedule, submissionClass) &&
+              (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)) &&
+              [...(schedule.assignedTests || []), ...(schedule.materialIds || []), ...(schedule.homeworkTests || [])].includes(APP_DATA.id)
+          );
           finalizeCurrentQuestionTiming();
           const questionAnalytics = buildQuestionAnalyticsSnapshot();
           const sub = { 
@@ -2069,7 +2076,9 @@
               student: currentUser.user, 
               testId: APP_DATA.id, 
               testName: APP_DATA.title + (testMode === 'free' ? ' (Practice)' : '') + (window.isFullExamMode ? ' (Full Exam)' : ''), 
+              classId: clsId,
               className: CLASSES.find(c=>c.id===clsId)?.name||'', 
+              ...(submissionSchedule ? { scheduleId: submissionSchedule.id } : {}),
               date: new Date().toLocaleDateString(), 
               answers: JSON.parse(JSON.stringify(answers)), 
               score: bandScoreText, // Store the calculated band in the DB!
@@ -2088,24 +2097,42 @@
               window.currentActiveSubmissionId = sub.id; 
           }
 
-          try { 
+          try {
               if (currentUser.isDemo) {
                   sessionStorage.setItem('demo_submissions', JSON.stringify(SUBMISSIONS));
               } else {
                   await window.fsSetDoc(window.fsDoc(window.db, window.fPath('submissions'), String(sub.id)), sub);
               }
-              
-              // 🏆 ECONOMY REWARD: Grant 50 Gems for normal test
-              if (!window.isFullExamMode) {
-                  currentUser.gems = (currentUser.gems || 0) + 50;
+          } catch (error) {
+              console.error("Cloud Error saving submission:", error);
+              SUBMISSIONS = SUBMISSIONS.filter(item => item !== sub);
+              if (Array.isArray(window.fullExamSubmissions)) {
+                  window.fullExamSubmissions = window.fullExamSubmissions.filter(item => item.id !== sub.id);
+              }
+              if (window.currentActiveSubmissionId === sub.id) window.currentActiveSubmissionId = null;
+              document.getElementById('exam-ui').classList.remove('hidden');
+              showModalMsg("Submission Error", "Your test could not be saved. Your answers are still on this screen. Check your connection and try submitting again.");
+              return;
+          }
+
+          // 🏆 ECONOMY REWARD: Grant 50 Gems for normal test
+          if (!window.isFullExamMode) {
+              const previousGems = currentUser.gems || 0;
+              currentUser.gems = previousGems + 50;
+              try {
                   if (!currentUser.isDemo) {
                       await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
                   }
                   sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
                   window.updateDashboardHeader();
+              } catch (error) {
+                  console.error("Cloud Error saving test reward:", error);
+                  currentUser.gems = previousGems;
+                  sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
+                  window.updateDashboardHeader();
+                  window.showToast?.("Reward Error", "Your test was saved, but the gem reward could not be saved. Please contact your teacher.", "error");
               }
           }
-          catch(e) { console.error("Cloud Error saving submission:", e); }
         }
 
         if (window.isFullExamMode) {
@@ -2175,7 +2202,7 @@
       };
 
       if (autoSubmit) {
-          proceed();
+          await proceed();
       } else {
           let title = isPreviewMode ? "End Preview" : (window.isFullExamMode ? "Submit Section" : "Submit Test");
           let desc = isPreviewMode ? "End preview and check results?" : (window.isFullExamMode ? "Are you sure you want to finish this section early? You will be moved to the next skill." : "Are you sure you want to finish?");

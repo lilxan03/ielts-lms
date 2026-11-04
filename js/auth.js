@@ -35,6 +35,114 @@
         });
     }
 
+    function waitForAssignedStudentTests() {
+        return new Promise((resolve, reject) => {
+            let initialized = false;
+            let accessUnsubscribe;
+            const testUnsubscribes = new Map();
+            const loadedTests = new Map();
+            const initialTestIds = new Set();
+            const settledTestIds = new Set();
+            const timeout = setTimeout(() => {
+                if (!initialized) {
+                    initialized = true;
+                    accessUnsubscribe?.();
+                    testUnsubscribes.forEach(unsubscribe => unsubscribe());
+                    reject(new Error('Timed out waiting for your assigned tests.'));
+                }
+            }, 20000);
+            const updateTestBank = () => {
+                TEST_BANK = [...loadedTests.values()];
+                window.triggerUIRefresh();
+            };
+            const settleInitialTest = testId => {
+                settledTestIds.add(testId);
+                if (!initialized && [...initialTestIds].every(id => settledTestIds.has(id))) {
+                    initialized = true;
+                    clearTimeout(timeout);
+                    resolve();
+                }
+            };
+
+            try {
+                const accessCollection = window.fsCollection(
+                    window.db,
+                    'student_test_access',
+                    currentUser.uid,
+                    'tests'
+                );
+                accessUnsubscribe = window.fsOnSnapshot(accessCollection, snapshot => {
+                    const testIds = new Set(snapshot.docs.map(doc => doc.id));
+                    if (!initialized) {
+                        initialTestIds.forEach(testId => {
+                            if (!testIds.has(testId)) initialTestIds.delete(testId);
+                        });
+                    }
+                    for (const [testId, unsubscribe] of testUnsubscribes) {
+                        if (!testIds.has(testId)) {
+                            unsubscribe();
+                            testUnsubscribes.delete(testId);
+                            loadedTests.delete(testId);
+                        }
+                    }
+
+                    if (!initialized) {
+                        testIds.forEach(testId => initialTestIds.add(testId));
+                    }
+
+                    testIds.forEach(testId => {
+                        if (testUnsubscribes.has(testId)) return;
+                        const testRef = window.fsDoc(window.db, window.fPath('tests'), testId);
+                        const unsubscribe = window.fsOnSnapshot(testRef, testSnapshot => {
+                            if (testSnapshot.exists()) loadedTests.set(testId, testSnapshot.data());
+                            else loadedTests.delete(testId);
+                            updateTestBank();
+                            if (!initialized) settleInitialTest(testId);
+                        }, error => {
+                            testUnsubscribes.delete(testId);
+                            if (error.code === 'permission-denied') {
+                                loadedTests.delete(testId);
+                                updateTestBank();
+                                if (!initialized) settleInitialTest(testId);
+                                return;
+                            }
+                            if (!initialized) {
+                                initialized = true;
+                                clearTimeout(timeout);
+                                accessUnsubscribe?.();
+                                testUnsubscribes.forEach(stop => stop());
+                                reject(new Error(`Unable to load an assigned test: ${error.message || error}`));
+                            } else {
+                                console.error(`Assigned test listener failed for ${testId}:`, error);
+                            }
+                        });
+                        testUnsubscribes.set(testId, unsubscribe);
+                    });
+
+                    if (!initialized && testIds.size === 0) {
+                        initialized = true;
+                        clearTimeout(timeout);
+                        resolve();
+                    } else if (!initialized && [...initialTestIds].every(id => settledTestIds.has(id))) {
+                        initialized = true;
+                        clearTimeout(timeout);
+                        resolve();
+                    }
+                    updateTestBank();
+                }, error => {
+                    if (initialized) return;
+                    initialized = true;
+                    clearTimeout(timeout);
+                    testUnsubscribes.forEach(unsubscribe => unsubscribe());
+                    reject(new Error(`Unable to load your assigned-test list: ${error.message || error}`));
+                });
+            } catch (error) {
+                clearTimeout(timeout);
+                reject(error);
+            }
+        });
+    }
+
     window.bootLMS = async function() {
         try {
             document.getElementById('cloud-loader-text').textContent = "Initializing App...";
@@ -50,11 +158,21 @@
 
             // 2. Attach PUBLIC real-time listeners (Safe data everyone needs to see)
             await Promise.all([
-                waitForInitialSnapshot('tests', window.fsCollection(window.db, window.fPath('tests')), snap => {
-                    TEST_BANK = snap.docs.map(d => d.data());
-                    window.triggerUIRefresh();
-                }),
-                waitForInitialSnapshot('classes', window.fsCollection(window.db, window.fPath('classes')), snap => {
+                currentUser?.role === 'student'
+                  ? waitForAssignedStudentTests()
+                  : waitForInitialSnapshot('tests', window.fsCollection(window.db, window.fPath('tests')), snap => {
+                      TEST_BANK = snap.docs.map(d => d.data());
+                      window.triggerUIRefresh();
+                  }),
+                waitForInitialSnapshot(
+                  'classes',
+                  currentUser?.role === 'student'
+                    ? window.fsQuery(
+                        window.fsCollection(window.db, window.fPath('classes')),
+                        window.fsWhere('enrolledStudents', 'array-contains', currentUser.user)
+                      )
+                    : window.fsCollection(window.db, window.fPath('classes')),
+                  snap => {
                         CLASSES = snap.docs.map(d => d.data());
                         if (['teacher', 'collaborator'].includes(currentUser?.role)) {
                             window.syncPublicCourseCatalog(CLASSES).catch(error => {
@@ -65,7 +183,8 @@
                         if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners();
                         if (currentUser?.role === 'student' && window.refreshStudentPresenceListeners) window.refreshStudentPresenceListeners();
                         window.triggerUIRefresh();
-                }),
+                  }
+                ),
                 waitForInitialSnapshot('billing settings', window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => {
                     if (snap.exists()) BILLING_SETTINGS = snap.data();
                 }),
@@ -98,6 +217,27 @@
                   })]
                   : (TEACHER_TEMPLATES = [], TEACHER_TEMPLATE_ASSIGNMENTS = {}, []))
             ]);
+
+            if (['teacher', 'collaborator'].includes(currentUser?.role)
+                && !currentUser?.isDemo
+                && localStorage.getItem('student_test_access_v1') !== 'complete') {
+                try {
+                    const idToken = await window.auth.currentUser.getIdToken();
+                    const response = await fetch(
+                        'https://us-central1-khanh-ielts-v2.cloudfunctions.net/rebuildStudentTestAccess',
+                        { method: 'POST', headers: { Authorization: `Bearer ${idToken}` } }
+                    );
+                    if (!response.ok) throw new Error(`Access index rebuild returned HTTP ${response.status}.`);
+                    localStorage.setItem('student_test_access_v1', 'complete');
+                } catch (error) {
+                    console.error('Unable to initialize assigned-test access:', error);
+                    window.showToast?.(
+                        'Assigned tests need setup',
+                        'Ask an administrator to deploy the access-index functions and rebuild test access.',
+                        'error'
+                    );
+                }
+            }
 
             // 3. Attach RESTRICTED listeners based on role
             if (currentUser) {
@@ -184,21 +324,36 @@
             }));
 
             // TEACHER FORUM LISTENER
-            let isMsgInitial = true;
-            promises.push(waitForInitialSnapshot('messages', window.fsCollection(window.db, window.fPath('messages')), snap => { 
-                    CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); 
-                    if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages(); 
-                    
-                    if (!isMsgInitial) {
+            const staffMessageQueries = [
+                window.fsCollection(window.db, window.fPath('messages')),
+                window.fsCollection(window.db, 'public_messages'),
+                ...CLASSES.filter(cls => cls.id).map(cls =>
+                    window.fsCollection(window.db, 'classes', cls.id, 'messages')
+                )
+            ];
+            const staffMessageSets = new Map();
+            const firstMessageSnapshots = new Set();
+            staffMessageQueries.forEach((messageQuery, index) => {
+                promises.push(waitForInitialSnapshot('forum messages', messageQuery, snap => {
+                    staffMessageSets.set(index, snap.docs.map(d => d.data()));
+                    CHAT_MESSAGES = [...staffMessageSets.values()].flat()
+                        .sort((a, b) => a.timestamp - b.timestamp);
+                    if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('translate-x-full')) window.renderChatMessages();
+
+                    if (firstMessageSnapshots.has(index)) {
                         snap.docChanges().forEach(change => {
                             if (change.type === 'added') {
-                                const m = change.doc.data();
-                                if (m.author !== currentUser.user) window.fireLocalOSNotification("🗂️ New Forum Post", `${m.author}: ${m.text.substring(0, 40)}...`);
+                                const message = change.doc.data();
+                                if (message.author !== currentUser.user) {
+                                    window.fireLocalOSNotification("🗂️ New Forum Post", `${message.author}: ${message.text.substring(0, 40)}...`);
+                                }
                             }
                         });
+                    } else {
+                        firstMessageSnapshots.add(index);
                     }
-                    isMsgInitial = false;
-            }));
+                }));
+            });
 
             promises.push(waitForInitialSnapshot('notes', window.fsCollection(window.db, window.fPath('notes')), snap => {
                 ALL_NOTES = {};
@@ -254,10 +409,6 @@
             }));
 
             const myClasses = CLASSES.filter(c => !window.isTemplateClass(c) && (c.enrolledStudents || []).includes(currentUser.user));
-            const myClassNames = [...new Set(myClasses.map(c => c.name).filter(Boolean))];
-            const myClassIds = myClasses.map(c => c.id);
-
-            const safeClassIds = myClassIds.slice(0, 10);
             let resolveInitialScheduleLoad;
             let rejectInitialScheduleLoad;
             const initialScheduleLoad = new Promise((resolve, reject) => {
@@ -279,9 +430,9 @@
                 window.studentScheduleUnsubscribes.forEach(unsubscribe => unsubscribe());
                 window.studentScheduleUnsubscribes = [];
                 const enrolledClasses = CLASSES.filter(c => !window.isTemplateClass(c) && (c.enrolledStudents || []).includes(currentUser.user));
-                const enrolledNames = [...new Set(enrolledClasses.map(c => c.name).filter(Boolean))];
+                const enrolledClassIds = [...new Set(enrolledClasses.map(c => c.id).filter(Boolean))];
                 const scheduleBatches = [];
-                const batchCount = Math.ceil(enrolledNames.length / 10);
+                const batchCount = Math.ceil(enrolledClassIds.length / 10);
                 initialScheduleBatchesRemaining = batchCount;
                 if (!batchCount) {
                     SCHEDULES = [];
@@ -294,10 +445,10 @@
                     return;
                 }
 
-                for (let i = 0; i < enrolledNames.length; i += 10) {
+                for (let i = 0; i < enrolledClassIds.length; i += 10) {
                     const batchIndex = i / 10;
-                    const classNameBatch = enrolledNames.slice(i, i + 10);
-                    const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('className', 'in', classNameBatch));
+                    const classIdBatch = enrolledClassIds.slice(i, i + 10);
+                    const schedQ = window.fsQuery(window.fsCollection(window.db, window.fPath('schedules')), window.fsWhere('classId', 'in', classIdBatch));
                     let isFirstSnapshot = true;
                     const unsubscribe = window.fsOnSnapshot(schedQ, snap => {
                         if (generation !== scheduleListenerGeneration) return;
@@ -409,41 +560,54 @@
                 window.addEventListener('focus', () => window.writeStudentPresence(true));
             }
 
-            if (myClassNames.length > 0) {
-                
+            if (myClasses.length > 0) {
                 // STUDENT FORUM LISTENER WITH NATIVE OS NOTIFICATIONS
-                const msgQ = window.fsQuery(window.fsCollection(window.db, window.fPath('messages')), window.fsWhere('classId', 'in', safeClassIds));
                 let isMyMsgInitial = true;
-                promises.push(waitForInitialSnapshot('your class messages', msgQ, snap => { 
-                        CHAT_MESSAGES = snap.docs.map(d => d.data()).sort((a,b) => a.timestamp - b.timestamp); 
-                        if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) window.renderChatMessages(); 
-                        
+                const classMessagesByBatch = new Map();
+                for (let index = 0; index < myClasses.length; index++) {
+                    const cls = myClasses[index];
+                    const msgCollection = window.fsCollection(window.db, 'classes', cls.id, 'messages');
+                    promises.push(waitForInitialSnapshot('your class messages', msgCollection, snap => {
+                        classMessagesByBatch.set(cls.id, snap.docs.map(d => d.data()));
+                        const otherMessages = CHAT_MESSAGES.filter(message => !message.classId);
+                        CHAT_MESSAGES = [...otherMessages, ...[...classMessagesByBatch.values()].flat()].sort((a, b) => a.timestamp - b.timestamp);
+                        if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) window.renderChatMessages();
+
                         if (!isMyMsgInitial) {
                             snap.docChanges().forEach(change => {
                                 if (change.type === 'added') {
-                                    const m = change.doc.data();
-                                    if (m.author !== currentUser.user) window.fireLocalOSNotification("🗂️ New Class Post", `${m.author}: ${m.text.substring(0, 40)}...`);
+                                    const message = change.doc.data();
+                                    if (message.author !== currentUser.user) window.fireLocalOSNotification("🗂️ New Class Post", `${message.author}: ${message.text.substring(0, 40)}...`);
                                 }
                             });
                         }
                         isMyMsgInitial = false;
-                }));
+                    }));
+                }
             } else {
-                CHAT_MESSAGES = [];
+                CHAT_MESSAGES = CHAT_MESSAGES.filter(message => !message.classId);
             }
             
-            promises.push(waitForInitialSnapshot('notes', window.fsCollection(window.db, window.fPath('notes')), snap => {
+            const studentNotesQuery = window.fsQuery(
+                window.fsCollection(window.db, window.fPath('notes')),
+                window.fsWhere('owner', '==', currentUser.user)
+            );
+            promises.push(waitForInitialSnapshot('notes', studentNotesQuery, snap => {
                 ALL_NOTES = {};
                 snap.docs.forEach(d => {
                     if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data;
                 });
             }));
-            promises.push(waitForInitialSnapshot('flashcards', window.fsCollection(window.db, window.fPath('flashcards')), snap => {
+            const studentFlashcardsQuery = window.fsQuery(
+                window.fsCollection(window.db, window.fPath('flashcards')),
+                window.fsWhere('owner', '==', currentUser.user)
+            );
+            promises.push(waitForInitialSnapshot('flashcards', studentFlashcardsQuery, snap => {
                 const temp = FLASHCARDS['temp_test_deck'];
                 FLASHCARDS = {};
                 if(temp) FLASHCARDS['temp_test_deck'] = temp;
                 snap.docs.forEach(d => {
-                    if (d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data;
+                    FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data;
                 });
                 if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) window.renderFlashcardPanel();
             }));
@@ -532,7 +696,7 @@
             window.showToast('Access restricted', message, 'error');
         }
 
-        const buttons = document.querySelectorAll('button[onclick="window.loginAsDemo()"]');
+        const buttons = document.querySelectorAll('[data-auth-action="demo-login"]');
         buttons.forEach((b) => {
             b.disabled = true;
             b.title = message;
@@ -546,10 +710,14 @@
         const input = document.getElementById(inputId);
         if (input.type === 'password') {
             input.type = 'text';
-            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>`;
+            btn.setAttribute('aria-label', 'Hide password');
+            btn.setAttribute('aria-pressed', 'true');
+            btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>`;
         } else {
             input.type = 'password';
-            btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
+            btn.setAttribute('aria-label', 'Show password');
+            btn.setAttribute('aria-pressed', 'false');
+            btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
         }
     };
 
@@ -561,9 +729,13 @@
       
       const toggleBtn = document.getElementById('auth-toggle-btn');
       if(toggleBtn) toggleBtn.textContent = authMode === 'login' ? 'Need a student account? Sign up' : 'Already have an account? Log in';
-      
+
+      document.getElementById('auth-pass').autocomplete = authMode === 'login' ? 'current-password' : 'new-password';
+      document.getElementById('auth-user').setAttribute('aria-invalid', 'false');
+      document.getElementById('auth-pass').setAttribute('aria-invalid', 'false');
       document.getElementById('auth-error').classList.add('hidden');
     }
+    window.toggleAuthMode = toggleAuthMode;
 
     async function ensureStudentReferralIdentity(user) {
       if (!user || user.role !== 'student') return user;
@@ -597,17 +769,12 @@
       return profile;
     }
 
-    function usernameToAuthEmail(username) {
-      const safeEmailPrefix = encodeURIComponent(username).replace(/%/g, '').toLowerCase();
-      return `${safeEmailPrefix}@khanhlms.com`;
-    }
-
     async function createAuthBackedProfile(username, password, profile, allowLegacyUsername = false) {
       if (window.auth?.currentUser?.email?.trim().toLowerCase() !== window.ADMIN_EMAIL) {
         throw new Error('Only the administrator account can create Authentication accounts from this dashboard.');
       }
       const accountUsername = allowLegacyUsername ? username : username.toLowerCase();
-      if (!allowLegacyUsername && !/^[a-z0-9_-]{1,40}$/.test(accountUsername)) {
+      if (!allowLegacyUsername && !window.LMSAuthHelpers.isValidUsername(accountUsername)) {
         throw new Error('Username must use 1-40 letters, numbers, underscores, or hyphens.');
       }
       if (password.length < 6) throw new Error('Password must be at least 6 characters.');
@@ -622,7 +789,7 @@
       try {
         const credential = await window.fsAuthCreateSecondary(
           secondaryAuth,
-          usernameToAuthEmail(accountUsername),
+          window.LMSAuthHelpers.usernameToAuthEmail(accountUsername),
           password
         );
         createdUser = credential.user;
@@ -740,19 +907,44 @@
       const u = authMode === 'register' ? enteredUsername.toLowerCase() : enteredUsername;
       const p = document.getElementById('auth-pass').value.trim();
       const err = document.getElementById('auth-error');
-      if (!u || !p) { err.textContent = 'Enter username and password'; err.classList.remove('hidden'); return; }
-      if (authMode === 'register' && !/^[A-Za-z0-9_-]{1,40}$/.test(u)) {
-        err.textContent = 'Username must use 1-40 letters, numbers, underscores, or hyphens.';
+      const usernameInput = document.getElementById('auth-user');
+      const passwordInput = document.getElementById('auth-pass');
+      usernameInput.setAttribute('aria-invalid', 'false');
+      passwordInput.setAttribute('aria-invalid', 'false');
+      if (!u || !p) {
+        err.textContent = 'Enter username and password';
         err.classList.remove('hidden');
+        if (!u) {
+          usernameInput.setAttribute('aria-invalid', 'true');
+          usernameInput.focus();
+        }
+        if (!p) {
+          passwordInput.setAttribute('aria-invalid', 'true');
+          if (u) passwordInput.focus();
+        }
         return;
       }
-      if (p.length < 6) { err.textContent = 'Password must be at least 6 characters'; err.classList.remove('hidden'); return; }
+      if (authMode === 'register' && !window.LMSAuthHelpers.isValidUsername(u)) {
+        err.textContent = 'Username must use 1-40 letters, numbers, underscores, or hyphens.';
+        err.classList.remove('hidden');
+        usernameInput.setAttribute('aria-invalid', 'true');
+        usernameInput.focus();
+        return;
+      }
+      if (p.length < 6) {
+        err.textContent = 'Password must be at least 6 characters';
+        err.classList.remove('hidden');
+        passwordInput.setAttribute('aria-invalid', 'true');
+        passwordInput.focus();
+        return;
+      }
       
+      err.classList.add('hidden');
       const btn = document.getElementById('auth-submit-btn');
       btn.textContent = "Connecting..."; btn.disabled = true;
 
       // ✨ FIX: 100% safe email generation even for names with spaces and accents (e.g. "Khanh Lý")
-      const mappedEmail = usernameToAuthEmail(u);
+      const mappedEmail = window.LMSAuthHelpers.usernameToAuthEmail(u);
 
       window.authFlowInProgress = true;
       try {
@@ -794,9 +986,11 @@
                     ? 'Invalid username or password. Older accounts that were only stored in Firestore must first be created in Firebase Authentication.'
                     : error.message || 'Invalid username or password';
                 err.classList.remove('hidden');
+                usernameInput.setAttribute('aria-invalid', 'true');
+                passwordInput.setAttribute('aria-invalid', 'true');
+                passwordInput.focus();
                 return;
             }
-
             let userDoc;
             try {
                 userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
@@ -898,6 +1092,7 @@
           btn.disabled = false;
       }
     }
+    window.handleAuthSubmit = handleAuthSubmit;
     
     // ✨ NEW: Google Sign-In Handler
     window.handleGoogleLogin = async function() {
@@ -951,7 +1146,7 @@
             
             let emailToReset = u;
             if (!u.includes('@')) {
-                emailToReset = usernameToAuthEmail(u);
+                emailToReset = window.LMSAuthHelpers.usernameToAuthEmail(u);
             }
             
             if (emailToReset.endsWith('@khanhlms.com')) {

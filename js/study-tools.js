@@ -459,7 +459,7 @@
         
         try {
             const docId = `${currentUser.user}_${listId}`;
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: deck });
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { owner: currentUser.user, data: deck });
             window.showToast("Progress Saved", `Next review in ${deck[cardIndex].interval} day(s).`);
             
             // This triggers your UI to move to the next card
@@ -527,7 +527,7 @@
                 sessionStorage.setItem('demo_flashcards', JSON.stringify(FLASHCARDS));
                 return;
             }
-            window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), `${currentUser.user}_${deckId}`), { data: FLASHCARDS[deckId] })
+            window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), `${currentUser.user}_${deckId}`), { owner: currentUser.user, data: FLASHCARDS[deckId] })
                 .catch(error => {
                     console.error('Unable to save flashcard deck:', error);
                     if (typeof window.showModalMsg === 'function') window.showModalMsg("Error", "Could not create the flashcard deck.");
@@ -588,7 +588,7 @@
         
         try {
             const docId = `${currentUser.user}_${listId}`;
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { data: FLASHCARDS[listId] });
+            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('flashcards'), docId), { owner: currentUser.user, data: FLASHCARDS[listId] });
             if (typeof window.showToast === 'function') window.showToast("Saved", `Added '${term}' to your set.`);
             window.closeStudentFlashcardCreator();
         } catch(e) {
