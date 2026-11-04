@@ -41,6 +41,8 @@ beforeEach(async () => {
       ['classes/class-a', { id: 'class-a', name: 'Class A', enrolledStudents: ['alice'], assignedTests: ['test-a'] }],
       ['classes/class-b', { id: 'class-b', name: 'Class B', enrolledStudents: ['bob'], assignedTests: ['test-b'] }],
       ['classes/class-c', { id: 'class-c', name: 'Class C', enrolledStudents: ['alice'], assignedTests: [] }],
+      ['course_catalog/class-a', { id: 'class-a', name: 'IELTS Reading', parentClassId: 'course-a', feePerLesson: 200000, isTemplate: false }],
+      ['packages/package-a', { id: 'package-a', name: 'IELTS Starter', classes: ['class-a'], feePerLesson: 200000 }],
       ['tests/test-a', { id: 'test-a', title: 'Assigned test', correctAnswers: { q1: 'answer' } }],
       ['tests/test-b', { id: 'test-b', title: 'Other class test', correctAnswers: { q1: 'secret' } }],
       ['tests/test-c', { id: 'test-c', title: 'Scheduled test' }],
@@ -86,6 +88,17 @@ beforeEach(async () => {
 
 after(async () => {
   await testEnv?.cleanup();
+});
+
+test('public visitors can read published packages and course catalog but not private class records', async () => {
+  const db = testEnv.unauthenticatedContext().firestore();
+  const packages = await assertSucceeds(getDocs(collection(db, 'packages')));
+  const catalog = await assertSucceeds(getDocs(collection(db, 'course_catalog')));
+
+  assert.equal(packages.docs[0].data().name, 'IELTS Starter');
+  assert.equal(catalog.docs[0].data().name, 'IELTS Reading');
+  await assertFails(getDocs(collection(db, 'classes')));
+  await assertFails(getDoc(doc(db, 'classes/class-a')));
 });
 
 test('students can read only currently assigned tests, not list the test bank', async () => {
