@@ -9890,6 +9890,23 @@
         }
     };
 
+    function getStudentDisplayName(student) {
+        const profile = typeof student === 'object'
+            ? student
+            : USERS.find(user => user.user === student || user.username === student || user.uid === student);
+        if (!profile) return 'Học viên không rõ tên';
+
+        const username = String(profile.username || profile.user || '').trim();
+        const isUidUsername = Boolean(username && (
+            (profile.uid && username === String(profile.uid)) ||
+            /^[A-Za-z0-9_-]{20,}$/.test(username)
+        ));
+        const email = String(profile.email || '').trim();
+        const readableEmail = email && !email.toLowerCase().endsWith('@khanhlms.com') ? email : '';
+        return (isUidUsername ? '' : username) ||
+            readableEmail || String(profile.realName || '').trim() || 'Học viên không rõ tên';
+    }
+
     function renderClasses() {
       const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
       const sortVal = document.getElementById('classes-sort')?.value || 'default';
@@ -10020,7 +10037,7 @@
                                 ${mStats.map((stat, idx) => `
                                     <tr class="hover:bg-blue-50/50 transition-colors">
                                         <td class="p-3 text-center border-r border-slate-100">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `<span class="font-black text-slate-500">${idx + 1}</span>`}</td>
-                                        <td class="p-3 font-bold text-slate-800 flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=${stat.student}&background=random" class="w-6 h-6 rounded-full shadow-sm"> ${stat.student}</td>
+                                        <td class="p-3 font-bold text-slate-800 flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(getStudentDisplayName(stat.student))}&background=random" class="w-6 h-6 rounded-full shadow-sm"> ${escapeHtmlAttributeValue(getStudentDisplayName(stat.student))}</td>
                                         <td class="p-3">
                                             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
                                                 <span>Đã làm: ${stat.completedRequired}/${stat.totalRequired} bài</span><span class="text-blue-600">${stat.progressPct}%</span>
@@ -10115,7 +10132,7 @@
                             <div class="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition">
                                 <div class="flex items-center gap-2">
                                     <span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span>
-                                    <span class="font-bold text-slate-800">${student}</span>
+                                    <span class="font-bold text-slate-800">${escapeHtmlAttributeValue(getStudentDisplayName(student))}</span>
                                 </div>
                                 ${isOwner ? `
                                 <div class="flex items-center gap-2">
@@ -10649,18 +10666,9 @@
             return;
         }
         
-        const opts = availableStudents.map(u => {
-            const username = String(u.username || u.user || '').trim();
-            const isUidUsername = Boolean(username && (
-                (u.uid && username === String(u.uid)) ||
-                /^[A-Za-z0-9_-]{20,}$/.test(username)
-            ));
-            const email = String(u.email || '').trim();
-            const readableEmail = email && !email.toLowerCase().endsWith('@khanhlms.com') ? email : '';
-            const label = (isUidUsername ? '' : username) ||
-                readableEmail || String(u.realName || '').trim() || 'Username unavailable';
-            return `<option value="${escapeHtmlAttributeValue(u.user)}">${escapeHtmlAttributeValue(label)}</option>`;
-        }).join('');
+        const opts = availableStudents.map(u =>
+            `<option value="${escapeHtmlAttributeValue(u.user)}">${escapeHtmlAttributeValue(getStudentDisplayName(u))}</option>`
+        ).join('');
         document.getElementById('modal-title').textContent = `Assign User to: ${cls.name}`;
         document.getElementById('modal-message').innerHTML = `<p class="mb-2 text-sm text-slate-500">Select a student from the system to grant them access to this class.</p><select id="enroll-student-select" class="w-full border-2 p-2 rounded outline-none focus:border-blue-500 font-bold text-blue-800 bg-slate-50">${opts}</select>`;
         
@@ -10700,7 +10708,7 @@
         
         try {
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
-            if(typeof window.showToast === 'function') window.showToast("Đã phân lớp", `Học viên ${student} đã được chuyển lớp.`);
+            if(typeof window.showToast === 'function') window.showToast("Đã phân lớp", `Học viên ${getStudentDisplayName(student)} đã được chuyển lớp.`);
             renderClasses();
         } catch(e) {
             console.error(e);
@@ -10712,7 +10720,8 @@
     window.unenrollStudent = async function(cid, student) {
         const cls = CLASSES.find(c => c.id === cid);
         if(!cls) return;
-        showConfirm("Remove Student", `Remove ${student} from ${cls.name}?`, async () => {
+        const studentName = getStudentDisplayName(student);
+        showConfirm("Remove Student", `Remove ${studentName} from ${cls.name}?`, async () => {
             const updatedClass = { ...cls };
             updatedClass.enrolledStudents = (cls.enrolledStudents || []).filter(name => name !== student);
             if (updatedClass.miniClasses) {
@@ -10724,7 +10733,7 @@
                 const classIndex = CLASSES.findIndex(item => item.id === cls.id);
                 if (classIndex >= 0) CLASSES[classIndex] = updatedClass;
                 renderClasses();
-                window.showToast?.("Student Removed", `${student} has been removed from ${cls.name}.`);
+                window.showToast?.("Student Removed", `${studentName} has been removed from ${cls.name}.`);
             } catch (error) {
                 console.error(`Could not remove ${student} from class ${cls.id}:`, error);
                 showModalMsg("Error", `Could not remove ${student} from this class. Check Firestore permissions and try again.`);
