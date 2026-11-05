@@ -502,13 +502,13 @@ test('reading syntax chunking keeps the selected range when a label button takes
         querySelectorAll: () => []
     };
     const status = { textContent: '' };
-    const paragraph = { closest: selector => selector === 'p' ? paragraph : null };
-    const textNode = { nodeType: 3, parentElement: paragraph };
+    const textNode = { nodeType: 3, parentElement: { closest: () => ({}) } };
+    const endTextNode = { nodeType: 3, parentElement: { closest: () => ({}) } };
     let insertedChunk = null;
     const range = {
         commonAncestorContainer: textNode,
         startContainer: textNode,
-        endContainer: textNode,
+        endContainer: endTextNode,
         collapsed: false,
         cloneRange() { return this; },
         intersectsNode: () => false,
