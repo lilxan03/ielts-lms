@@ -834,6 +834,7 @@
             savedSyntaxChunkSelection = range.cloneRange();
         }
     };
+    document.addEventListener('selectionchange', window.captureSyntaxChunkSelection);
 
     window.applySyntaxChunk = function(role) {
         const roleLabels = {
@@ -844,7 +845,11 @@
         const root = document.getElementById('passage-text-content');
         const status = document.getElementById('syntax-chunking-status');
         const selection = window.getSelection();
-        if (!root || !roleLabels[role]) return;
+        if (!roleLabels[role]) return;
+        if (!root) {
+            if (status) status.textContent = 'Không tìm thấy đoạn văn để gắn nhãn. Hãy tải lại phần Reading.';
+            return;
+        }
 
         const selectedRange = selection && selection.rangeCount > 0 && !selection.isCollapsed
             ? selection.getRangeAt(0)
@@ -1216,14 +1221,26 @@
             <div class="syntax-chunking-controls" aria-label="Syntax highlighting and chunking tools">
                 <strong>Syntax Chunking / Phân tích cấu trúc câu</strong>
                 <span>Select text inside one paragraph, then choose a label:</span>
-                <button type="button" class="syntax-chunking-button syntax-chunking-button--subject" onpointerdown="window.captureSyntaxChunkSelection()" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('subject')">Chủ ngữ · S</button>
-                <button type="button" class="syntax-chunking-button syntax-chunking-button--verb" onpointerdown="window.captureSyntaxChunkSelection()" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('verb')">Động từ · V</button>
-                <button type="button" class="syntax-chunking-button syntax-chunking-button--object" onpointerdown="window.captureSyntaxChunkSelection()" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('object')">Tân ngữ · O</button>
-                <button type="button" class="syntax-chunking-clear" onmousedown="event.preventDefault()" onclick="window.clearSyntaxChunks()">Xoá nhãn</button>
+                <button type="button" data-syntax-role="subject" class="syntax-chunking-button syntax-chunking-button--subject">Chủ ngữ · S</button>
+                <button type="button" data-syntax-role="verb" class="syntax-chunking-button syntax-chunking-button--verb">Động từ · V</button>
+                <button type="button" data-syntax-role="object" class="syntax-chunking-button syntax-chunking-button--object">Tân ngữ · O</button>
+                <button type="button" data-syntax-clear class="syntax-chunking-clear">Xoá nhãn</button>
                 <span id="syntax-chunking-status" class="syntax-chunking-status" role="status" aria-live="polite">Công cụ giúp bạn đọc theo cụm thay vì dịch từng từ.</span>
             </div>` : '';
 
           passageContainer.innerHTML = `${advancedReadingControls}${syntaxChunkingControls}${studyToggles}<div class="passage-text font-bold mb-6">${lmsSanitizeHtml(p.title)}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
+          const syntaxControls = passageContainer.querySelector('.syntax-chunking-controls');
+          syntaxControls?.querySelectorAll('[data-syntax-role]').forEach(button => {
+              const captureSelection = () => window.captureSyntaxChunkSelection();
+              button.addEventListener('pointerdown', captureSelection);
+              button.addEventListener('mousedown', event => {
+                  captureSelection();
+                  event.preventDefault();
+              });
+              button.addEventListener('click', () => window.applySyntaxChunk(button.dataset.syntaxRole));
+          });
+          syntaxControls?.querySelector('[data-syntax-clear]')?.addEventListener('mousedown', event => event.preventDefault());
+          syntaxControls?.querySelector('[data-syntax-clear]')?.addEventListener('click', () => window.clearSyntaxChunks());
           const speedInput = document.getElementById('reading-speed-input');
           if (speedInput) {
               speedInput.value = String(Math.round(window.readingSpeed || 220));
