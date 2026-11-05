@@ -8,7 +8,7 @@ The browser app is served from `index.html`. Shared styles are in `css/app.css`,
 
 Reading and Listening submissions record correct/total answers by question type. Students see a weakest-type chart after each submitted section and an accumulated chart in the class Test Bank progress panel; older submissions are included when their saved test data can be matched to question types. Listening fill-in answers also report likely spelling typos, singular/plural mismatches, unanswered items, or fully incorrect answers after submission. These hints do not change the score.
 
-The Reading passage has a Syntax Chunking tool in both practice and timed modes. Select text within one paragraph, then label it Subject, Verb, or Object; the selection is retained while activating a label, and existing labels can be cleared before relabeling.
+The Reading passage has a Syntax Chunking tool in both practice and timed modes. Select a phrase in the passage, then label it Subject, Verb, or Object; the selection is retained while activating a label, and existing labels can be cleared before relabeling.
 
 Free-practice Listening tests with an accessible direct audio URL and transcript include Micro-Dictation. Audio is divided into selectable 5-, 8-, or 10-second clips; blanks target numbers, likely proper names, and longer words. Existing transcript timings are used when available; otherwise sentence timing is estimated from transcript length. Embedded YouTube/SoundCloud tracks are not segmented.
 
