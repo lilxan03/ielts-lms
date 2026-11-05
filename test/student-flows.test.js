@@ -496,6 +496,63 @@ test('scaffolded Writing provides task-specific blocks and combines them into a 
     );
 });
 
+test('reading syntax chunking keeps the selected range when a label button takes focus', () => {
+    const root = {
+        contains: () => true,
+        querySelectorAll: () => []
+    };
+    const status = { textContent: '' };
+    const paragraph = { closest: selector => selector === 'p' ? paragraph : null };
+    const textNode = { nodeType: 3, parentElement: paragraph };
+    let insertedChunk = null;
+    const range = {
+        commonAncestorContainer: textNode,
+        startContainer: textNode,
+        endContainer: textNode,
+        collapsed: false,
+        cloneRange() { return this; },
+        intersectsNode: () => false,
+        extractContents: () => ({ textContent: 'The students' }),
+        insertNode: chunk => { insertedChunk = chunk; }
+    };
+    const selection = {
+        rangeCount: 1,
+        isCollapsed: false,
+        getRangeAt: () => range,
+        removeAllRanges() { this.rangeCount = 0; this.isCollapsed = true; }
+    };
+    const context = {
+        window: null,
+        document: {
+            getElementById: id => ({
+                'passage-text-content': root,
+                'syntax-chunking-status': status
+            })[id] || null,
+            addEventListener() {},
+            createElement: () => ({
+                dataset: {},
+                setAttribute() {},
+                appendChild(content) { this.content = content; }
+            })
+        }
+    };
+    context.window = context;
+    context.getSelection = () => selection;
+    context.window.getSelection = context.getSelection;
+    vm.createContext(context);
+    vm.runInContext(readAppScript('test-player.js'), context);
+
+    context.captureSyntaxChunkSelection();
+    selection.rangeCount = 0;
+    selection.isCollapsed = true;
+    context.applySyntaxChunk('subject');
+
+    assert.equal(insertedChunk.className, 'syntax-chunk syntax-chunk--subject');
+    assert.equal(insertedChunk.dataset.syntaxRole, 'subject');
+    assert.equal(insertedChunk.content.textContent, 'The students');
+    assert.match(status.textContent, /Đã đánh dấu/);
+});
+
 test('real-time writing analysis highlights grammar patterns, connectors, repetition, and escapes text', () => {
     const context = { window: null };
     context.window = context;
