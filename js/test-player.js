@@ -1,4 +1,5 @@
     let speakingSimulationSession = null;
+    let savedSyntaxChunkSelection = null;
 
     window.startFullExam = function() {
         // Pull directly from the GLOBAL Test Bank
@@ -824,6 +825,16 @@
         startReadingMode();
     };
 
+    window.captureSyntaxChunkSelection = function() {
+        const root = document.getElementById('passage-text-content');
+        const selection = window.getSelection();
+        if (!root || !selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+        const range = selection.getRangeAt(0);
+        if (root.contains(range.commonAncestorContainer)) {
+            savedSyntaxChunkSelection = range.cloneRange();
+        }
+    };
+
     window.applySyntaxChunk = function(role) {
         const roleLabels = {
             subject: 'Chủ ngữ / Subject',
@@ -833,18 +844,20 @@
         const root = document.getElementById('passage-text-content');
         const status = document.getElementById('syntax-chunking-status');
         const selection = window.getSelection();
-        if (!root || !roleLabels[role] || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
+        if (!root || !roleLabels[role]) return;
+
+        const selectedRange = selection && selection.rangeCount > 0 && !selection.isCollapsed
+            ? selection.getRangeAt(0)
+            : null;
+        const range = selectedRange && root.contains(selectedRange.commonAncestorContainer)
+            ? selectedRange
+            : savedSyntaxChunkSelection;
+        if (!range || !root.contains(range.commonAncestorContainer) || range.collapsed) {
             if (status) status.textContent = 'Chọn một cụm từ trong đoạn văn trước khi gán nhãn.';
             return;
         }
 
-        const range = selection.getRangeAt(0);
-        if (!root.contains(range.commonAncestorContainer)) {
-            if (status) status.textContent = 'Vui lòng chọn nội dung trong bài đọc.';
-            return;
-        }
-
-        const getParagraph = node => (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest('p');
+        const getParagraph = node => (node.nodeType === 1 ? node : node.parentElement)?.closest('p');
         const startParagraph = getParagraph(range.startContainer);
         const endParagraph = getParagraph(range.endContainer);
         if (!startParagraph || startParagraph !== endParagraph) {
@@ -864,7 +877,8 @@
         chunk.setAttribute('aria-label', roleLabels[role]);
         chunk.appendChild(range.extractContents());
         range.insertNode(chunk);
-        selection.removeAllRanges();
+        selection?.removeAllRanges();
+        savedSyntaxChunkSelection = null;
         if (status) status.textContent = `Đã đánh dấu ${roleLabels[role]}.`;
     };
 
@@ -874,6 +888,7 @@
         root.querySelectorAll('.syntax-chunk').forEach(chunk => {
             chunk.replaceWith(...chunk.childNodes);
         });
+        savedSyntaxChunkSelection = null;
         const status = document.getElementById('syntax-chunking-status');
         if (status) status.textContent = 'Đã xoá các nhãn cấu trúc câu.';
     };
@@ -1197,13 +1212,13 @@
                 <input type="number" id="reading-speed-input" value="220" min="50" max="1000" onchange="window.updateSkimmingSpeed()">
             </div>` : '';
 
-          const syntaxChunkingControls = APP_DATA.module === 'reading' && isTimeFree ? `
+          const syntaxChunkingControls = APP_DATA.module === 'reading' ? `
             <div class="syntax-chunking-controls" aria-label="Syntax highlighting and chunking tools">
                 <strong>Syntax Chunking / Phân tích cấu trúc câu</strong>
-                <span>Chọn một cụm trong đoạn văn, sau đó gán nhãn:</span>
-                <button type="button" class="syntax-chunking-button syntax-chunking-button--subject" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('subject')">Chủ ngữ · S</button>
-                <button type="button" class="syntax-chunking-button syntax-chunking-button--verb" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('verb')">Động từ · V</button>
-                <button type="button" class="syntax-chunking-button syntax-chunking-button--object" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('object')">Tân ngữ · O</button>
+                <span>Select text inside one paragraph, then choose a label:</span>
+                <button type="button" class="syntax-chunking-button syntax-chunking-button--subject" onpointerdown="window.captureSyntaxChunkSelection()" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('subject')">Chủ ngữ · S</button>
+                <button type="button" class="syntax-chunking-button syntax-chunking-button--verb" onpointerdown="window.captureSyntaxChunkSelection()" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('verb')">Động từ · V</button>
+                <button type="button" class="syntax-chunking-button syntax-chunking-button--object" onpointerdown="window.captureSyntaxChunkSelection()" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('object')">Tân ngữ · O</button>
                 <button type="button" class="syntax-chunking-clear" onmousedown="event.preventDefault()" onclick="window.clearSyntaxChunks()">Xoá nhãn</button>
                 <span id="syntax-chunking-status" class="syntax-chunking-status" role="status" aria-live="polite">Công cụ giúp bạn đọc theo cụm thay vì dịch từng từ.</span>
             </div>` : '';
