@@ -862,14 +862,6 @@
             return;
         }
 
-        const getParagraph = node => (node.nodeType === 1 ? node : node.parentElement)?.closest('p');
-        const startParagraph = getParagraph(range.startContainer);
-        const endParagraph = getParagraph(range.endContainer);
-        if (!startParagraph || startParagraph !== endParagraph) {
-            if (status) status.textContent = 'Hãy chọn cụm từ trong cùng một đoạn văn.';
-            return;
-        }
-
         const overlapsChunk = [...root.querySelectorAll('.syntax-chunk')].some(chunk => range.intersectsNode(chunk));
         if (overlapsChunk) {
             if (status) status.textContent = 'Xoá nhãn hiện tại trước khi gán nhãn chồng lên cụm từ.';
@@ -1220,7 +1212,7 @@
           const syntaxChunkingControls = APP_DATA.module === 'reading' ? `
             <div class="syntax-chunking-controls" aria-label="Syntax highlighting and chunking tools">
                 <strong>Syntax Chunking / Phân tích cấu trúc câu</strong>
-                <span>Select text inside one paragraph, then choose a label:</span>
+                <span>Select a phrase in the passage, then choose a label:</span>
                 <button type="button" data-syntax-role="subject" class="syntax-chunking-button syntax-chunking-button--subject">Chủ ngữ · S</button>
                 <button type="button" data-syntax-role="verb" class="syntax-chunking-button syntax-chunking-button--verb">Động từ · V</button>
                 <button type="button" data-syntax-role="object" class="syntax-chunking-button syntax-chunking-button--object">Tân ngữ · O</button>
