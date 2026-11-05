@@ -403,7 +403,7 @@
   <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
       <h2 id="modal-title" class="text-xl font-bold mb-4 text-slate-900"></h2>
-      <p id="modal-message" class="mb-4 text-slate-700"></p>
+      <div id="modal-message" class="mb-4 text-slate-700"></div>
       <input type="text" id="modal-input" class="hidden w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none" />
       <div class="flex justify-end gap-3">
         <button id="modal-cancel" class="hidden px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
@@ -611,6 +611,17 @@
          <input type="number" id="custom-time-input" min="1" max="180" placeholder="Default" aria-label="Custom time limit in minutes" class="w-24 border-2 border-slate-200 shadow-sm rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-black text-blue-700 bg-white text-center">
          <span class="text-xs font-bold text-slate-500" aria-hidden="true">minutes</span>
       </div>
+
+      <label id="speaking-simulation-option" class="hidden mb-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-slate-800">
+        <span class="flex items-start gap-3">
+          <input type="checkbox" id="speaking-simulation-checkbox" class="mt-1 h-4 w-4 accent-amber-600" onchange="window.handleSpeakingSimulationToggle(this.checked)">
+          <span>
+            <span class="block font-black">🎙️ Virtual Speaking Part 2 exam</span>
+            <span class="mt-1 block text-xs font-medium leading-relaxed text-slate-600">Runs the Part 2 cue card only: 60 seconds to prepare, then an automatic 2-minute recording. The microphone cannot be paused or restarted during the attempt.</span>
+            <span class="mt-1 block text-xs font-medium leading-relaxed text-slate-600">Chỉ thi Cue Card Part 2: chuẩn bị 60 giây, sau đó tự động ghi âm 2 phút. Không thể tạm dừng hay ghi lại trong lượt thi.</span>
+          </span>
+        </span>
+      </label>
 
       <!-- ✨ NEW: Dynamic Activities Button -->
       <button type="button" data-test-action="activities" class="w-full border-2 border-fuchsia-200 bg-fuchsia-50 rounded-xl p-5 text-left transition hover:border-fuchsia-400 hover:bg-fuchsia-100 cursor-pointer mb-6 group flex items-center justify-between shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
@@ -2751,7 +2762,7 @@
             
             <button onclick="window.toggleTheme()" class="theme-toggle-btn w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:shadow-sm transition-all text-lg" title="Toggle Theme">🌙</button>
 
-            <button onclick="exitTest()" class="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-black text-xs transition-colors shadow-sm flex items-center border border-rose-200 hover:border-rose-600 tracking-wide uppercase">
+            <button id="exam-submit-btn" onclick="exitTest()" class="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-black text-xs transition-colors shadow-sm flex items-center border border-rose-200 hover:border-rose-600 tracking-wide uppercase">
               <span id="exam-action-btn-text">Submit Test</span>
             </button>
          </div>
@@ -2852,6 +2863,8 @@
   <!-- LMS CORE LOGIC -->
   <script src="js/core.js"></script>
   <script src="js/listening.js"></script>
+  <script src="js/listening-distractors.js"></script>
+  <script src="js/micro-dictation.js"></script>
   <script src="js/study-tools.js"></script>
   <script src="js/teacher-tools.js"></script>
   <script src="js/scheduling.js"></script>
@@ -2861,6 +2874,8 @@
   <script src="js/teacher-builder.js"></script>
   <script src="js/billing.js"></script>
   <script src="js/landing.js"></script>
+  <script src="js/dynamic-mindmap.js"></script>
+  <script src="js/scaffolded-writing.js"></script>
   <script src="js/student-dashboard.js"></script>
   <script src="js/test-player.js"></script>
   <script src="js/student-study.js"></script>

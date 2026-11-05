@@ -6,6 +6,20 @@ This function grades Writing responses and transcribes/grades Speaking recording
 
 The browser app is served from `index.html`. Shared styles are in `css/app.css`, Firebase initialization is in `js/firebase.js`, and the classic scripts in `js/` are loaded in order from `index.html`. These scripts share the existing global LMS state, so keep their references and load order in sync when adding or moving code. There is no frontend build step.
 
+Reading and Listening submissions record correct/total answers by question type. Students see a weakest-type chart after each submitted section and an accumulated chart in the class Test Bank progress panel; older submissions are included when their saved test data can be matched to question types. Listening fill-in answers also report likely spelling typos, singular/plural mismatches, unanswered items, or fully incorrect answers after submission. These hints do not change the score.
+
+Free-practice Listening tests with an accessible direct audio URL and transcript include Micro-Dictation. Audio is divided into selectable 5-, 8-, or 10-second clips; blanks target numbers, likely proper names, and longer words. Existing transcript timings are used when available; otherwise sentence timing is estimated from transcript length. Embedded YouTube/SoundCloud tracks are not segmented.
+
+After a Listening multiple-choice submission, transcript review highlights phrases matching correct options and signposting words in green, and phrases matching incorrect options in red as possible distractors. These lexical matches are automated study hints and should be checked in context.
+
+Speaking Part 2 tests can be started in Virtual Exam mode from the test mode dialog. The cue card is shown during an unpausable 60-second preparation countdown, followed by an automatic two-minute microphone recording; the submission control stays locked until the recording has been saved. Microphone permission is required before the countdown begins.
+
+Writing and Speaking practice sessions show an interactive mind map instead of the long sample answer. Students choose an outline branch and add task collocations from the teacher's Test Vocabulary Bank plus built-in discourse markers; the map is a scaffold and does not generate a model response. It also includes a session-only cross-topic idea network based on the test's topics: students can add topics and ideas, move ideas between topics by dragging or using the move menu, and explicitly connect related ideas.
+
+Writing time-free practice uses a scaffolded editor instead of a single large essay field. Task 2 is split into paraphrase, thesis, two body paragraphs, and conclusion; Task 1 uses introduction, overview, and two detail blocks. The editor combines the blocks into the existing essay answer format for saving and teacher review; timed tests keep the standard writing field.
+
+Writing editors also show a live text analyzer in both practice and timed tests. It highlights selected subject–verb/article patterns as grammar hints, discourse markers, and repeated words or phrases. These rule-based suggestions are not a complete grammar checker and do not affect scoring or submitted answers.
+
 Run the frontend helper and student-flow tests with `npm test`. The flow tests load the real sign-in and submission scripts with local Firebase fakes, so they do not access production accounts or data. They also check sign-in and test-mode accessibility, including keyboard focus and Escape handling.
 
 Firestore access rules have separate emulator tests: install Java 21 or newer, then run `npm run test:rules`. The first run downloads the Firestore emulator. These tests use a demo project and local fixtures only; they do not connect to production.
