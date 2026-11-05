@@ -7,6 +7,87 @@
       return null;
     }
 
+    const questionTypeLabels = {
+      multiple_choice: 'Multiple Choice',
+      tfng: 'True / False / Not Given',
+      ynng: 'Yes / No / Not Given',
+      fill_blanks: 'Completion',
+      dnd_list: 'Drag & Drop',
+      matching_headings: 'Matching Headings',
+      matching_info: 'Matching Information',
+      matching_endings: 'Matching Endings',
+      matching_statements: 'Matching Statements',
+      map_labelling_hotspots: 'Map Labelling',
+      map_labelling_grid: 'Map Labelling'
+    };
+
+    function renderQuestionTypeAnalytics(submissions, heading) {
+      const statsByType = new Map();
+      (Array.isArray(submissions) ? submissions : []).forEach(submission => {
+        const test = submission?.syntheticData || TEST_BANK.find(item => item.id === submission?.testId);
+        const module = test?.module || getSubmissionModule(submission);
+        if (!['reading', 'listening'].includes(module)) return;
+        (submission?.questionAnalytics || []).forEach(analytics => {
+          if (analytics.scoreable === false) return;
+          const question = test?.parts?.[analytics.partIndex]?.questions?.[analytics.blockIndex];
+          const type = analytics.questionType || question?.type;
+          if (typeof type !== 'string' || !type || type === 'unknown') return;
+
+          const total = analytics.totalCount !== null && analytics.totalCount !== undefined &&
+            Number.isFinite(Number(analytics.totalCount)) && Number(analytics.totalCount) > 0
+            ? Number(analytics.totalCount)
+            : 1;
+          const correct = analytics.correctCount !== null && analytics.correctCount !== undefined &&
+            Number.isFinite(Number(analytics.correctCount))
+            ? Math.max(0, Math.min(total, Number(analytics.correctCount)))
+            : analytics.correct === true ? 1 : 0;
+          const stats = statsByType.get(type) || { correct: 0, total: 0 };
+          stats.correct += correct;
+          stats.total += total;
+          statsByType.set(type, stats);
+        });
+      });
+
+      const rows = [...statsByType.entries()]
+        .map(([type, stats]) => ({ type, ...stats, accuracy: stats.total ? stats.correct / stats.total : 0 }))
+        .sort((a, b) => a.accuracy - b.accuracy || a.type.localeCompare(b.type));
+      if (!rows.length) return '';
+
+      const weakest = rows[0];
+      const title = heading || window.studentText('Question-type blind spots', 'Điểm mù theo dạng câu hỏi');
+      const weakestLabel = questionTypeLabels[weakest.type] || weakest.type.replace(/[_-]+/g, ' ');
+      const weaknessMessage = weakest.accuracy < 1
+        ? window.studentText(
+            `Focus your next practice on ${escapeForumHtml(weakestLabel)} (${Math.round(weakest.accuracy * 100)}%).`,
+            `Hãy ưu tiên luyện dạng ${escapeForumHtml(weakestLabel)} (${Math.round(weakest.accuracy * 100)}%).`
+          )
+        : window.studentText('Great work — all tracked question types are currently at 100%.', 'Rất tốt — hiện các dạng câu hỏi được theo dõi đều đạt 100%.');
+
+      return `
+        <section class="question-type-analytics" aria-label="${window.studentText('Question-type performance chart', 'Biểu đồ kết quả theo dạng câu hỏi')}">
+          <div class="question-type-analytics__heading">
+            <div>
+              <h3>${title}</h3>
+              <p>${window.studentText('Accuracy by question type', 'Tỷ lệ đúng theo dạng câu hỏi')}</p>
+            </div>
+            <span aria-hidden="true">📊</span>
+          </div>
+          <div class="question-type-analytics__rows">
+            ${rows.map(row => {
+              const label = questionTypeLabels[row.type] || row.type.replace(/[_-]+/g, ' ');
+              const percentage = Math.round(row.accuracy * 100);
+              return `<div class="question-type-analytics__row">
+                <div class="question-type-analytics__label"><span>${escapeForumHtml(label)}</span><strong>${percentage}% <small>(${row.correct}/${row.total})</small></strong></div>
+                <div class="question-type-analytics__track" role="img" aria-label="${escapeForumHtml(label)}: ${percentage}% correct"><span class="${row.type === weakest.type && percentage < 100 ? 'is-weakest' : ''}" style="width:${percentage}%"></span></div>
+              </div>`;
+            }).join('')}
+          </div>
+          <p class="question-type-analytics__insight"><strong>${window.studentText('Blind spot:', 'Điểm cần cải thiện:')}</strong> ${weaknessMessage}</p>
+        </section>`;
+    }
+
+    window.renderQuestionTypeAnalytics = renderQuestionTypeAnalytics;
+
     function getPeerReviewCandidatesForCurrentStudent() {
       if (!currentUser || currentUser.role !== 'student') return [];
       const cid = document.getElementById('student-class-select')?.value;
@@ -765,10 +846,46 @@
             </div>
         </div>
       `;
+      prog.insertAdjacentHTML('beforeend', renderQuestionTypeAnalytics(mySubs));
       window.translateStudentStatic();
     };
 
     let pendingTestId = null;
+    let pendingSpeakingPartTwoIndex = -1;
+
+    function findSpeakingPartTwoIndex(test) {
+      if (test?.module !== 'speaking' || !Array.isArray(test.parts)) return -1;
+      const hasSingleRecordingQuestion = part => {
+        const recordingQuestions = (part.questions || []).filter(question => question.type === 'audio_record');
+        return recordingQuestions.length === 1 && recordingQuestions[0].ids?.length === 1;
+      };
+      return test.parts.findIndex((part, index) => {
+        const label = `${part.title || ''} ${part.speakingQuestions || ''} ${(part.questions || []).map(question => `${question.instruction || ''} ${question.text || ''}`).join(' ')}`;
+        return hasSingleRecordingQuestion(part) && (
+          /\bpart\s*2\b|\bcue[\s-]*card\b/i.test(label) || index === 1
+        );
+      });
+    }
+
+    window.updateSpeakingSimulationAvailability = function() {
+      const option = document.getElementById('speaking-simulation-option');
+      const checkbox = document.getElementById('speaking-simulation-checkbox');
+      const selectedPartTwo = document.querySelector(`.part-select-cb[value="${pendingSpeakingPartTwoIndex}"]`)?.checked;
+      const available = pendingSpeakingPartTwoIndex >= 0 && selectedPartTwo;
+      if (option) option.classList.toggle('hidden', !available);
+      if (!available && checkbox) checkbox.checked = false;
+      if (checkbox?.checked && document.querySelectorAll('.part-select-cb:checked').length !== 1) {
+          checkbox.checked = false;
+      }
+    };
+
+    window.handleSpeakingSimulationToggle = function(enabled) {
+      if (!enabled) return;
+      document.querySelectorAll('.part-select-cb').forEach(partCheckbox => {
+          partCheckbox.checked = Number(partCheckbox.value) === pendingSpeakingPartTwoIndex;
+      });
+      window.selectTestMode('restricted');
+    };
 
     function getCurrentStudentAssignedTest(testId) {
       if (!testId || !currentUser || currentUser.role !== 'student') return null;
@@ -793,6 +910,9 @@
       pendingTestId = tid;
       
       const t = TEST_BANK.find(x => x.id === tid);
+      pendingSpeakingPartTwoIndex = findSpeakingPartTwoIndex(t);
+      const speakingSimulationCheckbox = document.getElementById('speaking-simulation-checkbox');
+      if (speakingSimulationCheckbox) speakingSimulationCheckbox.checked = false;
       const partContainer = document.getElementById('part-selection-container');
       const partCheckboxes = document.getElementById('part-checkboxes');
       
@@ -801,7 +921,7 @@
           partContainer.classList.remove('hidden');
           partCheckboxes.innerHTML = t.parts.map((p, idx) => `
               <label class="flex items-center space-x-2 cursor-pointer bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition shadow-sm">
-                  <input type="checkbox" class="part-select-cb w-4 h-4 text-blue-600 rounded focus:ring-blue-500" value="${idx}" checked>
+                  <input type="checkbox" class="part-select-cb w-4 h-4 text-blue-600 rounded focus:ring-blue-500" value="${idx}" checked onchange="window.updateSpeakingSimulationAvailability()">
                   <span class="font-bold text-slate-700 text-sm">${p.title || 'Part ' + (idx + 1)}</span>
               </label>
           `).join('');
@@ -809,6 +929,7 @@
           partContainer.classList.add('hidden');
       }
       
+      window.updateSpeakingSimulationAvailability();
       document.getElementById('test-mode-modal').classList.remove('hidden');
       window.focusTestModeDialog(document.activeElement);
     }
@@ -822,9 +943,19 @@
           showModalMsg("Selection Required", "Please select at least one part to start the test.");
           return;
       }
+
+      const speakingSimulationEnabled = document.getElementById('speaking-simulation-checkbox')?.checked === true;
+      if (speakingSimulationEnabled &&
+          (selectedParts.length !== 1 || selectedParts[0] !== pendingSpeakingPartTwoIndex)) {
+          showModalMsg("Part 2 Required", "The virtual Speaking mode runs Part 2 only. Select the Part 2 cue card by itself.");
+          return;
+      }
       
       document.getElementById('test-mode-modal').classList.add('hidden');
       window.clearTestModeDialogFocus();
+      window.isSpeakingPartTwoSimulation = speakingSimulationEnabled;
+      window.speakingSimulationSourcePartIndex = speakingSimulationEnabled ? pendingSpeakingPartTwoIndex : -1;
+      window.speakingSimulationPartKey = '';
       if (pendingTestId) {
           startTest(pendingTestId, selectedParts); // Pass the chosen parts!
       }
@@ -1250,6 +1381,7 @@
             });
           }
         }
+        window.updateSpeakingSimulationAvailability();
       } finally {
         handlingTestRoute = false;
       }
@@ -1715,6 +1847,10 @@
     };
 
     function selectTestMode(m) {
+      const speakingSimulationCheckbox = document.getElementById('speaking-simulation-checkbox');
+      if (m === 'free' && speakingSimulationCheckbox?.checked) {
+          speakingSimulationCheckbox.checked = false;
+      }
       testMode = m; isTimeFree = (m === 'free');
       const freeModeButton = document.getElementById('mode-btn-free');
       const restrictedModeButton = document.getElementById('mode-btn-restricted');
@@ -1729,6 +1865,7 @@
       if (timeContainer) {
           timeContainer.classList.toggle('hidden', isTimeFree);
       }
+      window.updateSpeakingSimulationAvailability?.();
     }
     window.selectTestMode = selectTestMode;
 

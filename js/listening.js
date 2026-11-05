@@ -14,6 +14,10 @@
     let draggedData = null; 
     let mediaRecorder = null;
     let audioChunks = [];
+    window.isSpeakingPartTwoSimulation = false;
+    window.speakingSimulationSourcePartIndex = -1;
+    window.speakingSimulationPartIndex = -1;
+    window.speakingSimulationPartKey = '';
 
     // Feature States
     let activeSelectionRange = null;

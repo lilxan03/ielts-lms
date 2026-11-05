@@ -1056,15 +1056,37 @@
             return val !== undefined && val !== null && String(val).trim() !== '';
           });
           const correctness = evaluateQuestionBlock(question, answerMap);
+          let correctCount = 0;
+          if (question.multi) {
+            const given = ids.map(id => (answerMap[id] || '').toString().toLowerCase()).filter(Boolean);
+            ids.forEach(id => {
+              const expected = (question.correctAnswers?.[id] || '').toString().toLowerCase();
+              if (!expected) return;
+              const matchIdx = given.indexOf(expected);
+              if (matchIdx !== -1) {
+                correctCount++;
+                given.splice(matchIdx, 1);
+              }
+            });
+          } else {
+            ids.forEach(id => {
+              const expected = (question.correctAnswers?.[id] || '').toString().toLowerCase();
+              const given = (answerMap[id] || '').toString().toLowerCase().trim();
+              if (expected && expected.split(/[/|]/).map(value => value.trim()).includes(given) && given) correctCount++;
+            });
+          }
           analytics.push({
             partIndex: partIdx,
             blockIndex: blockIdx,
             questionNumber: analytics.length + 1,
+            questionType: question.type || 'unknown',
             blockId: question.blockId || '',
             title: stripHtmlTags(question.instruction || question.text || '').slice(0, 90),
             timeSpentSec: elapsedSec,
             answered,
             correct: correctness,
+            correctCount,
+            totalCount: ids.length,
             scoreable: ['reading', 'listening'].includes(testData.module)
           });
         });

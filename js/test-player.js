@@ -1,3 +1,5 @@
+    let speakingSimulationSession = null;
+
     window.startFullExam = function() {
         // Pull directly from the GLOBAL Test Bank
         const allListening = TEST_BANK.filter(t => t.module === 'listening');
@@ -92,7 +94,202 @@
         });
     };
 
+    function isSpeakingSimulationLocked() {
+      return speakingSimulationSession &&
+          ['requesting', 'preparation', 'recording', 'saving'].includes(speakingSimulationSession.phase);
+    }
+
+    function updateSpeakingSimulationLock(locked) {
+      const submitButton = document.getElementById('exam-submit-btn');
+      if (submitButton) {
+          submitButton.disabled = locked;
+          submitButton.setAttribute('aria-disabled', String(locked));
+          submitButton.title = locked
+              ? 'The timed Speaking attempt must finish before submitting.'
+              : '';
+      }
+    }
+
+    function clearSpeakingPartTwoSession() {
+      const session = speakingSimulationSession;
+      if (!session) return;
+      session.cancelled = true;
+      clearInterval(session.interval);
+      if (session.recorder && session.recorder.state === 'recording') session.recorder.stop();
+      session.stream?.getTracks().forEach(track => track.stop());
+      speakingSimulationSession = null;
+      updateSpeakingSimulationLock(false);
+    }
+
+    function formatSpeakingCountdown(milliseconds) {
+      const seconds = Math.max(0, Math.ceil(milliseconds / 1000));
+      return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+    }
+
+    function getSpeakingSimulationPartKey(part) {
+      return `${part?.title || ''}|${part?.speakingQuestions || ''}|${(part?.questions || [])
+          .filter(question => question.type === 'audio_record')
+          .map(question => `${question.ids?.join(',') || ''}:${question.instruction || ''}`)
+          .join('|')}`;
+    }
+
+    function updateSpeakingSimulationDisplay(session, message, remaining) {
+      if (speakingSimulationSession !== session || session.cancelled) return;
+      const status = document.getElementById('speaking-simulation-status');
+      const countdown = document.getElementById('speaking-simulation-countdown');
+      if (status) status.textContent = message;
+      if (countdown && remaining !== null) countdown.textContent = formatSpeakingCountdown(remaining);
+    }
+
+    function failSpeakingPartTwoSession(session, error) {
+      if (speakingSimulationSession !== session || session.cancelled) return;
+      clearInterval(session.interval);
+      session.phase = 'failed';
+      session.stream?.getTracks().forEach(track => track.stop());
+      updateSpeakingSimulationDisplay(
+          session,
+          'Microphone setup failed. The timed attempt did not start; submit or leave the test.',
+          0
+      );
+      updateSpeakingSimulationLock(false);
+      console.error('Speaking simulation microphone error:', error);
+      showModalMsg('Microphone Unavailable', 'Allow microphone access and check that your microphone is connected. This attempt was not recorded.');
+      if (session.autoSubmitOnUnlock) window.exitTest(true);
+    }
+
+    function completeSpeakingRecording(session) {
+      if (speakingSimulationSession !== session || session.cancelled) return;
+      if (session.phase !== 'saving') return;
+      clearInterval(session.interval);
+      const recording = new Blob(session.chunks, {
+          type: session.recorder.mimeType || 'audio/webm'
+      });
+      const status = document.getElementById('speaking-simulation-status');
+      if (status) status.textContent = 'Recording complete. Saving your response…';
+      const reader = new FileReader();
+      reader.onload = () => {
+          if (speakingSimulationSession !== session || session.cancelled) return;
+          const base64Audio = reader.result;
+          if (typeof base64Audio !== 'string' || base64Audio.length > 950000) {
+              session.phase = 'failed';
+              updateSpeakingSimulationLock(false);
+              updateSpeakingSimulationDisplay(session, 'Recording could not be saved because it exceeds the allowed size.', 0);
+              showModalMsg('Recording Too Large', 'Your two-minute audio exceeded the storage limit, so it could not be attached to this submission.');
+              if (session.autoSubmitOnUnlock) window.exitTest(true);
+              return;
+          }
+          answers[session.questionId] = base64Audio;
+          triggerAutosave();
+          const playback = document.getElementById(`mic-playback-${session.questionId}`);
+          if (playback) {
+              playback.src = base64Audio;
+              playback.classList.remove('hidden');
+          }
+          session.phase = 'complete';
+          updateSpeakingSimulationLock(false);
+          updateSpeakingSimulationDisplay(session, 'Recording saved. You can now submit your test.', null);
+          if (session.autoSubmitOnUnlock) window.exitTest(true);
+      };
+      reader.onerror = error => {
+          if (speakingSimulationSession !== session || session.cancelled) return;
+          session.phase = 'failed';
+          updateSpeakingSimulationLock(false);
+          updateSpeakingSimulationDisplay(session, 'Audio processing failed. The recording could not be saved.', 0);
+          console.error('Speaking simulation audio processing error:', error);
+          showModalMsg('Audio Processing Error', 'Your recording could not be processed. Please check your device and try a new attempt.');
+          if (session.autoSubmitOnUnlock) window.exitTest(true);
+      };
+      reader.readAsDataURL(recording);
+      session.stream?.getTracks().forEach(track => track.stop());
+    }
+
+    function startSpeakingSimulationRecording(session) {
+      if (speakingSimulationSession !== session || session.cancelled) return;
+      try {
+          session.recorder.start();
+          session.phase = 'recording';
+          session.deadline = Date.now() + 120000;
+          updateSpeakingSimulationDisplay(session, 'Recording — keep speaking until time is up. / Đang ghi âm — hãy tiếp tục nói đến khi hết giờ.', 120000);
+      } catch (error) {
+          failSpeakingPartTwoSession(session, error);
+      }
+    }
+
+    function tickSpeakingPartTwoSession(session) {
+      if (speakingSimulationSession !== session || session.cancelled) return;
+      const remaining = Math.max(0, session.deadline - Date.now());
+      if (session.phase === 'preparation') {
+          if (remaining <= 0) {
+              startSpeakingSimulationRecording(session);
+          } else {
+              updateSpeakingSimulationDisplay(session, 'Preparation time — plan your response. / Thời gian chuẩn bị — hãy lập ý.', remaining);
+          }
+          return;
+      }
+      if (session.phase === 'recording') {
+          if (remaining <= 0) {
+              session.phase = 'saving';
+              clearInterval(session.interval);
+              updateSpeakingSimulationDisplay(session, 'Time is up. Processing your recording… / Đã hết giờ. Đang xử lý bản ghi…', 0);
+              try {
+                  session.recorder.stop();
+              } catch (error) {
+                  failSpeakingPartTwoSession(session, error);
+              }
+          } else {
+              updateSpeakingSimulationDisplay(session, 'Recording — keep speaking until time is up. / Đang ghi âm — hãy tiếp tục nói đến khi hết giờ.', remaining);
+          }
+      }
+    }
+
+    async function startSpeakingPartTwoSimulation() {
+      if (speakingSimulationSession?.phase === 'complete') return;
+      const part = APP_DATA.parts[currentPartIdx];
+      const question = part?.questions?.find(item => item.type === 'audio_record' && item.ids?.length === 1);
+      if (!question) {
+          showModalMsg('Speaking Cue Card Unavailable', 'This Part 2 needs exactly one audio-recording question to run the timed simulation.');
+          window.isSpeakingPartTwoSimulation = false;
+          return;
+      }
+      const session = {
+          questionId: question.ids[0],
+          phase: 'requesting',
+          cancelled: false,
+          chunks: [],
+          deadline: 0,
+          interval: null,
+          recorder: null,
+          stream: null
+      };
+      speakingSimulationSession = session;
+      updateSpeakingSimulationLock(true);
+      updateSpeakingSimulationDisplay(session, 'Requesting microphone access… / Đang yêu cầu quyền sử dụng micrô…', 60000);
+      try {
+          if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder !== 'function') {
+              throw new Error('This browser does not support microphone recording.');
+          }
+          session.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          if (speakingSimulationSession !== session || session.cancelled) {
+              session.stream.getTracks().forEach(track => track.stop());
+              return;
+          }
+          session.recorder = new MediaRecorder(session.stream, { audioBitsPerSecond: 32000 });
+          session.recorder.ondataavailable = event => {
+              if (event.data?.size) session.chunks.push(event.data);
+          };
+          session.recorder.onstop = () => completeSpeakingRecording(session);
+          session.recorder.onerror = event => failSpeakingPartTwoSession(session, event.error || event);
+          session.phase = 'preparation';
+          session.deadline = Date.now() + 60000;
+          updateSpeakingSimulationDisplay(session, 'Preparation time — plan your response. / Thời gian chuẩn bị — hãy lập ý.', 60000);
+          session.interval = setInterval(() => tickSpeakingPartTwoSession(session), 100);
+      } catch (error) {
+          failSpeakingPartTwoSession(session, error);
+      }
+    }
+
     function startTest(tid, selectedParts = null, syntheticTestObj = null) {
+      clearSpeakingPartTwoSession();
       if (syntheticTestObj) {
           APP_DATA = syntheticTestObj;
       } else {
@@ -102,6 +299,27 @@
           if (selectedParts && selectedParts.length > 0) {
               APP_DATA.parts = selectedParts.map(idx => APP_DATA.parts[idx]).filter(Boolean);
           }
+      }
+      if (APP_DATA.module === 'speaking' && window.isSpeakingPartTwoSimulation) {
+          const savedPartIndex = window.speakingSimulationPartKey
+              ? APP_DATA.parts.findIndex(part => getSpeakingSimulationPartKey(part) === window.speakingSimulationPartKey)
+              : -1;
+          window.speakingSimulationPartIndex = savedPartIndex >= 0 ? savedPartIndex : APP_DATA.parts.findIndex((part, index) => {
+              const label = `${part.title || ''} ${part.speakingQuestions || ''} ${(part.questions || []).map(question => `${question.instruction || ''} ${question.text || ''}`).join(' ')}`;
+              const sourceIndex = selectedParts?.[index] ?? index;
+              return /\bpart\s*2\b|\bcue[\s-]*card\b/i.test(label) ||
+                  sourceIndex === window.speakingSimulationSourcePartIndex || index === 1;
+          });
+          if (window.speakingSimulationPartIndex < 0) {
+              window.isSpeakingPartTwoSimulation = false;
+              window.speakingSimulationSourcePartIndex = -1;
+              window.speakingSimulationPartKey = '';
+          } else {
+              window.speakingSimulationPartKey = getSpeakingSimulationPartKey(APP_DATA.parts[window.speakingSimulationPartIndex]);
+          }
+      } else {
+          window.speakingSimulationPartIndex = -1;
+          window.speakingSimulationPartKey = '';
       }
 
       if (window.isFullExamMode && !window.activeSyntheticExamReturnHash) {
@@ -606,6 +824,85 @@
         startReadingMode();
     };
 
+    window.applySyntaxChunk = function(role) {
+        const roleLabels = {
+            subject: 'Chủ ngữ / Subject',
+            verb: 'Động từ / Verb',
+            object: 'Tân ngữ / Object'
+        };
+        const root = document.getElementById('passage-text-content');
+        const status = document.getElementById('syntax-chunking-status');
+        const selection = window.getSelection();
+        if (!root || !roleLabels[role] || !selection || selection.rangeCount === 0 || selection.isCollapsed) {
+            if (status) status.textContent = 'Chọn một cụm từ trong đoạn văn trước khi gán nhãn.';
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        if (!root.contains(range.commonAncestorContainer)) {
+            if (status) status.textContent = 'Vui lòng chọn nội dung trong bài đọc.';
+            return;
+        }
+
+        const getParagraph = node => (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement)?.closest('p');
+        const startParagraph = getParagraph(range.startContainer);
+        const endParagraph = getParagraph(range.endContainer);
+        if (!startParagraph || startParagraph !== endParagraph) {
+            if (status) status.textContent = 'Hãy chọn cụm từ trong cùng một đoạn văn.';
+            return;
+        }
+
+        const overlapsChunk = [...root.querySelectorAll('.syntax-chunk')].some(chunk => range.intersectsNode(chunk));
+        if (overlapsChunk) {
+            if (status) status.textContent = 'Xoá nhãn hiện tại trước khi gán nhãn chồng lên cụm từ.';
+            return;
+        }
+
+        const chunk = document.createElement('span');
+        chunk.className = `syntax-chunk syntax-chunk--${role}`;
+        chunk.dataset.syntaxRole = role;
+        chunk.setAttribute('aria-label', roleLabels[role]);
+        chunk.appendChild(range.extractContents());
+        range.insertNode(chunk);
+        selection.removeAllRanges();
+        if (status) status.textContent = `Đã đánh dấu ${roleLabels[role]}.`;
+    };
+
+    window.clearSyntaxChunks = function() {
+        const root = document.getElementById('passage-text-content');
+        if (!root) return;
+        root.querySelectorAll('.syntax-chunk').forEach(chunk => {
+            chunk.replaceWith(...chunk.childNodes);
+        });
+        const status = document.getElementById('syntax-chunking-status');
+        if (status) status.textContent = 'Đã xoá các nhãn cấu trúc câu.';
+    };
+
+    window.updateScaffoldedWriting = function(questionId, textarea) {
+      const questionEditor = textarea?.closest('[data-writing-scaffold-question]');
+      if (!questionEditor) return;
+      const blocks = Array.from(questionEditor.querySelectorAll('[data-writing-scaffold-block]'));
+      const answer = window.combineScaffoldedWritingBlocks?.(blocks.map(block => block.value)) || '';
+      const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+      const count = questionEditor.querySelector('[data-writing-scaffold-count]');
+      const analysis = questionEditor.querySelector('[data-writing-analysis]');
+      if (count) count.textContent = String(wordCount);
+      if (analysis && window.renderWritingTextAnalyzer) {
+          analysis.innerHTML = window.renderWritingTextAnalyzer(answer);
+      }
+      handleAns(questionId, answer);
+    };
+
+    window.updateWritingEssay = function(questionId, textarea) {
+      handleAns(questionId, textarea.value);
+      const count = document.getElementById(`wc-${questionId}`);
+      const analysis = document.getElementById(`writing-analysis-${questionId}`);
+      if (count) count.textContent = String(textarea.value.trim().split(/\s+/).filter(Boolean).length);
+      if (analysis && window.renderWritingTextAnalyzer) {
+          analysis.innerHTML = window.renderWritingTextAnalyzer(textarea.value);
+      }
+    };
+
     function renderReadingControls() {
         return `
           <div class="reading-mode-controls">
@@ -617,6 +914,7 @@
     }
 
     function renderPart(idx) {
+      if (isSpeakingSimulationLocked()) return;
       finalizeCurrentQuestionTiming();
       currentPartIdx = idx; currentBlockIdx = 0;
       document.getElementById('part-indicator').textContent = `Part ${idx + 1} of ${APP_DATA.parts.length}`;
@@ -807,7 +1105,9 @@
                   ${listeningTranscriptHtml || htmlText}
               </div>
           `;
-          passageContainer.innerHTML = `${window.listeningMediaInjection || ''}${studyToggles}${transcriptPanelHtml}`;
+          const microDictationHtml = window.renderMicroDictation?.(p, Boolean(isTimeFree)) || '';
+          passageContainer.innerHTML = `${window.listeningMediaInjection || ''}${studyToggles}${microDictationHtml}${transcriptPanelHtml}`;
+          if (microDictationHtml) window.initMicroDictation?.(p);
           const listeningPlayback = listeningYoutubeVideoId
               ? window.configureListeningMedia(listeningAudioUrl, 'practice-listening-audio', 'practice-youtube-player', { controls: Boolean(isTimeFree) })
               : getActiveListeningPlayback();
@@ -838,25 +1138,36 @@
               // ✨ FIX: Inject the titleHtml at the very top of the passage container!
               passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}`;
           } else {
-              const sampleText = (p.text || '').trim();
               let sampleAnswerBlock = '';
-              if (sampleText && sampleText !== '<br>' && sampleText !== '<p><br></p>') {
-                  const speechButton = APP_DATA.module === 'speaking' ? `
-                      <button type="button" id="sample-answer-speech-button" onclick="window.toggleSampleAnswerSpeech()" class="text-xs font-bold bg-amber-500 text-white border border-amber-600 px-4 py-2.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-2" aria-label="Listen to sample answer">
-                          🔊 Listen to Sample Answer
-                      </button>` : '';
-                  sampleAnswerBlock = `
-                  <div class="mt-8 pt-6 border-t border-slate-200 w-full">
-                      <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
-                          👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
-                        </button>${speechButton}
-                      </div>
-                      <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
-                  </div>`;
+              const mindMapHtml = window.renderDynamicMindMap?.(
+                  p,
+                  APP_DATA.vocab,
+                  `${APP_DATA.id || 'test'}-part-${currentPartIdx}`,
+                  APP_DATA.topics
+              ) || '';
+              if (mindMapHtml) {
+                  sampleAnswerBlock = mindMapHtml;
+              } else {
+                  const sampleText = (p.text || '').trim();
+                  if (sampleText && sampleText !== '<br>' && sampleText !== '<p><br></p>') {
+                      const speechButton = APP_DATA.module === 'speaking' ? `
+                          <button type="button" id="sample-answer-speech-button" onclick="window.toggleSampleAnswerSpeech()" class="text-xs font-bold bg-amber-500 text-white border border-amber-600 px-4 py-2.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-2" aria-label="Listen to sample answer">
+                              🔊 Listen to Sample Answer
+                          </button>` : '';
+                      sampleAnswerBlock = `
+                      <div class="mt-8 pt-6 border-t border-slate-200 w-full">
+                          <div class="flex flex-wrap items-center gap-2">
+                            <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
+                              👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
+                            </button>${speechButton}
+                          </div>
+                          <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
+                      </div>`;
+                  }
               }
               // ✨ FIX: Inject the titleHtml here as well!
               passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}${sampleAnswerBlock}`;
+              if (mindMapHtml) window.initDynamicMindMap?.(passageContainer);
           }
 
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
@@ -886,7 +1197,18 @@
                 <input type="number" id="reading-speed-input" value="220" min="50" max="1000" onchange="window.updateSkimmingSpeed()">
             </div>` : '';
 
-          passageContainer.innerHTML = `${advancedReadingControls}${studyToggles}<div class="passage-text font-bold mb-6">${lmsSanitizeHtml(p.title)}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
+          const syntaxChunkingControls = APP_DATA.module === 'reading' && isTimeFree ? `
+            <div class="syntax-chunking-controls" aria-label="Syntax highlighting and chunking tools">
+                <strong>Syntax Chunking / Phân tích cấu trúc câu</strong>
+                <span>Chọn một cụm trong đoạn văn, sau đó gán nhãn:</span>
+                <button type="button" class="syntax-chunking-button syntax-chunking-button--subject" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('subject')">Chủ ngữ · S</button>
+                <button type="button" class="syntax-chunking-button syntax-chunking-button--verb" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('verb')">Động từ · V</button>
+                <button type="button" class="syntax-chunking-button syntax-chunking-button--object" onmousedown="event.preventDefault()" onclick="window.applySyntaxChunk('object')">Tân ngữ · O</button>
+                <button type="button" class="syntax-chunking-clear" onmousedown="event.preventDefault()" onclick="window.clearSyntaxChunks()">Xoá nhãn</button>
+                <span id="syntax-chunking-status" class="syntax-chunking-status" role="status" aria-live="polite">Công cụ giúp bạn đọc theo cụm thay vì dịch từng từ.</span>
+            </div>` : '';
+
+          passageContainer.innerHTML = `${advancedReadingControls}${syntaxChunkingControls}${studyToggles}<div class="passage-text font-bold mb-6">${lmsSanitizeHtml(p.title)}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           const speedInput = document.getElementById('reading-speed-input');
           if (speedInput) {
               speedInput.value = String(Math.round(window.readingSpeed || 220));
@@ -918,6 +1240,10 @@
       activateQuestionBlock(currentPartIdx, currentBlockIdx);
       updateExamUI();
       restoreHighlights();
+      if (APP_DATA.module === 'speaking' && window.isSpeakingPartTwoSimulation &&
+          currentPartIdx === window.speakingSimulationPartIndex) {
+          startSpeakingPartTwoSimulation();
+      }
     }
     
     function positionLookupPopover(popover, anchor) {
@@ -1203,7 +1529,7 @@
       };
 
       APP_DATA.parts[currentPartIdx].questions.forEach((q, i) => {
-        const div = document.createElement('div'); div.id = `q-block-${i}`; div.className = 'mb-8 p-6 rounded-lg border shadow-sm cursor-pointer transition theme-q-block'; div.onclick = () => { currentBlockIdx=i; activateQuestionBlock(currentPartIdx, i); updateExamUI(); };
+        const div = document.createElement('div'); div.id = `q-block-${i}`; div.className = 'mb-8 p-6 rounded-lg border shadow-sm cursor-pointer transition theme-q-block'; div.onclick = () => { if (isSpeakingSimulationLocked()) return; currentBlockIdx=i; activateQuestionBlock(currentPartIdx, i); updateExamUI(); };
         
         let unplacedIds = new Set(q.ids);
         
@@ -1394,13 +1720,56 @@
            if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
                txt = '';
            }
-           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="handleAns(${q.ids[0]}, this.value); document.getElementById('wc-${q.ids[0]}').textContent = this.value.trim().split(/\\s+/).filter(Boolean).length" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${answers[q.ids[0]]||''}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${(answers[q.ids[0]]||'').trim().split(/\\s+/).filter(Boolean).length}</span></div>`;
+           if (APP_DATA.module === 'writing' && isTimeFree && typeof window.getScaffoldedWritingBlocks === 'function') {
+               const blocks = window.getScaffoldedWritingBlocks(APP_DATA.parts[currentPartIdx]);
+               const draftBlocks = window.splitScaffoldedWritingAnswer?.(answers[q.ids[0]], blocks.length) || [];
+               const escapeDraft = value => String(value || '').replace(/[&<>"']/g, character => ({
+                   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+               })[character]);
+               const wordCount = String(answers[q.ids[0]] || '').trim().split(/\s+/).filter(Boolean).length;
+               content = `${txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : ''}
+                 <section class="scaffolded-writing" data-writing-scaffold-question aria-label="Scaffolded writing editor">
+                   <header class="scaffolded-writing__header">
+                     <div><h3>Scaffolded Writing / Viết theo khối</h3><p>Build your response one paragraph at a time. Your blocks are combined into one answer when submitted.</p></div>
+                     <span><b data-writing-scaffold-count>${wordCount}</b> words</span>
+                   </header>
+                   ${blocks.map((block, index) => `
+                     <label class="scaffolded-writing__block">
+                       <span class="scaffolded-writing__block-heading"><b>${escapeDraft(block.title)}</b><small>${escapeDraft(block.hint)}</small></span>
+                       <textarea data-writing-scaffold-block="${escapeDraft(block.id)}" oninput="window.updateScaffoldedWriting(${q.ids[0]}, this)" class="scaffolded-writing__textarea" rows="${index < 2 ? 3 : 6}" placeholder="Write this part of your response…">${escapeDraft(draftBlocks[index] || '')}</textarea>
+                     </label>
+                   `).join('')}
+                   <div data-writing-analysis>${window.renderWritingTextAnalyzer?.(answers[q.ids[0]] || '') || ''}</div>
+                 </section>`;
+           } else {
+               const essayAnswer = answers[q.ids[0]] || '';
+               const escapeDraft = value => String(value || '').replace(/[&<>"']/g, character => ({
+                   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+               })[character]);
+               content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="window.updateWritingEssay(${q.ids[0]}, this)" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${escapeDraft(essayAnswer)}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${essayAnswer.trim().split(/\\s+/).filter(Boolean).length}</span></div><div id="writing-analysis-${q.ids[0]}">${window.renderWritingTextAnalyzer?.(essayAnswer) || ''}</div>`;
+           }
         } else if(q.type === 'audio_record') {
            let txt = pt(rawText);
            if (APP_DATA.module === 'speaking') {
                txt = '';
            }
-           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`;
+           const simulatedCueCard = APP_DATA.module === 'speaking' &&
+               window.isSpeakingPartTwoSimulation &&
+               currentPartIdx === window.speakingSimulationPartIndex &&
+               q.ids.length === 1;
+           const simulationComplete = simulatedCueCard &&
+               speakingSimulationSession?.phase === 'complete' &&
+               speakingSimulationSession.questionId === q.ids[0] &&
+               Boolean(answers[q.ids[0]]);
+           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') +
+               (simulatedCueCard
+                   ? `<section class="speaking-simulation-panel mt-4 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 sm:p-7 text-center shadow-inner" aria-live="polite">
+                        <p id="speaking-simulation-status" class="font-bold text-amber-950">${simulationComplete ? 'Recording saved. You can now submit your test.' : 'Preparing your timed attempt…'}</p>
+                        <div id="speaking-simulation-countdown" class="mt-3 font-mono text-5xl sm:text-6xl font-black tracking-wider text-amber-700" aria-label="Speaking timer">${simulationComplete ? '00:00' : '01:00'}</div>
+                        <p class="mt-3 text-xs font-medium text-amber-900">Preparation: 60 seconds · Recording: 2 minutes / Chuẩn bị: 60 giây · Ghi âm: 2 phút</p>
+                        <audio id="mic-playback-${q.ids[0]}" controls src="${simulationComplete ? escapeHtmlAttributeValue(answers[q.ids[0]]) : ''}" class="${simulationComplete ? '' : 'hidden'} w-full mt-5"></audio>
+                      </section>`
+                   : `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`);
         } else if (q.type === 'pair_roleplay') {
             qTextHtml = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -1548,6 +1917,7 @@
     }
 
     async function toggleRecording(id) {
+      if (isSpeakingSimulationLocked()) return;
       const btn = document.getElementById(`mic-btn-${id}`), st = document.getElementById(`mic-status-${id}`), pb = document.getElementById(`mic-playback-${id}`);
       if(mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop(); btn.classList.remove('animate-pulse', 'bg-rose-700'); btn.classList.add('bg-rose-500'); st.textContent = 'Processing...';
@@ -1608,7 +1978,204 @@
     function buildQuestionAnalyticsSnapshot() {
       if (!APP_DATA || !APP_DATA.parts) return [];
       const analytics = getQuestionAnalyticsForSubmission(APP_DATA, answers);
+      if (APP_DATA.module !== 'listening') return analytics;
+
+      analytics.forEach(item => {
+        const question = APP_DATA.parts[item.partIndex]?.questions?.[item.blockIndex];
+        if (question?.type !== 'fill_blanks') return;
+        item.errorDetails = (question.ids || []).flatMap(id => {
+          const expected = String(question.correctAnswers?.[id] || '');
+          const given = String(answers[id] || '');
+          const category = window.classifyListeningAnswerError(given, expected);
+          return category ? [{ id, category, given, expected }] : [];
+        });
+      });
       return analytics;
+    }
+
+    function normalizeListeningAnswer(value) {
+      return String(value || '')
+        .normalize('NFKC')
+        .toLocaleLowerCase()
+        .replace(/[’‘]/g, "'")
+        .replace(/[^\p{L}\p{N}'\s-]/gu, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function getPluralForm(word) {
+      const irregular = {
+        child: 'children', man: 'men', woman: 'women', person: 'people',
+        mouse: 'mice', goose: 'geese', tooth: 'teeth', foot: 'feet',
+        leaf: 'leaves', life: 'lives', knife: 'knives', wife: 'wives',
+        half: 'halves', self: 'selves', shelf: 'shelves', wolf: 'wolves',
+        analysis: 'analyses', basis: 'bases', crisis: 'crises', thesis: 'theses'
+      };
+      if (irregular[word]) return irregular[word];
+      const irregularSingular = Object.entries(irregular).find(([, plural]) => plural === word);
+      if (irregularSingular) return irregularSingular[0];
+      if (/[^aeiou]y$/.test(word)) return `${word.slice(0, -1)}ies`;
+      if (/(s|x|z|ch|sh)$/.test(word)) return `${word}es`;
+      return `${word}s`;
+    }
+
+    function isPluralSingularMismatch(given, expected) {
+      const givenWords = given.split(' ');
+      const expectedWords = expected.split(' ');
+      if (givenWords.length !== expectedWords.length) return false;
+      let changedWord = false;
+      for (let index = 0; index < givenWords.length; index++) {
+        const givenWord = givenWords[index];
+        const expectedWord = expectedWords[index];
+        if (givenWord === expectedWord) continue;
+        if (changedWord || getPluralForm(givenWord) !== expectedWord && getPluralForm(expectedWord) !== givenWord) return false;
+        changedWord = true;
+      }
+      return changedWord;
+    }
+
+    function getLevenshteinDistance(left, right) {
+      let previous = Array.from({ length: right.length + 1 }, (_, index) => index);
+      for (let leftIndex = 1; leftIndex <= left.length; leftIndex++) {
+        const current = [leftIndex];
+        for (let rightIndex = 1; rightIndex <= right.length; rightIndex++) {
+          current[rightIndex] = Math.min(
+            current[rightIndex - 1] + 1,
+            previous[rightIndex] + 1,
+            previous[rightIndex - 1] + (left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1)
+          );
+        }
+        previous = current;
+      }
+      return previous[right.length];
+    }
+
+    window.classifyListeningAnswerError = function(givenAnswer, expectedAnswers) {
+      const given = normalizeListeningAnswer(givenAnswer);
+      const expectedList = String(expectedAnswers || '').split(/[/|]/)
+        .map(normalizeListeningAnswer)
+        .filter(Boolean);
+      if (!given) return 'unanswered';
+      if (expectedList.includes(given)) return null;
+      if (expectedList.some(expected => isPluralSingularMismatch(given, expected))) return 'plural_singular';
+
+      const givenWords = given.split(' ');
+      const hasTypo = expectedList.some(expected => {
+        const expectedWords = expected.split(' ');
+        if (givenWords.length !== expectedWords.length) return false;
+        return givenWords.every((word, index) => {
+          const expectedWord = expectedWords[index];
+          if (word === expectedWord) return true;
+          const distance = getLevenshteinDistance(word, expectedWord);
+          const maxDistance = Math.max(word.length, expectedWord.length) >= 8 ? 2 : 1;
+          return distance > 0 && distance <= maxDistance &&
+            distance / Math.max(word.length, expectedWord.length, 1) <= 0.2;
+        });
+      });
+      return hasTypo ? 'typo' : 'incorrect';
+    };
+
+    window.renderListeningErrorAnalysis = function(submissions) {
+      const errorLabels = {
+        typo: window.studentText?.('Spelling typo', 'Sai chính tả') || 'Spelling typo',
+        plural_singular: window.studentText?.('Singular / plural', 'Thiếu / thừa số nhiều') || 'Singular / plural',
+        incorrect: window.studentText?.('Incorrect answer', 'Sai hoàn toàn') || 'Incorrect answer',
+        unanswered: window.studentText?.('Not answered', 'Chưa trả lời') || 'Not answered'
+      };
+      const errors = (Array.isArray(submissions) ? submissions : []).flatMap(submission =>
+        (submission?.questionAnalytics || []).flatMap(item =>
+          (item.errorDetails || []).map(detail => ({ questionNumber: item.questionNumber, ...detail }))
+        )
+      );
+      if (!errors.length) return '';
+
+      const counts = errors.reduce((result, error) => {
+        result[error.category] = (result[error.category] || 0) + 1;
+        return result;
+      }, {});
+      const escapeHtml = value => String(value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      return `
+        <section class="listening-error-analysis" aria-label="${window.studentText?.('Listening error analysis', 'Phân tích lỗi Listening') || 'Listening error analysis'}">
+          <h3>${window.studentText?.('Listening error check', 'Phân tích lỗi Listening') || 'Listening error check'}</h3>
+          <div class="listening-error-analysis__summary">
+            ${Object.entries(counts).map(([category, count]) => `
+              <span class="listening-error-analysis__badge listening-error-analysis__badge--${category}">
+                ${escapeHtml(errorLabels[category] || errorLabels.incorrect)}: ${count}
+              </span>`).join('')}
+          </div>
+          <ul>
+            ${errors.map(error => `
+              <li><strong>Q${Number(error.questionNumber) || '?'}</strong> · ${escapeHtml(errorLabels[error.category] || errorLabels.incorrect)}:
+                <span>${escapeHtml(error.given || window.studentText?.('(blank)', '(bỏ trống)') || '(blank)')}</span>
+                <span aria-hidden="true">→</span>
+                <span>${escapeHtml(error.expected)}</span>
+              </li>`).join('')}
+          </ul>
+        </section>`;
+    };
+
+    function highlightListeningDistractors(root, part) {
+      const questions = (part.questions || []).filter(question =>
+        question.type === 'multiple_choice' && Array.isArray(question.options) && question.options.length
+      );
+      if (!root || APP_DATA.module !== 'listening' || !questions.length ||
+          typeof window.getListeningDistractorMatches !== 'function') return null;
+
+      const summary = { distractor: 0, correct: 0, signpost: 0 };
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          const parent = node.parentElement;
+          if (!parent || !/\S/.test(node.textContent) ||
+              parent.closest('script, style, audio, button, .drop-zone, .inline-flex, .listening-distractor-highlight')) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+      textNodes.forEach(node => {
+        const matches = window.getListeningDistractorMatches(node.textContent, questions);
+        if (!matches.length) return;
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        matches.forEach(match => {
+          if (match.start < lastIndex) return;
+          if (match.start > lastIndex) fragment.appendChild(document.createTextNode(node.textContent.slice(lastIndex, match.start)));
+          const mark = document.createElement('mark');
+          mark.className = `listening-distractor-highlight listening-distractor-highlight--${match.kind}`;
+          mark.dataset.distractorKind = match.kind;
+          mark.textContent = node.textContent.slice(match.start, match.end);
+          mark.title = match.kind === 'distractor'
+            ? 'Possible distractor: this phrase matches an incorrect option'
+            : match.kind === 'correct'
+              ? 'Correct-answer evidence'
+              : 'Listening signpost';
+          fragment.appendChild(mark);
+          summary[match.kind]++;
+          lastIndex = match.end;
+        });
+        if (lastIndex < node.textContent.length) {
+          fragment.appendChild(document.createTextNode(node.textContent.slice(lastIndex)));
+        }
+        node.replaceWith(fragment);
+      });
+      return Object.values(summary).some(Boolean) ? summary : null;
+    }
+
+    function renderListeningDistractorLegend(summary) {
+      if (!summary) return '';
+      return `<div class="listening-distractor-legend" aria-label="Distractor highlight legend">
+        <strong>Distractor review / Phân tích bẫy:</strong>
+        ${summary.distractor ? '<span><i class="listening-distractor-swatch listening-distractor-swatch--red"></i>Possible distractor mention / Thông tin nhiễu</span>' : ''}
+        ${summary.correct ? '<span><i class="listening-distractor-swatch listening-distractor-swatch--green"></i>Correct-option phrase / Cụm từ khớp đáp án</span>' : ''}
+        ${summary.signpost ? '<span><i class="listening-distractor-swatch listening-distractor-swatch--green"></i>Signposting word / Từ chuyển ý</span>' : ''}
+        <small>Phrase matches are automated hints; review them in context.</small>
+      </div>`;
     }
     window.quickCheckAnswer = function(blockIdx) {
         const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
@@ -1911,8 +2478,8 @@
       clearTimeout(autosaveTimeout); autosaveTimeout = setTimeout(() => s.classList.add('opacity-0'), 1500);
     }
     
-    function handlePrev() { if (currentBlockIdx > 0) { finalizeCurrentQuestionTiming(); currentBlockIdx--; activateQuestionBlock(currentPartIdx, currentBlockIdx); document.getElementById(`q-block-${currentBlockIdx}`).scrollIntoView(); updateExamUI(); } else if (currentPartIdx > 0) renderPart(currentPartIdx - 1); }
-    function handleNext() { if (currentBlockIdx < APP_DATA.parts[currentPartIdx].questions.length - 1) { finalizeCurrentQuestionTiming(); currentBlockIdx++; activateQuestionBlock(currentPartIdx, currentBlockIdx); document.getElementById(`q-block-${currentBlockIdx}`).scrollIntoView(); updateExamUI(); } else if (currentPartIdx < APP_DATA.parts.length - 1) renderPart(currentPartIdx + 1); }
+    function handlePrev() { if (isSpeakingSimulationLocked()) return; if (currentBlockIdx > 0) { finalizeCurrentQuestionTiming(); currentBlockIdx--; activateQuestionBlock(currentPartIdx, currentBlockIdx); document.getElementById(`q-block-${currentBlockIdx}`).scrollIntoView(); updateExamUI(); } else if (currentPartIdx > 0) renderPart(currentPartIdx - 1); }
+    function handleNext() { if (isSpeakingSimulationLocked()) return; if (currentBlockIdx < APP_DATA.parts[currentPartIdx].questions.length - 1) { finalizeCurrentQuestionTiming(); currentBlockIdx++; activateQuestionBlock(currentPartIdx, currentBlockIdx); document.getElementById(`q-block-${currentBlockIdx}`).scrollIntoView(); updateExamUI(); } else if (currentPartIdx < APP_DATA.parts.length - 1) renderPart(currentPartIdx + 1); }
     function toggleReview(cb) { const q = APP_DATA.parts[currentPartIdx].questions[currentBlockIdx]; if(q) q.ids.forEach(id => reviewStatus[id] = cb.checked); updateExamUI(); }
     
     window.toggleReviewByIds = function(ids) {
@@ -1950,7 +2517,7 @@
           p.questions.forEach((qb, bIdx) => qb.ids.forEach(id => {
             const isAns = answers[id]&&String(answers[id]).trim();
             const btn = document.createElement('button'); btn.textContent = id; 
-            btn.onclick = () => { currentBlockIdx=bIdx; document.getElementById(`q-block-${bIdx}`).scrollIntoView(); updateExamUI(); };
+            btn.onclick = () => { if (isSpeakingSimulationLocked()) return; currentBlockIdx=bIdx; document.getElementById(`q-block-${bIdx}`).scrollIntoView(); updateExamUI(); };
             btn.oncontextmenu = (e) => { e.preventDefault(); window.toggleReviewByIds([id]); };
             btn.className = `w-7 h-7 flex items-center justify-center text-xs font-bold transition ${reviewStatus[id]?'rounded-full ring-2 ring-blue-400 bg-blue-50 text-blue-800':'rounded-sm'} ${bIdx===currentBlockIdx?'border-2 border-blue-600 bg-white text-blue-800':(isAns?'bg-transparent text-slate-800 underline decoration-2 underline-offset-2':'bg-transparent text-slate-500 hover:bg-slate-200')}`;
             ql.appendChild(btn);
@@ -1996,7 +2563,9 @@
     }
 
     window.exitTestWithoutSaving = function() {
+      if (isSpeakingSimulationLocked()) return;
       showConfirm("Leave Practice Mode", "Are you sure you want to go back? Your progress will NOT be saved and no score will be recorded.", () => {
+        clearSpeakingPartTwoSession();
         window.exitSecureMode();
         finalizeCurrentQuestionTiming();
         clearInterval(timerInterval); 
@@ -2020,7 +2589,13 @@
     };
 
     window.exitTest = async function(autoSubmit = false) {
+      if (isSpeakingSimulationLocked()) {
+          if (autoSubmit) speakingSimulationSession.autoSubmitOnUnlock = true;
+          return;
+      }
       const proceed = async () => {
+        clearSpeakingPartTwoSession();
+        window.stopMicroDictation?.();
         finalizeCurrentQuestionTiming();
         clearInterval(timerInterval); document.getElementById('exam-ui').classList.add('hidden');
         window.refreshStudentLanguageLock?.();
@@ -2060,6 +2635,7 @@
           bandScoreText = `${correct}/${total} (Band ${band.toFixed(1)})`;
         }
         
+        let completedSubmission = null;
         if (!isPreviewMode) {
           const clsId = document.getElementById('student-class-select').value;
           const submissionClass = CLASSES.find(cls => cls.id === clsId);
@@ -2086,6 +2662,7 @@
               questionAnalytics,
               secureInfractions: window.secureInfractions || 0
           };
+          completedSubmission = sub;
           
           SUBMISSIONS.unshift(sub);
           
@@ -2138,12 +2715,47 @@
         if (window.isFullExamMode) {
             window.fullExamCurrentIndex++;
             if (window.fullExamCurrentIndex < window.fullExamSequence.length) {
-                showModalMsg("Section Complete", "Moving to the next section in 3 seconds...");
-                setTimeout(() => {
-                    document.getElementById('custom-modal').classList.add('hidden');
-                    const nextStep = window.fullExamSequence[window.fullExamCurrentIndex];
-                    startTest(null, null, nextStep);
-                }, 3000);
+                const stageAnalytics = window.renderQuestionTypeAnalytics?.(
+                    completedSubmission ? [completedSubmission] : [],
+                    window.studentText?.('This stage: question-type analysis', 'Phân tích dạng câu hỏi của giai đoạn này') || 'This stage: question-type analysis'
+                ) || '';
+                const listeningErrors = APP_DATA.module === 'listening'
+                    ? window.renderListeningErrorAnalysis?.(completedSubmission ? [completedSubmission] : []) || ''
+                    : '';
+                if (stageAnalytics || listeningErrors) {
+                    const modal = document.getElementById('custom-modal');
+                    const modalTitle = document.getElementById('modal-title');
+                    const modalMessage = document.getElementById('modal-message');
+                    const confirmButton = document.getElementById('modal-confirm');
+                    const cancelButton = document.getElementById('modal-cancel');
+                    const input = document.getElementById('modal-input');
+                    let transitionStarted = false;
+                    let transitionTimer;
+                    const continueToNextSection = () => {
+                        if (transitionStarted) return;
+                        transitionStarted = true;
+                        clearTimeout(transitionTimer);
+                        modal.classList.add('hidden');
+                        modal.classList.remove('full-exam-analytics-modal');
+                        startTest(null, null, window.fullExamSequence[window.fullExamCurrentIndex]);
+                    };
+
+                    modalTitle.textContent = window.studentText?.('Section complete', 'Hoàn thành phần thi') || 'Section complete';
+                    modalMessage.innerHTML = `${stageAnalytics}${listeningErrors}<p class="mb-0 mt-3 text-center text-xs text-slate-500">${window.studentText?.('Continuing automatically in 10 seconds.', 'Tự động chuyển phần sau 10 giây.') || 'Continuing automatically in 10 seconds.'}</p>`;
+                    confirmButton.textContent = window.studentText?.('Continue now', 'Tiếp tục ngay') || 'Continue now';
+                    confirmButton.onclick = continueToNextSection;
+                    cancelButton.classList.add('hidden');
+                    input.classList.add('hidden');
+                    modal.classList.add('full-exam-analytics-modal');
+                    modal.classList.remove('hidden');
+                    transitionTimer = setTimeout(continueToNextSection, 10000);
+                } else {
+                    showModalMsg("Section Complete", "Moving to the next section in 3 seconds...");
+                    setTimeout(() => {
+                        document.getElementById('custom-modal').classList.add('hidden');
+                        startTest(null, null, window.fullExamSequence[window.fullExamCurrentIndex]);
+                    }, 3000);
+                }
             } else {
                 // ✨ FULL MOCK COMPLETED
                 window.isFullExamMode = false;
@@ -2172,6 +2784,11 @@
                     <div class="text-3xl font-black text-slate-800 mb-2">Exam Complete!</div>
                     <p class="text-sm font-medium text-slate-500">You have completed all 3 sections of the mock exam.</p>
                     ${resultsHtml}
+                    ${window.renderQuestionTypeAnalytics?.(
+                      window.fullExamSubmissions || [],
+                      window.studentText?.('Full mock: question-type analysis', 'Phân tích dạng câu hỏi của bài thi thử') || 'Full mock: question-type analysis'
+                    ) || ''}
+                    ${window.renderListeningErrorAnalysis?.(window.fullExamSubmissions || []) || ''}
                     <div class="mt-8 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-6 py-3 rounded-xl shadow-sm animate-bounce text-lg tracking-wide">🎉 +150 💎 Earned!</div>
                 `;
                 document.getElementById('results-modal').classList.remove('hidden');
@@ -2192,6 +2809,11 @@
                     <div class="text-5xl font-black text-blue-700 mb-2">${correct}/${total}</div>
                     <div class="text-xl font-bold text-emerald-600 mb-3 bg-emerald-50 border border-emerald-200 inline-block px-4 py-1.5 rounded-xl shadow-sm">Estimated Band: ${band.toFixed(1)}</div>
                     <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Score Recorded</div>
+                    ${window.renderQuestionTypeAnalytics?.(
+                      completedSubmission ? [completedSubmission] : [],
+                      window.studentText?.('This stage: question-type analysis', 'Phân tích dạng câu hỏi của giai đoạn này') || 'This stage: question-type analysis'
+                    ) || ''}
+                    ${APP_DATA.module === 'listening' ? window.renderListeningErrorAnalysis?.(completedSubmission ? [completedSubmission] : []) || '' : ''}
                     <div class="mt-6 inline-block bg-amber-100 border border-amber-300 text-amber-800 font-black px-4 py-2 rounded-xl shadow-sm animate-bounce">🎉 +50 💎 Earned!</div>
                `;
             } else {
@@ -2537,10 +3159,19 @@
         }
         if(p.audioUrl) lHtml += `<audio controls src="${p.audioUrl}" class="w-full h-10 mb-6 shadow-sm rounded-lg border border-slate-200"></audio>`;
         if(p.image && APP_DATA.module !== 'writing') lHtml += `<div class="mb-6 bg-slate-50 p-4 border border-slate-200 rounded-xl text-center shadow-inner"><img src="${p.image}" class="max-w-full inline-block rounded shadow-sm"></div>`;
-        lHtml += `<div class="leading-loose text-slate-800 text-[1.05rem] selection-wrapper">${txt}</div>`;
+        lHtml += `<div class="leading-loose text-slate-800 text-[1.05rem] selection-wrapper" data-review-part-index="${i}">${txt}</div>`;
       });
       
       l.innerHTML = lHtml;
+      if (!isGrading && APP_DATA.module === 'listening') {
+        APP_DATA.parts.forEach((part, index) => {
+          const passage = l.querySelector(`[data-review-part-index="${index}"]`);
+          const summary = highlightListeningDistractors(passage, part);
+          if (summary) {
+            passage.insertAdjacentHTML('beforebegin', renderListeningDistractorLegend(summary));
+          }
+        });
+      }
 
       let rHtml = '';
       APP_DATA.parts.forEach((p, i) => {
