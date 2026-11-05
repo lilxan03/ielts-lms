@@ -521,6 +521,7 @@ test('reading syntax chunking keeps the selected range when a label button takes
         getRangeAt: () => range,
         removeAllRanges() { this.rangeCount = 0; this.isCollapsed = true; }
     };
+    const documentListeners = {};
     const context = {
         window: null,
         document: {
@@ -528,7 +529,7 @@ test('reading syntax chunking keeps the selected range when a label button takes
                 'passage-text-content': root,
                 'syntax-chunking-status': status
             })[id] || null,
-            addEventListener() {},
+            addEventListener: (name, callback) => { documentListeners[name] = callback; },
             createElement: () => ({
                 dataset: {},
                 setAttribute() {},
@@ -542,7 +543,7 @@ test('reading syntax chunking keeps the selected range when a label button takes
     vm.createContext(context);
     vm.runInContext(readAppScript('test-player.js'), context);
 
-    context.captureSyntaxChunkSelection();
+    documentListeners.selectionchange();
     selection.rangeCount = 0;
     selection.isCollapsed = true;
     context.applySyntaxChunk('subject');
