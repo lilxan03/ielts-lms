@@ -1,3 +1,99 @@
+    let studentTestAccessSyncPromise = Promise.resolve();
+    let studentTestAccessInitialized = false;
+    let inheritedClassAssignmentsSyncPromise = Promise.resolve();
+
+    function reportStudentTestAccessSyncError(error) {
+        console.error('Unable to synchronize your assigned tests:', error);
+        window.showToast?.(
+            'Assigned tests could not load',
+            error.message || 'Check your class enrollment and Firestore rules.',
+            'error'
+        );
+    }
+
+    async function syncInheritedClassAssignments(classes) {
+        const updates = classes
+            .filter(cls => cls.parentClassId)
+            .map(cls => {
+                const parent = classes.find(candidate => candidate.id === cls.parentClassId);
+                const inheritedAssignedTests = Array.isArray(parent?.assignedTests)
+                    ? [...new Set(parent.assignedTests.filter(testId => typeof testId === 'string' && testId && !testId.includes('/')))]
+                    : [];
+                const inheritedTestSettings = parent?.testSettings && typeof parent.testSettings === 'object'
+                    ? parent.testSettings
+                    : {};
+                if (JSON.stringify(cls.inheritedAssignedTests || []) === JSON.stringify(inheritedAssignedTests)
+                    && JSON.stringify(cls.inheritedTestSettings || {}) === JSON.stringify(inheritedTestSettings)) {
+                    return null;
+                }
+                return {
+                    ref: window.fsDoc(window.db, window.fPath('classes'), cls.id),
+                    inheritedAssignedTests,
+                    inheritedTestSettings
+                };
+            })
+            .filter(Boolean);
+
+        for (let offset = 0; offset < updates.length; offset += 450) {
+            const batch = window.fsWriteBatch(window.db);
+            updates.slice(offset, offset + 450).forEach(update => {
+                batch.update(update.ref, {
+                    inheritedAssignedTests: update.inheritedAssignedTests,
+                    inheritedTestSettings: update.inheritedTestSettings
+                });
+            });
+            await batch.commit();
+        }
+    }
+
+    window.syncStudentTestAccess = function() {
+        const sync = async () => {
+            if (currentUser?.role !== 'student' || currentUser.isDemo || !currentUser.uid) return;
+            const entries = window.buildStudentTestAccessEntries(currentUser, CLASSES, SCHEDULES || []);
+            const desired = new Map(entries.map(entry => [entry.testId, entry]));
+            const accessCollection = window.fsCollection(
+                window.db,
+                'student_test_access',
+                currentUser.uid,
+                'tests'
+            );
+            const existing = await window.fsGetDocs(accessCollection);
+            const existingById = new Map(existing.docs.map(snapshot => [snapshot.id, snapshot]));
+            const writes = [];
+
+            existingById.forEach((snapshot, testId) => {
+                if (!desired.has(testId)) writes.push({ type: 'delete', ref: snapshot.ref });
+            });
+            desired.forEach((entry, testId) => {
+                const snapshot = existingById.get(testId);
+                const previous = snapshot?.data();
+                const unchanged = previous
+                    && Object.keys(previous).length === Object.keys(entry).length
+                    && Object.entries(entry).every(([key, value]) => previous[key] === value);
+                if (!unchanged) {
+                    writes.push({
+                        type: 'set',
+                        ref: window.fsDoc(accessCollection, testId),
+                        entry
+                    });
+                }
+            });
+
+            for (let offset = 0; offset < writes.length; offset += 450) {
+                const batch = window.fsWriteBatch(window.db);
+                writes.slice(offset, offset + 450).forEach(write => {
+                    if (write.type === 'delete') batch.delete(write.ref);
+                    else batch.set(write.ref, write.entry);
+                });
+                await batch.commit();
+            }
+        };
+
+        const operation = studentTestAccessSyncPromise.then(sync, sync);
+        studentTestAccessSyncPromise = operation.then(() => undefined, () => undefined);
+        return operation;
+    };
+
     function waitForInitialSnapshot(label, reference, onSnapshot) {
         return new Promise((resolve, reject) => {
             let unsubscribe;
@@ -159,7 +255,7 @@
             // 2. Attach PUBLIC real-time listeners (Safe data everyone needs to see)
             await Promise.all([
                 currentUser?.role === 'student'
-                  ? waitForAssignedStudentTests()
+                  ? Promise.resolve()
                   : waitForInitialSnapshot('tests', window.fsCollection(window.db, window.fPath('tests')), snap => {
                       TEST_BANK = snap.docs.map(d => d.data());
                       window.triggerUIRefresh();
@@ -173,15 +269,25 @@
                       )
                     : window.fsCollection(window.db, window.fPath('classes')),
                   snap => {
-                        CLASSES = snap.docs.map(d => d.data());
+                        CLASSES = snap.docs.map(d => ({ ...d.data(), id: d.id }));
                         if (['teacher', 'collaborator'].includes(currentUser?.role)) {
                             window.syncPublicCourseCatalog(CLASSES).catch(error => {
                                 console.error('Unable to synchronize the public course catalog:', error);
                                 window.showToast?.('Course catalog sync failed', 'Deploy the latest Firestore rules and check staff access.', 'error');
                             });
+                            if (!currentUser.isDemo) {
+                                inheritedClassAssignmentsSyncPromise = syncInheritedClassAssignments(CLASSES);
+                                inheritedClassAssignmentsSyncPromise.catch(error => {
+                                    console.error('Unable to synchronize inherited class assignments:', error);
+                                    window.showToast?.('Class assignments could not sync', error.message || 'Check staff access and Firestore rules.', 'error');
+                                });
+                            }
                         }
                         if (currentUser?.role === 'student' && window.refreshStudentScheduleListeners) window.refreshStudentScheduleListeners();
                         if (currentUser?.role === 'student' && window.refreshStudentPresenceListeners) window.refreshStudentPresenceListeners();
+                        if (studentTestAccessInitialized) {
+                            window.syncStudentTestAccess().catch(reportStudentTestAccessSyncError);
+                        }
                         window.triggerUIRefresh();
                   }
                 ),
@@ -218,30 +324,19 @@
                   : (TEACHER_TEMPLATES = [], TEACHER_TEMPLATE_ASSIGNMENTS = {}, []))
             ]);
 
-            if (['teacher', 'collaborator'].includes(currentUser?.role)
-                && !currentUser?.isDemo
-                && localStorage.getItem('student_test_access_v1') !== 'complete') {
-                try {
-                    const idToken = await window.auth.currentUser.getIdToken();
-                    const response = await fetch(
-                        'https://us-central1-khanh-ielts-v2.cloudfunctions.net/rebuildStudentTestAccess',
-                        { method: 'POST', headers: { Authorization: `Bearer ${idToken}` } }
-                    );
-                    if (!response.ok) throw new Error(`Access index rebuild returned HTTP ${response.status}.`);
-                    localStorage.setItem('student_test_access_v1', 'complete');
-                } catch (error) {
-                    console.error('Unable to initialize assigned-test access:', error);
-                    window.showToast?.(
-                        'Assigned tests need setup',
-                        'Ask an administrator to deploy the access-index functions and rebuild test access.',
-                        'error'
-                    );
-                }
+            if (['teacher', 'collaborator'].includes(currentUser?.role) && !currentUser.isDemo) {
+                await inheritedClassAssignmentsSyncPromise;
             }
 
             // 3. Attach RESTRICTED listeners based on role
             if (currentUser) {
                 await window.attachPrivateListeners();
+            }
+
+            if (currentUser?.role === 'student' && !currentUser.isDemo) {
+                await window.syncStudentTestAccess();
+                studentTestAccessInitialized = true;
+                await waitForAssignedStudentTests();
             }
             
             document.getElementById('cloud-loader').classList.add('hidden');
@@ -462,8 +557,11 @@
                     let isFirstSnapshot = true;
                     const unsubscribe = window.fsOnSnapshot(schedQ, snap => {
                         if (generation !== scheduleListenerGeneration) return;
-                        scheduleBatches[batchIndex] = snap.docs.map(d => d.data());
+                        scheduleBatches[batchIndex] = snap.docs.map(d => ({ ...d.data(), id: d.id }));
                         SCHEDULES = scheduleBatches.flat();
+                        if (studentTestAccessInitialized) {
+                            window.syncStudentTestAccess().catch(reportStudentTestAccessSyncError);
+                        }
                         window.triggerUIRefresh();
                         if (isFirstSnapshot) {
                             isFirstSnapshot = false;

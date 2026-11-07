@@ -1636,8 +1636,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     function getClassAssignedTests(cls) {
       if (!cls) return [];
-      const source = getClassParent(cls) || cls;
-      return [...new Set(Array.isArray(source.assignedTests) ? source.assignedTests : [])];
+      const parent = getClassParent(cls);
+      return [...new Set([
+        ...(Array.isArray(cls.assignedTests) ? cls.assignedTests : []),
+        ...(Array.isArray(parent?.assignedTests) ? parent.assignedTests : []),
+        ...(Array.isArray(cls.inheritedAssignedTests) ? cls.inheritedAssignedTests : [])
+      ])];
     }
 
     function getClassBaseFee(cls) {
@@ -1647,7 +1651,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     function getClassTestSettings(cls, testId) {
       if (!cls) return {};
-      const parentSettings = getClassParent(cls)?.testSettings?.[testId] || {};
+      const parentSettings = getClassParent(cls)?.testSettings?.[testId]
+        || cls.inheritedTestSettings?.[testId]
+        || {};
       const inheritedSettings = { ...parentSettings };
       if (getClassParent(cls)) {
         delete inheritedSettings.dueDate;
