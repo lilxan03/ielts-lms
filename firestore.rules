@@ -78,6 +78,27 @@ service cloud.firestore {
           || get(schedulePath(scheduleId)).data.attendingStudents.hasAny([username]));
     }
 
+    function validStudentTestAccess(uid, testId) {
+      let data = request.resource.data;
+      let classId = data.get('classId', null);
+      let username = accountAccess().username;
+      return hasPaidAccess()
+        && request.auth.uid == uid
+        && data.get('uid', null) == uid
+        && data.get('username', null) == username
+        && data.get('testId', null) == testId
+        && isClassMember(classId, username)
+        && (
+          (data.get('source', null) == 'class'
+            && data.keys().hasOnly(['uid', 'username', 'testId', 'classId', 'source'])
+            && classHasTest(classId, testId))
+          || (data.get('source', null) == 'schedule'
+            && data.keys().hasOnly(['uid', 'username', 'testId', 'classId', 'scheduleId', 'source'])
+            && data.get('scheduleId', null) is string
+            && scheduleHasTest(data.scheduleId, classId, username, testId))
+        );
+    }
+
     function hasTestAssignmentForClass(classId, username, testId, scheduleId) {
       return isClassMember(classId, username)
         && (classHasTest(classId, testId)
@@ -343,7 +364,8 @@ service cloud.firestore {
 
     match /student_test_access/{uid}/tests/{testId} {
       allow get, list: if isStaff() || (hasPaidAccess() && request.auth.uid == uid);
-      allow write: if false;
+      allow create, update: if validStudentTestAccess(uid, testId);
+      allow delete: if hasPaidAccess() && request.auth.uid == uid;
     }
 
     match /notes/{noteId} {

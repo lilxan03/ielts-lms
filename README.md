@@ -58,18 +58,12 @@ Firestore Rules allow an authenticated user to read only their own profile and o
 
 The checkout reads public course names and lesson fees from `course_catalog`; a staff LMS session synchronizes this limited catalog from the private `classes` collection. Packages are loaded from the public-readable `packages` collection. The `account_access/{uid}` document is the only source of truth for staff role and student access. Students can create only an unpaid student access record for themselves; only the administrator account below can grant or revoke paid access. New usernames are normalized to lowercase and must contain 1-40 ASCII letters, numbers, underscores, or hyphens.
 
-Students receive tests through a server-maintained `student_test_access/{uid}/tests/{testId}` index. Class and schedule changes keep this index current, and test reads also re-check current enrollment and assignment. Global forum posts are stored in `public_messages`; class posts are stored under `classes/{classId}/messages`. Personal notes and flashcards carry an owner field and are queried only by that owner. The staff-only `rebuildStudentTestAccess` endpoint builds the initial index and migrates legacy messages, schedules, notes, and flashcards.
+Students receive tests through their `student_test_access/{uid}/tests/{testId}` index. The frontend builds and refreshes the signed-in student's index from enrolled class and schedule assignments; Firestore Rules validate every index entry against current enrollment and assignment before allowing test reads. This student access flow does not require Cloud Functions. Schedule-based assignments require a `classId`; class-level assignments work directly from `assignedTests` and `testSettings`. Global forum posts are stored in `public_messages`; class posts are stored under `classes/{classId}/messages`. Personal notes and flashcards carry an owner field and are queried only by that owner.
 
-The Firestore rules use the administrator email already configured in the application (`lyquockhanh03@gmail.com`) and the Firebase project ID in the web app configuration (`khanh-ielts-v2`). Review both values before deployment. Deploy the index and migration functions first, then deploy the updated frontend and sign in as staff once so it can initialize existing data. Verify the setup toast is not shown before deploying the rules:
+The Firestore rules use the administrator email already configured in the application (`lyquockhanh03@gmail.com`) and the Firebase project ID in the web app configuration (`khanh-ielts-v2`). Review both values before deployment. Deploy the rules and publish the updated frontend. A staff member should sign in once to mirror parent-class assignments onto enrolled child-class records; then students should sign out and back in once so their assigned-test indexes are rebuilt.
 
 ```powershell
 firebase login
-firebase deploy --only functions:syncStudentTestAccessOnClassWrite,functions:syncStudentTestAccessOnScheduleWrite,functions:syncStudentTestAccessOnAccountWrite,functions:rebuildStudentTestAccess
-```
-
-After staff initialization succeeds, deploy the rules:
-
-```powershell
 firebase deploy --only firestore:rules
 ```
 
