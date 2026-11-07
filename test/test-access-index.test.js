@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { buildStudentTestAccess } = require('../test-access-index');
+const { buildStudentTestAccessEntries } = require('../js/student-test-access');
 
 test('builds access only for enrolled students and inherits parent assignments', () => {
   const entries = buildStudentTestAccess(
@@ -62,5 +63,57 @@ test('ignores malformed IDs and ambiguous legacy schedule class names', () => {
 
   assert.deepEqual(entries, [
     { uid: 'alice-uid', username: 'alice', testId: 'safe-test', classId: 'class-a', source: 'class' }
+  ]);
+});
+
+test('student-side index includes assigned, inherited, and scheduled tests only for the signed-in student', () => {
+  const entries = buildStudentTestAccessEntries(
+    { uid: 'alice-uid', user: 'alice' },
+    [
+      { id: 'template', name: 'Course', isTemplate: true, assignedTests: ['parent-test'] },
+      { id: 'class-a', name: 'Class A', parentClassId: 'template', enrolledStudents: ['alice'], testSettings: { 'settings-test': {} } },
+      { id: 'class-b', name: 'Class B', enrolledStudents: ['bob'], assignedTests: ['private-test'] }
+    ],
+    [
+      { id: 'schedule-a', classId: 'class-a', attendingStudents: ['alice'], homeworkTests: ['homework-test'] },
+      { id: 'schedule-b', classId: 'class-b', assignedTests: ['other-homework'] }
+    ]
+  );
+
+  assert.deepEqual(entries, [
+    { uid: 'alice-uid', username: 'alice', testId: 'settings-test', classId: 'class-a', source: 'class' },
+    { uid: 'alice-uid', username: 'alice', testId: 'parent-test', classId: 'class-a', source: 'class' },
+    { uid: 'alice-uid', username: 'alice', testId: 'homework-test', classId: 'class-a', scheduleId: 'schedule-a', source: 'schedule' }
+  ]);
+});
+
+test('student-side index ignores malformed IDs and schedules for non-attendees', () => {
+  const entries = buildStudentTestAccessEntries(
+    { uid: 'alice-uid', user: 'alice' },
+    [{ id: 'class-a', enrolledStudents: ['alice'], assignedTests: ['safe-test', 'bad/id'] }],
+    [{ id: 'schedule-a', classId: 'class-a', attendingStudents: [], materialIds: ['not-for-alice'] }]
+  );
+
+  assert.deepEqual(entries, [
+    { uid: 'alice-uid', username: 'alice', testId: 'safe-test', classId: 'class-a', source: 'class' }
+  ]);
+});
+
+test('student-side index can use inherited assignments mirrored onto an enrolled child class', () => {
+  const entries = buildStudentTestAccessEntries(
+    { uid: 'alice-uid', user: 'alice' },
+    [{
+      id: 'class-a',
+      parentClassId: 'hidden-parent',
+      enrolledStudents: ['alice'],
+      inheritedAssignedTests: ['parent-test'],
+      inheritedTestSettings: { 'parent-settings-test': {} }
+    }],
+    []
+  );
+
+  assert.deepEqual(entries, [
+    { uid: 'alice-uid', username: 'alice', testId: 'parent-test', classId: 'class-a', source: 'class' },
+    { uid: 'alice-uid', username: 'alice', testId: 'parent-settings-test', classId: 'class-a', source: 'class' }
   ]);
 });

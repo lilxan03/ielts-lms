@@ -4,6 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
 const authHelpers = require('../js/auth-helpers.js');
+const { buildStudentTestAccessEntries } = require('../js/student-test-access.js');
 
 const readAppScript = fileName => fs.readFileSync(
     path.join(__dirname, '..', 'js', fileName),
@@ -226,6 +227,39 @@ test('student sign-in authenticates, loads access, and starts the LMS', async ()
     assert.equal(JSON.parse(storedValues.get('ielts_session')).uid, 'student-uid');
     assert.equal(elements.get('auth-user').getAttribute('aria-invalid'), 'false');
     assert.equal(elements.get('auth-pass').getAttribute('aria-invalid'), 'false');
+});
+
+test('student access sync writes only the signed-in student assigned test entries', async () => {
+    const { context } = createAuthContext();
+    const writes = [];
+    context.currentUser = { uid: 'student-uid', user: 'student_01', role: 'student' };
+    context.CLASSES = [{
+        id: 'class-a',
+        assignedTests: ['assigned-test'],
+        enrolledStudents: ['student_01']
+    }, {
+        id: 'class-b',
+        assignedTests: ['other-test'],
+        enrolledStudents: ['another-student']
+    }];
+    context.SCHEDULES = [];
+    context.buildStudentTestAccessEntries = buildStudentTestAccessEntries;
+    context.fsDoc = (collection, id) => ({ collection, id });
+    context.fsGetDocs = async () => ({ docs: [] });
+    context.fsWriteBatch = () => ({
+        set: (reference, value) => writes.push({ reference, value }),
+        delete: reference => writes.push({ reference, deleted: true }),
+        commit: async () => {}
+    });
+
+    await context.syncStudentTestAccess();
+
+    assert.equal(writes.length, 1);
+    assert.equal(writes[0].reference.id, 'assigned-test');
+    assert.equal(writes[0].value.uid, 'student-uid');
+    assert.equal(writes[0].value.username, 'student_01');
+    assert.equal(writes[0].value.classId, 'class-a');
+    assert.equal(writes[0].value.source, 'class');
 });
 
 test('student sign-in accepts an email address directly', async () => {
