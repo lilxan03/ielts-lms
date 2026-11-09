@@ -180,12 +180,23 @@
             document.getElementById('teacher-selected-date-label').textContent = 'Select a date';
             
             const students = USERS.filter(u => u.role === 'student');
-            document.getElementById('attendance-export-list').innerHTML = students.map(st => `
-                <div class="flex justify-between items-center border-b border-slate-100 pb-2 mb-2 last:border-0 last:pb-0">
-                    <span class="font-bold text-slate-700">${st.user}</span>
-                    <button onclick="exportAttendancePDF('${st.user}')" class="text-[11px] bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 font-bold rounded shadow-sm transition">Export PDF</button>
-                </div>
-            `).join('');
+            const exportList = document.getElementById('attendance-export-list');
+            exportList.replaceChildren(...students.map(st => {
+                const row = document.createElement('div');
+                row.className = 'flex justify-between items-center border-b border-slate-100 pb-2 mb-2 last:border-0 last:pb-0';
+
+                const name = document.createElement('span');
+                name.className = 'font-bold text-slate-700';
+                name.textContent = window.LMSAuthHelpers.getStudentDisplayName(st);
+
+                const button = document.createElement('button');
+                button.className = 'text-[11px] bg-emerald-100 text-emerald-800 hover:bg-emerald-200 px-3 py-1 font-bold rounded shadow-sm transition';
+                button.textContent = 'Export PDF';
+                button.addEventListener('click', () => window.exportAttendancePDF(st.user));
+
+                row.append(name, button);
+                return row;
+            }));
             
         }
     }
