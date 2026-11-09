@@ -206,6 +206,33 @@
         window.renderCalendar('teacher');
     }
 
+    function escapeCalendarHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
+    }
+
+    async function saveScheduleMaterials(schedule, materialIds, dateStr) {
+        const updatedSchedule = { ...schedule, materialIds };
+        try {
+            await window.fsSetDoc(
+                window.fsDoc(window.db, window.fPath('schedules'), schedule.id),
+                updatedSchedule
+            );
+            SCHEDULES = SCHEDULES.map(item => item.id === schedule.id ? updatedSchedule : item);
+            window.selectDate(dateStr, 'teacher');
+            return true;
+        } catch (error) {
+            console.error('Unable to update lesson materials:', error);
+            if (typeof window.showToast === 'function') {
+                window.showToast('Error', 'Could not update lesson materials. Please try again.', 'error');
+            } else {
+                showModalMsg('Error', 'Could not update lesson materials. Please try again.');
+            }
+            return false;
+        }
+    }
+
     window.selectDate = function(dateStr, role) {
         const displayDate = new Date(dateStr).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         
@@ -232,14 +259,63 @@
                         </div>
                         <div class="text-sm font-medium text-slate-600 mb-2 mt-1">Topic: <span class="font-bold">${s.topic || 'General Practice'}</span></div>
                         ${s.prepText ? `<div class="text-[11px] text-sky-700 font-medium mb-3 bg-sky-50 p-2 rounded border border-sky-100"><span class="font-bold uppercase tracking-widest text-[9px] block mb-1">Before Lesson</span>${s.prepText.substring(0, 60)}${s.prepText.length > 60 ? '...' : ''}</div>` : ''}
-                        ${s.assignedTests && s.assignedTests.length ? `<div class="text-[10px] text-slate-500 uppercase font-bold mb-3 border-t pt-2 border-slate-100">📎 ${s.assignedTests.length} Material(s) Attached</div>` : ''}
+                        ${(() => {
+                            const assignedIds = [...new Set([...(s.assignedTests || []), ...(s.materialIds || [])])];
+                            const availableTests = TEST_BANK.filter(test => !assignedIds.includes(test.id));
+                            const materialsHtml = assignedIds.map(id => {
+                                const test = TEST_BANK.find(item => item.id === id);
+                                const title = test ? test.title : id;
+                                const canRemove = (s.materialIds || []).includes(id);
+                                return `<div class="flex items-center justify-between gap-2 text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1">
+                                    <span class="truncate text-slate-700">${escapeCalendarHtml(title)}</span>
+                                    ${canRemove ? `<button type="button" data-remove-material="${escapeCalendarHtml(id)}" class="shrink-0 text-rose-500 hover:text-rose-700 font-bold" aria-label="Remove ${escapeCalendarHtml(title)}">&times;</button>` : ''}
+                                </div>`;
+                            }).join('');
+                            const optionsHtml = availableTests.map(test =>
+                                `<option value="${escapeCalendarHtml(test.id)}">${escapeCalendarHtml(test.title)}</option>`
+                            ).join('');
+                            return `<div class="border-t border-slate-100 pt-2 mb-3" data-schedule-card="${escapeCalendarHtml(s.id)}">
+                                <div class="text-[10px] text-slate-500 uppercase font-bold mb-2">Lesson Materials</div>
+                                <div class="space-y-1 mb-2">${materialsHtml || '<p class="text-xs text-slate-400 italic">No materials assigned.</p>'}</div>
+                                <div class="flex gap-1">
+                                    <select data-material-select class="min-w-0 flex-1 border border-slate-200 rounded px-2 py-1.5 text-xs text-slate-700">
+                                        <option value="">${availableTests.length ? 'Select Test Bank material' : 'All materials assigned'}</option>
+                                        ${optionsHtml}
+                                    </select>
+                                    <button type="button" data-add-material class="shrink-0 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded px-2 py-1.5 text-xs font-bold" ${availableTests.length ? '' : 'disabled'}>Add</button>
+                                </div>
+                            </div>`;
+                        })()}
                         
                         <button onclick="window.joinLiveClass('${s.id}', '${(s.topic || 'General Practice').replace(/'/g, "\\'")}')" class="w-full bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-700 text-indigo-600 border border-indigo-200 font-bold py-2 rounded-md text-xs transition shadow-sm mb-2 flex justify-center items-center gap-1">🎥 Join Live Video Class</button>
                         <button onclick="promptAttendance('${s.id}')" class="w-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 border border-slate-200 hover:border-blue-200 font-bold py-2 rounded-md text-xs transition shadow-sm">Mark Attendance</button>
                     </div>
                 `).join('');
             }
-            document.getElementById('timetable-list').innerHTML = html;
+            const timetableList = document.getElementById('timetable-list');
+            timetableList.innerHTML = html;
+            timetableList.querySelectorAll('[data-schedule-card]').forEach(card => {
+                const schedule = SCHEDULES.find(item => item.id === card.dataset.scheduleCard);
+                if (!schedule) return;
+
+                card.querySelector('[data-add-material]')?.addEventListener('click', async event => {
+                    const button = event.currentTarget;
+                    const select = card.querySelector('[data-material-select]');
+                    const materialId = select.value;
+                    if (!materialId) return;
+                    button.disabled = true;
+                    const materialIds = [...new Set([...(schedule.materialIds || []), materialId])];
+                    if (!await saveScheduleMaterials(schedule, materialIds, dateStr)) button.disabled = false;
+                });
+
+                card.querySelectorAll('[data-remove-material]').forEach(button => {
+                    button.addEventListener('click', async () => {
+                        button.disabled = true;
+                        const materialIds = (schedule.materialIds || []).filter(id => id !== button.dataset.removeMaterial);
+                        if (!await saveScheduleMaterials(schedule, materialIds, dateStr)) button.disabled = false;
+                    });
+                });
+            });
         } else {
             // Build the Student's pop-up modal
             let dayScheds = SCHEDULES.filter(s => s.date === dateStr);
