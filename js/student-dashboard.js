@@ -560,7 +560,7 @@
       if(quickActions) { quickActions.classList.add('hidden'); quickActions.classList.remove('flex'); }
       if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
 
-      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && window.classSubmissionMatches(s, cls));
       const assignedTestItems = getClassAssignedTests(cls)
           .filter(testId => TEST_BANK.some(test => test.id === testId))
           .map(testId => ({ testId }));
@@ -1503,7 +1503,7 @@
         }
 
         // Gather all tests assigned to this student's class
-        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && window.classSubmissionMatches(s, cls));
         const assignedTests = getClassAssignedTests(cls);
         
         // Keep random practice aligned with the student's assigned Test Bank.

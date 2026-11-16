@@ -1095,7 +1095,7 @@
     }
 
     function getClassAnalyticsSnapshot(cls) {
-      const classSubs = SUBMISSIONS.filter(s => s.className === cls.name && Array.isArray(s.questionAnalytics) && s.questionAnalytics.length > 0);
+      const classSubs = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, cls) && Array.isArray(s.questionAnalytics) && s.questionAnalytics.length > 0);
       if (!classSubs.length) return [];
 
       const summaries = [];
@@ -1203,8 +1203,8 @@
           if (sortVal === 'za') return b.name.localeCompare(a.name);
           if (sortVal === 'students_high') return (b.enrolledStudents || []).length - (a.enrolledStudents || []).length;
           if (sortVal === 'subs_high') {
-              const subsA = SUBMISSIONS.filter(s => s.className === a.name).length;
-              const subsB = SUBMISSIONS.filter(s => s.className === b.name).length;
+              const subsA = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, a)).length;
+              const subsB = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, b)).length;
               return subsB - subsA;
           }
           return 0;
@@ -1233,7 +1233,7 @@
       document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
         const assigned = getClassAssignedTests(cls);
-        const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
+        const classSubs = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, cls));
         const isPathEnabled = (getClassParent(cls) || cls).learningPathEnabled !== false;
         
         const isOwner = currentUser.role === 'teacher';
@@ -1244,7 +1244,7 @@
             const miniClassesMap = cls.miniClasses || {};
             
             let studentStats = enrolled.map(student => {
-                const mySubs = SUBMISSIONS.filter(s => s.student === student && s.className === cls.name);
+                const mySubs = SUBMISSIONS.filter(s => s.student === student && window.classSubmissionMatches(s, cls));
                 const completedIds = [...new Set(mySubs.map(s => s.testId))];
                 let completedRequired = 0, pendingDeadlines = 0, totalScoreVal = 0, scoredCount = 0;
 
@@ -1358,7 +1358,10 @@
                 <div class="flex items-center gap-5">
                     <div class="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 text-blue-600 rounded-xl flex items-center justify-center text-2xl font-black shadow-sm shrink-0">🏫</div>
                     <div class="min-w-0">
-                        <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
+                            ${isSmallClass && isOwner ? `<button type="button" onclick="window.promptRenameSmallClass('${cls.id}', event)" class="text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-2.5 py-1.5 transition" aria-label="Rename small class ${cls.name}">Edit name</button>` : ''}
+                        </div>
                         <div class="text-[10px] font-black uppercase tracking-widest mt-1 ${hasInvalidHierarchyDepth ? 'text-rose-600' : isSmallClass ? 'text-indigo-600' : isMainClass ? 'text-blue-700' : 'text-slate-400'}">
                             ${hasInvalidHierarchyDepth ? `Hierarchy needs review · parent ${parentClass.name} is also a small class` : isSmallClass ? `↳ Small class · ${parentClass.name} · roster & progress` : isMainClass ? 'Main class · shared materials for its small classes' : 'Class'}
                         </div>
@@ -1788,6 +1791,92 @@
           }
         }
       });
+    };
+
+    window.promptRenameSmallClass = function(cid, event) {
+      event?.stopPropagation();
+      if (currentUser?.role !== 'teacher') return;
+      const cls = CLASSES.find(candidate => candidate.id === cid);
+      if (!cls?.parentClassId) return;
+
+      document.getElementById('modal-title').textContent = 'Rename Small Class';
+      document.getElementById('modal-message').textContent = `Enter a new name for "${cls.name}".`;
+      const input = document.getElementById('modal-input');
+      input.value = cls.name;
+      input.maxLength = 80;
+      input.classList.remove('hidden');
+      document.getElementById('modal-cancel').classList.remove('hidden');
+      document.getElementById('custom-modal').classList.remove('hidden');
+      const button = document.getElementById('modal-confirm');
+      button.textContent = 'Save Name';
+      document.getElementById('modal-cancel').onclick = () => {
+        document.getElementById('custom-modal').classList.add('hidden');
+        button.textContent = 'OK';
+      };
+      button.onclick = () => window.saveSmallClassName(cid);
+      input.focus();
+      input.select();
+    };
+
+    window.saveSmallClassName = async function(cid) {
+      if (currentUser?.role !== 'teacher') return;
+      const cls = CLASSES.find(candidate => candidate.id === cid);
+      const input = document.getElementById('modal-input');
+      const button = document.getElementById('modal-confirm');
+      if (!cls?.parentClassId || !input || !button) return;
+
+      const newName = input.value.trim();
+      if (!newName || newName.length > 80) {
+        window.showToast('Invalid class name', 'Enter a name between 1 and 80 characters.', 'error');
+        input.focus();
+        return;
+      }
+      if (CLASSES.some(candidate => candidate.id !== cls.id && [
+        candidate.name,
+        ...(Array.isArray(candidate.nameAliases) ? candidate.nameAliases : [])
+      ].some(name => String(name || '').trim().toLowerCase() === newName.toLowerCase()))) {
+        window.showToast('Duplicate class name', 'Another class already uses this name.', 'error');
+        input.focus();
+        return;
+      }
+      if (newName === cls.name) {
+        document.getElementById('custom-modal').classList.add('hidden');
+        button.textContent = 'OK';
+        return;
+      }
+
+      const previousAliases = Array.isArray(cls.nameAliases) ? cls.nameAliases : [];
+      const updatedClass = {
+        ...cls,
+        name: newName,
+        nameAliases: [...new Set([...previousAliases, cls.name].filter(alias => alias && alias !== newName))]
+      };
+      button.disabled = true;
+      button.textContent = 'Saving...';
+      try {
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), updatedClass);
+        const classIndex = CLASSES.findIndex(candidate => candidate.id === cls.id);
+        if (classIndex >= 0) CLASSES[classIndex] = updatedClass;
+        document.getElementById('custom-modal').classList.add('hidden');
+        renderClasses();
+        if (typeof window.renderTimetable === 'function') window.renderTimetable();
+        if (typeof window.renderCalendar === 'function') window.renderCalendar('teacher');
+        if (typeof window.syncPublicCourseCatalog === 'function') {
+          try {
+            await window.syncPublicCourseCatalog(CLASSES);
+          } catch (error) {
+            console.error('Small class was renamed, but the public course catalog could not be updated:', error);
+            window.showToast('Class renamed', 'The public course listing could not be refreshed yet.', 'error');
+          }
+        }
+        window.showToast('Class name updated', `“${cls.name}” is now “${newName}”.`);
+      } catch (error) {
+        console.error(`Unable to rename small class ${cid}:`, error);
+        window.showToast('Could not rename class', 'Please check your connection and try again.', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'OK';
+      }
     };
 
     // ✨ COLLABORATORS MODAL LOGIC

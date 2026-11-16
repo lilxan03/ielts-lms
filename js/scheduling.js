@@ -206,7 +206,7 @@
                 html += `
                 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3">
                     <div class="flex justify-between items-start mb-2">
-                        <h4 class="font-black text-blue-900 text-lg">${s.className}</h4>
+                        <h4 class="font-black text-blue-900 text-lg">${window.getScheduleClassLabel(s) || s.className}</h4>
                         <div class="flex gap-1">
                             <button onclick="window.editSchedule('${s.id}')" class="bg-slate-50 hover:bg-slate-100 text-slate-600 px-2 py-1 rounded text-xs font-bold transition">Edit</button>
                             <button onclick="window.deleteSchedule('${s.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2 py-1 rounded text-xs font-bold transition">Del</button>
@@ -274,7 +274,7 @@
 
                 html += `
                 <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-3">
-                    <h4 class="font-black text-indigo-900 text-lg mb-1">${s.className}</h4>
+                    <h4 class="font-black text-indigo-900 text-lg mb-1">${window.getScheduleClassLabel(s) || s.className}</h4>
                     <div class="inline-block bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs font-bold mb-3">${s.time}</div>
                     ${s.topic ? `<div class="text-sm font-medium text-slate-700 mb-2">Topic: ${s.topic}</div>` : ''}
                     

@@ -558,7 +558,7 @@
         let classOpts = '<option value="">-- Select a Mini Class --</option>' + scheduleClassOptions.map(option => {
             const isSelected = option.isLegacyMiniClass
                 ? sched.miniClassParentId === option.cls.id && sched.miniClassName === option.cls.miniClassName
-                : (sched.classId ? option.cls.id === sched.classId : option.cls.name === sched.className);
+                : (sched.classId ? option.cls.id === sched.classId : window.classMatchesName(sched.className, option.cls));
             return `<option value="${option.key}" ${isSelected ? 'selected' : ''}>${option.label}</option>`;
         }).join('');
         const parsedScheduleTime = window.parseClassDateTime(sched.date, sched.time);
@@ -747,7 +747,9 @@
         const sched = SCHEDULES.find(s => s.id === scheduleId);
         if(!sched) return;
 
-        const cls = CLASSES.find(c => c.name === sched.className);
+        const cls = sched.classId
+            ? CLASSES.find(candidate => candidate.id === sched.classId)
+            : CLASSES.find(candidate => window.classMatchesName(sched.className, candidate));
         if(!cls) {
             alert("Could not find the associated class.");
             return;
@@ -782,7 +784,7 @@
         
         html += `</div>`;
 
-        document.getElementById('modal-title').textContent = `Attendance: ${sched.className}`;
+        document.getElementById('modal-title').textContent = `Attendance: ${cls.name}`;
         document.getElementById('modal-message').innerHTML = `<p class="text-sm text-slate-500 font-medium mb-4">Date: ${sched.date} &bull; Time: ${sched.time}</p>` + html;
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.remove('hidden');

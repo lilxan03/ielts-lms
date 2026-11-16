@@ -42,6 +42,20 @@
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
+    window.classMatchesName = function(name, cls) {
+      if (!name || !cls) return false;
+      const normalizedName = String(name).trim().toLowerCase();
+      const matches = CLASSES.filter(candidate => [
+        candidate.name,
+        ...(Array.isArray(candidate.nameAliases) ? candidate.nameAliases : [])
+      ].some(candidateName => String(candidateName || '').trim().toLowerCase() === normalizedName));
+      return matches.length === 1 && matches[0].id === cls.id;
+    };
+    window.classSubmissionMatches = function(submission, cls) {
+      if (!submission || !cls) return false;
+      if (submission.classId) return submission.classId === cls.id;
+      return window.classMatchesName(submission.className, cls);
+    };
     const STUDENT_LANGUAGE_KEY = 'ielts_student_language';
     let studentLanguage = localStorage.getItem(STUDENT_LANGUAGE_KEY) === 'vi' ? 'vi' : 'en';
     window.studentText = function(english, vietnamese) {
