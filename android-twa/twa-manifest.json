@@ -1,0 +1,25 @@
+{
+  "packageId": "com.ieltswithkhanh.lms",
+  "host": "ielts-with-khanh.vercel.app",
+  "name": "IELTS W KHANH",
+  "launcherName": "IELTS W KHANH",
+  "startUrl": "/",
+  "iconUrl": "https://ielts-with-khanh.vercel.app/assets/pwa-icon-512.png",
+  "maskableIconUrl": "https://ielts-with-khanh.vercel.app/assets/pwa-icon-512.png",
+  "webManifestUrl": "https://ielts-with-khanh.vercel.app/manifest.webmanifest",
+  "display": "standalone",
+  "orientation": "default",
+  "themeColor": "#1e3a8a",
+  "themeColorDark": "#1e3a8a",
+  "navigationColor": "#1e3a8a",
+  "backgroundColor": "#f4f7fb",
+  "splashScreenFadeOutDuration": 300,
+  "enableNotifications": true,
+  "minSdkVersion": 24,
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "signingKey": {
+    "path": "release.keystore",
+    "alias": "ieltswkh-release"
+  }
+}

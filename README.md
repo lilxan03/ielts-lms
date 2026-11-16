@@ -6,6 +6,8 @@ This function grades Writing responses and transcribes/grades Speaking recording
 
 The browser app is served from `index.html`. Shared styles are in `css/app.css`, Firebase initialization is in `js/firebase.js`, and the classic scripts in `js/` are loaded in order from `index.html`. These scripts share the existing global LMS state, so keep their references and load order in sync when adding or moving code. There is no frontend build step.
 
+On Android, use **Tải APK Android** on the website to download and install the app directly. The signed APK is served from `/downloads/ielts-w-khanh.apk`; Android 7.0 or newer is required. The same release signing key must be securely retained for future updates. On iPhone or iPad, open the site in Safari, tap **Share**, then **Add to Home Screen**.
+
 Reading and Listening submissions record correct/total answers by question type. Students see a weakest-type chart after each submitted section and an accumulated chart in the class Test Bank progress panel; older submissions are included when their saved test data can be matched to question types. Listening fill-in answers also report likely spelling typos, singular/plural mismatches, unanswered items, or fully incorrect answers after submission. These hints do not change the score.
 
 The Reading passage has a Syntax Chunking tool in both practice and timed modes. Select a phrase in the passage, then label it Subject, Verb, or Object; the selection is retained while activating a label, and existing labels can be cleared before relabeling.

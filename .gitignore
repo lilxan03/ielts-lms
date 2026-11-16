@@ -5,3 +5,13 @@ firebaseadmin/
 # Thư viện
 node_modules/
 .firebase/
+
+# Android TWA local build output and signing material
+android-twa/.gradle/
+android-twa/app/build/
+android-twa/build/
+android-twa/local.properties
+android-twa/app-release-*.apk*
+android-twa/app-release*.aab
+*.jks
+*.keystore

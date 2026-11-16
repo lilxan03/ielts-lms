@@ -13,6 +13,15 @@
     };
     const startupBrandingCacheKey = 'ielts_lms_startup_branding';
     let manifestObjectUrl = null;
+    const updateAndroidApkLink = () => {
+        const link = document.getElementById('android-apk-download');
+        if (!link) return;
+        const fullScreenActivityOpen = ['exam-ui', 'review-ui'].some(id => {
+            const element = document.getElementById(id);
+            return element && !element.classList.contains('hidden');
+        });
+        link.classList.toggle('hidden', !/android/i.test(navigator.userAgent) || fullScreenActivityOpen);
+    };
     window.applyStartupBranding = function(profile = {}) {
         const appName = String(profile.appName || '').trim() || 'Khanh LMS';
         const openingTitle = String(profile.openingTitle || '').trim() || 'Connecting to Cloud...';
@@ -71,6 +80,12 @@
     }
     document.addEventListener('DOMContentLoaded', () => {
         window.applyStartupBranding(cachedStartupBranding);
+        updateAndroidApkLink();
+        const androidApkLinkObserver = new MutationObserver(updateAndroidApkLink);
+        ['exam-ui', 'review-ui'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) androidApkLinkObserver.observe(element, { attributes: true, attributeFilter: ['class'] });
+        });
     });
     window.addEventListener('beforeunload', function (e) {
         if (document.getElementById('exam-ui') && !document.getElementById('exam-ui').classList.contains('hidden')) {
