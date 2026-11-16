@@ -22,6 +22,8 @@ After a Listening multiple-choice submission, transcript review highlights phras
 
 Speaking Part 2 tests can be started in Virtual Exam mode from the test mode dialog. The cue card is shown during an unpausable 60-second preparation countdown, followed by an automatic two-minute microphone recording; the submission control stays locked until the recording has been saved. Microphone permission is required before the countdown begins.
 
+Teachers can open a read-only student profile preview from the student registry, including class enrollment, assigned tests, attendance, and recent scores; it does not switch accounts or edit student data. During an assigned test, students can report an issue on an individual question. Reports are restricted to the student's own assigned tests and appear in the teacher's in-app notification menu.
+
 Writing and Speaking practice sessions show an interactive mind map instead of the long sample answer. Students choose an outline branch and add task collocations from the teacher's Test Vocabulary Bank plus built-in discourse markers; the map is a scaffold and does not generate a model response. It also includes a session-only cross-topic idea network based on the test's topics: students can add topics and ideas, move ideas between topics by dragging or using the move menu, and explicitly connect related ideas.
 
 Writing time-free practice uses a scaffolded editor instead of a single large essay field. Task 2 is split into paraphrase, thesis, two body paragraphs, and conclusion; Task 1 uses introduction, overview, and two detail blocks. The editor combines the blocks into the existing essay answer format for saving and teacher review; timed tests keep the standard writing field.

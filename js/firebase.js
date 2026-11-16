@@ -1,6 +1,6 @@
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app-check.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, updateDoc, deleteField, onSnapshot, query, where, limit, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, updateDoc, deleteField, onSnapshot, query, where, limit, Timestamp, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     // ✨ NEW: Added sendPasswordResetEmail
     import { getAuth, setPersistence, browserLocalPersistence, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, deleteUser, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
@@ -49,6 +49,7 @@
             window.fsUpdateDoc = updateDoc;
             window.fsDeleteField = deleteField;
             window.fsTimestamp = Timestamp;
+            window.fsServerTimestamp = serverTimestamp;
             window.fsWriteBatch = writeBatch;
             window.fsCollection = collection;
             window.fsGetDocs = getDocs;

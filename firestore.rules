@@ -368,6 +368,43 @@ service cloud.firestore {
       allow delete: if hasPaidAccess() && request.auth.uid == uid;
     }
 
+    match /question_feedback/{feedbackId} {
+      allow get, list: if isStaff();
+      allow create: if hasPaidAccess()
+        && accountAccess().role == 'student'
+        && request.resource.data.keys().hasOnly([
+          'uid', 'student', 'testId', 'testTitle', 'partIndex', 'partTitle',
+          'questionIds', 'description', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'uid', 'student', 'testId', 'testTitle', 'partIndex', 'partTitle',
+          'questionIds', 'description', 'createdAt'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.student == accountAccess().username
+        && request.resource.data.testId is string
+        && request.resource.data.testId.size() > 0
+        && request.resource.data.testId.size() <= 200
+        && hasCurrentTestAssignment(request.resource.data.testId)
+        && request.resource.data.testTitle is string
+        && request.resource.data.testTitle.size() <= 300
+        && request.resource.data.partIndex is int
+        && request.resource.data.partIndex >= 0
+        && request.resource.data.partTitle is string
+        && request.resource.data.partTitle.size() <= 300
+        && request.resource.data.questionIds is list
+        && request.resource.data.questionIds.size() > 0
+        && request.resource.data.questionIds.size() <= 30
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0
+        && request.resource.data.description.size() <= 1200
+        && request.resource.data.createdAt == request.time;
+      allow update: if isStaff()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['teacherReadAt'])
+        && request.resource.data.teacherReadAt is timestamp;
+      allow delete: if isStaff();
+    }
+
     match /notes/{noteId} {
       allow get, list: if isStaff()
         || (hasPaidAccess() && resource.data.get('owner', null) == accountAccess().username);

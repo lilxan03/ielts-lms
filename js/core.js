@@ -28,6 +28,7 @@
     let FLASHCARDS = {};
     let ALL_NOTES = {};
     let SUBMISSIONS = [];
+    let QUESTION_FEEDBACK = [];
     window.aiDraftOverallByQuestion = {};
     let SCHEDULES = [];
     let ATTENDANCE = [];

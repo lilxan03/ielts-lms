@@ -1515,6 +1515,78 @@
         }
     };
 
+    let pendingQuestionFeedback = null;
+
+    function canSubmitQuestionFeedback() {
+      return currentUser?.role === 'student'
+        && !currentUser.isDemo
+        && !window.isStudentProfilePreview
+        && !window.isPreviewMode
+        && !window.isFullExamMode
+        && Boolean(APP_DATA?.id);
+    }
+
+    window.openQuestionFeedbackForm = function(testId, partIndex, questionIds, partTitle) {
+      if (!canSubmitQuestionFeedback() || String(testId) !== String(APP_DATA.id)) return;
+      const ids = Array.isArray(questionIds)
+        ? questionIds.map(Number).filter(Number.isSafeInteger)
+        : [];
+      if (!ids.length) return;
+
+      pendingQuestionFeedback = {
+        testId: String(APP_DATA.id),
+        testTitle: String(APP_DATA.title || 'Untitled test').slice(0, 300),
+        partIndex: Number(partIndex),
+        partTitle: String(partTitle || '').slice(0, 300),
+        questionIds: ids.slice(0, 30)
+      };
+      document.getElementById('question-feedback-context').textContent =
+        `${pendingQuestionFeedback.testTitle} · ${pendingQuestionFeedback.partTitle || `Part ${partIndex + 1}`} · Q${ids.join(', ')}`;
+      document.getElementById('question-feedback-description').value = '';
+      const modal = document.getElementById('question-feedback-modal');
+      modal?.classList.remove('hidden');
+      modal?.classList.add('flex');
+      document.getElementById('question-feedback-description')?.focus();
+    };
+
+    window.closeQuestionFeedbackForm = function() {
+      const modal = document.getElementById('question-feedback-modal');
+      modal?.classList.add('hidden');
+      modal?.classList.remove('flex');
+      pendingQuestionFeedback = null;
+    };
+
+    window.submitQuestionFeedback = async function(event) {
+      event?.preventDefault();
+      if (!canSubmitQuestionFeedback() || !pendingQuestionFeedback || !window.auth?.currentUser) return;
+
+      const description = String(document.getElementById('question-feedback-description')?.value || '').trim();
+      if (!description || description.length > 1200) {
+        window.showToast?.('Feedback not sent', 'Describe the issue in 1–1,200 characters.', 'error');
+        return;
+      }
+
+      const submitButton = document.getElementById('question-feedback-submit');
+      if (submitButton) submitButton.disabled = true;
+      try {
+        const reportRef = window.fsDoc(window.fsCollection(window.db, window.fPath('question_feedback')));
+        await window.fsSetDoc(reportRef, {
+          uid: window.auth.currentUser.uid,
+          student: currentUser.user,
+          ...pendingQuestionFeedback,
+          description,
+          createdAt: window.fsServerTimestamp()
+        });
+        window.closeQuestionFeedbackForm();
+        window.showToast?.('Feedback sent', 'Your teacher has been notified.');
+      } catch (error) {
+        console.error('Unable to send question feedback:', error);
+        window.showToast?.('Feedback could not be sent', error.message || 'Please try again.', 'error');
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
+    };
+
     function renderQuestions() {
       const c = document.getElementById('questions-container'); 
       
@@ -1940,6 +2012,11 @@
             </div>`;
         }
 
+        const feedbackButtons = canSubmitQuestionFeedback()
+          ? q.ids.map(Number).filter(Number.isSafeInteger).slice(0, 30)
+              .map(id => `<button type="button" data-question-feedback="${id}" class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100">Give feedback · Q${id}</button>`)
+              .join('')
+          : '';
         div.innerHTML = `
           <div class="flex flex-col ${instructionHtml ? 'gap-3' : 'gap-0'}">
             ${instructionHtml}
@@ -1948,8 +2025,20 @@
               ${content}
               ${chkBtn}
             </div>
+            ${feedbackButtons ? `<div class="mt-4 flex flex-wrap gap-2">${feedbackButtons}</div>` : ''}
           </div>
         `;
+        div.querySelectorAll('[data-question-feedback]').forEach(button => {
+          button.addEventListener('click', event => {
+            event.stopPropagation();
+            window.openQuestionFeedbackForm(
+              APP_DATA.id,
+              currentPartIdx,
+              [Number(button.dataset.questionFeedback)],
+              APP_DATA.parts[currentPartIdx]?.title || ''
+            );
+          });
+        });
         qListContainer.appendChild(div);
       });
     }

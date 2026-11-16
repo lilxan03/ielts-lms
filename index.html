@@ -2922,6 +2922,56 @@
     </div>
   </div>
 
+  <div id="student-profile-preview-modal" class="hidden fixed inset-0 z-[300] items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="student-profile-preview-title">
+    <section class="w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <header class="flex items-start justify-between gap-4 border-b border-slate-200 bg-slate-50 p-5">
+        <div>
+          <p class="mb-1 text-[10px] font-black uppercase tracking-widest text-blue-700">Read-only preview</p>
+          <h2 id="student-profile-preview-title" class="text-xl font-black text-slate-900">Student profile</h2>
+        </div>
+        <button type="button" onclick="window.closeStudentProfilePreview()" class="rounded-lg px-3 py-2 text-sm font-bold text-slate-500 hover:bg-slate-200 hover:text-slate-900" aria-label="Close student profile preview">Close</button>
+      </header>
+      <div id="student-profile-preview-content" class="max-h-[75vh] overflow-y-auto p-5"></div>
+      <footer class="border-t border-slate-200 bg-slate-50 px-5 py-3 text-xs font-medium text-slate-500">This preview does not switch accounts or change student data.</footer>
+    </section>
+  </div>
+
+  <div id="question-feedback-modal" class="hidden fixed inset-0 z-[320] items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="question-feedback-title">
+    <form class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl" onsubmit="window.submitQuestionFeedback(event)">
+      <div class="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <h2 id="question-feedback-title" class="text-lg font-black text-slate-900">Report a problem with this question</h2>
+          <p id="question-feedback-context" class="mt-1 text-sm text-slate-500"></p>
+        </div>
+        <button type="button" onclick="window.closeQuestionFeedbackForm()" class="rounded-lg px-2 py-1 text-lg font-bold text-slate-400 hover:bg-slate-100" aria-label="Close feedback form">&times;</button>
+      </div>
+      <label for="question-feedback-description" class="mb-2 block text-sm font-bold text-slate-700">What is the problem?</label>
+      <textarea id="question-feedback-description" required maxlength="1200" rows="5" class="w-full resize-y rounded-xl border border-slate-300 p-3 text-sm text-slate-800 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" placeholder="Describe an unclear instruction, incorrect answer, or other issue."></textarea>
+      <div class="mt-4 flex justify-end gap-2">
+        <button type="button" onclick="window.closeQuestionFeedbackForm()" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+        <button id="question-feedback-submit" type="submit" class="rounded-lg bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 disabled:cursor-wait disabled:opacity-60">Send feedback</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="question-feedback-report-modal" class="hidden fixed inset-0 z-[320] items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="question-feedback-report-title">
+    <section class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+      <div class="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <p class="mb-1 text-[10px] font-black uppercase tracking-widest text-amber-700">Student question feedback</p>
+          <h2 id="question-feedback-report-title" class="text-lg font-black text-slate-900">Reported issue</h2>
+        </div>
+        <button type="button" onclick="window.closeQuestionFeedbackReport()" class="rounded-lg px-2 py-1 text-lg font-bold text-slate-400 hover:bg-slate-100" aria-label="Close feedback report">&times;</button>
+      </div>
+      <p id="question-feedback-report-student" class="text-sm font-bold text-slate-800"></p>
+      <p id="question-feedback-report-test" class="mb-4 mt-1 text-sm text-slate-500"></p>
+      <p id="question-feedback-report-description" class="whitespace-pre-wrap rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-800"></p>
+      <div class="mt-5 flex justify-end">
+        <button type="button" onclick="window.closeQuestionFeedbackReport()" class="rounded-lg bg-slate-800 px-4 py-2 text-sm font-bold text-white hover:bg-slate-700">Done</button>
+      </div>
+    </section>
+  </div>
+
   <!-- FIREBASE INITIALIZATION -->
   <script type="module" src="js/firebase.js"></script>
 

@@ -137,7 +137,11 @@ function createTestPlayerContext({ failSubmissionWrite = false } = {}) {
         ['exam-listening-audio', createElement()],
         ['practice-listening-audio', createElement()],
         ['results-score-area', createElement()],
-        ['results-modal', createElement()]
+        ['results-modal', createElement()],
+        ['question-feedback-context', createElement()],
+        ['question-feedback-description', createElement()],
+        ['question-feedback-modal', createElement()],
+        ['question-feedback-submit', createElement()]
     ]);
     const savedDocuments = [];
     const modalMessages = [];
@@ -157,7 +161,7 @@ function createTestPlayerContext({ failSubmissionWrite = false } = {}) {
         Promise,
         clearInterval: () => {},
         timerInterval: null,
-        currentUser: { user: 'student_01', gems: 0 },
+        currentUser: { user: 'student_01', role: 'student', gems: 0 },
         getQuestionAnalyticsForSubmission: (testData, answerMap) => [{
             partIndex: 0,
             blockIndex: 0,
@@ -190,9 +194,14 @@ function createTestPlayerContext({ failSubmissionWrite = false } = {}) {
         window: null
     };
     context.window = context;
+    context.auth = { currentUser: { uid: 'student-uid' } };
     context.db = {};
     context.fPath = collection => collection;
-    context.fsDoc = (database, collection, id) => ({ collection, id });
+    context.fsCollection = (database, collection) => ({ collection });
+    context.fsDoc = (database, collection, id) => collection === undefined
+        ? { collection: database.collection, id: 'generated-feedback' }
+        : { collection, id };
+    context.fsServerTimestamp = () => 'server timestamp';
     context.fsSetDoc = async (reference, value) => {
         if (failSubmissionWrite && reference.collection === 'submissions') {
             throw new Error('Network unavailable');
@@ -228,6 +237,79 @@ test('student sign-in authenticates, loads access, and starts the LMS', async ()
     assert.equal(JSON.parse(storedValues.get('ielts_session')).uid, 'student-uid');
     assert.equal(elements.get('auth-user').getAttribute('aria-invalid'), 'false');
     assert.equal(elements.get('auth-pass').getAttribute('aria-invalid'), 'false');
+});
+
+test('students can submit feedback with test and question metadata', async () => {
+    const { context, elements, savedDocuments } = createTestPlayerContext();
+
+    context.openQuestionFeedbackForm('reading-1', 0, [1], 'Part One');
+    assert.equal(elements.get('question-feedback-context').textContent, 'Reading Practice · Part One · Q1');
+    elements.get('question-feedback-description').value = 'The answer field is not visible.';
+    await context.submitQuestionFeedback({ preventDefault() {} });
+
+    assert.equal(savedDocuments.length, 1);
+    assert.equal(savedDocuments[0].reference.collection, 'question_feedback');
+    assert.equal(savedDocuments[0].value.uid, 'student-uid');
+    assert.equal(savedDocuments[0].value.student, 'student_01');
+    assert.equal(savedDocuments[0].value.testId, 'reading-1');
+    assert.deepEqual(savedDocuments[0].value.questionIds, [1]);
+    assert.equal(savedDocuments[0].value.description, 'The answer field is not visible.');
+    assert.equal(savedDocuments[0].value.createdAt, 'server timestamp');
+});
+
+test('question feedback is unavailable in student profile preview mode', async () => {
+    const { context, elements, savedDocuments } = createTestPlayerContext();
+    context.isStudentProfilePreview = true;
+
+    context.openQuestionFeedbackForm('reading-1', 0, [1], 'Part One');
+    elements.get('question-feedback-description').value = 'This should not be submitted.';
+    await context.submitQuestionFeedback({ preventDefault() {} });
+
+    assert.equal(savedDocuments.length, 0);
+    assert.equal(elements.get('question-feedback-modal').classList.contains('flex'), false);
+});
+
+test('teacher student-profile preview shows read-only student learning data', () => {
+    const elements = new Map([
+        ['student-profile-preview-modal', createElement()],
+        ['student-profile-preview-content', createElement()],
+        ['student-profile-preview-title', createElement()]
+    ]);
+    const context = {
+        console,
+        window: null,
+        document: { getElementById: id => elements.get(id) || createElement() },
+        lmsEscapeHtml: value => String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]),
+        USERS: [{ user: 'alice', role: 'student', realName: '<Student>', email: 'alice@example.com' }],
+        CLASSES: [{ id: 'class-a', name: 'IELTS Reading', enrolledStudents: ['alice'], assignedTests: ['test-a'] }],
+        TEST_BANK: [
+            { id: 'test-a', title: 'Reading Practice' },
+            { id: 'test-c', title: 'Scheduled Homework' }
+        ],
+        SCHEDULES: [{
+            classId: 'class-a',
+            attendingStudents: ['alice'],
+            homeworkTests: ['test-c']
+        }],
+        SUBMISSIONS: [{ id: 1, student: 'alice', testName: 'Reading Practice', score: 'Band 7' }],
+        ATTENDANCE: [{ student: 'alice' }]
+    };
+    context.window = context;
+    context.isTemplateClass = cls => cls.isTemplate === true;
+    vm.createContext(context);
+    vm.runInContext(readAppScript('teacher-admin.js'), context);
+
+    context.openStudentProfilePreview('alice');
+
+    assert.equal(elements.get('student-profile-preview-modal').classList.contains('flex'), true);
+    assert.equal(elements.get('student-profile-preview-title').textContent, '<Student> · Student profile');
+    assert.match(elements.get('student-profile-preview-content').innerHTML, /&lt;Student&gt;/);
+    assert.match(elements.get('student-profile-preview-content').innerHTML, /IELTS Reading/);
+    assert.match(elements.get('student-profile-preview-content').innerHTML, /Reading Practice/);
+    assert.match(elements.get('student-profile-preview-content').innerHTML, /Scheduled Homework/);
+    assert.match(elements.get('student-profile-preview-content').innerHTML, /Band 7/);
 });
 
 test('test grammar flashcards use the app lexical grammar data', () => {

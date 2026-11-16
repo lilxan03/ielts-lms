@@ -395,6 +395,11 @@
                     }
                     isSubInitial = false;
             }));
+
+            promises.push(waitForInitialSnapshot('question feedback', window.fsCollection(window.db, window.fPath('question_feedback')), snap => {
+                QUESTION_FEEDBACK = snap.docs.map(reportDoc => ({ ...reportDoc.data(), id: reportDoc.id }));
+                window.updateTeacherBadges?.();
+            }));
             
             promises.push(waitForInitialSnapshot('attendance', window.fsCollection(window.db, window.fPath('attendance')), snap => {
                 ATTENDANCE = snap.docs.map(d => d.data());

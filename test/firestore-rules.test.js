@@ -14,6 +14,7 @@ const {
   getDoc,
   getDocs,
   query,
+  serverTimestamp,
   setDoc,
   updateDoc,
   where
@@ -111,6 +112,43 @@ test('students can read only currently assigned tests, not list the test bank', 
   await assertFails(getDocs(collection(db, 'tests')));
   await assertSucceeds(getDocs(collection(db, 'student_test_access/alice-uid/tests')));
   await assertFails(getDocs(collection(db, 'student_test_access/bob-uid/tests')));
+});
+
+test('students can report assigned-test question issues and only staff can read or review them', async () => {
+  const studentDb = testEnv.authenticatedContext('alice-uid', { email: 'alice@example.com' }).firestore();
+  const reportRef = doc(studentDb, 'question_feedback/feedback-a');
+  const report = {
+    uid: 'alice-uid',
+    student: 'alice',
+    testId: 'test-a',
+    testTitle: 'Assigned test',
+    partIndex: 0,
+    partTitle: 'Part 1',
+    questionIds: [1, 2],
+    description: 'The answer choices appear to be missing.',
+    createdAt: serverTimestamp()
+  };
+
+  await assertSucceeds(setDoc(reportRef, report));
+  await assertFails(getDoc(reportRef));
+  await assertFails(getDocs(collection(studentDb, 'question_feedback')));
+  await assertFails(updateDoc(reportRef, { teacherReadAt: serverTimestamp() }));
+
+  const unassignedReport = doc(studentDb, 'question_feedback/feedback-unassigned');
+  await assertFails(setDoc(unassignedReport, { ...report, testId: 'test-b' }));
+  const forgedReport = doc(studentDb, 'question_feedback/feedback-forged');
+  await assertFails(setDoc(forgedReport, { ...report, student: 'bob' }));
+  const oversizedReport = doc(studentDb, 'question_feedback/feedback-oversized');
+  await assertFails(setDoc(oversizedReport, { ...report, description: 'x'.repeat(1201) }));
+  const answerLeakReport = doc(studentDb, 'question_feedback/feedback-answer');
+  await assertFails(setDoc(answerLeakReport, { ...report, answers: { 1: 'secret' } }));
+
+  const teacherDb = testEnv.authenticatedContext('teacher-uid', { email: 'teacher@example.com' }).firestore();
+  await assertSucceeds(getDoc(doc(teacherDb, 'question_feedback/feedback-a')));
+  await assertSucceeds(getDocs(collection(teacherDb, 'question_feedback')));
+  await assertSucceeds(updateDoc(doc(teacherDb, 'question_feedback/feedback-a'), {
+    teacherReadAt: serverTimestamp()
+  }));
 });
 
 test('students can maintain only their own access entries for currently assigned tests', async () => {

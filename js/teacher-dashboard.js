@@ -131,8 +131,9 @@
         const newBookings = SCHEDULES.filter(s => s.isNewBooking).length;
         const newReplies = SUBMISSIONS.filter(s => s.studentReply && !s.teacherReadReply).length;
         const testsPendingReview = TEST_BANK.filter(t => t.status === 'review_ready').length;
+        const unreadQuestionFeedback = QUESTION_FEEDBACK.filter(report => !report.teacherReadAt);
 
-        const totalNots = pendingStudents + pendingSubs + newBookings + newReplies + testsPendingReview;
+        const totalNots = pendingStudents + pendingSubs + newBookings + newReplies + testsPendingReview + unreadQuestionFeedback.length;
 
         const el = document.getElementById('badge-global-notifications');
         if (el) {
@@ -161,6 +162,19 @@
                     <span class="text-sm font-medium text-slate-700">You have <b>${newReplies}</b> new reply/question(s) on graded tests.</span>
                 </button>`;
             }
+            if (unreadQuestionFeedback.length > 0) {
+                html += `<div class="border-b border-slate-100">
+                    <div class="px-4 py-3">
+                        <span class="text-[10px] font-black text-amber-700 uppercase tracking-widest">⚑ Question feedback</span>
+                        <span class="ml-1 text-[10px] font-bold text-amber-700">${unreadQuestionFeedback.length} new</span>
+                    </div>
+                    ${unreadQuestionFeedback.slice(0, 5).map(report => `<button onclick="window.openQuestionFeedback('${lmsEscapeHtml(report.id)}'); window.toggleTeacherNotifications();" class="w-full px-4 pb-3 text-left hover:bg-amber-50 transition">
+                        <span class="block truncate text-sm font-bold text-slate-700">${lmsEscapeHtml(report.student)}</span>
+                        <span class="block truncate text-xs text-slate-500">${lmsEscapeHtml(report.testTitle)} · Q${(report.questionIds || []).map(lmsEscapeHtml).join(', ')}</span>
+                    </button>`).join('')}
+                    ${unreadQuestionFeedback.length > 5 ? `<p class="px-4 pb-3 text-xs text-slate-500">And ${unreadQuestionFeedback.length - 5} more report(s).</p>` : ''}
+                </div>`;
+            }
             if (pendingSubs > 0) {
                 html += `<button onclick="toggleEditorTab('bank'); toggleDashboardView('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
                     <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">📝 Submissions</span>
@@ -183,6 +197,39 @@
             list.innerHTML = html;
         }
         window.renderTeacherOverview();
+    };
+
+    window.openQuestionFeedback = async function(reportId) {
+        const report = QUESTION_FEEDBACK.find(item => item.id === reportId);
+        const modal = document.getElementById('question-feedback-report-modal');
+        if (!report || !modal) return;
+
+        document.getElementById('question-feedback-report-student').textContent = report.student || 'Student';
+        document.getElementById('question-feedback-report-test').textContent =
+            `${report.testTitle || 'Test'} · ${report.partTitle || `Part ${(report.partIndex || 0) + 1}`} · Q${(report.questionIds || []).join(', ')}`;
+        document.getElementById('question-feedback-report-description').textContent = report.description || '';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        if (!report.teacherReadAt) {
+            try {
+                await window.fsUpdateDoc(
+                    window.fsDoc(window.db, window.fPath('question_feedback'), report.id),
+                    { teacherReadAt: window.fsServerTimestamp() }
+                );
+                report.teacherReadAt = new Date();
+                window.updateTeacherBadges();
+            } catch (error) {
+                console.error('Unable to mark question feedback as read:', error);
+                window.showToast?.('Feedback could not be marked as read', error.message || 'Please try again.', 'error');
+            }
+        }
+    };
+
+    window.closeQuestionFeedbackReport = function() {
+        const modal = document.getElementById('question-feedback-report-modal');
+        modal?.classList.add('hidden');
+        modal?.classList.remove('flex');
     };
 
     window.renderTeacherOverview = function() {
