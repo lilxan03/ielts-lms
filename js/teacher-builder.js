@@ -1248,15 +1248,18 @@
 
       const backBtn = document.getElementById('exam-back-btn');
       const fcBtn = document.getElementById('exam-flashcard-btn');
+      const grammarBtn = document.getElementById('exam-grammar-btn');
       if (backBtn) {
           if (testMode === 'free' || isPreviewMode) {
               backBtn.classList.remove('hidden');
               backBtn.classList.add('flex');
               if(fcBtn) { fcBtn.classList.remove('hidden'); fcBtn.classList.add('flex'); }
+              if(grammarBtn) { grammarBtn.classList.remove('hidden'); grammarBtn.classList.add('flex'); }
           } else {
               backBtn.classList.add('hidden');
               backBtn.classList.remove('flex');
               if(fcBtn) { fcBtn.classList.add('hidden'); fcBtn.classList.remove('flex'); }
+              if(grammarBtn) { grammarBtn.classList.add('hidden'); grammarBtn.classList.remove('flex'); }
           }
       }
 
