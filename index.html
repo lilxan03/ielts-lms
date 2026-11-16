@@ -6,6 +6,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1e293b">
+  <link rel="apple-touch-icon" href="/assets/pwa-icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/pwa-icon-192.png">
   <meta name="description" content="Khám phá các khóa học IELTS, lộ trình học và phương pháp giảng dạy tại IELTS W KHANH. Xem thông tin khóa học hoặc liên hệ để được tư vấn.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://ielts-with-khanh.vercel.app/">
@@ -115,8 +117,7 @@
     }
   </script>
   
-  <!-- PWA App Manifest Injection -->
-  <link rel="manifest" id="pwa-manifest" href="/manifest.webmanifest">
+  <link rel="manifest" href="/manifest.webmanifest">
   <script src="js/startup.js"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -126,7 +127,12 @@
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body class="font-sans bg-slate-100 overflow-hidden h-screen text-slate-800 transition-colors duration-300">
-  <a id="android-apk-download" class="hidden fixed bottom-4 left-4 z-[200] rounded-full bg-emerald-700 px-5 py-3 text-sm font-black text-white shadow-xl hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700" href="/downloads/ielts-w-khanh.apk" download>
+  <div id="pwa-install-banner" class="hidden fixed bottom-4 right-4 z-[55]">
+    <button id="pwa-install-button" type="button" class="rounded-full bg-blue-700 px-5 py-3 text-sm font-black text-white shadow-xl hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+      Cài ứng dụng
+    </button>
+  </div>
+  <a id="android-apk-download" class="hidden fixed bottom-4 left-4 z-[55] rounded-full bg-emerald-700 px-5 py-3 text-sm font-black text-white shadow-xl hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700" href="/downloads/ielts-w-khanh.apk" download>
     Tải APK Android
   </a>
   <noscript>
@@ -2816,7 +2822,10 @@
           <span class="font-bold text-sm">Review</span>
         </label>
       </div>
-      <div class="flex-1 flex items-center justify-center gap-4 overflow-x-auto px-4 scrollbar-hide" id="palette-container"></div>
+      <div class="flex-1 flex min-w-0 items-center justify-center gap-3 px-4" id="exam-navigation">
+        <div class="flex shrink-0 items-center gap-1" id="part-tabs-container" aria-label="Test parts"></div>
+        <div class="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-x-auto px-1 scrollbar-hide" id="palette-container" aria-label="Questions in current part"></div>
+      </div>
       <div class="flex space-x-2 w-32 justify-end">
         <button onclick="handlePrev()" class="w-10 h-10 rounded border border-slate-300 hover:bg-slate-50 font-bold text-slate-600"><</button>
         <button onclick="handleNext()" class="w-10 h-10 rounded border border-blue-600 text-blue-700 hover:bg-blue-50 font-bold">></button>

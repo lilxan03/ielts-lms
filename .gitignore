@@ -7,11 +7,12 @@ node_modules/
 .firebase/
 
 # Android TWA local build output and signing material
-android-twa/.gradle/
 android-twa/app/build/
+android-twa/.gradle/
 android-twa/build/
-android-twa/local.properties
-android-twa/app-release-*.apk*
+android-twa/app-release-*.apk
 android-twa/app-release*.aab
+android-twa/app-release-*.apk.idsig
+android-twa/local.properties
 *.jks
 *.keystore
