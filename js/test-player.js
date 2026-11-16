@@ -929,6 +929,7 @@
       if (isSpeakingSimulationLocked()) return;
       finalizeCurrentQuestionTiming();
       currentPartIdx = idx; currentBlockIdx = 0;
+      window.currentTestPartIndex = idx;
       document.getElementById('part-indicator').textContent = `Part ${idx + 1} of ${APP_DATA.parts.length}`;
       const p = APP_DATA.parts[idx];
       
