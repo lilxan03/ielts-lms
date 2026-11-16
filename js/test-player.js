@@ -1158,12 +1158,19 @@
                   currentPartIdx,
                   APP_DATA.parts.length
               ) || [];
-              const mindMapHtml = window.renderDynamicMindMap?.(
+              const shouldRenderMindMap = window.shouldRenderDynamicMindMap?.(
+                  APP_DATA.module,
                   p,
-                  partVocabulary,
-                  `${APP_DATA.id || 'test'}-part-${currentPartIdx}`,
-                  APP_DATA.topics
-              ) || '';
+                  partVocabulary
+              ) ?? true;
+              const mindMapHtml = !shouldRenderMindMap
+                  ? ''
+                  : window.renderDynamicMindMap?.(
+                      p,
+                      partVocabulary,
+                      `${APP_DATA.id || 'test'}-part-${currentPartIdx}`,
+                      APP_DATA.topics
+                  ) || '';
               if (mindMapHtml) {
                   sampleAnswerBlock = mindMapHtml;
               } else {

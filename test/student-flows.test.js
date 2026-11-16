@@ -528,6 +528,28 @@ test('dynamic mind map renders safe task vocabulary and grouped discourse marker
         2
     );
     assert.deepEqual(Array.from(partOneWords, word => word.term), ['Part one term', 'Legacy unassigned term']);
+    assert.equal(context.hasDynamicMindMapContent({ title: 'Writing task' }, []), false);
+    assert.equal(context.hasDynamicMindMapContent({ title: 'Speaking task', mindMap: { topics: [{ label: 'Work', ideas: [] }] } }, []), false);
+    assert.equal(context.hasDynamicMindMapContent(
+        { title: 'Speaking task', mindMap: { phrases: [{ branch: 'main', term: 'develop confidence' }] } },
+        []
+    ), true);
+    assert.equal(context.hasDynamicMindMapContent(
+        { title: 'Writing task', mindMap: { topics: [{ label: 'Education', ideas: ['Online learning'] }] } },
+        []
+    ), true);
+    assert.equal(context.hasDynamicMindMapContent(
+        { title: 'Writing task' },
+        [{ term: 'make a contribution' }]
+    ), true);
+    assert.equal(context.shouldRenderDynamicMindMap('writing', { title: 'Task' }, []), false);
+    assert.equal(context.shouldRenderDynamicMindMap('speaking', { title: 'Task' }, []), false);
+    assert.equal(context.shouldRenderDynamicMindMap(
+        'writing',
+        { title: 'Task', mindMap: { topics: [{ label: 'Education', ideas: ['Online learning'] }] } },
+        []
+    ), true);
+    assert.equal(context.shouldRenderDynamicMindMap('reading', { title: 'Task' }, []), true);
 });
 
 test('scaffolded Writing provides task-specific blocks and combines them into a submission-ready essay', () => {

@@ -46,6 +46,26 @@
         });
     };
 
+    window.hasDynamicMindMapContent = function(part, vocabulary) {
+        const mindMap = part?.mindMap && typeof part.mindMap === 'object' ? part.mindMap : {};
+        const hasPhrase = Array.isArray(mindMap.phrases) &&
+            mindMap.phrases.some(item => plainText(item?.term));
+        const hasIdea = Array.isArray(mindMap.topics) &&
+            mindMap.topics.some(topic =>
+                plainText(topic?.label) &&
+                Array.isArray(topic.ideas) &&
+                topic.ideas.some(idea => plainText(idea))
+            );
+        const hasVocabulary = Array.isArray(vocabulary) &&
+            vocabulary.some(item => plainText(item?.term));
+        return hasPhrase || hasIdea || hasVocabulary;
+    };
+
+    window.shouldRenderDynamicMindMap = function(module, part, vocabulary) {
+        return !['writing', 'speaking'].includes(module) ||
+            window.hasDynamicMindMapContent(part, vocabulary);
+    };
+
     function topicId(label) {
         return `topic-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'general'}`;
     }
