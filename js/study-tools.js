@@ -57,6 +57,11 @@
         }));
         
         FLASHCARDS['temp_test_deck'] = tempDeck;
+        window.studyDeckName = 'temp_test_deck';
+        window.studyDeck = tempDeck.map(card => ({
+            term: card.term,
+            def: card.def || 'No definition provided.'
+        }));
         window.activeListId = 'temp_test_deck';
         window.currentListId = 'temp_test_deck';
         window.currentStudyDeckId = 'temp_test_deck';

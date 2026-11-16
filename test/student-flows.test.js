@@ -247,7 +247,10 @@ test('test grammar flashcards use the app lexical grammar data', () => {
             createElement: () => ({ style: {} })
         },
         window: null,
-        switchStudyMode: mode => { context.studyMode = mode; }
+        switchStudyMode: mode => {
+            context.studyMode = mode;
+            context.studyDeckLengthWhenOpened = context.studyDeck.length;
+        }
     };
     context.window = context;
     vm.createContext(context);
@@ -256,7 +259,10 @@ test('test grammar flashcards use the app lexical grammar data', () => {
         context
     );
     vm.runInContext(readAppScript('study-tools.js'), context);
-    context.window.switchStudyMode = mode => { context.studyMode = mode; };
+    context.window.switchStudyMode = mode => {
+        context.studyMode = mode;
+        context.studyDeckLengthWhenOpened = context.studyDeck.length;
+    };
 
     context.window.startTestGrammarStudy();
 
@@ -265,6 +271,9 @@ test('test grammar flashcards use the app lexical grammar data', () => {
     assert.equal(deck.length, 1);
     assert.equal(deck[0].term, 'Having finished');
     assert.equal(deck[0].def, '[Participle clause] Shows a completed action.');
+    assert.equal(context.studyDeckLengthWhenOpened, 1);
+    assert.equal(context.studyDeck[0].term, 'Having finished');
+    assert.equal(context.studyDeck[0].def, '[Participle clause] Shows a completed action.');
     assert.equal(context.studyMode, 'flashcards');
     assert.equal(elements.get('study-mode-deck-name').textContent, 'Preview Test (Grammar Bank)');
 });
