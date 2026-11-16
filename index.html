@@ -702,9 +702,14 @@
                     <label class="flex items-center gap-1.5 cursor-pointer"><input type="radio" name="rapid-mode" value="existing" onchange="window.toggleRapidMode()"> <span class="text-xs font-bold text-purple-800">Add to Existing Test</span></label>
                 </div>
             </div>
+            <div class="flex flex-wrap items-center gap-4 mb-4">
+                <span class="text-xs font-black text-purple-700 uppercase tracking-widest">Import format</span>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-purple-800"><input type="radio" name="rapid-source" value="sheet" checked onchange="window.setRapidImportSource()"> Spreadsheet / bulk questions</label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-purple-800"><input type="radio" name="rapid-source" value="latex" onchange="window.setRapidImportSource()"> IELTS LaTeX</label>
+            </div>
             
             <!-- Mode: New Test -->
-            <div id="rapid-mode-new" class="grid grid-cols-1 md:grid-cols-5 gap-4 animate-fade-in">
+            <div id="rapid-mode-new" class="grid grid-cols-1 md:grid-cols-4 gap-4 animate-fade-in">
                 <div class="md:col-span-2">
                     <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Test Title</label>
                     <input type="text" id="rapid-test-title" placeholder="e.g. Cam 15 Reading Test 1" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500">
@@ -722,6 +727,19 @@
                 <div>
                     <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Band / Diff</label>
                     <input type="text" id="rapid-test-diff" placeholder="e.g. 7.0" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Topics (comma separated)</label>
+                    <input type="text" id="rapid-test-topics" placeholder="e.g. education, technology" class="w-full border border-purple-200 p-2 rounded-lg font-medium outline-none focus:border-purple-500">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">Test parts (one title per line)</label>
+                    <textarea id="rapid-new-parts" rows="3" oninput="window.populateRapidNewParts(false)" class="w-full border border-purple-200 p-2 rounded-lg font-medium outline-none focus:border-purple-500" aria-describedby="rapid-new-parts-help"></textarea>
+                    <p id="rapid-new-parts-help" class="text-[10px] text-purple-700 mt-1">Question rows are assigned by the Section / Part column below. Numbered labels such as “Passage 2” select Part 2; new labels create matching parts.</p>
+                </div>
+                <div id="rapid-new-part-wrapper" class="hidden">
+                    <label class="block text-xs font-bold text-purple-700 uppercase tracking-widest mb-1">LaTeX target part</label>
+                    <select id="rapid-new-part" class="w-full border border-purple-200 p-2 rounded-lg font-bold outline-none focus:border-purple-500 bg-white"></select>
                 </div>
             </div>
 
@@ -768,10 +786,11 @@
             </div>
         </div>
 
+        <div id="rapid-sheet-section">
         <div id="rapid-smart-paste-section" class="mb-5 bg-blue-50/50 border border-blue-200 rounded-xl p-4 shadow-inner">
             <label class="text-xs font-black text-blue-800 uppercase tracking-widest flex items-center gap-2 mb-2"><span class="text-base drop-shadow-sm">📋</span> Smart Paste Area</label>
             <textarea id="smart-paste-area" class="w-full bg-white border border-blue-200 rounded-lg p-4 text-sm outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 font-medium text-slate-700 placeholder:text-slate-400 resize-none h-20 shadow-sm transition-all" placeholder="Click here and press Ctrl+V to paste your rows directly from Excel/Google Sheets..." onpaste="window.handleSmartPaste(event)"></textarea>
-            <p class="text-[10px] font-bold text-blue-600 mt-2">Paste a tab-separated sheet with headers such as Section, Passage, Type, Instruction, Question, Options, Answer, Hint, and Explanation. Header order is flexible; separate options with semicolons or | to preserve commas. The original seven-column format still works.</p>
+            <p class="text-[10px] font-bold text-blue-600 mt-2">Paste a tab-separated sheet with headers such as Section, Passage, Type, Instruction, Question, Options, Answer, Hint, and Explanation. Use one row per question and repeat the Section / Part title to group rows. Header order is flexible; separate options with semicolons or | to preserve commas.</p>
         </div>
         
         <div id="rapid-grid-section" class="border border-slate-200 rounded-xl mb-3 overflow-x-auto shadow-sm">
@@ -796,10 +815,11 @@
             </table>
         </div>
         <button id="rapid-add-row" onclick="addBulkImportRow()" class="text-blue-600 hover:text-blue-800 font-bold text-sm flex items-center gap-1 transition-colors">+ Add Row</button>
+        </div>
       </div>
       <div class="p-4 border-t border-slate-200 bg-white rounded-b-xl flex justify-end gap-3 shrink-0">
         <button onclick="document.getElementById('csv-import-modal').classList.add('hidden')" class="px-5 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-bold">Cancel</button>
-        <button id="rapid-import-action" onclick="window.isRapidTestImport ? window.compileRapidLatexImport() : processBulkImport()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow">Import Questions</button>
+        <button id="rapid-import-action" onclick="window.submitBulkImport()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow">Import Questions</button>
       </div>
     </div>
   </div>

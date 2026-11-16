@@ -2275,6 +2275,7 @@
             document.getElementById('rapid-mode-existing').classList.remove('hidden');
             window.populateRapidExistingTests();
         }
+        window.setRapidImportSource();
     };
 
     window.populateRapidExistingTests = function() {
@@ -2363,17 +2364,66 @@
         select.value = '';
     };
 
-    window.populateRapidNewParts = function() {
+    window.getRapidNewPartTitles = function() {
+        const module = document.getElementById('rapid-test-mod')?.value || 'reading';
+        const configuredTitles = document.getElementById('rapid-new-parts')?.value
+            .split(/\r?\n/)
+            .map(title => title.trim())
+            .filter(Boolean) || [];
+        return configuredTitles.length
+            ? configuredTitles
+            : getSmartIeltsStructure(module).map(part => part.title || '');
+    };
+
+    window.buildRapidNewParts = function(module) {
+        const titles = window.getRapidNewPartTitles();
+        const parts = getSmartIeltsStructure(module);
+        while (parts.length < titles.length) {
+            parts.push({ title: '', text: '', questions: [] });
+        }
+        return titles.map((title, index) => ({
+            ...(parts[index] || { text: '', questions: [] }),
+            title,
+            text: parts[index]?.text || '',
+            questions: [...(parts[index]?.questions || [])]
+        }));
+    };
+
+    window.populateRapidNewParts = function(resetTitles = true) {
         const module = document.getElementById('rapid-test-mod')?.value || 'reading';
         const select = document.getElementById('rapid-new-part');
         if (!select) return;
-        const parts = getSmartIeltsStructure(module);
-        select.innerHTML = parts.map((part, index) =>
-            `<option value="${index}">${String(part.title || `Part ${index + 1}`).replace(/[&<>"']/g, char => ({
+        const partsInput = document.getElementById('rapid-new-parts');
+        const defaultTitles = getSmartIeltsStructure(module).map(part => part.title || '');
+        if (partsInput && (resetTitles || !partsInput.value.trim())) {
+            partsInput.value = defaultTitles.join('\n');
+        }
+        const titles = window.getRapidNewPartTitles();
+        select.innerHTML = titles.map((title, index) =>
+            `<option value="${index}">${String(title || `Part ${index + 1}`).replace(/[&<>"']/g, char => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             })[char])}</option>`
         ).join('');
         window.populateRapidLatexTemplates();
+    };
+
+    window.setRapidImportSource = function() {
+        const source = document.querySelector('input[name="rapid-source"]:checked')?.value || 'sheet';
+        const useLatex = source === 'latex';
+        const mode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+        document.getElementById('rapid-sheet-section')?.classList.toggle('hidden', useLatex);
+        document.getElementById('rapid-latex-section')?.classList.toggle('hidden', !useLatex);
+        document.getElementById('rapid-new-part-wrapper')?.classList.toggle('hidden', !useLatex || mode !== 'new');
+        const action = document.getElementById('rapid-import-action');
+        if (action) action.textContent = useLatex ? 'Parse LaTeX & Import' : 'Create Test & Import Questions';
+    };
+
+    window.submitBulkImport = function() {
+        const source = document.querySelector('input[name="rapid-source"]:checked')?.value || 'sheet';
+        if (window.isRapidTestImport && source === 'latex') {
+            return window.compileRapidLatexImport();
+        }
+        return window.processBulkImport();
     };
 
     window.previewRapidLatexImport = function() {
@@ -2429,16 +2479,15 @@
     window.openRapidFullTestImport = function() {
         window.isRapidTestImport = true;
         document.getElementById('csv-meta-section').classList.remove('hidden');
-        document.getElementById('rapid-latex-section').classList.remove('hidden');
-        document.getElementById('rapid-smart-paste-section').classList.add('hidden');
-        document.getElementById('rapid-grid-section').classList.add('hidden');
-        document.getElementById('rapid-add-row').classList.add('hidden');
-        document.getElementById('rapid-import-action').textContent = 'Parse LaTeX & Import';
+        document.getElementById('rapid-sheet-section').classList.remove('hidden');
         
         // Reset to "new" mode by default when opened
         const newRadio = document.querySelector('input[name="rapid-mode"][value="new"]');
         if (newRadio) { newRadio.checked = true; window.toggleRapidMode(); }
+        const sheetRadio = document.querySelector('input[name="rapid-source"][value="sheet"]');
+        if (sheetRadio) sheetRadio.checked = true;
         window.populateRapidNewParts();
+        window.setRapidImportSource();
 
         document.getElementById('csv-import-title').innerHTML = "🚀 Rapid Import";
         
@@ -2446,8 +2495,10 @@
         document.getElementById('rapid-latex-input').value = '';
         window.previewRapidLatexImport();
         document.getElementById('bulk-import-tbody').innerHTML = ''; 
+        for(let i=0; i<3; i++) window.addBulkImportRow();
         document.getElementById('rapid-test-title').value = '';
         document.getElementById('rapid-test-diff').value = '';
+        document.getElementById('rapid-test-topics').value = '';
         const search = document.getElementById('rapid-existing-search');
         const moduleFilter = document.getElementById('rapid-existing-module');
         if (search) search.value = '';
@@ -2461,6 +2512,7 @@
         window.isRapidTestImport = false;
         document.getElementById('csv-meta-section').classList.add('hidden');
         document.getElementById('rapid-latex-section').classList.add('hidden');
+        document.getElementById('rapid-sheet-section').classList.remove('hidden');
         document.getElementById('rapid-smart-paste-section').classList.remove('hidden');
         document.getElementById('rapid-grid-section').classList.remove('hidden');
         document.getElementById('rapid-add-row').classList.remove('hidden');
@@ -2660,10 +2712,17 @@
         const rapidMode = window.isRapidTestImport
             ? (document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new')
             : '';
+        const selectedRapidTest = window.isRapidTestImport && rapidMode === 'existing'
+            ? TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test')?.value)
+            : null;
+        if (window.isRapidTestImport && rapidMode === 'existing' && !selectedRapidTest) {
+            showModalMsg('Select a test', 'Choose an existing test before importing questions.');
+            return;
+        }
         const templateSkill = window.isRapidTestImport
             ? (rapidMode === 'new'
                 ? document.getElementById('rapid-test-mod')?.value
-                : TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test')?.value)?.module)
+                : selectedRapidTest?.module)
             : APP_DATA.module;
         const matchingTypes = ['matching_info', 'matching_headings', 'matching_endings', 'matching_statements'];
         if (templateSkill === 'listening' && [...rows].some(row =>
@@ -2688,10 +2747,8 @@
         } else {
             const currentRapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
             if (currentRapidMode === 'existing') {
-                const tid = document.getElementById('rapid-existing-test').value;
-                const test = TEST_BANK.find(t => t.id === tid);
-                if (test) {
-                    test.parts.forEach(p => (p.questions || []).forEach(q => (q.ids||[]).forEach(id => { if (id > currentMaxId) currentMaxId = id; })));
+                if (selectedRapidTest) {
+                    (selectedRapidTest.parts || []).forEach(p => (p.questions || []).forEach(q => (q.ids||[]).forEach(id => { if (id > currentMaxId) currentMaxId = id; })));
                 }
             }
         }
@@ -2830,18 +2887,31 @@
             
             if (currentRapidMode === 'new') {
                 // Create New Test Workflow
-                const title = document.getElementById('rapid-test-title').value.trim() || 'Untitled Rapid Test';
+                const title = document.getElementById('rapid-test-title').value.trim();
+                if (!title) {
+                    showModalMsg('Test title required', 'Enter a title for the new test.');
+                    return;
+                }
                 const mod = document.getElementById('rapid-test-mod').value;
                 const diff = document.getElementById('rapid-test-diff').value.trim();
+                const topics = document.getElementById('rapid-test-topics').value
+                    .split(',')
+                    .map(topic => topic.trim())
+                    .filter(Boolean);
                 
-                let smartParts = getSmartIeltsStructure(mod);
+                const smartParts = window.buildRapidNewParts(mod);
                 let nextUnassignedPart = 0;
                 newQuestionsBySection.forEach(bucket => {
                     if (!bucket.questions.length) return;
                     const sectionNumber = getSectionNumber(bucket.label);
                     const partNumber = sectionNumber?.[1] || sectionNumber?.[2];
-                    let partIndex = partNumber ? Number(partNumber) - 1 : nextUnassignedPart;
-                    if (!sectionNumber && bucket.label) nextUnassignedPart++;
+                    const namedPartIndex = bucket.label
+                        ? smartParts.findIndex(part => String(part.title || '').trim().toLocaleLowerCase() === bucket.label.toLocaleLowerCase())
+                        : -1;
+                    let partIndex = namedPartIndex >= 0
+                        ? namedPartIndex
+                        : partNumber ? Number(partNumber) - 1 : nextUnassignedPart;
+                    if (namedPartIndex < 0 && !sectionNumber && bucket.label) nextUnassignedPart++;
                     partIndex = Math.max(0, partIndex);
                     while (partIndex >= smartParts.length) {
                         smartParts.push({ title: `Part ${smartParts.length + 1}`, text: '', questions: [] });
@@ -2870,10 +2940,11 @@
                     id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), 
                     title, 
                     module: mod, 
-                    topics: [], 
+                    topics,
                     difficulty: diff, 
                     parts: smartParts, 
-                    vocab: [] 
+                    vocab: [],
+                    grammar: []
                 };
                 
                 TEST_BANK.unshift(newTest);
@@ -2884,23 +2955,29 @@
                 showModalMsg("Success! 🎉", `Created "${title}" and injected ${importedCount} questions successfully!`);
             } else {
                 // Add to Existing Test Workflow
-                const tid = document.getElementById('rapid-existing-test').value;
                 const pIdx = parseInt(document.getElementById('rapid-existing-part').value);
-                const test = TEST_BANK.find(t => t.id === tid);
+                const test = selectedRapidTest;
                 
-                if (test && test.parts[pIdx]) {
+                if (test && Array.isArray(test.parts) && test.parts[pIdx]) {
+                    let nextUnassignedPart = pIdx;
                     newQuestionsBySection.forEach(bucket => {
                         if (!bucket.questions.length) return;
                         const sectionNumber = getSectionNumber(bucket.label);
                         const partNumber = sectionNumber?.[1] || sectionNumber?.[2];
-                        const targetIndex = partNumber ? Number(partNumber) - 1 : pIdx;
+                        const namedPartIndex = bucket.label
+                            ? test.parts.findIndex(part => String(part.title || '').trim().toLocaleLowerCase() === bucket.label.toLocaleLowerCase())
+                            : -1;
+                        const targetIndex = namedPartIndex >= 0
+                            ? namedPartIndex
+                            : partNumber ? Number(partNumber) - 1 : nextUnassignedPart;
                         while (targetIndex >= test.parts.length) {
                             test.parts.push({ title: bucket.label || `Part ${test.parts.length + 1}`, text: '', questions: [] });
                         }
                         const targetPart = test.parts[targetIndex];
-                        if (bucket.label) targetPart.title = bucket.label;
+                        if (bucket.label && namedPartIndex < 0) targetPart.title = bucket.label;
                         if (bucket.passage) targetPart.text = bucket.passage;
                         targetPart.questions.push(...bucket.questions);
+                        nextUnassignedPart = Math.max(nextUnassignedPart, targetIndex + 1);
                     });
                     await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), test.id), test);
                     
