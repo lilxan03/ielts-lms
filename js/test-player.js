@@ -3719,9 +3719,19 @@
                 const questions = test?.parts?.flatMap(part => part.questions || []) || [];
                 const responseQuestion = questions.find(question => question.type === 'essay' || question.type === 'audio_record');
                 const response = sub.answers?.[responseQuestion?.ids?.[0]] || '';
-                const prompt = test?.parts?.map(part => `${part.title}: ${part.text || ''}`).join('\n\n') || '';
+                const parts = test?.parts || [];
+                const prompt = parts.map(part => {
+                    const charts = [part.interactiveChart, ...(Array.isArray(part.interactiveCharts) ? part.interactiveCharts : [])].filter(Boolean);
+                    return `${part.title}: ${part.text || ''}${charts.length ? `\nChart data: ${JSON.stringify(charts)}` : ''}`;
+                }).join('\n\n');
                 const token = await window.auth.currentUser.getIdToken();
-                const payload = { module, prompt, responseText: module === 'writing' ? response : '', audioUrl: module === 'speaking' ? response : '' };
+                const payload = {
+                    module,
+                    prompt,
+                    responseText: module === 'writing' ? response : '',
+                    audioUrl: module === 'speaking' ? response : '',
+                    visualUrls: module === 'writing' ? parts.map(part => part.image).filter(Boolean).slice(0, 4) : []
+                };
                 const result = await fetch('https://us-central1-khanh-ielts-v2.cloudfunctions.net/gradeIELTSSubmission', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

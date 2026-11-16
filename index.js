@@ -2,13 +2,20 @@ const { onRequest } = require('firebase-functions/v2/https');
 const { onDocumentWritten } = require('firebase-functions/v2/firestore');
 const { defineSecret } = require('firebase-functions/params');
 const admin = require('firebase-admin');
-const OpenAI = require('openai');
-const { toFile } = require('openai/uploads');
 const { Readable } = require('node:stream');
 const { buildStudentTestAccess } = require('./test-access-index');
+const {
+  GEMINI_MODEL,
+  buildGradingPrompt,
+  buildGenerateContentBody,
+  getAllowedStorageUrl,
+  normalizeMediaMimeType,
+  parseInlineAudioDataUrl,
+  parseGeminiResponse
+} = require('./lib/gemini-grading');
 
 admin.initializeApp();
-const openaiApiKey = defineSecret('OPENAI_API_KEY');
+const geminiApiKey = defineSecret('GEMINI_API_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -373,60 +380,124 @@ exports.streamDriveAudio = onRequest({
 });
 
 exports.gradeIELTSSubmission = onRequest({
-  secrets: [openaiApiKey],
-  timeoutSeconds: 120,
-  memory: '512MiB',
+  secrets: [geminiApiKey],
+  timeoutSeconds: 180,
+  memory: '1GiB',
   cors: true
 }, async (req, res) => {
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
   if (req.method !== 'POST') return sendJson(res, 405, { error: 'POST required' });
 
   try {
-    const authorization = await authorizeLearningRequest(req);
-    if (!authorization.allowed) return sendJson(res, authorization.status, { error: authorization.error });
+    if (!(await authorizeStaffRequest(req))) return sendJson(res, 403, { error: 'Staff access required' });
 
     const body = req.body || {};
     const module = body.module === 'speaking' ? 'speaking' : body.module === 'writing' ? 'writing' : null;
     if (!module) return sendJson(res, 400, { error: 'Only writing and speaking are supported' });
 
-    const client = new OpenAI({ apiKey: openaiApiKey.value() });
-    let responseText = cleanHtml(body.responseText);
-    let transcript = '';
+    const taskPrompt = cleanHtml(body.prompt).slice(0, 30000);
+    const responseText = module === 'writing' ? cleanHtml(body.responseText).slice(0, 50000) : '';
+    if (module === 'writing' && !responseText) return sendJson(res, 400, { error: 'No writing response content found' });
+    const mediaParts = [];
 
     if (module === 'speaking') {
-      if (!body.audioUrl) return sendJson(res, 400, { error: 'Speaking audio URL is required' });
-      const audioResponse = await fetch(body.audioUrl);
-      if (!audioResponse.ok) return sendJson(res, 400, { error: 'Could not download speaking audio' });
-      const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
-      if (audioBuffer.length > 25 * 1024 * 1024) return sendJson(res, 413, { error: 'Audio file is larger than 25 MB' });
-      const audioFile = await toFile(audioBuffer, 'speaking-response.webm');
-      const transcription = await client.audio.transcriptions.create({
-        file: audioFile,
-        model: 'whisper-1',
-        response_format: 'text'
-      });
-      transcript = String(transcription || '').trim();
-      responseText = transcript;
+      const audioSource = String(body.audioUrl || '');
+      if (audioSource.startsWith('data:')) {
+        if (audioSource.length > 20 * 1024 * 1024) return sendJson(res, 413, { error: 'Speaking audio exceeds the Gemini request size limit' });
+        const inlineAudio = parseInlineAudioDataUrl(audioSource);
+        if (!inlineAudio) return sendJson(res, 415, { error: 'Speaking audio must be a supported base64 audio recording' });
+        if (inlineAudio.buffer.length > 14 * 1024 * 1024) return sendJson(res, 413, { error: 'Speaking audio exceeds the 14 MB limit' });
+        mediaParts.push({ inlineData: { mimeType: inlineAudio.mimeType, data: inlineAudio.buffer.toString('base64') } });
+      } else {
+        const audioUrl = getAllowedStorageUrl(audioSource);
+        if (!audioUrl) return sendJson(res, 400, { error: 'Speaking audio must be stored in Firebase Storage' });
+        const audioResponse = await fetch(audioUrl, { redirect: 'manual', signal: AbortSignal.timeout(30000) });
+        if (!audioResponse.ok) {
+          await audioResponse.body?.cancel();
+          return sendJson(res, 400, { error: 'Could not download speaking audio' });
+        }
+        const mimeType = normalizeMediaMimeType(audioResponse.headers.get('content-type'), audioUrl, 'audio');
+        if (!mimeType) {
+          await audioResponse.body?.cancel();
+          return sendJson(res, 415, { error: 'Speaking audio must be WAV, MP3, MP4, OGG, AAC, FLAC, or WebM' });
+        }
+        const audioBuffer = await readMediaBuffer(audioResponse, 14 * 1024 * 1024);
+        mediaParts.push({ inlineData: { mimeType, data: audioBuffer.toString('base64') } });
+      }
+    } else {
+      const visualUrls = Array.isArray(body.visualUrls) ? [...new Set(body.visualUrls)].slice(0, 4) : [];
+      let totalVisualBytes = 0;
+      for (const rawUrl of visualUrls) {
+        const visualUrl = getAllowedStorageUrl(rawUrl);
+        if (!visualUrl) return sendJson(res, 400, { error: 'Writing task images must be stored in Firebase Storage' });
+        const imageResponse = await fetch(visualUrl, { redirect: 'manual', signal: AbortSignal.timeout(20000) });
+        if (!imageResponse.ok) {
+          await imageResponse.body?.cancel();
+          return sendJson(res, 400, { error: 'Could not download a Writing task image' });
+        }
+        const mimeType = normalizeMediaMimeType(imageResponse.headers.get('content-type'), visualUrl, 'image');
+        if (!mimeType) {
+          await imageResponse.body?.cancel();
+          return sendJson(res, 415, { error: 'Writing task images must be PNG, JPEG, or WebP' });
+        }
+        const imageBuffer = await readMediaBuffer(imageResponse, 6 * 1024 * 1024);
+        totalVisualBytes += imageBuffer.length;
+        if (totalVisualBytes > 14 * 1024 * 1024) return sendJson(res, 413, { error: 'Writing task images exceed the Gemini request size limit' });
+        mediaParts.push({ inlineData: { mimeType, data: imageBuffer.toString('base64') } });
+      }
     }
 
-    if (!responseText) return sendJson(res, 400, { error: 'No response content found' });
-    const rubric = module === 'speaking'
-      ? 'fluency_coherence, lexical_resource, grammar, pronunciation'
-      : 'task_response, coherence_cohesion, lexical_resource, grammar';
-    const prompt = `You are an IELTS examiner producing a cautious draft assessment. Grade this ${module} response using IELTS band descriptors. Return JSON only with this shape: {"overall": number, "scores": {${rubric.split(', ').map(key => `"${key}": number`).join(', ')}}, "feedback": string}. Use only half-band increments from 0 to 9. Explain evidence and weaknesses briefly. Do not claim this is an official score.\n\nTask prompt: ${cleanHtml(body.prompt)}\n\nResponse: ${responseText}`;
-    const completion = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0.2,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: 'You grade IELTS responses conservatively and return valid JSON only.' },
-        { role: 'user', content: prompt }
-      ]
-    });
-    const raw = JSON.parse(completion.choices[0]?.message?.content || '{}');
-    return sendJson(res, 200, normalizeGrade({ ...raw, transcript }, module));
+    const prompt = buildGradingPrompt(
+      module,
+      taskPrompt || 'No task prompt was provided.',
+      responseText
+    );
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': geminiApiKey.value()
+        },
+        body: JSON.stringify(buildGenerateContentBody(prompt, mediaParts)),
+        signal: AbortSignal.timeout(90000)
+      }
+    );
+    if (!geminiResponse.ok) {
+      console.error(`Gemini grading request failed with HTTP ${geminiResponse.status}`);
+      return sendJson(res, 502, { error: `Gemini API request failed (${geminiResponse.status}). Check the API key, model access, and project quota.` });
+    }
+    const raw = parseGeminiResponse(await geminiResponse.json());
+    return sendJson(res, 200, normalizeGrade(raw, module));
   } catch (error) {
-    console.error('IELTS grading error:', error);
-    return sendJson(res, 500, { error: 'AI grading failed' });
+    if (error.name === 'RangeError') return sendJson(res, 413, { error: error.message });
+    console.error('IELTS Gemini grading failed:', error.message);
+    return sendJson(res, 500, { error: error.message || 'Gemini grading failed' });
   }
 });
+
+async function readMediaBuffer(response, maxBytes) {
+  const contentLength = Number(response.headers.get('content-length'));
+  if (Number.isFinite(contentLength) && contentLength > maxBytes) {
+    await response.body?.cancel();
+    throw new RangeError(`Media file exceeds the ${Math.floor(maxBytes / (1024 * 1024))} MB limit`);
+  }
+  if (!response.body) throw new Error('Media download was empty');
+
+  const reader = response.body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > maxBytes) {
+      await reader.cancel();
+      throw new RangeError(`Media file exceeds the ${Math.floor(maxBytes / (1024 * 1024))} MB limit`);
+    }
+    chunks.push(Buffer.from(value));
+  }
+  if (!totalBytes) throw new Error('Media download was empty');
+  return Buffer.concat(chunks, totalBytes);
+}

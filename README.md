@@ -40,9 +40,11 @@ From this directory:
 npm install
 firebase login
 firebase use khanh-ielts-v2
-firebase functions:secrets:set OPENAI_API_KEY
+firebase functions:secrets:set GEMINI_API_KEY
 firebase deploy --only functions:gradeIELTSSubmission,functions:streamDriveAudio
 ```
+
+Firebase Secret Manager and Cloud Functions deployment require the Firebase project to use the Blaze billing plan.
 
 The frontend calls:
 
@@ -50,7 +52,7 @@ The frontend calls:
 
 The teacher opens a Writing or Speaking submission, clicks **AI Grade Draft**, reviews the returned bands and feedback, then clicks **Save Grades & Feedback**.
 
-Speaking recordings must be downloadable by the function. Firebase Storage download URLs are supported. The AI draft is not an official IELTS score and should be reviewed by a qualified teacher.
+Writing and Speaking drafts use Gemini (`gemini-3.6-flash`). Speaking audio is transcribed and assessed directly from its Firebase Storage recording; Writing task images and interactive chart data are included when available. Store the Gemini API key in Firebase Secret Manager as `GEMINI_API_KEY`; never put it in frontend code. The function is restricted to staff accounts. AI scores are drafts, not official IELTS scores, and should be reviewed by a qualified teacher.
 
 ## Account credentials
 
