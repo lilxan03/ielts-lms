@@ -1307,7 +1307,7 @@
                                 ${mStats.map((stat, idx) => `
                                     <tr class="hover:bg-blue-50/50 transition-colors">
                                         <td class="p-3 text-center border-r border-slate-100">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `<span class="font-black text-slate-500">${idx + 1}</span>`}</td>
-                                        <td class="p-3 font-bold text-slate-800 flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(getStudentDisplayName(stat.student))}&background=random" class="w-6 h-6 rounded-full shadow-sm"> ${escapeHtmlAttributeValue(getStudentDisplayName(stat.student))}</td>
+                                        <td class="p-3 font-bold text-slate-800 flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(getStudentUsername(stat.student))}&background=random" class="w-6 h-6 rounded-full shadow-sm"> ${escapeHtmlAttributeValue(getStudentUsername(stat.student))}</td>
                                         <td class="p-3">
                                             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
                                                 <span>Đã làm: ${stat.completedRequired}/${stat.totalRequired} bài</span><span class="text-blue-600">${stat.progressPct}%</span>
