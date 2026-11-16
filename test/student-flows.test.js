@@ -810,21 +810,25 @@ test('test mode choices and actions use accessible buttons and delegated listene
     assert.match(modeMarkup, /<button type="button" id="mode-btn-free"[^>]*aria-pressed="false"/);
     assert.match(modeMarkup, /<button type="button" id="mode-btn-restricted"[^>]*aria-pressed="true"/);
     assert.match(modeMarkup, /<label for="custom-time-input"/);
+    assert.match(modeMarkup, /id="student-part-search"/);
+    assert.match(modeMarkup, /data-test-part-action="all"/);
     assert.doesNotMatch(modeMarkup, /onclick=/);
 
-    const listeners = [];
+    const listeners = { click: [], input: [] };
     const calls = [];
     const context = {
         window: {
             selectTestMode: mode => calls.push(['mode', mode]),
             cancelTestRouteStart: () => calls.push('cancel'),
             confirmStartTest: () => calls.push('start'),
-            openTestActivities: () => calls.push('activities')
+            openTestActivities: () => calls.push('activities'),
+            selectStudentTestParts: index => calls.push(['parts', index]),
+            filterStudentTestParts: query => calls.push(['filter-parts', query])
         },
         document: {
             getElementById: () => null,
             addEventListener: (name, callback) => {
-                if (name === 'click') listeners.push(callback);
+                if (listeners[name]) listeners[name].push(callback);
             }
         }
     };
@@ -839,17 +843,32 @@ test('test mode choices and actions use accessible buttons and delegated listene
         { testAction: 'activities' }
     ]) {
         const button = { dataset: action };
-        listeners.forEach(listener => listener({
+        listeners.click.forEach(listener => listener({
             target: { closest: selector => selector === 'button[data-test-action]' ? button : null }
         }));
     }
+    for (const action of [
+        { testPartAction: 'all' },
+        { testPartAction: 'single', partIndex: '2' }
+    ]) {
+        const button = { dataset: action };
+        listeners.click.forEach(listener => listener({
+            target: { closest: selector => selector === 'button[data-test-part-action]' ? button : null }
+        }));
+    }
+    listeners.input.forEach(listener => listener({
+        target: { id: 'student-part-search', value: 'Passage 2' }
+    }));
 
     assert.deepEqual(calls, [
         ['mode', 'free'],
         ['mode', 'restricted'],
         'cancel',
         'start',
-        'activities'
+        'activities',
+        ['parts', undefined],
+        ['parts', 2],
+        ['filter-parts', 'Passage 2']
     ]);
 });
 

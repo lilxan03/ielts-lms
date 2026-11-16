@@ -888,6 +888,21 @@
       window.selectTestMode('restricted');
     };
 
+    window.filterStudentTestParts = function(query) {
+      const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
+      document.querySelectorAll('#part-checkboxes .part-select-option').forEach(option => {
+        const title = option.querySelector('.part-select-title')?.textContent || '';
+        option.classList.toggle('hidden', !title.toLocaleLowerCase().includes(normalizedQuery));
+      });
+    };
+
+    window.selectStudentTestParts = function(partIndex = null) {
+      document.querySelectorAll('.part-select-cb').forEach(checkbox => {
+        checkbox.checked = partIndex === null || Number(checkbox.value) === partIndex;
+      });
+      window.updateSpeakingSimulationAvailability();
+    };
+
     function getCurrentStudentAssignedTest(testId) {
       if (!testId || !currentUser || currentUser.role !== 'student') return null;
       const cid = document.getElementById('student-class-select')?.value;
@@ -916,20 +931,27 @@
       if (speakingSimulationCheckbox) speakingSimulationCheckbox.checked = false;
       const partContainer = document.getElementById('part-selection-container');
       const partCheckboxes = document.getElementById('part-checkboxes');
+      const partSearch = document.getElementById('student-part-search');
+      if (partSearch) partSearch.value = '';
       
       // Auto-generate checkboxes for however many parts the test has
       if (t && t.parts && t.parts.length > 0) {
           partContainer.classList.remove('hidden');
           partCheckboxes.innerHTML = t.parts.map((p, idx) => `
-              <label class="flex items-center space-x-2 cursor-pointer bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition shadow-sm">
-                  <input type="checkbox" class="part-select-cb w-4 h-4 text-blue-600 rounded focus:ring-blue-500" value="${idx}" checked onchange="window.updateSpeakingSimulationAvailability()">
-                  <span class="font-bold text-slate-700 text-sm">${p.title || 'Part ' + (idx + 1)}</span>
-              </label>
+              <div class="part-select-option flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm transition hover:bg-slate-100">
+                  <label class="flex min-w-0 items-center gap-2 cursor-pointer">
+                      <input type="checkbox" class="part-select-cb h-4 w-4 shrink-0 rounded text-blue-600 focus:ring-blue-500" value="${idx}" checked onchange="window.updateSpeakingSimulationAvailability()">
+                      <span class="part-select-title truncate font-bold text-slate-700 text-sm">${escapeForumHtml(p.title || window.studentText('Part ' + (idx + 1), 'Phần ' + (idx + 1)))}</span>
+                  </label>
+                  <button type="button" data-test-part-action="single" data-part-index="${idx}" class="shrink-0 rounded-md px-2 py-1 text-[11px] font-black text-blue-700 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" aria-label="${escapeForumHtml(window.studentText(`Practice ${p.title || 'Part ' + (idx + 1)} only`, `Chỉ luyện ${p.title || 'Phần ' + (idx + 1)}`))}" data-student-en="Only this part" data-student-vi="Chỉ phần này">Only this part</button>
+              </div>
           `).join('');
+          window.filterStudentTestParts('');
       } else {
           partContainer.classList.add('hidden');
       }
       
+      window.translateStudentStatic();
       window.updateSpeakingSimulationAvailability();
       document.getElementById('test-mode-modal').classList.remove('hidden');
       window.focusTestModeDialog(document.activeElement);

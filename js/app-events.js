@@ -83,6 +83,16 @@ testModeModal?.addEventListener('keydown', event => {
 });
 
 document.addEventListener('click', event => {
+    const partButton = event.target.closest('button[data-test-part-action]');
+    if (partButton) {
+        if (partButton.dataset.testPartAction === 'all') {
+            window.selectStudentTestParts();
+        } else if (partButton.dataset.testPartAction === 'single') {
+            window.selectStudentTestParts(Number(partButton.dataset.partIndex));
+        }
+        return;
+    }
+
     const button = event.target.closest('button[data-test-action]');
     if (!button) return;
 
@@ -99,5 +109,11 @@ document.addEventListener('click', event => {
         case 'activities':
             window.openTestActivities();
             break;
+    }
+});
+
+document.addEventListener('input', event => {
+    if (event.target.id === 'student-part-search') {
+        window.filterStudentTestParts(event.target.value);
     }
 });

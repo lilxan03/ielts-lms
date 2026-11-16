@@ -643,7 +643,11 @@
 
       <!-- Part Selection Area -->
       <div id="part-selection-container" class="mb-6 border-t border-slate-100 pt-5 hidden flex-1 overflow-y-auto">
-        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Select Parts to Practice:</label>
+        <div class="flex flex-wrap items-end justify-between gap-3 mb-3">
+          <label for="student-part-search" class="block text-xs font-black text-slate-400 uppercase tracking-widest" data-student-en="Choose full test or search for a part:" data-student-vi="Chọn toàn bộ bài thi hoặc tìm một phần:">Choose full test or search for a part:</label>
+          <button type="button" data-test-part-action="all" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-700 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" data-student-en="Full test (all parts)" data-student-vi="Toàn bộ bài thi (tất cả phần)">Full test (all parts)</button>
+        </div>
+        <input type="search" id="student-part-search" class="mb-3 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20" placeholder="Search part titles..." data-student-placeholder-en="Search part titles..." data-student-placeholder-vi="Tìm tiêu đề phần...">
         <div id="part-checkboxes" class="flex flex-wrap gap-3">
            <!-- JS will inject checkboxes here -->
         </div>
