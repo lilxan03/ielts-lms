@@ -43,13 +43,13 @@
 
     // --- 1. GRAMMAR FLASHCARDS ENGINE ---
     window.startTestGrammarStudy = function() {
-        if (!window.APP_DATA || !window.APP_DATA.grammar || window.APP_DATA.grammar.length === 0) {
+        if (!APP_DATA || !Array.isArray(APP_DATA.grammar) || APP_DATA.grammar.length === 0) {
             if (typeof window.showToast === 'function') window.showToast("Notice", "No grammar highlights provided by the teacher for this test.", "info");
             return;
         }
         
         // Map grammar array to our temporary flashcard deck
-        const tempDeck = window.APP_DATA.grammar.map((g, i) => ({
+        const tempDeck = APP_DATA.grammar.map((g, i) => ({
             id: 'temp_grammar_' + i,
             term: g.term || 'Phrase',
             def: (g.type ? `[${g.type}] ` : '') + (g.expl || 'Explanation'),

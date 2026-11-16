@@ -229,6 +229,46 @@ test('student sign-in authenticates, loads access, and starts the LMS', async ()
     assert.equal(elements.get('auth-pass').getAttribute('aria-invalid'), 'false');
 });
 
+test('test grammar flashcards use the app lexical grammar data', () => {
+    const elements = new Map([
+        ['panel-fc-list-select', {
+            querySelector: () => null,
+            appendChild(option) { this.option = option; },
+            dispatchEvent: () => {}
+        }],
+        ['study-mode-deck-name', createElement()],
+        ['study-mode-modal', { classList: createClassList() }]
+    ]);
+    const context = {
+        console,
+        Event,
+        document: {
+            getElementById: id => elements.get(id) || createElement(),
+            createElement: () => ({ style: {} })
+        },
+        window: null,
+        switchStudyMode: mode => { context.studyMode = mode; }
+    };
+    context.window = context;
+    vm.createContext(context);
+    vm.runInContext(
+        'let APP_DATA = { title: "Preview Test", grammar: [{ term: "Having finished", type: "Participle clause", expl: "Shows a completed action." }] }; let FLASHCARDS = {};',
+        context
+    );
+    vm.runInContext(readAppScript('study-tools.js'), context);
+    context.window.switchStudyMode = mode => { context.studyMode = mode; };
+
+    context.window.startTestGrammarStudy();
+
+    const deck = vm.runInContext('FLASHCARDS.temp_test_deck', context);
+    assert.equal(context.APP_DATA, undefined);
+    assert.equal(deck.length, 1);
+    assert.equal(deck[0].term, 'Having finished');
+    assert.equal(deck[0].def, '[Participle clause] Shows a completed action.');
+    assert.equal(context.studyMode, 'flashcards');
+    assert.equal(elements.get('study-mode-deck-name').textContent, 'Preview Test (Grammar Bank)');
+});
+
 test('student access sync writes only the signed-in student assigned test entries', async () => {
     const { context } = createAuthContext();
     const writes = [];
