@@ -2533,27 +2533,56 @@
          });
       });
       
-      const pal = document.getElementById('palette-container'); pal.innerHTML = '';
+      const partTabs = document.getElementById('part-tabs-container');
+      const pal = document.getElementById('palette-container');
+      partTabs.innerHTML = '';
+      pal.innerHTML = '';
       APP_DATA.parts.forEach((p, pIdx) => {
-        const div = document.createElement('div'); div.className = 'flex items-center px-4 py-2 cursor-pointer shrink-0';
-        if(pIdx === currentPartIdx) {
-          div.classList.add('bg-slate-100','rounded'); div.innerHTML = `<span class="font-bold mr-3">Part ${pIdx+1}</span>`;
-          const ql = document.createElement('div'); ql.className='flex gap-1';
-          p.questions.forEach((qb, bIdx) => qb.ids.forEach(id => {
-            const isAns = answers[id]&&String(answers[id]).trim();
-            const btn = document.createElement('button'); btn.textContent = id; 
-            btn.onclick = () => { if (isSpeakingSimulationLocked()) return; currentBlockIdx=bIdx; document.getElementById(`q-block-${bIdx}`).scrollIntoView(); updateExamUI(); };
-            btn.oncontextmenu = (e) => { e.preventDefault(); window.toggleReviewByIds([id]); };
-            btn.className = `w-7 h-7 flex items-center justify-center text-xs font-bold transition ${reviewStatus[id]?'rounded-full ring-2 ring-blue-400 bg-blue-50 text-blue-800':'rounded-sm'} ${bIdx===currentBlockIdx?'border-2 border-blue-600 bg-white text-blue-800':(isAns?'bg-transparent text-slate-800 underline decoration-2 underline-offset-2':'bg-transparent text-slate-500 hover:bg-slate-200')}`;
-            ql.appendChild(btn);
-          }));
-          div.appendChild(ql);
-        } else {
-          div.classList.add('hover:bg-slate-50','rounded'); div.onclick = () => renderPart(pIdx);
-          div.innerHTML = `<span class="font-medium text-slate-600">Part ${pIdx+1}</span>`;
-        }
-        pal.appendChild(div);
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.textContent = `Part ${pIdx + 1}`;
+        tab.className = `shrink-0 rounded px-2.5 py-2 text-xs font-bold transition ${
+          pIdx === currentPartIdx
+            ? 'bg-slate-100 text-slate-900'
+            : 'text-slate-600 hover:bg-slate-50'
+        }`;
+        tab.setAttribute('aria-current', pIdx === currentPartIdx ? 'step' : 'false');
+        tab.onclick = () => {
+          if (pIdx !== currentPartIdx) renderPart(pIdx);
+        };
+        partTabs.appendChild(tab);
       });
+
+      APP_DATA.parts[currentPartIdx].questions.forEach((qb, bIdx) => qb.ids.forEach(id => {
+        const isAns = answers[id] && String(answers[id]).trim();
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = id;
+        btn.setAttribute('aria-label', `Question ${id}`);
+        btn.setAttribute('aria-current', bIdx === currentBlockIdx ? 'true' : 'false');
+        btn.onclick = () => {
+          if (isSpeakingSimulationLocked()) return;
+          currentBlockIdx = bIdx;
+          document.getElementById(`q-block-${bIdx}`).scrollIntoView();
+          updateExamUI();
+        };
+        btn.oncontextmenu = event => {
+          event.preventDefault();
+          window.toggleReviewByIds([id]);
+        };
+        btn.className = `w-7 h-7 shrink-0 flex items-center justify-center text-xs font-bold transition ${
+          reviewStatus[id]
+            ? 'rounded-full ring-2 ring-blue-400 bg-blue-50 text-blue-800'
+            : 'rounded-sm'
+        } ${
+          bIdx === currentBlockIdx
+            ? 'border-2 border-blue-600 bg-white text-blue-800'
+            : isAns
+              ? 'bg-transparent text-slate-800 underline decoration-2 underline-offset-2'
+              : 'bg-transparent text-slate-500 hover:bg-slate-200'
+        }`;
+        pal.appendChild(btn);
+      }));
     // ✨ NEW: Calculate and update the Peripheral Progress Bar
       let totalQuestions = 0;
       let answeredQuestions = 0;

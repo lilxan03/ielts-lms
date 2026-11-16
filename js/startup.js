@@ -1,27 +1,4 @@
-    const manifestJSON = {
-      "name": "Khanh LMS",
-      "short_name": "IELTS App",
-      "start_url": window.location.href.split('?')[0],
-      "display": "standalone",
-      "background_color": "#f4f7fb",
-      "theme_color": "#1e3a8a",
-      "icons": [{
-        "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFlM2E4YSIvPjx0ZXh0IHg9IjUwIiB5PSI2NSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjUwIiBmb250LXdlaWdodD0iYm9sZCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkk8L3RleHQ+PC9zdmc+",
-        "sizes": "512x512",
-        "type": "image/svg+xml"
-      }]
-    };
     const startupBrandingCacheKey = 'ielts_lms_startup_branding';
-    let manifestObjectUrl = null;
-    const updateAndroidApkLink = () => {
-        const link = document.getElementById('android-apk-download');
-        if (!link) return;
-        const fullScreenActivityOpen = ['exam-ui', 'review-ui'].some(id => {
-            const element = document.getElementById(id);
-            return element && !element.classList.contains('hidden');
-        });
-        link.classList.toggle('hidden', !/android/i.test(navigator.userAgent) || fullScreenActivityOpen);
-    };
     window.applyStartupBranding = function(profile = {}) {
         const appName = String(profile.appName || '').trim() || 'Khanh LMS';
         const openingTitle = String(profile.openingTitle || '').trim() || 'Connecting to Cloud...';
@@ -46,14 +23,6 @@
         const authText = document.getElementById('app-logo-auth-text');
         if (authText) authText.textContent = appName;
 
-        manifestJSON.name = appName;
-        manifestJSON.short_name = appName.slice(0, 20);
-        const manifestLink = document.getElementById('pwa-manifest');
-        if (manifestLink) {
-            if (manifestObjectUrl) URL.revokeObjectURL(manifestObjectUrl);
-            manifestObjectUrl = URL.createObjectURL(new Blob([JSON.stringify(manifestJSON)], {type: 'application/json'}));
-            manifestLink.href = manifestObjectUrl;
-        }
     };
     window.cacheStartupBranding = function(profile) {
         const branding = {
@@ -78,13 +47,60 @@
     } catch (error) {
         console.warn('Could not read cached startup branding.', error);
     }
+    let deferredInstallPrompt = null;
+    const isIosDevice = () => /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroidDevice = () => /android/i.test(navigator.userAgent);
+    const isAppInstalled = () => window.matchMedia('(display-mode: standalone)').matches ||
+        navigator.standalone === true;
+    const isFullScreenActivityOpen = () => ['exam-ui', 'review-ui'].some(id => {
+        const element = document.getElementById(id);
+        return element && !element.classList.contains('hidden');
+    });
+    const updateInstallButton = () => {
+        const banner = document.getElementById('pwa-install-banner');
+        const button = document.getElementById('pwa-install-button');
+        const apkLink = document.getElementById('android-apk-download');
+        apkLink?.classList.toggle('hidden', !isAndroidDevice() || isFullScreenActivityOpen());
+        if (!banner || !button || isAppInstalled() || isFullScreenActivityOpen()) {
+            banner?.classList.add('hidden');
+            return;
+        }
+        if (deferredInstallPrompt || isIosDevice()) {
+            banner.classList.remove('hidden');
+            button.textContent = isIosDevice() ? 'Cách cài ứng dụng' : 'Cài ứng dụng';
+        } else {
+            banner.classList.add('hidden');
+        }
+    };
+
+    window.addEventListener('beforeinstallprompt', event => {
+        event.preventDefault();
+        deferredInstallPrompt = event;
+        updateInstallButton();
+    });
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        updateInstallButton();
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
         window.applyStartupBranding(cachedStartupBranding);
-        updateAndroidApkLink();
-        const androidApkLinkObserver = new MutationObserver(updateAndroidApkLink);
+        updateInstallButton();
+        const installButtonObserver = new MutationObserver(updateInstallButton);
         ['exam-ui', 'review-ui'].forEach(id => {
             const element = document.getElementById(id);
-            if (element) androidApkLinkObserver.observe(element, { attributes: true, attributeFilter: ['class'] });
+            if (element) installButtonObserver.observe(element, { attributes: true, attributeFilter: ['class'] });
+        });
+        document.getElementById('pwa-install-button')?.addEventListener('click', async () => {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                await deferredInstallPrompt.userChoice;
+                deferredInstallPrompt = null;
+                updateInstallButton();
+            } else if (isIosDevice()) {
+                window.alert('Để cài ứng dụng trên iPhone/iPad: nhấn nút Chia sẻ trong Safari, sau đó chọn “Thêm vào màn hình chính”.');
+            }
         });
     });
     window.addEventListener('beforeunload', function (e) {
