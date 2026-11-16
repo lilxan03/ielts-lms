@@ -36,24 +36,67 @@
             const accountCreatorApp = getApps().find(existingApp => existingApp.name === accountCreatorAppName)
                 || initializeApp(firebaseConfig, accountCreatorAppName);
             const accountCreatorAuth = getAuth(accountCreatorApp);
+            const assertNotStudentPreview = action => {
+                if (!window.isStudentProfilePreview) return;
+                const error = new Error(`This action is unavailable in read-only student preview: ${action}.`);
+                error.code = 'lms/preview-read-only';
+                window.showToast?.('Read-only preview', 'Student data cannot be changed while previewing this dashboard.', 'info');
+                throw error;
+            };
             
             // Expose globally
             window.db = db;
             window.storage = storage;
             window.sRef = ref;
-            window.sUpload = uploadBytes;
+            window.sUpload = (...args) => {
+                assertNotStudentPreview('upload files');
+                return uploadBytes(...args);
+            };
             window.sGetUrl = getDownloadURL;
             window.fsDoc = doc;
-            window.fsSetDoc = setDoc;
+            window.fsSetDoc = (...args) => {
+                assertNotStudentPreview('save data');
+                return setDoc(...args);
+            };
             window.fsGetDoc = getDoc;
-            window.fsUpdateDoc = updateDoc;
+            window.fsUpdateDoc = (...args) => {
+                assertNotStudentPreview('update data');
+                return updateDoc(...args);
+            };
             window.fsDeleteField = deleteField;
             window.fsTimestamp = Timestamp;
             window.fsServerTimestamp = serverTimestamp;
-            window.fsWriteBatch = writeBatch;
+            window.fsWriteBatch = database => {
+                assertNotStudentPreview('save data');
+                const batch = writeBatch(database);
+                return {
+                    set(...args) {
+                        assertNotStudentPreview('save data');
+                        batch.set(...args);
+                        return this;
+                    },
+                    update(...args) {
+                        assertNotStudentPreview('update data');
+                        batch.update(...args);
+                        return this;
+                    },
+                    delete(...args) {
+                        assertNotStudentPreview('delete data');
+                        batch.delete(...args);
+                        return this;
+                    },
+                    commit() {
+                        assertNotStudentPreview('save data');
+                        return batch.commit();
+                    }
+                };
+            };
             window.fsCollection = collection;
             window.fsGetDocs = getDocs;
-            window.fsDeleteDoc = deleteDoc;
+            window.fsDeleteDoc = (...args) => {
+                assertNotStudentPreview('delete data');
+                return deleteDoc(...args);
+            };
             window.fsOnSnapshot = onSnapshot;
             window.fPath = (col) => col;
             
@@ -63,20 +106,47 @@
         
             // Expose Real Authentication methods
             window.auth = auth;
-            window.fsAuthSignOut = signOut;
-            window.fsAuthSignIn = signInWithEmailAndPassword;
-            window.fsAuthCreate = createUserWithEmailAndPassword;
-            window.fsAuthCreateSecondary = createUserWithEmailAndPassword;
-            window.fsAuthDeleteUser = deleteUser;
-            window.fsAuthSecondarySignOut = signOut;
+            window.fsAuthSignOut = (...args) => {
+                assertNotStudentPreview('sign out');
+                return signOut(...args);
+            };
+            window.fsAuthSignIn = (...args) => {
+                assertNotStudentPreview('sign in');
+                return signInWithEmailAndPassword(...args);
+            };
+            window.fsAuthCreate = (...args) => {
+                assertNotStudentPreview('create accounts');
+                return createUserWithEmailAndPassword(...args);
+            };
+            window.fsAuthCreateSecondary = (...args) => {
+                assertNotStudentPreview('create accounts');
+                return createUserWithEmailAndPassword(...args);
+            };
+            window.fsAuthDeleteUser = (...args) => {
+                assertNotStudentPreview('delete accounts');
+                return deleteUser(...args);
+            };
+            window.fsAuthSecondarySignOut = (...args) => {
+                assertNotStudentPreview('sign out');
+                return signOut(...args);
+            };
             window.secondaryAuth = accountCreatorAuth;
             window.onAuthStateChanged = onAuthStateChanged;
-            window.fsUpdatePassword = updatePassword;
-            window.fsSendPasswordResetEmail = sendPasswordResetEmail;
+            window.fsUpdatePassword = (...args) => {
+                assertNotStudentPreview('change passwords');
+                return updatePassword(...args);
+            };
+            window.fsSendPasswordResetEmail = (...args) => {
+                assertNotStudentPreview('reset passwords');
+                return sendPasswordResetEmail(...args);
+            };
         
             // ✨ NEW: Initialize Google Auth Provider
             window.fsGoogleProvider = new GoogleAuthProvider();
-            window.fsSignInWithPopup = signInWithPopup;
+            window.fsSignInWithPopup = (...args) => {
+                assertNotStudentPreview('sign in');
+                return signInWithPopup(...args);
+            };
             
             // ✨ NEW: Expose Web Push Messaging
             window.fsGetMessaging = getMessaging;
@@ -85,6 +155,7 @@
 
             // NEW: Global Storage Uploader Helper with Timeout Anti-Hang Protection
             window.uploadMediaToStorage = async function(fileOrBlob, pathString, timeoutMs = 3000) {
+                assertNotStudentPreview('upload files');
                 const storageRef = window.sRef(window.storage, pathString);
                 
                 const uploadTask = async () => {

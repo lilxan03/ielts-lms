@@ -481,7 +481,12 @@
         } else if (currentUser.role === 'collaborator') {
             promises.push(waitForInitialSnapshot('current user profile', window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
-                        const me = sanitizeUserProfile(snap.data()); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
+                        const me = sanitizeUserProfile(snap.data());
+                        if (!window.isStudentProfilePreview) {
+                            USERS = [me];
+                            currentUser = me;
+                            sessionStorage.setItem('ielts_session', JSON.stringify(me));
+                        }
                     } 
                     window.triggerUIRefresh();
             }));
@@ -489,7 +494,12 @@
             // STUDENT: Restricted queries. ONLY downloads their own private data.
             promises.push(waitForInitialSnapshot('current user profile', window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
                     if(snap.exists()) { 
-                        const me = sanitizeUserProfile(snap.data()); USERS = [me]; currentUser = me; sessionStorage.setItem('ielts_session', JSON.stringify(me)); 
+                        const me = sanitizeUserProfile(snap.data());
+                        if (!window.isStudentProfilePreview) {
+                            USERS = [me];
+                            currentUser = me;
+                            sessionStorage.setItem('ielts_session', JSON.stringify(me));
+                        }
                     } 
                     window.triggerUIRefresh();
             }));
@@ -1248,6 +1258,10 @@
     };
 
     async function logout() {
+      if (window.isStudentProfilePreview) {
+        window.exitStudentProfilePreview?.();
+        return;
+      }
       try {
         if (window.auth?.currentUser) {
           await window.fsAuthSignOut(window.auth);

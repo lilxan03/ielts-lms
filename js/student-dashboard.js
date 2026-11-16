@@ -1349,6 +1349,7 @@
     };
 
     function studentCanOpenTestRoute(testId) {
+      if (window.isStudentProfilePreview) return false;
       if (!hasActiveStudentAccess(currentUser)) return false;
       const cid = document.getElementById('student-class-select')?.value;
       const cls = CLASSES.find(item => item.id === cid);
@@ -1370,6 +1371,11 @@
       if (!route || !currentUser || handlingTestRoute || activeTestRoute) return;
       handlingTestRoute = true;
       try {
+        if (window.isStudentProfilePreview) {
+          replaceWithDashboardRoute();
+          if (typeof window.showToast === 'function') window.showToast('Read-only preview', 'Test attempts are disabled while previewing a student dashboard.', 'info');
+          return;
+        }
         if (currentUser.role !== 'student') {
           replaceWithDashboardRoute();
           if (typeof window.showToast === 'function') window.showToast('Notice', 'Test links are available to students only.', 'info');

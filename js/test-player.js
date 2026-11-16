@@ -2,6 +2,10 @@
     let savedSyntaxChunkSelection = null;
 
     window.startFullExam = function() {
+        if (window.isStudentProfilePreview) {
+            window.showToast?.('Read-only preview', 'Test attempts are disabled while previewing a student dashboard.', 'info');
+            return;
+        }
         // Pull directly from the GLOBAL Test Bank
         const allListening = TEST_BANK.filter(t => t.module === 'listening');
         const allReading = TEST_BANK.filter(t => t.module === 'reading');
@@ -290,6 +294,10 @@
     }
 
     function startTest(tid, selectedParts = null, syntheticTestObj = null) {
+      if (window.isStudentProfilePreview) {
+          window.showToast?.('Read-only preview', 'Test attempts are disabled while previewing a student dashboard.', 'info');
+          return;
+      }
       clearSpeakingPartTwoSession();
       if (syntheticTestObj) {
           APP_DATA = syntheticTestObj;

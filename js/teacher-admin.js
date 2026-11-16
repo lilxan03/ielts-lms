@@ -701,84 +701,37 @@
 
     window.openStudentProfilePreview = function(username) {
         const student = USERS.find(user => user.role === 'student' && user.user === username);
-        const modal = document.getElementById('student-profile-preview-modal');
-        const content = document.getElementById('student-profile-preview-content');
-        if (!student || !modal || !content) return;
+        if (!student || !['teacher', 'collaborator'].includes(currentUser?.role)) return;
+        if (window.isStudentProfilePreview) window.exitStudentProfilePreview();
 
-        const escape = value => lmsEscapeHtml(value || '—');
-        const classes = CLASSES.filter(cls =>
-            !window.isTemplateClass(cls) && (cls.enrolledStudents || []).includes(username)
-        );
-        const classIds = new Set(classes.map(cls => cls.id));
-        const classTestIds = classes.flatMap(cls => {
-            const parent = CLASSES.find(candidate => candidate.id === cls.parentClassId);
-            return [
-                ...(cls.assignedTests || []),
-                ...(cls.inheritedAssignedTests || []),
-                ...(parent?.assignedTests || [])
-            ];
-        });
-        const scheduledTestIds = SCHEDULES
-            .filter(schedule => classIds.has(schedule.classId)
-                && (!Array.isArray(schedule.attendingStudents) || schedule.attendingStudents.includes(username)))
-            .flatMap(schedule => [
-                ...(schedule.assignedTests || []),
-                ...(schedule.materialIds || []),
-                ...(schedule.homeworkTests || [])
-            ]);
-        const assignedTestIds = [...new Set([...classTestIds, ...scheduledTestIds])];
-        const assignedTests = assignedTestIds
-            .map(id => TEST_BANK.find(test => test.id === id))
-            .filter(Boolean);
-        const submissions = SUBMISSIONS
-            .filter(submission => submission.student === username)
-            .sort((a, b) => Number(b.id) - Number(a.id))
-            .slice(0, 5);
-        const attendanceCount = ATTENDANCE.filter(record => record.student === username).length;
+        const banner = document.getElementById('student-preview-banner');
+        const label = document.getElementById('student-preview-name');
+        if (!banner || !label) return;
 
-        content.innerHTML = `
-            <div class="grid gap-5 md:grid-cols-2">
-                <section class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <h3 class="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">Profile</h3>
-                    <dl class="space-y-2 text-sm">
-                        <div><dt class="inline font-bold text-slate-500">Username: </dt><dd class="inline">${escape(student.user)}</dd></div>
-                        <div><dt class="inline font-bold text-slate-500">Name: </dt><dd class="inline">${escape(student.realName)}</dd></div>
-                        <div><dt class="inline font-bold text-slate-500">Email: </dt><dd class="inline">${escape(student.email)}</dd></div>
-                        <div><dt class="inline font-bold text-slate-500">Phone: </dt><dd class="inline">${escape(student.phone)}</dd></div>
-                        <div><dt class="inline font-bold text-slate-500">Account status: </dt><dd class="inline">${escape(student.status || student.paymentStatus)}</dd></div>
-                    </dl>
-                </section>
-                <section class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                    <h3 class="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">Learning overview</h3>
-                    <p class="text-sm"><strong>${classes.length}</strong> active class${classes.length === 1 ? '' : 'es'} · <strong>${attendanceCount}</strong> attendance record${attendanceCount === 1 ? '' : 's'}</p>
-                    <h4 class="mb-1 mt-3 text-xs font-bold text-slate-500">Enrolled classes</h4>
-                    <ul class="list-inside list-disc text-sm">${classes.length
-                        ? classes.map(cls => `<li>${escape(cls.name)}</li>`).join('')
-                        : '<li>No active class enrollment</li>'}</ul>
-                </section>
-                <section class="rounded-xl border border-slate-200 p-4">
-                    <h3 class="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">Assigned tests</h3>
-                    <ul class="list-inside list-disc text-sm">${assignedTests.length
-                        ? assignedTests.map(test => `<li>${escape(test.title)}</li>`).join('')
-                        : '<li>No assigned tests</li>'}</ul>
-                </section>
-                <section class="rounded-xl border border-slate-200 p-4">
-                    <h3 class="mb-3 text-xs font-black uppercase tracking-wider text-slate-500">Recent submissions</h3>
-                    <ul class="space-y-2 text-sm">${submissions.length
-                        ? submissions.map(submission => `<li class="flex justify-between gap-3"><span class="truncate">${escape(submission.testName)}</span><strong class="shrink-0">${escape(submission.score)}</strong></li>`).join('')
-                        : '<li>No submissions yet</li>'}</ul>
-                </section>
-            </div>`;
-        document.getElementById('student-profile-preview-title').textContent =
-            `${student.realName || student.user} · Student profile`;
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        window.studentProfilePreviewState = {
+            teacher: currentUser,
+            route: window.location.hash || '#/teacher/bank/tests'
+        };
+        window.studentProfilePreviewUser = student.user;
+        window.isStudentProfilePreview = true;
+        currentUser = { ...student, role: 'student' };
+        label.textContent = `${student.realName || student.user} (@${student.user})`;
+        banner.classList.remove('hidden');
+        document.getElementById('editor-ui')?.classList.add('hidden');
+        document.getElementById('start-screen')?.classList.remove('hidden');
+        window.initStudentDashboard();
+        window.navigateAppRoute('student/dashboard', true);
     };
 
-    window.closeStudentProfilePreview = function() {
-        const modal = document.getElementById('student-profile-preview-modal');
-        modal?.classList.add('hidden');
-        modal?.classList.remove('flex');
+    window.exitStudentProfilePreview = function() {
+        const state = window.studentProfilePreviewState;
+        if (!window.isStudentProfilePreview || !state) return;
+        window.isStudentProfilePreview = false;
+        window.studentProfilePreviewUser = null;
+        window.studentProfilePreviewState = null;
+        currentUser = state.teacher;
+        document.getElementById('student-preview-banner')?.classList.add('hidden');
+        window.navigateAppRoute(state.route.replace(/^#\/?/, ''), true);
     };
 
     function renderStudentsList() {
@@ -858,7 +811,7 @@
                                     Actions <span aria-hidden="true">⋯</span>
                                 </summary>
                                 <div class="student-actions-menu">
-                                    <button type="button" data-student-profile-preview="${lmsEscapeHtml(s.user)}">👁️ View student profile</button>
+                                    <button type="button" data-student-profile-preview="${lmsEscapeHtml(s.user)}">👁️ Switch to student dashboard</button>
                                     <button type="button" onclick="togglePaymentStatus('${s.user}', ${isPending || !billing.hasAccess}); this.closest('details').open = false">${isPending ? '✓ Approve payment' : billing.hasAccess ? '🔒 Lock access' : '🔓 Unlock access'}</button>
                                     <button type="button" onclick="window.promptEditStudentContact('${s.user}'); this.closest('details').open = false">✏️ Edit contact info</button>
                                     <button type="button" onclick="window.openRadarEditor('${s.user}'); this.closest('details').open = false">📊 Edit radar chart</button>

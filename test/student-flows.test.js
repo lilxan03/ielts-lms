@@ -269,47 +269,61 @@ test('question feedback is unavailable in student profile preview mode', async (
     assert.equal(elements.get('question-feedback-modal').classList.contains('flex'), false);
 });
 
-test('teacher student-profile preview shows read-only student learning data', () => {
+test('student preview cannot start a full exam', () => {
+    const { context } = createTestPlayerContext();
+    context.isStudentProfilePreview = true;
+
+    context.startFullExam();
+
+    assert.equal(context.isFullExamMode, false);
+    assert.equal(context.fullExamSequence, undefined);
+});
+
+test('teacher can switch to a read-only student dashboard and return to the saved teacher route', () => {
     const elements = new Map([
-        ['student-profile-preview-modal', createElement()],
-        ['student-profile-preview-content', createElement()],
-        ['student-profile-preview-title', createElement()]
+        ['student-preview-banner', createElement()],
+        ['student-preview-name', createElement()],
+        ['editor-ui', createElement()],
+        ['start-screen', createElement()]
     ]);
+    const teacher = { user: 'teacher_01', role: 'teacher' };
+    const student = { user: 'alice', role: 'student', realName: 'Alice Student' };
     const context = {
         console,
         window: null,
         document: { getElementById: id => elements.get(id) || createElement() },
-        lmsEscapeHtml: value => String(value ?? '').replace(/[&<>"']/g, char => ({
-            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-        })[char]),
-        USERS: [{ user: 'alice', role: 'student', realName: '<Student>', email: 'alice@example.com' }],
-        CLASSES: [{ id: 'class-a', name: 'IELTS Reading', enrolledStudents: ['alice'], assignedTests: ['test-a'] }],
-        TEST_BANK: [
-            { id: 'test-a', title: 'Reading Practice' },
-            { id: 'test-c', title: 'Scheduled Homework' }
-        ],
-        SCHEDULES: [{
-            classId: 'class-a',
-            attendingStudents: ['alice'],
-            homeworkTests: ['test-c']
-        }],
-        SUBMISSIONS: [{ id: 1, student: 'alice', testName: 'Reading Practice', score: 'Band 7' }],
-        ATTENDANCE: [{ student: 'alice' }]
+        USERS: [student],
+        currentUser: teacher,
+        location: { hash: '#/teacher/students' },
+        initCount: 0,
+        routeCalls: []
     };
     context.window = context;
-    context.isTemplateClass = cls => cls.isTemplate === true;
+    context.initStudentDashboard = () => { context.initCount += 1; };
+    context.navigateAppRoute = (route, replace) => {
+        context.routeCalls.push({ route, replace });
+        context.location.hash = `#/${route}`;
+    };
     vm.createContext(context);
     vm.runInContext(readAppScript('teacher-admin.js'), context);
 
     context.openStudentProfilePreview('alice');
 
-    assert.equal(elements.get('student-profile-preview-modal').classList.contains('flex'), true);
-    assert.equal(elements.get('student-profile-preview-title').textContent, '<Student> · Student profile');
-    assert.match(elements.get('student-profile-preview-content').innerHTML, /&lt;Student&gt;/);
-    assert.match(elements.get('student-profile-preview-content').innerHTML, /IELTS Reading/);
-    assert.match(elements.get('student-profile-preview-content').innerHTML, /Reading Practice/);
-    assert.match(elements.get('student-profile-preview-content').innerHTML, /Scheduled Homework/);
-    assert.match(elements.get('student-profile-preview-content').innerHTML, /Band 7/);
+    assert.equal(context.isStudentProfilePreview, true);
+    assert.equal(context.currentUser.user, 'alice');
+    assert.equal(context.currentUser.role, 'student');
+    assert.equal(context.location.hash, '#/student/dashboard');
+    assert.equal(elements.get('student-preview-name').textContent, 'Alice Student (@alice)');
+    assert.equal(elements.get('student-preview-banner').classList.contains('hidden'), false);
+    assert.equal(context.initCount, 1);
+
+    context.exitStudentProfilePreview();
+
+    assert.equal(context.isStudentProfilePreview, false);
+    assert.equal(context.studentProfilePreviewUser, null);
+    assert.equal(context.currentUser, teacher);
+    assert.equal(context.location.hash, '#/teacher/students');
+    assert.equal(elements.get('student-preview-banner').classList.contains('hidden'), true);
 });
 
 test('test grammar flashcards use the app lexical grammar data', () => {

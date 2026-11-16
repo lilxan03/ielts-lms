@@ -141,6 +141,9 @@
     };
 
     window.canAccessLMS = function(profile, firebaseUser = window.auth?.currentUser) {
+      if (window.isStudentProfilePreview) {
+        return profile?.role === 'student' && profile.user === window.studentProfilePreviewUser;
+      }
       const access = window.trustedAccountAccess;
       if (firebaseUser?.email?.trim().toLowerCase() === window.ADMIN_EMAIL) return true;
       if (access?.uid !== firebaseUser?.uid) return false;
@@ -161,7 +164,7 @@
         if (window.auth?.currentUser?.uid !== uid) return;
         const data = snapshot.exists() ? snapshot.data() : { uid, role: 'student', paid: false };
         window.trustedAccountAccess = { ...data, uid };
-        if (currentUser) currentUser.role = data.role || 'student';
+        if (currentUser && !window.isStudentProfilePreview) currentUser.role = data.role || 'student';
         if (window.canAccessLMS(currentUser, window.auth.currentUser)) {
           if (window.lmsBootedUid !== uid) {
             window.lmsBootedUid = uid;
@@ -306,6 +309,10 @@
     };
 
     window.signOutAwaitingApproval = async function() {
+      if (window.isStudentProfilePreview) {
+        window.exitStudentProfilePreview?.();
+        return;
+      }
       try {
         await window.fsAuthSignOut(window.auth);
         sessionStorage.removeItem('ielts_session');
