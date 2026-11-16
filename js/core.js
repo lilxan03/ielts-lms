@@ -366,12 +366,15 @@
         const chartsWrapper = document.getElementById('interactive-charts-wrapper');
         const imageField = document.getElementById('image-field-container');
         const speakingQuestionsField = document.getElementById('speaking-questions-field');
+        const mindMapEditor = document.getElementById('mindmap-content-editor');
+        const showMindMapEditor = ['writing', 'speaking'].includes(APP_DATA.module);
 
         if (mediaFields) mediaFields.classList.toggle('hidden', !(isListening || showCharts || showImages));
         if (audioField) audioField.classList.toggle('hidden', !isListening);
         if (chartsWrapper) chartsWrapper.classList.toggle('hidden', !showCharts);
         if (imageField) imageField.classList.toggle('hidden', !showImages);
         if (speakingQuestionsField) speakingQuestionsField.classList.toggle('hidden', APP_DATA.module !== 'speaking');
+        if (mindMapEditor) mindMapEditor.classList.toggle('hidden', !showMindMapEditor);
     };
     const listeningYoutubePlayers = new Map();
     let listeningYoutubeApiPromise = null;

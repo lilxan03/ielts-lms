@@ -584,7 +584,8 @@
           : `<span class="text-[10px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">${st('Ready', 'Sẵn sàng')}</span>`;
 
         return `
-          <article class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition p-4 flex flex-col gap-3">
+          <article class="overflow-hidden bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition p-4 flex flex-col gap-3">
+            ${test.thumbnail ? `<div class="-mx-4 -mt-4 mb-1"><img src="${escapeForumHtml(test.thumbnail)}" alt="${escapeForumHtml(test.title)}" class="block aspect-video w-full object-cover"></div>` : ''}
             <div class="flex items-start justify-between gap-2">
               <span class="text-[10px] font-bold px-2 py-1 rounded bg-${color}-100 text-${color}-800 uppercase tracking-wide">${moduleNames[test.module] || test.module || st('Test', 'Bài thi')}</span>
               ${status}

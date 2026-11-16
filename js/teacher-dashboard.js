@@ -579,7 +579,8 @@
         const statBadge = `<span class="text-[9px] font-black px-2 py-1 rounded bg-${st.color}-50 text-${st.color}-700 border border-${st.color}-200 uppercase tracking-widest flex items-center gap-1 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-${st.color}-500"></span>${st.label}</span>`;
 
         return `
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
+        <div class="overflow-hidden bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
+          ${t.thumbnail ? `<div class="-mx-5 -mt-5 mb-4"><img src="${escapeHtmlAttributeValue(t.thumbnail)}" alt="${escapeHtmlAttributeValue(t.title)}" class="block aspect-video w-full object-cover"></div>` : ''}
           <div class="flex justify-between items-start mb-3 shrink-0">
              <div class="flex gap-2 flex-wrap">
                  <span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide shadow-sm">${t.module}</span>
