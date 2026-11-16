@@ -2589,6 +2589,15 @@
         <!-- Left Panel: Content -->
         <div class="p-8 border-r border-slate-300 overflow-y-auto bg-white flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 transition-all duration-300" id="builder-left" style="width: 50%;">
           <h2 class="text-xl font-black mb-6 border-b border-slate-100 pb-3 text-slate-800 flex items-center gap-2">📝 1. Content Details</h2>
+
+          <section class="mb-5 rounded-xl border border-blue-200 bg-blue-50/60 p-4" aria-labelledby="test-thumbnail-label">
+            <label id="test-thumbnail-label" class="mb-2 block text-xs font-bold uppercase tracking-widest text-slate-600">Test Bank Thumbnail</label>
+            <div id="test-thumbnail-dropzone" class="relative flex min-h-[120px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed border-blue-200 bg-white text-center transition hover:border-blue-400 hover:bg-blue-50/50" role="button" aria-label="Paste or upload a Test Bank thumbnail" tabindex="0" onclick="document.getElementById('edit-test-thumbnail-file').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('edit-test-thumbnail-file').click()}" onpaste="window.handleTestThumbnailPaste(event)">
+              <div id="test-thumbnail-preview" class="w-full"></div>
+            </div>
+            <input type="file" id="edit-test-thumbnail-file" class="hidden" accept="image/*" onchange="window.handleTestThumbnailFile(event)">
+            <p class="mt-2 text-[11px] text-slate-500">Paste an image here or click to upload. It appears on this test’s cards in the Test Bank.</p>
+          </section>
           
           <div class="flex justify-between items-end mb-1">
               <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" id="edit-title-label">Part Title / Main Prompt</label>
@@ -2614,7 +2623,7 @@
               <div id="edit-speaking-questions" class="rich-editor w-full min-h-[120px] border border-slate-300 p-3 rounded-b-lg rounded-tl-lg focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 leading-relaxed outline-none transition-all shadow-sm bg-white" contenteditable="true" oninput="window.triggerEditorAutosave()"></div>
           </div>
 
-          <section class="mt-5 rounded-xl border border-indigo-200 bg-indigo-50/70 p-4" aria-labelledby="mindmap-editor-title">
+          <section id="mindmap-content-editor" class="mt-5 rounded-xl border border-indigo-200 bg-indigo-50/70 p-4" aria-labelledby="mindmap-editor-title">
             <div class="mb-3">
               <h3 id="mindmap-editor-title" class="font-black text-indigo-900">🧠 Student Mind Map Content</h3>
               <p class="mt-1 text-xs leading-relaxed text-slate-600">Add content for this part. Students can drag a phrase into an outline branch, then move and connect ideas in the network.</p>

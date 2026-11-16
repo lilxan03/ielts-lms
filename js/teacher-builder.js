@@ -147,6 +147,7 @@
     window.importMindMapPhrases = function() {
       const part = currentMindMapPart();
       const rows = readMindMapImportRows('mindmap-phrase-import', 3);
+      if (!['writing', 'speaking'].includes(APP_DATA?.module)) return;
       if (!part) {
         updateMindMapImportStatus('Select a test part before importing content.', true);
         return;
@@ -186,6 +187,7 @@
     window.importMindMapIdeas = function() {
       const part = currentMindMapPart();
       const rows = readMindMapImportRows('mindmap-idea-import', 2);
+      if (!['writing', 'speaking'].includes(APP_DATA?.module)) return;
       if (!part) {
         updateMindMapImportStatus('Select a test part before importing content.', true);
         return;
@@ -1416,6 +1418,7 @@
 
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
+      window.renderTestThumbnailPreview?.();
       const matchingHeadingDropsChanged = reconcileMatchingHeadingDrops(p);
       const mindMapStatus = document.getElementById('mindmap-import-status');
       const phraseImport = document.getElementById('mindmap-phrase-import');
