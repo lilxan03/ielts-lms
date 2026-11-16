@@ -98,12 +98,12 @@
       };
     }
     
-    window.applyTheme = function(t) { 
-        document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 ${t!=='standard'?'theme-'+t:''} text-slate-800 bg-slate-100`; 
+    window.applyTheme = function(t) {
+        const isDark = t === 'dark';
+        document.body.classList.toggle('theme-dark', isDark);
         localStorage.setItem('ielts_theme', t);
         
         // Update all toggle buttons dynamically!
-        const isDark = t === 'dark';
         document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
             btn.innerHTML = isDark ? '☀️' : '🌙';
             btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';

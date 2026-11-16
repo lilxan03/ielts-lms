@@ -826,6 +826,24 @@
         background-color: #1e293b !important; border: 1px solid #334155; 
     }
 
+    body.theme-dark .app-sidebar {
+        background-color: #111c2f;
+        border-color: #334155;
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.3);
+        color: #e2e8f0;
+    }
+    body.theme-dark .app-sidebar > div { border-color: #334155; }
+    body.theme-dark .app-sidebar-link { color: #cbd5e1; }
+    body.theme-dark .app-sidebar-link:hover,
+    body.theme-dark .app-sidebar-link.is-active {
+        background-color: #1e3a5f;
+        color: #bfdbfe;
+    }
+    body.theme-dark .app-sidebar-collapse,
+    body.theme-dark .app-sidebar .app-sidebar-toggle { color: #cbd5e1; }
+    body.theme-dark .app-sidebar-collapse:hover,
+    body.theme-dark .app-sidebar .app-sidebar-toggle:hover { background-color: #1e293b; }
+
     .passage-text { font-size: calc(var(--font-scale) * 0.88) !important; line-height: 1.7 !important; transition: font-size 0.3s; }
     .passage-text p { margin-bottom: 1.5rem; }
     
