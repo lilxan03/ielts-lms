@@ -102,6 +102,127 @@
       showModalMsg("Success", `Imported ${count} vocabulary words!`);
     };
 
+    const mindMapBranches = [
+      { id: 'main', aliases: ['main', 'main idea', 'ý chính'] },
+      { id: 'support', aliases: ['support', 'supporting idea', 'explanation', 'giải thích'] },
+      { id: 'example', aliases: ['example', 'examples', 'ví dụ'] },
+      { id: 'result', aliases: ['result', 'conclusion', 'outcome', 'kết luận'] }
+    ];
+
+    function currentMindMapPart() {
+      return APP_DATA?.parts?.[currentEditorPartIdx] || null;
+    }
+
+    function updateMindMapImportStatus(message, isError = false) {
+      const status = document.getElementById('mindmap-import-status');
+      if (!status) return;
+      status.textContent = message;
+      status.className = `mt-2 text-xs font-bold ${isError ? 'text-rose-700' : 'text-indigo-800'}`;
+    }
+
+    function getMindMapData(part) {
+      if (!part.mindMap || typeof part.mindMap !== 'object') part.mindMap = {};
+      if (!Array.isArray(part.mindMap.phrases)) part.mindMap.phrases = [];
+      if (!Array.isArray(part.mindMap.topics)) part.mindMap.topics = [];
+      return part.mindMap;
+    }
+
+    function readMindMapImportRows(inputId, expectedColumns) {
+      const input = document.getElementById(inputId);
+      if (!input) return null;
+      const lines = input.value.split(/\r?\n/).map(line => line.split('\t').map(cell => cell.trim()));
+      return lines.filter(parts => parts.length && parts.some(Boolean) && parts.slice(0, expectedColumns).some(Boolean));
+    }
+
+    function finishMindMapImport(inputId, imported, skipped, noun) {
+      if (!imported) {
+        updateMindMapImportStatus(`Nothing imported. Check the required columns. ${skipped ? `${skipped} row(s) need correction.` : ''}`, true);
+        return;
+      }
+      document.getElementById(inputId).value = '';
+      updateMindMapImportStatus(`Imported ${imported} ${noun}${skipped ? `; skipped ${skipped} invalid or duplicate row(s)` : ''}.`);
+      if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    }
+
+    window.importMindMapPhrases = function() {
+      const part = currentMindMapPart();
+      const rows = readMindMapImportRows('mindmap-phrase-import', 3);
+      if (!part) {
+        updateMindMapImportStatus('Select a test part before importing content.', true);
+        return;
+      }
+      if (!rows) {
+        updateMindMapImportStatus('The phrase import field is unavailable. Reload the test editor and try again.', true);
+        return;
+      }
+      saveCurrentEditorPart();
+      const data = getMindMapData(part);
+      let imported = 0;
+      let skipped = 0;
+
+      rows.forEach(([rawBranch, rawPhrase, rawDetail]) => {
+        const branchName = String(rawBranch || '').trim().toLowerCase();
+        const branch = mindMapBranches.find(item => item.aliases.includes(branchName));
+        const term = String(rawPhrase || '').trim();
+        const detail = String(rawDetail || '').trim();
+        if (!branch || !term || term.length > 160 || detail.length > 240) {
+          skipped++;
+          return;
+        }
+        const duplicate = data.phrases.some(item =>
+          item.branch === branch.id && String(item.term || '').trim().toLowerCase() === term.toLowerCase()
+        );
+        if (duplicate) {
+          skipped++;
+          return;
+        }
+        data.phrases.push({ branch: branch.id, term, detail });
+        imported++;
+      });
+
+      finishMindMapImport('mindmap-phrase-import', imported, skipped, 'phrase(s)');
+    };
+
+    window.importMindMapIdeas = function() {
+      const part = currentMindMapPart();
+      const rows = readMindMapImportRows('mindmap-idea-import', 2);
+      if (!part) {
+        updateMindMapImportStatus('Select a test part before importing content.', true);
+        return;
+      }
+      if (!rows) {
+        updateMindMapImportStatus('The ideas import field is unavailable. Reload the test editor and try again.', true);
+        return;
+      }
+      saveCurrentEditorPart();
+      const data = getMindMapData(part);
+      let imported = 0;
+      let skipped = 0;
+
+      rows.forEach(([rawTopic, rawIdea]) => {
+        const label = String(rawTopic || '').trim();
+        const idea = String(rawIdea || '').trim();
+        if (!label || !idea || label.length > 80 || idea.length > 160) {
+          skipped++;
+          return;
+        }
+        let topic = data.topics.find(item => String(item.label || '').trim().toLowerCase() === label.toLowerCase());
+        if (!topic) {
+          topic = { label, ideas: [] };
+          data.topics.push(topic);
+        }
+        if (!Array.isArray(topic.ideas)) topic.ideas = [];
+        if (topic.ideas.some(item => String(item).trim().toLowerCase() === idea.toLowerCase())) {
+          skipped++;
+          return;
+        }
+        topic.ideas.push(idea);
+        imported++;
+      });
+
+      finishMindMapImport('mindmap-idea-import', imported, skipped, 'idea(s)');
+    };
+
     window.execCmd = function(command, value = null) {
       document.execCommand(command, false, value);
       window.triggerEditorAutosave();
@@ -1293,6 +1414,18 @@
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
       const matchingHeadingDropsChanged = reconcileMatchingHeadingDrops(p);
+      const mindMapStatus = document.getElementById('mindmap-import-status');
+      const phraseImport = document.getElementById('mindmap-phrase-import');
+      const ideaImport = document.getElementById('mindmap-idea-import');
+      if (phraseImport) phraseImport.value = '';
+      if (ideaImport) ideaImport.value = '';
+      if (mindMapStatus) {
+          const phraseCount = Array.isArray(p.mindMap?.phrases) ? p.mindMap.phrases.length : 0;
+          const ideaCount = Array.isArray(p.mindMap?.topics)
+              ? p.mindMap.topics.reduce((total, topic) => total + (Array.isArray(topic.ideas) ? topic.ideas.length : 0), 0)
+              : 0;
+          mindMapStatus.textContent = `This part has ${phraseCount} custom phrase(s) and ${ideaCount} imported network idea(s).`;
+      }
       
       document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => 
         `<button 

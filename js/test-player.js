@@ -1152,9 +1152,15 @@
               passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}`;
           } else {
               let sampleAnswerBlock = '';
+              const partVocabulary = window.filterDynamicMindMapVocabulary?.(
+                  APP_DATA.vocab,
+                  p,
+                  currentPartIdx,
+                  APP_DATA.parts.length
+              ) || [];
               const mindMapHtml = window.renderDynamicMindMap?.(
                   p,
-                  APP_DATA.vocab,
+                  partVocabulary,
                   `${APP_DATA.id || 'test'}-part-${currentPartIdx}`,
                   APP_DATA.topics
               ) || '';

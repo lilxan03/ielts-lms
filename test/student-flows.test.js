@@ -477,7 +477,16 @@ test('dynamic mind map renders safe task vocabulary and grouped discourse marker
     vm.runInContext(readAppScript('dynamic-mindmap.js'), context);
 
     const html = context.renderDynamicMindMap(
-        { title: '<p>Describe a place &amp; explain why you like it</p>' },
+        {
+            title: '<p>Describe a place &amp; explain why you like it</p>',
+            mindMap: {
+                phrases: [
+                    { branch: 'support', term: 'improve public transport', detail: 'More frequent buses and trains' },
+                    { branch: 'example', term: '<img src=x onerror=alert(1)>' }
+                ],
+                topics: [{ label: 'Transport', ideas: ['More people commute by bus', 'Fewer cars in city centres', '<svg onload=alert(1)>'] }]
+            }
+        },
         [
             { term: 'a hidden gem', eng: 'A little-known place' },
             { term: '<img src=x onerror=alert(1)>' }
@@ -498,8 +507,27 @@ test('dynamic mind map renders safe task vocabulary and grouped discourse marker
     assert.match(html, /data-network-add-idea="topic-work"/);
     assert.match(html, /data-network-link-mode/);
     assert.match(html, /not submitted/);
+    assert.match(html, /improve public transport/);
+    assert.match(html, /data-mindmap-default-branch="support"/);
+    assert.match(html, /data-mindmap-draggable="true"/);
+    assert.match(html, /More people commute by bus/);
+    assert.match(html, /Fewer cars in city centres/);
+    assert.match(html, /data-network-topic="topic-transport"/);
+    assert.doesNotMatch(html, /<svg onload=alert/);
     assert.doesNotMatch(html, /<img src=x/);
     assert.doesNotMatch(html, /onerror=alert/);
+
+    const partOneWords = context.filterDynamicMindMapVocabulary(
+        [
+            { term: 'Part one term', part: 'Part 1' },
+            { term: 'Part two term', part: 'Part 2' },
+            { term: 'Legacy unassigned term' }
+        ],
+        { title: '<b>Part 1</b>' },
+        0,
+        2
+    );
+    assert.deepEqual(Array.from(partOneWords, word => word.term), ['Part one term', 'Legacy unassigned term']);
 });
 
 test('scaffolded Writing provides task-specific blocks and combines them into a submission-ready essay', () => {

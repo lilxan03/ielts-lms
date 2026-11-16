@@ -1482,6 +1482,11 @@
     box-shadow: 0 0 0 2px #c7d2fe;
     transform: translateY(-1px);
 }
+.dynamic-mindmap__branch.is-drop-target {
+    border-color: #4f46e5;
+    background: #eef2ff;
+    box-shadow: inset 0 0 0 2px #c7d2fe;
+}
 .dynamic-mindmap__branch-select {
     display: flex;
     width: 100%;
@@ -1566,6 +1571,8 @@
 .dynamic-mindmap__phrase {
     cursor: pointer;
 }
+.dynamic-mindmap__phrase[draggable="true"] { cursor: grab; }
+.dynamic-mindmap__phrase[draggable="true"]:active { cursor: grabbing; }
 .dynamic-mindmap__phrase:hover,
 .dynamic-mindmap__phrase[aria-pressed="true"] {
     border-color: #6366f1;
