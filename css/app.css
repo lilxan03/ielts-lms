@@ -1239,8 +1239,12 @@
             font-size: 0.65rem;
         }
         #exam-ui footer {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            grid-template-rows: auto auto;
             height: auto;
-            min-height: 3.5rem;
+            min-height: 4.5rem;
+            gap: 0.2rem 0.35rem;
             padding: 0.35rem;
         }
         #exam-ui footer > div:first-child,
@@ -1248,8 +1252,36 @@
             width: auto;
             gap: 0.25rem;
         }
+        #exam-ui footer > div:first-child {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        #exam-ui footer > div:last-child {
+            grid-column: 3;
+            grid-row: 1;
+        }
         #exam-ui footer > div:first-child span {
             display: none;
+        }
+        #exam-navigation {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            width: 100%;
+            flex-direction: column;
+            gap: 0.15rem;
+            padding: 0;
+        }
+        #part-tabs-container {
+            width: 100%;
+            justify-content: center;
+        }
+        #palette-container {
+            width: 100%;
+            min-height: 2rem;
+            justify-content: flex-start !important;
+            touch-action: pan-x;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-x: contain;
         }
         #review-ui > header {
             padding: 0.65rem;
