@@ -1161,6 +1161,22 @@
             readableEmail || String(profile.realName || '').trim() || 'Học viên không rõ tên';
     }
 
+    function getStudentUsername(student) {
+        const profile = typeof student === 'object'
+            ? student
+            : USERS.find(user => user.user === student || user.username === student || user.uid === student);
+        const internalEmailUsername = String(profile?.email || '').match(/^([^@]+)@khanhlms\.com$/i)?.[1];
+        const candidates = [
+            profile?.username,
+            internalEmailUsername,
+            profile?.user,
+            typeof student === 'string' ? student : ''
+        ];
+        return candidates
+            .map(value => String(value || '').trim())
+            .find(value => value && value !== String(profile?.uid || '')) || 'Username unavailable';
+    }
+
     function renderClasses() {
       const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
       const sortVal = document.getElementById('classes-sort')?.value || 'default';
@@ -1386,7 +1402,7 @@
                             <div class="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition">
                                 <div class="flex items-center gap-2">
                                     <span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span>
-                                    <span class="font-bold text-slate-800">${escapeHtmlAttributeValue(getStudentDisplayName(student))}</span>
+                                    <span class="font-bold text-slate-800">${escapeHtmlAttributeValue(getStudentUsername(student))}</span>
                                 </div>
                                 ${isOwner ? `
                                 <div class="flex items-center gap-2">

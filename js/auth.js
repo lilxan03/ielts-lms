@@ -370,7 +370,7 @@
                             window.fsUpdateDoc(userDoc.ref, { pass: window.fsDeleteField() })
                                 .catch(error => console.error(`Unable to remove a legacy password field from users/${userDoc.id}:`, error));
                         }
-                        return sanitizeUserProfile(data);
+                        return { ...sanitizeUserProfile(data), username: data.username || userDoc.id };
                     }).filter(user => user.disabled !== true);
                     window.triggerUIRefresh();
             }));
