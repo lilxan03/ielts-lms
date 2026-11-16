@@ -987,6 +987,53 @@
     body.theme-dark [style*="color: #475569"],
     body.theme-dark [style*="color:#64748b"],
     body.theme-dark [style*="color: #64748b"] { color: #cbd5e1 !important; }
+    body.theme-dark .reading-mode-controls {
+        background: #1e293b !important;
+        border-color: #475569 !important;
+        color: #e2e8f0 !important;
+    }
+    body.theme-dark .reading-mode-controls button {
+        background: #334155 !important;
+        border-color: #64748b !important;
+        color: #dbeafe !important;
+    }
+    body.theme-dark .reading-mode-controls button:hover {
+        background: #475569 !important;
+    }
+    body.theme-dark .reading-mode-controls #btn-skimming-pause {
+        background: #422006 !important;
+        border-color: #a16207 !important;
+        color: #fde68a !important;
+    }
+    body.theme-dark .reading-mode-controls label { color: #cbd5e1 !important; }
+    body.theme-dark .reading-mode-controls input {
+        background: #0f172a !important;
+        border-color: #475569 !important;
+        color: #f8fafc !important;
+    }
+    body.theme-dark .reading-mode-controls > div[style*="width:1px"] {
+        background-color: #475569 !important;
+    }
+    body.theme-dark .syntax-chunking-controls {
+        background: #1e293b !important;
+        border-color: #475569 !important;
+        color: #cbd5e1 !important;
+    }
+    body.theme-dark .syntax-chunking-controls strong { color: #f8fafc !important; }
+    body.theme-dark .syntax-chunking-button,
+    body.theme-dark .syntax-chunking-clear {
+        background: #334155 !important;
+        border-color: #64748b !important;
+    }
+    body.theme-dark .syntax-chunking-button:hover,
+    body.theme-dark .syntax-chunking-clear:hover { background: #475569 !important; }
+    body.theme-dark .syntax-chunking-button--subject { color: #bfdbfe !important; border-color: #3b82f6 !important; }
+    body.theme-dark .syntax-chunking-button--verb { color: #a7f3d0 !important; border-color: #10b981 !important; }
+    body.theme-dark .syntax-chunking-button--object { color: #fed7aa !important; border-color: #f97316 !important; }
+    body.theme-dark .syntax-chunking-clear { color: #e2e8f0 !important; }
+    body.theme-dark .syntax-chunk--subject { color: #bfdbfe !important; background: #1e3a5f !important; }
+    body.theme-dark .syntax-chunk--verb { color: #a7f3d0 !important; background: #064e3b !important; }
+    body.theme-dark .syntax-chunk--object { color: #fed7aa !important; background: #7c2d12 !important; }
     body.theme-dark .vocab-word { color: #93c5fd !important; }
     body.theme-dark .grammar-word { color: #6ee7b7 !important; }
     body.theme-dark .vocab-word:hover { background-color: rgb(59 130 246 / 18%) !important; }
