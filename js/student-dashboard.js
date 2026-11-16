@@ -640,7 +640,7 @@
       const assignedTests = assignedTestItems
           .map(item => TEST_BANK.find(test => test.id === item.testId))
           .filter(Boolean);
-      const studentTestBankEntries = window.buildStudentTestBankEntries(assignedTests);
+      const studentTestBankEntries = window.buildTestBankEntries(assignedTests);
       const allTags = new Set(assignedTests.flatMap(test => test.topics || []));
 
       if (tagSelect) {
@@ -649,7 +649,7 @@
       }
 
       const filteredTests = studentTestBankEntries.filter(entry =>
-          window.matchesStudentTestBankEntry(entry, query) &&
+          window.matchesTestBankEntry(entry, query) &&
           (mod === 'all' || entry.test.module === mod) &&
           (selectedTag === 'all' || (entry.test.topics || []).includes(selectedTag))
       );

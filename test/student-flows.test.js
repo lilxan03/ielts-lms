@@ -5,7 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 const authHelpers = require('../js/auth-helpers.js');
 const { buildStudentTestAccessEntries } = require('../js/student-test-access.js');
-const { buildStudentTestBankEntries, matchesStudentTestBankEntry } = require('../js/student-test-bank.js');
+const { buildTestBankEntries, matchesTestBankEntry } = require('../js/test-bank-entries.js');
 
 const readAppScript = fileName => fs.readFileSync(
     path.join(__dirname, '..', 'js', fileName),
@@ -931,7 +931,7 @@ test('test mode dialog focuses controls, traps Tab, and restores focus on Escape
     assert.equal(document.activeElement, opener);
 });
 
-test('student test bank creates searchable single-part entries alongside the full test', () => {
+test('test banks create searchable single-part entries alongside the full test', () => {
     const readingTest = {
         id: 'cam-07-test-1',
         title: 'Cam 07 Test 1 Reading',
@@ -943,7 +943,7 @@ test('student test bank creates searchable single-part entries alongside the ful
         title: 'Writing Task 1',
         parts: [{ title: 'Chart Description' }]
     };
-    const entries = buildStudentTestBankEntries([readingTest, singlePartTest]);
+    const entries = buildTestBankEntries([readingTest, singlePartTest]);
 
     assert.deepEqual(entries.map(entry => [entry.test.id, entry.partIndex]), [
         ['cam-07-test-1', null],
@@ -952,18 +952,27 @@ test('student test bank creates searchable single-part entries alongside the ful
         ['cam-07-test-1', 2],
         ['writing-task-1', null]
     ]);
-    assert.deepEqual(entries.filter(entry => matchesStudentTestBankEntry(entry, 'bats')).map(entry => [
+    assert.deepEqual(entries.filter(entry => matchesTestBankEntry(entry, 'bats')).map(entry => [
         entry.test.id,
         entry.partIndex
     ]), [
         ['cam-07-test-1', null],
         ['cam-07-test-1', 0]
     ]);
-    assert.deepEqual(entries.filter(entry => matchesStudentTestBankEntry(entry, 'urban farming')).map(entry => [
+    assert.deepEqual(entries.filter(entry => matchesTestBankEntry(entry, 'urban farming')).map(entry => [
         entry.test.id,
         entry.partIndex
     ]), [
         ['cam-07-test-1', null],
         ['cam-07-test-1', 1]
     ]);
+});
+
+test('teacher test bank renders virtual part entries and labels parent-test actions', () => {
+    const source = readAppScript('teacher-dashboard.js');
+
+    assert.match(source, /window\.buildTestBankEntries\(TEST_BANK\)/);
+    assert.match(source, /window\.matchesTestBankEntry\(entry, query\)/);
+    assert.match(source, /const cardTitle = isPartEntry \? partTitle : t\.title/);
+    assert.match(source, /Assign full test; students can choose this part separately/);
 });

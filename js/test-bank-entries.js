@@ -1,5 +1,5 @@
 (function(root) {
-    function buildStudentTestBankEntries(tests) {
+    function buildTestBankEntries(tests) {
         return (Array.isArray(tests) ? tests : []).flatMap(test => [
             { test, partIndex: null },
             ...(Array.isArray(test?.parts) && test.parts.length > 1
@@ -8,7 +8,7 @@
         ]);
     }
 
-    function matchesStudentTestBankEntry(entry, query) {
+    function matchesTestBankEntry(entry, query) {
         const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
         if (!normalizedQuery) return true;
 
@@ -27,9 +27,9 @@
             .includes(normalizedQuery);
     }
 
-    root.buildStudentTestBankEntries = buildStudentTestBankEntries;
-    root.matchesStudentTestBankEntry = matchesStudentTestBankEntry;
+    root.buildTestBankEntries = buildTestBankEntries;
+    root.matchesTestBankEntry = matchesTestBankEntry;
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { buildStudentTestBankEntries, matchesStudentTestBankEntry };
+        module.exports = { buildTestBankEntries, matchesTestBankEntry };
     }
 })(typeof window !== 'undefined' ? window : globalThis);

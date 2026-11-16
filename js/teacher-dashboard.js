@@ -492,23 +492,6 @@
         if (bankView) bankView.scrollTop = scrollTop;
     };
 
-    function matchesTestSearch(test, query, additionalTitle = '') {
-      const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
-      if (!normalizedQuery) return true;
-
-      const searchableTitles = [
-        additionalTitle,
-        test?.title,
-        ...(Array.isArray(test?.parts) ? test.parts.map(part => part?.title) : []),
-        ...(Array.isArray(test?.topics) ? test.topics : [])
-      ];
-      return searchableTitles
-        .filter(value => typeof value === 'string')
-        .join(' ')
-        .toLocaleLowerCase()
-        .includes(normalizedQuery);
-    }
-
     function renderTestBank(resetPage = false) {
       if (resetPage) currentTestBankPage = 1;
       const grid = document.getElementById('test-bank-grid');
@@ -531,8 +514,9 @@
               Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
       }
 
-      let filtered = TEST_BANK.filter(t => {
-          const matchQuery = matchesTestSearch(t, query);
+      let filtered = window.buildTestBankEntries(TEST_BANK).filter(entry => {
+          const t = entry.test;
+          const matchQuery = window.matchesTestBankEntry(entry, query);
           const matchMod = mod === 'all' || t.module === mod;
           const matchTag = selectedTag === 'all' || (t.topics && t.topics.includes(selectedTag));
           
@@ -543,8 +527,11 @@
           return matchQuery && matchMod && matchTag && matchStatus && matchAssignee;
       });
 
-      if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
-      else if (sort === 'za') filtered.sort((a, b) => b.title.localeCompare(a.title));
+      const getEntryTitle = entry => Number.isInteger(entry.partIndex)
+          ? entry.test.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`
+          : entry.test.title;
+      if (sort === 'az') filtered.sort((a, b) => getEntryTitle(a).localeCompare(getEntryTitle(b)));
+      else if (sort === 'za') filtered.sort((a, b) => getEntryTitle(b).localeCompare(getEntryTitle(a)));
 
       // ✨ NEW: Pagination Math
       const totalPages = Math.ceil(filtered.length / TESTS_PER_PAGE) || 1;
@@ -553,7 +540,13 @@
       const startIndex = (currentTestBankPage - 1) * TESTS_PER_PAGE;
       const paginatedTests = filtered.slice(startIndex, startIndex + TESTS_PER_PAGE);
 
-      grid.innerHTML = paginatedTests.length ? paginatedTests.map(t => {
+      grid.innerHTML = paginatedTests.length ? paginatedTests.map(entry => {
+        const t = entry.test;
+        const isPartEntry = Number.isInteger(entry.partIndex);
+        const partTitle = isPartEntry
+            ? t.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`
+            : '';
+        const cardTitle = isPartEntry ? partTitle : t.title;
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber', activity:'fuchsia' };
         const c = modColors[t.module] || 'slate';
         
@@ -590,15 +583,18 @@
              ${statBadge}
           </div>
           <div class="flex justify-between items-start gap-2 mb-3 flex-1">
-             <h3 class="font-bold text-slate-900 leading-snug break-words">${t.title}</h3>
-             <span class="text-xs text-slate-400 font-bold shrink-0 mt-0.5">${t.parts.length} Part(s)</span>
+             <div class="min-w-0">
+               <h3 class="font-bold text-slate-900 leading-snug break-words">${escapeHtmlAttributeValue(cardTitle)}</h3>
+               ${isPartEntry ? `<p class="mt-1 text-[11px] font-semibold text-slate-500">${escapeHtmlAttributeValue(t.title)} · Part ${entry.partIndex + 1} only</p>` : ''}
+             </div>
+             <span class="text-xs text-slate-400 font-bold shrink-0 mt-0.5">${isPartEntry ? 'Part only' : `${t.parts.length} Part(s)`}</span>
           </div>
           <div class="shrink-0">${assignedBadge}</div>
           <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100 shrink-0">
-            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Edit Test">✏️</button>
-            ${currentUser.role === 'teacher' ? `<button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>` : ''}
-            <button onclick="window.promptMergeTest('${t.id}')" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Merge Test">🔀</button>
-            <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>
+            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="${isPartEntry ? 'Edit parent test' : 'Edit Test'}">✏️</button>
+            ${currentUser.role === 'teacher' ? `<button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="${isPartEntry ? 'Assign full test; students can choose this part separately' : 'Assign to Class'}">👥</button>` : ''}
+            ${isPartEntry ? '' : `<button onclick="window.promptMergeTest('${t.id}')" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Merge Test">🔀</button>
+            <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>`}
           </div>
         </div>`;
       }).join('') : '<div class="col-span-full text-center p-10 text-slate-500 italic bg-white rounded-2xl border border-slate-200 shadow-sm">No tests found matching your criteria.</div>';
