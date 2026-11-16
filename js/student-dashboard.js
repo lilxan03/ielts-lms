@@ -571,8 +571,8 @@
       const renderTestBankCard = entry => {
         const test = entry.test;
         const part = Number.isInteger(entry.partIndex) ? test.parts?.[entry.partIndex] : null;
-        const partTitle = part?.title || st(`Part ${entry.partIndex + 1}`, `Phần ${entry.partIndex + 1}`);
-        const cardTitle = part ? partTitle : test.title;
+        const partTitle = window.cleanTestBankLabel(part?.title || st(`Part ${entry.partIndex + 1}`, `Phần ${entry.partIndex + 1}`));
+        const cardTitle = window.cleanTestBankLabel(part ? partTitle : test.title);
         const price = Number(test.price) || 0;
         const isLocked = price > 0 && !(currentUser.unlockedTests || []).includes(test.id);
         const isCompleted = completedTestIds.includes(test.id);
@@ -596,7 +596,7 @@
             </div>
             <div class="flex-1">
               <h3 class="font-bold text-slate-900 leading-snug">${escapeForumHtml(cardTitle)}</h3>
-              <p class="text-xs text-slate-500 mt-2">${part ? `${escapeForumHtml(test.title)} · ${st(`Part ${entry.partIndex + 1} only`, `Chỉ phần ${entry.partIndex + 1}`)}` : `${test.parts?.length || 0} ${st('part(s)', 'phần')}`}${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
+              <p class="text-xs text-slate-500 mt-2">${part ? `${escapeForumHtml(window.cleanTestBankLabel(test.title))} · ${st(`Part ${entry.partIndex + 1} only`, `Chỉ phần ${entry.partIndex + 1}`)}` : `${test.parts?.length || 0} ${st('part(s)', 'phần')}`}${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
               ${dueDate ? `<div class="mt-2">${dueDate}</div>` : ''}
             </div>
             <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"${part ? ` data-student-bank-part="${entry.partIndex}"` : ''}`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} rounded-lg py-2.5 text-sm font-black transition">

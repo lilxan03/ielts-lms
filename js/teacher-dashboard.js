@@ -528,8 +528,8 @@
       });
 
       const getEntryTitle = entry => Number.isInteger(entry.partIndex)
-          ? entry.test.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`
-          : entry.test.title;
+          ? window.cleanTestBankLabel(entry.test.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`)
+          : window.cleanTestBankLabel(entry.test.title);
       if (sort === 'az') filtered.sort((a, b) => getEntryTitle(a).localeCompare(getEntryTitle(b)));
       else if (sort === 'za') filtered.sort((a, b) => getEntryTitle(b).localeCompare(getEntryTitle(a)));
 
@@ -544,9 +544,9 @@
         const t = entry.test;
         const isPartEntry = Number.isInteger(entry.partIndex);
         const partTitle = isPartEntry
-            ? t.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`
+            ? window.cleanTestBankLabel(t.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`)
             : '';
-        const cardTitle = isPartEntry ? partTitle : t.title;
+        const cardTitle = isPartEntry ? partTitle : window.cleanTestBankLabel(t.title);
         const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber', activity:'fuchsia' };
         const c = modColors[t.module] || 'slate';
         
@@ -585,7 +585,7 @@
           <div class="flex justify-between items-start gap-2 mb-3 flex-1">
              <div class="min-w-0">
                <h3 class="font-bold text-slate-900 leading-snug break-words">${escapeHtmlAttributeValue(cardTitle)}</h3>
-               ${isPartEntry ? `<p class="mt-1 text-[11px] font-semibold text-slate-500">${escapeHtmlAttributeValue(t.title)} · Part ${entry.partIndex + 1} only</p>` : ''}
+               ${isPartEntry ? `<p class="mt-1 text-[11px] font-semibold text-slate-500">${escapeHtmlAttributeValue(window.cleanTestBankLabel(t.title))} · Part ${entry.partIndex + 1} only</p>` : ''}
              </div>
              <span class="text-xs text-slate-400 font-bold shrink-0 mt-0.5">${isPartEntry ? 'Part only' : `${t.parts.length} Part(s)`}</span>
           </div>

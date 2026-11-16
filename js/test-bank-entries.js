@@ -1,4 +1,19 @@
 (function(root) {
+    function cleanTestBankLabel(value = '') {
+        return String(value || '')
+            .replace(/<br\s*\/?>/gi, ' ')
+            .replace(/<\/(?:p|div|h[1-6]|li|tr)>/gi, ' ')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/&nbsp;|&#160;/gi, ' ')
+            .replace(/&amp;/gi, '&')
+            .replace(/&lt;/gi, '<')
+            .replace(/&gt;/gi, '>')
+            .replace(/&quot;/gi, '"')
+            .replace(/&#0?39;|&apos;/gi, "'")
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     function buildTestBankEntries(tests) {
         return (Array.isArray(tests) ? tests : []).flatMap(test => [
             { test, partIndex: null },
@@ -22,14 +37,16 @@
 
         return titles
             .filter(value => typeof value === 'string')
+            .map(cleanTestBankLabel)
             .join(' ')
             .toLocaleLowerCase()
             .includes(normalizedQuery);
     }
 
+    root.cleanTestBankLabel = cleanTestBankLabel;
     root.buildTestBankEntries = buildTestBankEntries;
     root.matchesTestBankEntry = matchesTestBankEntry;
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = { buildTestBankEntries, matchesTestBankEntry };
+        module.exports = { buildTestBankEntries, cleanTestBankLabel, matchesTestBankEntry };
     }
 })(typeof window !== 'undefined' ? window : globalThis);
