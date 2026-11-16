@@ -5,6 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 const authHelpers = require('../js/auth-helpers.js');
 const { buildStudentTestAccessEntries } = require('../js/student-test-access.js');
+const { buildStudentTestBankEntries, matchesStudentTestBankEntry } = require('../js/student-test-bank.js');
 
 const readAppScript = fileName => fs.readFileSync(
     path.join(__dirname, '..', 'js', fileName),
@@ -928,4 +929,41 @@ test('test mode dialog focuses controls, traps Tab, and restores focus on Escape
     });
     assert.equal(escapePrevented, true);
     assert.equal(document.activeElement, opener);
+});
+
+test('student test bank creates searchable single-part entries alongside the full test', () => {
+    const readingTest = {
+        id: 'cam-07-test-1',
+        title: 'Cam 07 Test 1 Reading',
+        topics: ['Cambridge 07'],
+        parts: [{ title: 'Bats' }, { title: 'Urban Farming' }, { title: 'Space Travel' }]
+    };
+    const singlePartTest = {
+        id: 'writing-task-1',
+        title: 'Writing Task 1',
+        parts: [{ title: 'Chart Description' }]
+    };
+    const entries = buildStudentTestBankEntries([readingTest, singlePartTest]);
+
+    assert.deepEqual(entries.map(entry => [entry.test.id, entry.partIndex]), [
+        ['cam-07-test-1', null],
+        ['cam-07-test-1', 0],
+        ['cam-07-test-1', 1],
+        ['cam-07-test-1', 2],
+        ['writing-task-1', null]
+    ]);
+    assert.deepEqual(entries.filter(entry => matchesStudentTestBankEntry(entry, 'bats')).map(entry => [
+        entry.test.id,
+        entry.partIndex
+    ]), [
+        ['cam-07-test-1', null],
+        ['cam-07-test-1', 0]
+    ]);
+    assert.deepEqual(entries.filter(entry => matchesStudentTestBankEntry(entry, 'urban farming')).map(entry => [
+        entry.test.id,
+        entry.partIndex
+    ]), [
+        ['cam-07-test-1', null],
+        ['cam-07-test-1', 1]
+    ]);
 });

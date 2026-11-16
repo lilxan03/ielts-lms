@@ -568,7 +568,11 @@
       const completedTestIds = [...new Set(mySubs.map(s => s.testId).filter(Boolean))]; 
       const completedCount = assignedTestItems.filter(item => completedTestIds.includes(item.testId)).length;
       const progressPct = totalTests === 0 ? 0 : Math.min(100, Math.round((completedCount / totalTests) * 100));
-      const renderTestBankCard = test => {
+      const renderTestBankCard = entry => {
+        const test = entry.test;
+        const part = Number.isInteger(entry.partIndex) ? test.parts?.[entry.partIndex] : null;
+        const partTitle = part?.title || st(`Part ${entry.partIndex + 1}`, `Phần ${entry.partIndex + 1}`);
+        const cardTitle = part ? partTitle : test.title;
         const price = Number(test.price) || 0;
         const isLocked = price > 0 && !(currentUser.unlockedTests || []).includes(test.id);
         const isCompleted = completedTestIds.includes(test.id);
@@ -591,11 +595,11 @@
               ${status}
             </div>
             <div class="flex-1">
-              <h3 class="font-bold text-slate-900 leading-snug">${escapeForumHtml(test.title)}</h3>
-              <p class="text-xs text-slate-500 mt-2">${test.parts?.length || 0} part(s)${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
+              <h3 class="font-bold text-slate-900 leading-snug">${escapeForumHtml(cardTitle)}</h3>
+              <p class="text-xs text-slate-500 mt-2">${part ? `${escapeForumHtml(test.title)} · ${st(`Part ${entry.partIndex + 1} only`, `Chỉ phần ${entry.partIndex + 1}`)}` : `${test.parts?.length || 0} ${st('part(s)', 'phần')}`}${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
               ${dueDate ? `<div class="mt-2">${dueDate}</div>` : ''}
             </div>
-            <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} rounded-lg py-2.5 text-sm font-black transition">
+            <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"${part ? ` data-student-bank-part="${entry.partIndex}"` : ''}`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} rounded-lg py-2.5 text-sm font-black transition">
               ${isLocked ? `🔒 ${st('Unlock', 'Mở khóa')} ${price} 💎` : isCompleted ? st('Take Again →', 'Làm lại →') : st('Take Test →', 'Làm bài →')}
             </button>
           </article>`;
@@ -636,6 +640,7 @@
       const assignedTests = assignedTestItems
           .map(item => TEST_BANK.find(test => test.id === item.testId))
           .filter(Boolean);
+      const studentTestBankEntries = window.buildStudentTestBankEntries(assignedTests);
       const allTags = new Set(assignedTests.flatMap(test => test.topics || []));
 
       if (tagSelect) {
@@ -643,18 +648,24 @@
               Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
       }
 
-      const filteredTests = assignedTests.filter(test =>
-          matchesTestSearch(test, query) &&
-          (mod === 'all' || test.module === mod) &&
-          (selectedTag === 'all' || (test.topics || []).includes(selectedTag))
+      const filteredTests = studentTestBankEntries.filter(entry =>
+          window.matchesStudentTestBankEntry(entry, query) &&
+          (mod === 'all' || entry.test.module === mod) &&
+          (selectedTag === 'all' || (entry.test.topics || []).includes(selectedTag))
       );
-      if (sort === 'az') filteredTests.sort((a, b) => a.title.localeCompare(b.title));
-      else if (sort === 'za') filteredTests.sort((a, b) => b.title.localeCompare(a.title));
+      const getEntryTitle = entry => Number.isInteger(entry.partIndex)
+          ? entry.test.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`
+          : entry.test.title;
+      if (sort === 'az') filteredTests.sort((a, b) => getEntryTitle(a).localeCompare(getEntryTitle(b)));
+      else if (sort === 'za') filteredTests.sort((a, b) => getEntryTitle(b).localeCompare(getEntryTitle(a)));
       list.innerHTML = filteredTests.length
           ? `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${filteredTests.map(renderTestBankCard).join('')}</div>`
           : `<div class="text-sm text-slate-500 italic py-8 text-center">${assignedTests.length ? st('No tests match your search or filters.', 'Không có bài thi phù hợp với nội dung tìm kiếm hoặc bộ lọc.') : st('No tests have been assigned to this class yet.', 'Lớp chưa được giao bài thi nào.')}</div>`;
       list.querySelectorAll('[data-student-bank-test]').forEach(button => {
-          button.addEventListener('click', () => openModeSelection(button.dataset.studentBankTest));
+          button.addEventListener('click', () => openModeSelection(
+              button.dataset.studentBankTest,
+              button.dataset.studentBankPart === undefined ? null : Number(button.dataset.studentBankPart)
+          ));
       });
 
       // Update Peer Review App Badge
@@ -917,7 +928,7 @@
       return assigned || scheduled ? { testId } : null;
     }
 
-    function openModeSelection(tid) {
+    function openModeSelection(tid, selectedPartIndex = null) {
       if (currentUser?.role === 'student' && !getCurrentStudentAssignedTest(tid)) {
           showModalMsg('Unavailable', 'This test is not assigned to your current class.');
           return;
@@ -940,7 +951,7 @@
           partCheckboxes.innerHTML = t.parts.map((p, idx) => `
               <div class="part-select-option flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm transition hover:bg-slate-100">
                   <label class="flex min-w-0 items-center gap-2 cursor-pointer">
-                      <input type="checkbox" class="part-select-cb h-4 w-4 shrink-0 rounded text-blue-600 focus:ring-blue-500" value="${idx}" checked onchange="window.updateSpeakingSimulationAvailability()">
+                      <input type="checkbox" class="part-select-cb h-4 w-4 shrink-0 rounded text-blue-600 focus:ring-blue-500" value="${idx}" ${selectedPartIndex === null || selectedPartIndex === idx ? 'checked' : ''} onchange="window.updateSpeakingSimulationAvailability()">
                       <span class="part-select-title truncate font-bold text-slate-700 text-sm">${escapeForumHtml(p.title || window.studentText('Part ' + (idx + 1), 'Phần ' + (idx + 1)))}</span>
                   </label>
                   <button type="button" data-test-part-action="single" data-part-index="${idx}" class="shrink-0 rounded-md px-2 py-1 text-[11px] font-black text-blue-700 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" aria-label="${escapeForumHtml(window.studentText(`Practice ${p.title || 'Part ' + (idx + 1)} only`, `Chỉ luyện ${p.title || 'Phần ' + (idx + 1)}`))}" data-student-en="Only this part" data-student-vi="Chỉ phần này">Only this part</button>
