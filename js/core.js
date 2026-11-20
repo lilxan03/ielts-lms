@@ -34,6 +34,8 @@
     let PACKAGES = []; 
     let paymentCatalogUnsubscribe = null;
     let paymentPackagesUnsubscribe = null;
+    let paymentCatalogStatus = 'loading';
+    let paymentPackagesStatus = 'loading';
     let TEACHER_TEMPLATES = [];
     let TEACHER_TEMPLATE_ASSIGNMENTS = {};
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
@@ -204,28 +206,37 @@
     window.bootPaymentPortal = async function() {
       paymentCatalogUnsubscribe?.();
       paymentPackagesUnsubscribe?.();
+      paymentCatalogStatus = 'loading';
+      paymentPackagesStatus = 'loading';
+      if (document.getElementById('checkout-course')) window.renderStudentCheckout();
       const billingSnapshot = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'));
       if (billingSnapshot.exists()) BILLING_SETTINGS = billingSnapshot.data();
       paymentCatalogUnsubscribe = window.fsOnSnapshot(
         window.fsCollection(window.db, window.fPath('course_catalog')),
         snapshot => {
           CLASSES = snapshot.docs.map(doc => doc.data());
+          paymentCatalogStatus = 'loaded';
           if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         },
         error => {
+          paymentCatalogStatus = 'error';
           console.error('Unable to load the public course catalog:', error);
           window.showToast?.('Could not load courses', 'Refresh the page or contact your teacher.', 'error');
+          if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         }
       );
       paymentPackagesUnsubscribe = window.fsOnSnapshot(
         window.fsCollection(window.db, window.fPath('packages')),
         snapshot => {
           PACKAGES = snapshot.docs.map(doc => doc.data());
+          paymentPackagesStatus = 'loaded';
           if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         },
         error => {
+          paymentPackagesStatus = 'error';
           console.error('Unable to load public course packages:', error);
           window.showToast?.('Could not load bundles', 'Refresh the page or contact your teacher.', 'error');
+          if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         }
       );
       window.renderAccountGate();

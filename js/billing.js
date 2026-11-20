@@ -222,9 +222,11 @@
     window.renderStudentCheckout = function renderStudentCheckout() {
         let classOpts = '';
         const availableClasses = CLASSES.filter(cls => !window.isTemplateClass(cls));
+        const catalogReady = paymentCatalogStatus === 'loaded' && paymentPackagesStatus === 'loaded';
+        let availablePackages = [];
         
         if (PACKAGES.length > 0) {
-            const availablePackages = PACKAGES.filter(pkg => (pkg.classes || []).some(classId => {
+            availablePackages = PACKAGES.filter(pkg => (pkg.classes || []).some(classId => {
                 const cls = CLASSES.find(candidate => candidate.id === classId);
                 return cls && !window.isTemplateClass(cls);
             }));
@@ -240,7 +242,20 @@
             classOpts += `</optgroup>`;
         }
         
-        if (!classOpts) classOpts = `<option value="">No classes or packages available</option>`;
+        const hasAvailableCourse = Boolean(availablePackages.length || availableClasses.length);
+        if (!classOpts) {
+            const placeholder = !catalogReady
+                ? '?ang t?i kh?a h?c?'
+                : 'Hi?n ch?a c? kh?a h?c m? ??ng k?';
+            classOpts = `<option value="">${placeholder}</option>`;
+        }
+        const catalogStatusMarkup = paymentCatalogStatus === 'error' || paymentPackagesStatus === 'error'
+            ? `<p class="mt-2 text-sm text-rose-700" role="alert">Kh?ng t?i ???c danh s?ch kh?a h?c. <button type="button" onclick="window.bootPaymentPortal()" class="font-bold underline">Th? t?i l?i</button></p>`
+            : !catalogReady
+                ? `<p class="mt-2 text-sm text-slate-500" role="status">?ang t?i danh s?ch kh?a h?c?</p>`
+                : !hasAvailableCourse
+                    ? `<p class="mt-2 text-sm text-slate-600" role="status">Hi?n ch?a c? kh?a h?c m? ??ng k?. Vui l?ng li?n h? gi?o vi?n ?? ???c t? v?n.</p>`
+                    : '';
 
         const lpmDefault = BILLING_SETTINGS.lessonsPerMonth || 12;
         const billingExpiry = getBillingExpiryMillis(currentUser);
@@ -265,6 +280,7 @@
                         <select id="checkout-course" class="w-full bg-blue-700/50 border border-blue-500 text-white p-2.5 rounded-lg outline-none focus:bg-white focus:text-blue-900 focus:border-white font-bold transition-colors shadow-inner" onchange="window.updateCheckoutMath()">
                             ${classOpts}
                         </select>
+                        ${catalogStatusMarkup}
                     </div>
                     <div class="w-[120px]" id="checkout-lpm-container">
                         <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-1.5" title="Lessons per month">Lessons/Mo</label>
@@ -325,6 +341,19 @@
     window.updateCheckoutMath = function updateCheckoutMath() {
         const courseSel = document.getElementById('checkout-course');
         const selVal = courseSel ? courseSel.value : null;
+        if (paymentCatalogStatus !== 'loaded' || paymentPackagesStatus !== 'loaded' || !selVal) {
+            window.checkoutPlans = [];
+            window.selectedCheckoutPlan = null;
+            const plansContainer = document.getElementById('checkout-plans-container');
+            if (plansContainer) plansContainer.innerHTML = '';
+            const amount = document.getElementById('vietqr-amount');
+            const description = document.getElementById('vietqr-desc');
+            const qrImage = document.getElementById('vietqr-image');
+            if (amount) amount.textContent = '-';
+            if (description) description.textContent = '';
+            if (qrImage) qrImage.removeAttribute('src');
+            return;
+        }
 
         const lpmContainer = document.getElementById('checkout-lpm-container');
         const infoContainer = document.getElementById('checkout-package-info');
@@ -484,6 +513,10 @@
 
     window.notifyTeacherPayment = async function notifyTeacherPayment() {
         const courseSel = document.getElementById('checkout-course');
+        if (paymentCatalogStatus !== 'loaded' || paymentPackagesStatus !== 'loaded') {
+            showModalMsg("Notice", "Course information is still loading. Please wait and try again.");
+            return;
+        }
         if (!courseSel || !courseSel.value) {
             showModalMsg("Notice", "Please select a course to enroll in first.");
             return;

@@ -1256,9 +1256,24 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     });
 };
 
+    window.publicPackagesStatus = 'loading';
+    window.getPublicPackagesStatusMarkup = function() {
+        if (window.publicPackagesStatus === 'loading') {
+            return `<div class="col-span-full rounded-2xl border border-blue-100 bg-blue-50 p-8 text-center text-slate-700" role="status">?ang t?i th?ng tin kh?a h?c?</div>`;
+        }
+        if (window.publicPackagesStatus === 'error') {
+            return `<div class="col-span-full rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center" role="alert">
+                <h3 class="text-xl font-black text-slate-900">Ch?a t?i ???c th?ng tin kh?a h?c</h3>
+                <p class="mx-auto mt-2 max-w-xl text-slate-600">Vui l?ng th? t?i l?i. N?u v?n ?? ti?p t?c, h?y li?n h? ?? ???c t? v?n.</p>
+                <button type="button" onclick="window.loadPublicLandingData()" class="mt-5 rounded-xl bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800">Th? t?i l?i</button>
+            </div>`;
+        }
+        return '';
+    };
     window.loadPublicLandingData = function() {
         if (window.publicLandingDataPromise) return window.publicLandingDataPromise;
 
+        window.publicPackagesStatus = 'loading';
         window.renderPublicProfile();
         window.publicLandingDataPromise = (async () => {
             const [profileResult, packagesResult, hallOfFameResult] = await Promise.allSettled([
@@ -1281,6 +1296,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             } else {
                 failures.push(['packages', packagesResult.reason]);
             }
+            window.publicPackagesStatus = packagesResult.status === 'fulfilled' ? 'loaded' : 'error';
 
             if (hallOfFameResult.status === 'fulfilled') {
                 HOF_STUDENTS = hallOfFameResult.value.docs.map(doc => doc.data());
@@ -1388,7 +1404,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         // Render Public Packages
         const pgrid = document.getElementById('public-packages-grid');
         if (pgrid) {
-            if (PACKAGES.length === 0) {
+            const packageStatusMarkup = window.getPublicPackagesStatusMarkup();
+            if (packageStatusMarkup) pgrid.innerHTML = packageStatusMarkup;
+            else if (PACKAGES.length === 0) {
                 pgrid.innerHTML = `<div class="col-span-full text-center text-slate-500 italic bg-white p-10 rounded-2xl border border-slate-200">Course bundles opening soon. Check back later!</div>`;
             } else {
                 pgrid.innerHTML = PACKAGES.map(p => {
