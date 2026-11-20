@@ -9,6 +9,7 @@ const {
 } = require('@firebase/rules-unit-testing');
 const {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -38,9 +39,12 @@ beforeEach(async () => {
       ['account_access/alice-uid', { uid: 'alice-uid', username: 'alice', role: 'student', paid: true }],
       ['account_access/bob-uid', { uid: 'bob-uid', username: 'bob', role: 'student', paid: true }],
       ['account_access/teacher-uid', { uid: 'teacher-uid', username: 'teacher', role: 'teacher', paid: false }],
-      ['classes/class-a', { id: 'class-a', name: 'Class A', enrolledStudents: ['alice'], assignedTests: ['test-a'] }],
+      ['classes/class-a', { id: 'class-a', name: 'Class A', parentClassId: 'class-parent', enrolledStudents: ['alice'], assignedTests: ['test-a'] }],
+      ['classes/class-parent', { id: 'class-parent', name: 'Course A', isTemplate: true, enrolledStudents: [], assignedTests: ['parent-test'] }],
       ['classes/class-b', { id: 'class-b', name: 'Class B', enrolledStudents: ['bob'], assignedTests: ['test-b'] }],
       ['classes/class-c', { id: 'class-c', name: 'Class C', enrolledStudents: ['alice'], assignedTests: [] }],
+      ['course_catalog/class-a', { id: 'class-a', name: 'IELTS Reading', parentClassId: 'course-a', feePerLesson: 200000, isTemplate: false }],
+      ['packages/package-a', { id: 'package-a', name: 'IELTS Starter', classes: ['class-a'], feePerLesson: 200000 }],
       ['tests/test-a', { id: 'test-a', title: 'Assigned test', correctAnswers: { q1: 'answer' } }],
       ['tests/test-b', { id: 'test-b', title: 'Other class test', correctAnswers: { q1: 'secret' } }],
       ['tests/test-c', { id: 'test-c', title: 'Scheduled test' }],
@@ -88,6 +92,17 @@ after(async () => {
   await testEnv?.cleanup();
 });
 
+test('public visitors can read published packages and course catalog but not private class records', async () => {
+  const db = testEnv.unauthenticatedContext().firestore();
+  const packages = await assertSucceeds(getDocs(collection(db, 'packages')));
+  const catalog = await assertSucceeds(getDocs(collection(db, 'course_catalog')));
+
+  assert.equal(packages.docs[0].data().name, 'IELTS Starter');
+  assert.equal(catalog.docs[0].data().name, 'IELTS Reading');
+  await assertFails(getDocs(collection(db, 'classes')));
+  await assertFails(getDoc(doc(db, 'classes/class-a')));
+});
+
 test('students can read only currently assigned tests, not list the test bank', async () => {
   const db = testEnv.authenticatedContext('alice-uid', { email: 'alice@example.com' }).firestore();
   await assertSucceeds(getDoc(doc(db, 'tests/test-a')));
@@ -96,6 +111,56 @@ test('students can read only currently assigned tests, not list the test bank', 
   await assertFails(getDocs(collection(db, 'tests')));
   await assertSucceeds(getDocs(collection(db, 'student_test_access/alice-uid/tests')));
   await assertFails(getDocs(collection(db, 'student_test_access/bob-uid/tests')));
+});
+
+test('students can maintain only their own access entries for currently assigned tests', async () => {
+  const db = testEnv.authenticatedContext('alice-uid', { email: 'alice@example.com' }).firestore();
+
+  await assertSucceeds(setDoc(doc(db, 'student_test_access/alice-uid/tests/test-a'), {
+    uid: 'alice-uid',
+    username: 'alice',
+    testId: 'test-a',
+    classId: 'class-a',
+    source: 'class'
+  }));
+  await assertSucceeds(setDoc(doc(db, 'student_test_access/alice-uid/tests/parent-test'), {
+    uid: 'alice-uid',
+    username: 'alice',
+    testId: 'parent-test',
+    classId: 'class-a',
+    source: 'class'
+  }));
+  await assertSucceeds(setDoc(doc(db, 'student_test_access/alice-uid/tests/test-c'), {
+    uid: 'alice-uid',
+    username: 'alice',
+    testId: 'test-c',
+    classId: 'class-a',
+    scheduleId: 'schedule-a',
+    source: 'schedule'
+  }));
+  await assertFails(setDoc(doc(db, 'student_test_access/alice-uid/tests/test-b'), {
+    uid: 'alice-uid',
+    username: 'alice',
+    testId: 'test-b',
+    classId: 'class-b',
+    source: 'class'
+  }));
+  await assertFails(setDoc(doc(db, 'student_test_access/bob-uid/tests/test-a'), {
+    uid: 'bob-uid',
+    username: 'alice',
+    testId: 'test-a',
+    classId: 'class-a',
+    source: 'class'
+  }));
+  await assertFails(setDoc(doc(db, 'student_test_access/alice-uid/tests/test-a'), {
+    uid: 'alice-uid',
+    username: 'alice',
+    testId: 'test-a',
+    classId: 'class-a',
+    source: 'class',
+    unexpected: true
+  }));
+  await assertSucceeds(deleteDoc(doc(db, 'student_test_access/alice-uid/tests/test-c')));
 });
 
 test('a stale test-access record stops working when the class assignment is removed', async () => {
