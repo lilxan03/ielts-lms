@@ -1505,18 +1505,36 @@
             return { module, parts: usableParts, questionCount, maxQuestionId };
         }
 
+        let pdfJsLoadPromise = null;
+        function loadPdfJs() {
+            if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+            if (!pdfJsLoadPromise) {
+                pdfJsLoadPromise = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                    script.async = true;
+                    script.onload = () => window.pdfjsLib
+                        ? resolve(window.pdfjsLib)
+                        : reject(new Error("Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại."));
+                    script.onerror = () => reject(new Error("Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại."));
+                    document.head.appendChild(script);
+                }).catch(error => {
+                    pdfJsLoadPromise = null;
+                    throw error;
+                });
+            }
+            return pdfJsLoadPromise;
+        }
+
         window.handleTestPdfImport = async function(event) {
             const file = event.target.files && event.target.files[0];
             event.target.value = '';
             if (!file) return;
-            if (!window.pdfjsLib) {
-                setTestPdfImportStatus('Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại.', 'error');
-                return;
-            }
             setTestPdfImportStatus(`Đang đọc ${file.name}...`, 'info');
             try {
-                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                const pdfjsLib = await loadPdfJs();
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
                 const pageTexts = [];
                 for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
                     const page = await pdf.getPage(pageNo);

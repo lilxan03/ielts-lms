@@ -434,6 +434,15 @@
     // ✨ NEW: Global Revenue Chart Generator
     window.revenueChartInstance = null;
     window.updateRevenueChart = function(period) {
+        if (!window.Chart) {
+            window.ensureChartJsLoaded()
+                .then(() => window.updateRevenueChart(period))
+                .catch(error => {
+                    console.error('Unable to load Chart.js for the revenue chart:', error);
+                    window.showToast?.('Chart unavailable', 'Unable to load charts. Check your connection and try again.', 'error');
+                });
+            return;
+        }
         ['month', 'quarter', 'year'].forEach(p => {
             const btn = document.getElementById(`btn-chart-${p}`);
             if(btn) {

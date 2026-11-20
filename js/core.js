@@ -44,6 +44,26 @@
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
+    let chartJsLoadPromise = null;
+    window.ensureChartJsLoaded = function() {
+      if (window.Chart) return Promise.resolve(window.Chart);
+      if (!chartJsLoadPromise) {
+        chartJsLoadPromise = new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+          script.async = true;
+          script.onload = () => window.Chart
+            ? resolve(window.Chart)
+            : reject(new Error('Chart.js loaded without exposing its API.'));
+          script.onerror = () => reject(new Error('Unable to load Chart.js.'));
+          document.head.appendChild(script);
+        }).catch(error => {
+          chartJsLoadPromise = null;
+          throw error;
+        });
+      }
+      return chartJsLoadPromise;
+    };
     const STUDENT_LANGUAGE_KEY = 'ielts_student_language';
     let studentLanguage = localStorage.getItem(STUDENT_LANGUAGE_KEY) === 'en' ? 'en' : 'vi';
     window.studentText = function(english, vietnamese) {

@@ -391,7 +391,7 @@ window.loadChartEditorUI = function() {
     if (!container) return;
 
     document.querySelectorAll('.builder-chart-canvas').forEach(canvas => {
-        const chartStatus = Chart.getChart(canvas);
+        const chartStatus = window.Chart?.getChart(canvas);
         if (chartStatus) chartStatus.destroy();
     });
     container.innerHTML = '';
@@ -1033,7 +1033,16 @@ window.updateStudentChartComparison = function(part, charts) {
 
 // Hàm Render chung (dùng cho cả Teacher Builder và Student Exam)
 window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionContext, renderOptions = {}) {
-    const chartStatus = Chart.getChart(canvasId);
+    if (config && config.type !== 'table' && !window.Chart) {
+        return window.ensureChartJsLoaded()
+            .then(() => window.renderCanvasChart(canvasId, config, pointColorMap, selectionContext, renderOptions))
+            .catch(error => {
+                console.error('Unable to load Chart.js for chart rendering:', error);
+                window.showToast?.('Chart unavailable', 'Unable to load charts. Check your connection and try again.', 'error');
+                return null;
+            });
+    }
+    const chartStatus = window.Chart?.getChart(canvasId);
     if (chartStatus) chartStatus.destroy();
 
     const canvas = document.getElementById(canvasId);
