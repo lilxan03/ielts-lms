@@ -1363,10 +1363,11 @@
     window.availableSpinTests = [];
 
     window.openRandomSpinner = function() {
+        const st = window.studentText || ((english) => english);
         const cid = document.getElementById('student-class-select')?.value;
         const cls = CLASSES.find(c => c.id === cid);
         if (!cls) {
-            showModalMsg("Notice", "Please select an active class first.");
+            showModalMsg(st("Notice", "Thông báo"), st("Please select an active class first.", "Vui lòng chọn lớp đang học trước."));
             return;
         }
 
@@ -1385,12 +1386,15 @@
         }).filter(Boolean);
 
         if (window.availableSpinTests.length === 0) {
-            window.showToast("All Caught Up!", "You have completed all available tests. Ask your teacher for more!");
+            window.showToast(
+              st("All Caught Up!", "Bạn đã hoàn thành tất cả!"),
+              st("You have completed all available tests. Ask your teacher for more!", "Bạn đã hoàn thành tất cả bài thi hiện có. Hãy hỏi giáo viên để được giao thêm bài nhé!")
+            );
             return;
         }
 
         // Reset UI State
-        document.getElementById('spin-result-text').textContent = "Ready to roll?";
+        document.getElementById('spin-result-text').textContent = st('Ready to roll?', 'Sẵn sàng quay chưa?');
         document.getElementById('spin-result-text').className = "text-xl font-black text-slate-400 leading-snug w-full text-center";
         document.getElementById('btn-start-spin').classList.remove('hidden');
         document.getElementById('btn-start-spin').disabled = false;
@@ -1406,6 +1410,7 @@
 
     window.startRandomSpin = function() {
         if (window.availableSpinTests.length === 0) return;
+        const st = window.studentText || ((english) => english);
         
         const btnSpin = document.getElementById('btn-start-spin');
         const resultText = document.getElementById('spin-result-text');
@@ -1437,7 +1442,13 @@
                 const finalT = TEST_BANK.find(x => x.id === finalItem.testId);
                 
                 // Pop the final result into view safely centered!
-                resultText.innerHTML = `<span class="text-[10px] bg-pink-100 text-pink-700 px-3 py-1 rounded-full uppercase tracking-widest font-black inline-block mb-3 border border-pink-200 shadow-sm">${finalT.module}</span><br>${finalT.title}`;
+                const moduleName = {
+                    reading: st('Reading', 'Đọc'),
+                    listening: st('Listening', 'Nghe'),
+                    writing: st('Writing', 'Viết'),
+                    speaking: st('Speaking', 'Nói')
+                }[finalT.module] || finalT.module;
+                resultText.innerHTML = `<span class="text-[10px] bg-pink-100 text-pink-700 px-3 py-1 rounded-full uppercase tracking-widest font-black inline-block mb-3 border border-pink-200 shadow-sm">${moduleName}</span><br>${finalT.title}`;
                 resultText.className = "text-xl sm:text-2xl font-black text-pink-600 leading-snug animate-scale-up w-full text-center";
                 
                 icon.classList.remove('animate-spin');

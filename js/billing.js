@@ -165,6 +165,7 @@
 
     window.checkoutReferralState = null;
     window.applyReferralCode = async function() {
+        const st = window.studentText || ((english) => english);
         const input = document.getElementById('checkout-referral-code');
         const status = document.getElementById('checkout-referral-status');
         if (!input || !status || !currentUser) return;
@@ -176,16 +177,16 @@
             currentUser.appliedReferralBy = null;
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
             sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-            status.textContent = 'Referral code removed.';
+            status.textContent = st('Referral code removed.', 'Đã xóa mã giới thiệu.');
             window.updateCheckoutMath();
             return;
         }
         if (currentUser.referralDiscountUsed) {
-            status.textContent = 'Your one-time referral discount has already been used.';
+            status.textContent = st('Your one-time referral discount has already been used.', 'Bạn đã sử dụng ưu đãi giới thiệu một lần.');
             return;
         }
         if (currentUser.isPaid || Number(currentUser.totalLessonsPaid) > 0) {
-            status.textContent = 'Referral codes can only be used by a new student on their first payment.';
+            status.textContent = st('Referral codes can only be used by a new student on their first payment.', 'Mã giới thiệu chỉ áp dụng cho học viên mới ở lần thanh toán đầu tiên.');
             return;
         }
 
@@ -193,7 +194,7 @@
             const referralSnap = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('referral_codes'), code));
             if (!referralSnap.exists()) {
                 window.checkoutReferralState = null;
-                status.textContent = 'Referral code not found.';
+                status.textContent = st('Referral code not found.', 'Không tìm thấy mã giới thiệu.');
                 window.updateCheckoutMath();
                 return;
             }
@@ -201,7 +202,7 @@
             const referrer = referralSnap.data().user;
             if (!referrer || referrer === currentUser.user) {
                 window.checkoutReferralState = null;
-                status.textContent = 'You cannot use your own referral code.';
+                status.textContent = st('You cannot use your own referral code.', 'Bạn không thể sử dụng mã giới thiệu của chính mình.');
                 window.updateCheckoutMath();
                 return;
             }
@@ -211,7 +212,10 @@
             window.checkoutReferralState = { code, referrer };
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);
             sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
-            status.textContent = `Code accepted. Your first payment and the referrer's next payment each receive 10% off.`;
+            status.textContent = st(
+              "Code accepted. Your first payment and the referrer's next payment each receive 10% off.",
+              'Mã được chấp nhận. Bạn và người giới thiệu được giảm 10% cho lần thanh toán tương ứng.'
+            );
             window.updateCheckoutMath();
         } catch (error) {
             console.error('Unable to validate referral code:', error);
@@ -220,6 +224,8 @@
     };
 
     window.renderStudentCheckout = function renderStudentCheckout() {
+        const st = window.studentText || ((english) => english);
+        document.getElementById('start-screen')?.classList.add('checkout-mode');
         let classOpts = '';
         const availableClasses = CLASSES.filter(cls => !window.isTemplateClass(cls));
         const catalogReady = paymentCatalogStatus === 'loaded' && paymentPackagesStatus === 'loaded';
@@ -245,82 +251,93 @@
         const hasAvailableCourse = Boolean(availablePackages.length || availableClasses.length);
         if (!classOpts) {
             const placeholder = !catalogReady
-                ? '?ang t?i kh?a h?c?'
-                : 'Hi?n ch?a c? kh?a h?c m? ??ng k?';
+                ? st('Loading courses…', 'Đang tải khóa học…')
+                : st('No courses are open for enrollment yet', 'Hiện chưa có khóa học mở đăng ký');
             classOpts = `<option value="">${placeholder}</option>`;
         }
         const catalogStatusMarkup = paymentCatalogStatus === 'error' || paymentPackagesStatus === 'error'
-            ? `<p class="mt-2 text-sm text-rose-700" role="alert">Kh?ng t?i ???c danh s?ch kh?a h?c. <button type="button" onclick="window.bootPaymentPortal()" class="font-bold underline">Th? t?i l?i</button></p>`
+            ? `<p class="mt-2 text-sm text-rose-700" role="alert">${st('Could not load the course list.', 'Không tải được danh sách khóa học.')} <button type="button" onclick="window.bootPaymentPortal()" class="font-bold underline" data-student-en="Try again" data-student-vi="Thử tải lại">Try again</button></p>`
             : !catalogReady
-                ? `<p class="mt-2 text-sm text-slate-500" role="status">?ang t?i danh s?ch kh?a h?c?</p>`
+                ? `<p class="mt-2 text-sm text-slate-500" role="status">${st('Loading course list…', 'Đang tải danh sách khóa học…')}</p>`
                 : !hasAvailableCourse
-                    ? `<p class="mt-2 text-sm text-slate-600" role="status">Hi?n ch?a c? kh?a h?c m? ??ng k?. Vui l?ng li?n h? gi?o vi?n ?? ???c t? v?n.</p>`
+                    ? `<p class="mt-2 text-sm text-slate-600" role="status">${st('No courses are open for enrollment yet. Contact your teacher for guidance.', 'Hiện chưa có khóa học mở đăng ký. Vui lòng liên hệ giáo viên để được tư vấn.')}</p>`
                     : '';
 
         const lpmDefault = BILLING_SETTINGS.lessonsPerMonth || 12;
         const billingExpiry = getBillingExpiryMillis(currentUser);
         const expiredPlanNotice = billingExpiry !== null && billingExpiry <= Date.now()
-            ? `<p class="text-amber-100 mb-5 font-bold">Your ${currentUser.billingPlanTitle || 'tuition plan'} expired on ${formatBillingDate(billingExpiry)}. Submit your next payment and wait for teacher verification to restore course access.</p>`
+            ? `<p class="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5 font-semibold">${window.studentText(
+                `Your ${currentUser.billingPlanTitle || 'tuition plan'} expired on ${formatBillingDate(billingExpiry)}. Submit your next payment and wait for teacher verification to restore course access.`,
+                `Gói học ${currentUser.billingPlanTitle || 'học phí'} của bạn đã hết hạn vào ${formatBillingDate(billingExpiry)}. Vui lòng thanh toán kỳ tiếp theo và chờ giáo viên xác nhận để khôi phục quyền học.`
+            )}</p>`
             : '';
 
         document.getElementById('student-payment-warning').innerHTML = `
-         <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl shadow-2xl overflow-hidden border border-blue-500 flex flex-col lg:flex-row">
-            <div class="p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center">
-                <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/20 border border-white/30 rounded-full text-white text-xs font-black uppercase tracking-widest mb-6 w-max shadow-sm">
-                   <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> Access Locked
+         <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 flex flex-col lg:flex-row">
+            <div class="p-6 sm:p-8 lg:p-10 lg:w-3/5 flex flex-col justify-center bg-gradient-to-br from-slate-50 to-white">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-100 rounded-full text-blue-700 text-xs font-black uppercase tracking-widest mb-4 w-max">
+                   <span class="flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[10px]">1</span> <span data-student-en="Choose your course" data-student-vi="Chọn khóa học">Choose your course</span>
                 </div>
-                <h2 class="text-3xl font-black text-white mb-3">Unlock Your Course</h2>
-                ${hasActiveStudentAccess(currentUser) ? `<button type="button" onclick="window.closeStudentRenewal()" class="text-left text-sm font-bold text-blue-100 hover:text-white mb-3">← Back to my classes</button>` : ''}
-                <p class="text-blue-100 mb-6 font-medium">Customize your study plan below to calculate your tuition.</p>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900 mb-2" data-student-en="Start your IELTS course" data-student-vi="Bắt đầu khóa học IELTS">Start your IELTS course</h2>
+                ${hasActiveStudentAccess(currentUser) ? `<button type="button" onclick="window.closeStudentRenewal()" class="text-left text-sm font-bold text-blue-700 hover:text-blue-900 mb-3" data-student-en="← Back to my classes" data-student-vi="← Quay lại lớp học">← Back to my classes</button>` : ''}
+                <p class="text-slate-600 mb-6 font-medium" data-student-en="Choose a class and study plan. Your total updates automatically before you pay." data-student-vi="Chọn lớp học và gói học. Tổng học phí sẽ tự động cập nhật trước khi thanh toán.">Choose a class and study plan. Your total updates automatically before you pay.</p>
                 ${expiredPlanNotice}
                 
-                <div class="flex gap-4 mb-6">
+                <div class="flex flex-col sm:flex-row gap-4 mb-5">
                     <div class="flex-1">
-                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-1.5">Select Course or Bundle</label>
-                        <select id="checkout-course" class="w-full bg-blue-700/50 border border-blue-500 text-white p-2.5 rounded-lg outline-none focus:bg-white focus:text-blue-900 focus:border-white font-bold transition-colors shadow-inner" onchange="window.updateCheckoutMath()">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" data-student-en="Course or bundle" data-student-vi="Khóa học hoặc gói học">Course or bundle</label>
+                        <select id="checkout-course" class="w-full bg-white border border-slate-300 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold transition-colors shadow-sm" onchange="window.updateCheckoutMath()">
                             ${classOpts}
                         </select>
                         ${catalogStatusMarkup}
                     </div>
-                    <div class="w-[120px]" id="checkout-lpm-container">
-                        <label class="block text-xs font-bold text-blue-200 uppercase tracking-widest mb-1.5" title="Lessons per month">Lessons/Mo</label>
-                        <input type="number" id="checkout-lpm" value="${lpmDefault}" min="1" max="100" class="w-full bg-blue-700/50 border border-blue-500 text-white p-2.5 rounded-lg outline-none focus:bg-white focus:text-blue-900 focus:border-white font-bold text-center transition-colors shadow-inner" oninput="window.updateCheckoutMath()">
+                    <div class="w-full sm:w-32 shrink-0" id="checkout-lpm-container">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" title="Lessons per month" data-student-en="Lessons / mo" data-student-vi="Buổi / tháng">Lessons / mo</label>
+                        <input type="number" id="checkout-lpm" value="${lpmDefault}" min="1" max="100" class="w-full bg-white border border-slate-300 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold text-center transition-colors shadow-sm" oninput="window.updateCheckoutMath()">
                     </div>
                 </div>
 
-                <div id="checkout-package-info" class="hidden bg-blue-900/40 border border-blue-500/50 rounded-xl p-4 mb-6 shadow-inner"></div>
-                <div class="mb-6 rounded-xl border border-blue-400/50 bg-blue-900/30 p-4">
-                    <label class="block text-xs font-bold text-blue-100 uppercase tracking-widest mb-2">Referral code (optional)</label>
+                <div id="checkout-package-info" class="hidden bg-blue-50 border border-blue-200 rounded-xl p-4 mb-5"></div>
+                <div class="mb-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2"><span data-student-en="Referral code" data-student-vi="Mã giới thiệu">Referral code</span> <span class="normal-case tracking-normal font-medium" data-student-en="(optional)" data-student-vi="(không bắt buộc)">(optional)</span></label>
                     <div class="flex gap-2">
-                        <input id="checkout-referral-code" type="text" maxlength="40" placeholder="Enter a student's code" class="min-w-0 flex-1 bg-white border border-blue-200 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold uppercase">
-                        <button type="button" onclick="window.applyReferralCode()" class="bg-white text-blue-800 hover:bg-blue-50 px-4 rounded-lg font-bold text-sm">Apply</button>
+                        <input id="checkout-referral-code" type="text" maxlength="40" placeholder="Enter a student's code" data-student-placeholder-en="Enter a student's code" data-student-placeholder-vi="Nhập mã giới thiệu của học viên" class="min-w-0 flex-1 bg-white border border-slate-300 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold uppercase">
+                        <button type="button" onclick="window.applyReferralCode()" class="bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100 px-4 rounded-lg font-bold text-sm" data-student-en="Apply" data-student-vi="Áp dụng">Apply</button>
                     </div>
-                    <div id="checkout-referral-status" class="text-xs text-blue-100 mt-2" aria-live="polite"></div>
+                    <div id="checkout-referral-status" class="text-xs text-slate-500 mt-2" aria-live="polite"></div>
                 </div>
 
-                <div class="space-y-4" id="checkout-plans-container"></div>
+                <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-3" data-student-en="Choose a payment plan" data-student-vi="Chọn gói thanh toán">Choose a payment plan</h3>
+                <div class="space-y-3" id="checkout-plans-container"></div>
             </div>
-            <div class="bg-white p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-l border-blue-100 relative">
-                <div class="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-400 to-blue-600"></div>
-                <h3 class="text-xl font-black text-blue-900 mb-6 uppercase tracking-wider flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-500"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg> Scan to Pay</h3>
+            <div class="bg-white p-6 sm:p-8 lg:p-10 lg:w-2/5 flex flex-col items-center justify-center border-t lg:border-t-0 lg:border-l border-slate-200 relative">
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full text-emerald-700 text-xs font-black uppercase tracking-widest mb-4">
+                    <span class="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-600 text-white text-[10px]">2</span> <span data-student-en="Complete payment" data-student-vi="Thanh toán">Complete payment</span>
+                </div>
+                <h3 class="text-xl font-black text-slate-900 mb-2 tracking-tight" data-student-en="Scan to pay" data-student-vi="Quét mã để thanh toán">Scan to pay</h3>
+                <p class="text-sm text-slate-500 text-center mb-5" data-student-en="Use your banking app to scan this QR code." data-student-vi="Mở ứng dụng ngân hàng và quét mã QR này.">Use your banking app to scan this QR code.</p>
                 
-                <div class="p-2 bg-white rounded-xl shadow-lg border-2 border-blue-50 mb-6 relative group">
-                    <img id="vietqr-image" src="" class="w-56 h-56 object-contain rounded-lg transition-all group-hover:scale-105" alt="Bank QR Code">
+                <div class="p-2 bg-white rounded-2xl shadow-md border border-slate-200 mb-5 relative">
+                    <img id="vietqr-image" src="" class="w-52 h-52 sm:w-56 sm:h-56 object-contain rounded-lg" alt="Bank QR Code">
                 </div>
 
-                <div class="text-center w-full mb-6">
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total to Pay</div>
-                    <div id="vietqr-amount" class="text-3xl font-black text-blue-600 tracking-tight">0 ₫</div>
-                    <div class="bg-blue-50 border border-blue-100 rounded p-2 mt-3 font-mono text-sm text-blue-800 break-all shadow-inner">Msg: <span id="vietqr-desc" class="font-bold text-blue-900"></span></div>
+                <div class="text-center w-full mb-5">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1" data-student-en="Total to Pay" data-student-vi="Tổng thanh toán">Total to Pay</div>
+                    <div id="vietqr-amount" class="text-3xl font-black text-blue-700 tracking-tight">0 ₫</div>
+                    <div class="text-left bg-slate-50 border border-slate-200 rounded-xl p-3 mt-4">
+                        <div class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1" data-student-en="Bank transfer note" data-student-vi="Nội dung chuyển khoản">Bank transfer note</div>
+                        <div id="vietqr-desc" class="font-mono text-sm font-bold text-slate-800 break-words"></div>
+                    </div>
                 </div>
 
-                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" class="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-black rounded-xl shadow-[0_10px_20px_-10px_rgba(59,130,246,0.5)] transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-lg">
-                    I Have Transferred the Money ✓
+                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-base disabled:cursor-not-allowed disabled:opacity-50">
+                    <span data-student-en="I have completed the transfer" data-student-vi="Tôi đã chuyển khoản">I have completed the transfer</span>
                 </button>
-                <p class="text-[10px] text-slate-400 text-center mt-3 font-medium">Click this button to notify your teacher and request access.</p>
+                <p class="text-xs text-slate-500 text-center mt-3 leading-relaxed" data-student-en="After transferring, select this button to notify your teacher. Your course unlocks after payment verification." data-student-vi="Sau khi chuyển khoản, nhấn nút này để báo giáo viên. Khóa học sẽ được mở sau khi thanh toán được xác nhận.">After transferring, select this button to notify your teacher. Your course unlocks after payment verification.</p>
             </div>
          </div>
         `;
+        if (typeof window.translateStudentStatic === 'function') window.translateStudentStatic();
 
         window.checkoutReferralState = currentUser.appliedReferralBy && !currentUser.referralDiscountUsed && !currentUser.isPaid && !Number(currentUser.totalLessonsPaid)
             ? { code: currentUser.appliedReferralCode, referrer: currentUser.appliedReferralBy }
@@ -339,6 +356,7 @@
     };
 
     window.updateCheckoutMath = function updateCheckoutMath() {
+        const st = window.studentText || ((english) => english);
         const courseSel = document.getElementById('checkout-course');
         const selVal = courseSel ? courseSel.value : null;
         if (paymentCatalogStatus !== 'loaded' || paymentPackagesStatus !== 'loaded' || !selVal) {
@@ -369,8 +387,8 @@
             if (pkg && infoContainer) {
                 const classNames = (pkg.classes || []).map(cid => CLASSES.find(c => c.id === cid)).filter(cls => cls && !window.isTemplateClass(cls)).map(cls => cls.name);
                 infoContainer.innerHTML = `
-                    <h4 class="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-2 flex items-center gap-1">📦 Bundle Includes:</h4>
-                    <ul class="text-sm font-medium text-white space-y-1">
+                    <h4 class="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-2 flex items-center gap-1">📦 ${st('Bundle Includes:', 'Gói học bao gồm:')}</h4>
+                    <ul class="text-sm font-medium text-slate-700 space-y-1">
                         ${classNames.map(n => `<li class="flex items-center gap-2"><span class="w-1 h-1 rounded-full bg-emerald-400"></span> ${n}</li>`).join('')}
                     </ul>
                 `;
@@ -397,11 +415,16 @@
         if (selectedClass && groupSize > 1) {
             fpl = window.calculateGroupLessonFee(fpl, groupSize);
             if (infoContainer) {
-                infoContainer.innerHTML = `<p class="text-sm font-bold text-white">👥 ${groupSize} students in this small class · ${formatVND(fpl)} per lesson after group discount.</p>`;
+                infoContainer.innerHTML = `<p class="text-sm font-bold text-slate-700">👥 ${st(
+                  `${groupSize} students in this small class · ${formatVND(fpl)} per lesson after group discount.`,
+                  `${groupSize} học viên trong lớp nhỏ · ${formatVND(fpl)} mỗi buổi sau khi áp dụng ưu đãi nhóm.`
+                )}</p>`;
                 infoContainer.classList.remove('hidden');
             }
         } else if (selectedClass && infoContainer) {
-            infoContainer.innerHTML = `<p class="text-sm font-bold text-white">${selectedClass.parentClassId ? `Small class using shared materials · ${formatVND(fpl)} per lesson.` : `${formatVND(fpl)} per lesson.`}</p>`;
+            infoContainer.innerHTML = `<p class="text-sm font-bold text-slate-700">${selectedClass.parentClassId
+              ? st(`Small class using shared materials · ${formatVND(fpl)} per lesson.`, `Lớp nhỏ dùng chung tài liệu · ${formatVND(fpl)} mỗi buổi.`)
+              : st(`${formatVND(fpl)} per lesson.`, `${formatVND(fpl)} mỗi buổi.`)}</p>`;
             infoContainer.classList.remove('hidden');
         }
 
@@ -435,25 +458,32 @@
 
         const ctn = document.getElementById('checkout-plans-container');
         if (ctn) {
-            ctn.innerHTML = window.checkoutPlans.map((p, idx) => `
+            ctn.innerHTML = window.checkoutPlans.map((p, idx) => {
+                const planTitle = {
+                    1: st('1 Month Standard', 'Gói tiêu chuẩn 1 tháng'),
+                    2: st('2 Month Combo', 'Gói kết hợp 2 tháng'),
+                    4: st('Full Course (4M)', 'Toàn khóa (4 tháng)')
+                }[p.id] || p.title;
+                return `
                 <div onclick="selectPaymentPackage(${idx})" id="pkg-card-${idx}" class="relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-blue-700/40 border-blue-500/50 hover:border-blue-300 group overflow-hidden">
-                    ${p.pop ? `<div class="absolute top-0 right-0 bg-gradient-to-r from-emerald-400 to-teal-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-bl-lg shadow-sm z-10">Most Popular</div>` : ''}
+                    ${p.pop ? `<div class="absolute top-0 right-0 bg-gradient-to-r from-emerald-400 to-teal-500 text-white text-[10px] font-black uppercase px-3 py-1 rounded-bl-lg shadow-sm z-10">${st('Most Popular', 'Phổ biến nhất')}</div>` : ''}
                     <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                     <div class="z-10 flex-1">
                         <div class="flex items-center gap-3 mb-1">
                             <div id="pkg-radio-${idx}" class="w-4 h-4 rounded-full border-2 border-blue-300 flex items-center justify-center transition-colors shrink-0"></div>
-                            <h4 id="pkg-title-${idx}" class="font-bold text-lg text-white transition-colors">${p.title} <span class="opacity-80 font-normal text-sm ml-1">(${p.lessons} Lessons)</span></h4>
+                            <h4 id="pkg-title-${idx}" class="font-bold text-lg text-white transition-colors">${planTitle} <span class="opacity-80 font-normal text-sm ml-1">(${p.lessons} ${st('Lessons', 'buổi')})</span></h4>
                         </div>
                     </div>
                     <div class="text-right z-10 flex flex-col items-end justify-center shrink-0 pl-4">
                         ${p.raw > p.final ? `<div id="pkg-raw-${idx}" class="text-sm line-through mb-0.5 text-blue-300 transition-colors font-semibold">${formatVND(p.raw)}</div>` : ''}
                         <div id="pkg-price-${idx}" class="font-black text-xl text-white transition-colors">${formatVND(p.final)}</div>
-                        ${p.label !== 'Pay as you go' ? `<div class="text-[10px] font-bold text-blue-900 mt-1.5 uppercase tracking-widest bg-amber-400 px-2 py-0.5 rounded inline-block shadow-sm">${p.label}</div>` : ''}
-                        ${p.groupSize > 1 ? `<div class="text-[10px] font-bold text-blue-200 mt-1">${p.groupSize} students · group rate</div>` : ''}
-                        ${p.referralCreditsApplied ? `<div class="text-[10px] font-bold text-emerald-200 mt-1">${p.referralCreditsApplied} × 10% referral discount included</div>` : ''}
+                        ${p.id !== 1 ? `<div class="text-[10px] font-bold text-blue-900 mt-1.5 uppercase tracking-widest bg-amber-400 px-2 py-0.5 rounded inline-block shadow-sm">${p.label}</div>` : ''}
+                        ${p.groupSize > 1 ? `<div class="text-[10px] font-bold text-slate-500 mt-1">${st(`${p.groupSize} students · group rate`, `${p.groupSize} học viên · giá nhóm`)}</div>` : ''}
+                        ${p.referralCreditsApplied ? `<div class="text-[10px] font-bold text-emerald-200 mt-1">${st(`${p.referralCreditsApplied} × 10% referral discount included`, `Đã áp dụng ${p.referralCreditsApplied} ưu đãi giới thiệu 10%`)}</div>` : ''}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         selectPaymentPackage(0); 
@@ -474,19 +504,19 @@
             
             if(card && radio && title && price) {
                 if (i === idx) {
-                    card.className = "relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-white border-white shadow-lg group overflow-hidden transform scale-[1.02]";
+                    card.className = "relative p-4 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-blue-50 border-blue-500 shadow-sm group overflow-hidden";
                     radio.className = "w-4 h-4 rounded-full border-2 border-blue-600 flex items-center justify-center transition-colors shrink-0";
                     radio.innerHTML = `<div class="w-2 h-2 rounded-full bg-blue-600"></div>`;
-                    title.className = "font-bold text-lg text-blue-900 transition-colors";
-                    price.className = "font-black text-xl text-blue-700 transition-colors";
+                    title.className = "font-bold text-base sm:text-lg text-slate-900 transition-colors";
+                    price.className = "font-black text-lg sm:text-xl text-blue-700 transition-colors";
                     if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-slate-400 transition-colors font-semibold";
                 } else {
-                    card.className = "relative p-5 rounded-xl border-2 transition-all cursor-pointer flex justify-between items-center bg-blue-700/40 border-blue-500/50 hover:border-blue-300 group overflow-hidden";
-                    radio.className = "w-4 h-4 rounded-full border-2 border-blue-300 flex items-center justify-center transition-colors shrink-0";
+                    card.className = "relative p-4 rounded-xl border border-slate-200 transition-all cursor-pointer flex justify-between items-center bg-white hover:border-blue-300 hover:bg-slate-50 group overflow-hidden";
+                    radio.className = "w-4 h-4 rounded-full border-2 border-slate-300 flex items-center justify-center transition-colors shrink-0";
                     radio.innerHTML = ``;
-                    title.className = "font-bold text-lg text-white transition-colors";
-                    price.className = "font-black text-xl text-white transition-colors";
-                    if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-blue-300 transition-colors font-semibold";
+                    title.className = "font-bold text-base sm:text-lg text-slate-800 transition-colors";
+                    price.className = "font-black text-lg sm:text-xl text-slate-800 transition-colors";
+                    if (rawPrice) rawPrice.className = "text-sm line-through mb-0.5 text-slate-400 transition-colors font-semibold";
                 }
             }
         });
@@ -512,13 +542,14 @@
     window.simulateAutoPayment = function simulateAutoPayment() { }; 
 
     window.notifyTeacherPayment = async function notifyTeacherPayment() {
-        const courseSel = document.getElementById('checkout-course');
+        const st = window.studentText || ((english) => english);
         if (paymentCatalogStatus !== 'loaded' || paymentPackagesStatus !== 'loaded') {
-            showModalMsg("Notice", "Course information is still loading. Please wait and try again.");
+            showModalMsg(st("Notice", "Thông báo"), st("Course information is still loading. Please wait and try again.", "Danh sách khóa học đang tải. Vui lòng chờ rồi thử lại."));
             return;
         }
+        const courseSel = document.getElementById('checkout-course');
         if (!courseSel || !courseSel.value) {
-            showModalMsg("Notice", "Please select a course to enroll in first.");
+            showModalMsg(st("Notice", "Thông báo"), st("Please select a course to enroll in first.", "Vui lòng chọn khóa học trước."));
             return;
         }
         const selVal = courseSel.value;
@@ -528,11 +559,12 @@
         btn.disabled = true;
         btn.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Sending Notification...`;
         
+        btn.innerHTML = btn.innerHTML.replace('Sending Notification...', st('Sending Notification...', 'Đang gửi thông báo...'));
         const pkg = window.checkoutPlans?.[window.selectedCheckoutPlan];
         if (!pkg) {
-            showModalMsg("Notice", "Select a valid payment plan first.");
+            showModalMsg(st("Notice", "Thông báo"), st("Select a valid payment plan first.", "Vui lòng chọn gói thanh toán hợp lệ."));
             btn.disabled = false;
-            btn.textContent = "I Have Transferred the Money ✓";
+            btn.textContent = st("I have completed the transfer", "Tôi đã chuyển khoản");
             return;
         }
         const previousUser = { ...currentUser };
@@ -563,9 +595,9 @@
             currentUser.pendingClasses = cls && !window.isTemplateClass(cls) ? [cls.id] : [];
         }
         if (!currentUser.pendingClasses.length) {
-            showModalMsg("Notice", "Select an available small class or a bundle that includes an active class.");
+            showModalMsg(st("Notice", "Thông báo"), st("Select an available small class or a bundle that includes an active class.", "Vui lòng chọn lớp đang mở đăng ký hoặc gói có bao gồm lớp đang hoạt động."));
             btn.disabled = false;
-            btn.textContent = "I Have Transferred the Money ✓";
+            btn.textContent = st("I have completed the transfer", "Tôi đã chuyển khoản");
             currentUser.paymentStatus = 'unpaid';
             return;
         }
@@ -593,15 +625,18 @@
             const cloudUserIdx = USERS.findIndex(u => u.user === currentUser.user);
             if (cloudUserIdx > -1) USERS[cloudUserIdx] = currentUser;
             btn.disabled = false;
-            btn.textContent = "I Have Transferred the Money ✓";
-            showModalMsg("Payment Request Failed", "Could not notify the teacher. Please try again.");
+            btn.textContent = st("I have completed the transfer", "Tôi đã chuyển khoản");
+            showModalMsg(st("Payment Request Failed", "Gửi yêu cầu thanh toán thất bại"), st("Could not notify the teacher. Please try again.", "Không thể gửi thông báo cho giáo viên. Vui lòng thử lại."));
             return;
         }
         
         sessionStorage.setItem('ielts_session', JSON.stringify(currentUser));
         
         if (currentUser.pendingRenewal && typeof window.showToast === 'function') {
-            window.showToast("Payment Submitted", "Your renewal request was sent. Your current class access remains active during verification.");
+            window.showToast(
+              st("Payment Submitted", "Đã gửi thanh toán"),
+              st("Your renewal request was sent. Your current class access remains active during verification.", "Yêu cầu gia hạn đã được gửi. Quyền truy cập lớp hiện tại vẫn được giữ trong lúc chờ xác nhận.")
+            );
         }
         window.initStudentDashboard(); 
     };
@@ -609,7 +644,10 @@
     window.openStudentRenewal = function() {
         if (!currentUser || currentUser.role !== 'student' || (!currentUser.isPaid && getBillingExpiryMillis(currentUser) === null)) return;
         if (currentUser.paymentStatus === 'pending') {
-            showModalMsg("Payment Pending", "Please wait for the teacher to verify your current payment request.");
+            showModalMsg(
+              window.studentText("Payment Pending", "Đang chờ xác nhận thanh toán"),
+              window.studentText("Please wait for the teacher to verify your current payment request.", "Vui lòng chờ giáo viên xác nhận yêu cầu thanh toán hiện tại.")
+            );
             return;
         }
         window.renderStudentCheckout();

@@ -45,18 +45,22 @@
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
     const STUDENT_LANGUAGE_KEY = 'ielts_student_language';
-    let studentLanguage = localStorage.getItem(STUDENT_LANGUAGE_KEY) === 'vi' ? 'vi' : 'en';
+    let studentLanguage = localStorage.getItem(STUDENT_LANGUAGE_KEY) === 'en' ? 'en' : 'vi';
     window.studentText = function(english, vietnamese) {
       return studentLanguage === 'vi' ? vietnamese : english;
     };
     window.refreshStudentLanguageLock = function() {
       const exam = document.getElementById('exam-ui');
-      const languageButton = document.getElementById('student-language-toggle');
-      if (!languageButton) return;
-      languageButton.disabled = Boolean(exam && !exam.classList.contains('hidden'));
-      languageButton.title = languageButton.disabled
+      const languageButtons = document.querySelectorAll('#student-language-toggle, #auth-language-toggle');
+      const isLocked = Boolean(exam && !exam.classList.contains('hidden'));
+      languageButtons.forEach(languageButton => {
+        languageButton.disabled = isLocked;
+        languageButton.textContent = studentLanguage === 'vi' ? 'Tiếng Việt' : 'English';
+        languageButton.setAttribute('aria-label', studentLanguage === 'vi' ? 'Ngôn ngữ hiện tại: Tiếng Việt' : 'Current language: English');
+        languageButton.title = isLocked
         ? (studentLanguage === 'vi' ? 'Không thể đổi ngôn ngữ khi đang làm bài' : 'Language cannot be changed while taking a test')
         : '';
+      });
     };
     window.translateStudentStatic = function() {
       document.querySelectorAll('[data-student-en][data-student-vi]').forEach(element => {
@@ -65,22 +69,32 @@
       document.querySelectorAll('[data-student-placeholder-en][data-student-placeholder-vi]').forEach(element => {
         element.placeholder = element.dataset[studentLanguage === 'vi' ? 'studentPlaceholderVi' : 'studentPlaceholderEn'];
       });
+      document.querySelectorAll('[data-student-aria-en][data-student-aria-vi]').forEach(element => {
+        const languageSuffix = studentLanguage === 'vi' ? 'Vi' : 'En';
+        const key = element.getAttribute('aria-pressed') === 'true' && element.dataset[`studentAriaHide${languageSuffix}`]
+          ? `studentAriaHide${languageSuffix}`
+          : `studentAria${languageSuffix}`;
+        element.setAttribute('aria-label', element.dataset[key]);
+      });
+      if (typeof window.refreshAuthLanguage === 'function') window.refreshAuthLanguage();
     };
     window.applyStudentLanguage = function(language = studentLanguage, rerender = true) {
       if (!['en', 'vi'].includes(language)) return;
       const exam = document.getElementById('exam-ui');
       if (exam && !exam.classList.contains('hidden') && language !== studentLanguage) {
-        if (typeof window.showToast === 'function') window.showToast('Language locked', 'Language cannot be changed while taking a test.', 'info');
+        if (typeof window.showToast === 'function') {
+          window.showToast(
+            window.studentText('Language locked', 'Đã khóa ngôn ngữ'),
+            window.studentText('Language cannot be changed while taking a test.', 'Không thể đổi ngôn ngữ khi đang làm bài.'),
+            'info'
+          );
+        }
         return;
       }
       studentLanguage = language;
       localStorage.setItem(STUDENT_LANGUAGE_KEY, studentLanguage);
       document.documentElement.lang = studentLanguage === 'vi' ? 'vi' : 'en';
       window.translateStudentStatic();
-      const languageButton = document.getElementById('student-language-toggle');
-      if (languageButton) {
-        languageButton.textContent = studentLanguage === 'vi' ? 'Tiếng Việt' : 'English';
-      }
       window.refreshStudentLanguageLock();
       if (rerender && currentUser?.role === 'student' && typeof window.renderStudentDashboard === 'function') {
         window.renderStudentDashboard();

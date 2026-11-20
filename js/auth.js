@@ -707,28 +707,40 @@
     };
 
     window.togglePasswordVisibility = function(inputId, btn) {
+        const st = window.studentText || ((english) => english);
         const input = document.getElementById(inputId);
         if (input.type === 'password') {
             input.type = 'text';
-            btn.setAttribute('aria-label', 'Hide password');
+            btn.setAttribute('aria-label', st('Hide password', 'Ẩn mật khẩu'));
             btn.setAttribute('aria-pressed', 'true');
             btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>`;
         } else {
             input.type = 'password';
-            btn.setAttribute('aria-label', 'Show password');
+            btn.setAttribute('aria-label', st('Show password', 'Hiện mật khẩu'));
             btn.setAttribute('aria-pressed', 'false');
             btn.innerHTML = `<svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>`;
         }
     };
 
     let authMode = 'login';
+    window.refreshAuthLanguage = function() {
+      const st = window.studentText || ((english) => english);
+      document.getElementById('auth-subtitle').textContent = authMode === 'login'
+        ? st('Login to your account', 'Đăng nhập tài khoản')
+        : st('Create a new student account', 'Tạo tài khoản học viên');
+      document.getElementById('auth-submit-btn').textContent = authMode === 'login'
+        ? st('Log In', 'Đăng nhập')
+        : st('Sign Up as Student', 'Đăng ký học viên');
+      const toggleBtn = document.getElementById('auth-toggle-btn');
+      if (toggleBtn) {
+        toggleBtn.textContent = authMode === 'login'
+          ? st('Need a student account? Sign up', 'Chưa có tài khoản học viên? Đăng ký')
+          : st('Already have an account? Log in', 'Đã có tài khoản? Đăng nhập');
+      }
+    };
     function toggleAuthMode() {
       authMode = authMode === 'login' ? 'register' : 'login';
-      document.getElementById('auth-subtitle').textContent = authMode === 'login' ? 'Login to your account' : 'Create a new student account';
-      document.getElementById('auth-submit-btn').textContent = authMode === 'login' ? 'Log In' : 'Sign Up as Student';
-      
-      const toggleBtn = document.getElementById('auth-toggle-btn');
-      if(toggleBtn) toggleBtn.textContent = authMode === 'login' ? 'Need a student account? Sign up' : 'Already have an account? Log in';
+      window.refreshAuthLanguage();
 
       document.getElementById('auth-pass').autocomplete = authMode === 'login' ? 'current-password' : 'new-password';
       document.getElementById('auth-user').setAttribute('aria-invalid', 'false');
@@ -909,10 +921,11 @@
       const err = document.getElementById('auth-error');
       const usernameInput = document.getElementById('auth-user');
       const passwordInput = document.getElementById('auth-pass');
+      const st = window.studentText || ((english) => english);
       usernameInput.setAttribute('aria-invalid', 'false');
       passwordInput.setAttribute('aria-invalid', 'false');
       if (!u || !p) {
-        err.textContent = 'Enter username and password';
+        err.textContent = st('Enter username and password', 'Vui lòng nhập tên đăng nhập và mật khẩu');
         err.classList.remove('hidden');
         if (!u) {
           usernameInput.setAttribute('aria-invalid', 'true');
@@ -925,14 +938,17 @@
         return;
       }
       if (authMode === 'register' && !window.LMSAuthHelpers.isValidUsername(u)) {
-        err.textContent = 'Username must use 1-40 letters, numbers, underscores, or hyphens.';
+        err.textContent = st(
+          'Username must use 1-40 letters, numbers, underscores, or hyphens.',
+          'Tên đăng nhập cần có 1–40 ký tự gồm chữ cái, chữ số, dấu gạch dưới hoặc gạch nối.'
+        );
         err.classList.remove('hidden');
         usernameInput.setAttribute('aria-invalid', 'true');
         usernameInput.focus();
         return;
       }
       if (p.length < 6) {
-        err.textContent = 'Password must be at least 6 characters';
+        err.textContent = st('Password must be at least 6 characters', 'Mật khẩu phải có ít nhất 6 ký tự');
         err.classList.remove('hidden');
         passwordInput.setAttribute('aria-invalid', 'true');
         passwordInput.focus();
@@ -941,7 +957,7 @@
       
       err.classList.add('hidden');
       const btn = document.getElementById('auth-submit-btn');
-      btn.textContent = "Connecting..."; btn.disabled = true;
+      btn.textContent = st('Connecting...', 'Đang kết nối...'); btn.disabled = true;
 
       // ✨ FIX: 100% safe email generation even for names with spaces and accents (e.g. "Khanh Lý")
       const mappedEmail = window.LMSAuthHelpers.usernameToAuthEmail(u);
@@ -983,8 +999,11 @@
                 credential = await window.fsAuthSignIn(window.auth, mappedEmail, p);
             } catch (error) {
                 err.textContent = error.code === 'auth/invalid-credential'
-                    ? 'Invalid username or password. Older accounts that were only stored in Firestore must first be created in Firebase Authentication.'
-                    : error.message || 'Invalid username or password';
+                    ? st(
+                        'Invalid username/email or password. For Google-only accounts, use Sign in with Google. Older accounts stored only in Firestore must first be created in Firebase Authentication.',
+                        'Tên đăng nhập/email hoặc mật khẩu không đúng. Nếu tài khoản chỉ dùng Google, hãy chọn “Đăng nhập bằng Google”. Tài khoản cũ chỉ lưu trong Firestore cần được tạo trong Firebase Authentication trước khi đăng nhập.'
+                    )
+                    : error.message || st('Invalid username or password', 'Tên đăng nhập hoặc mật khẩu không đúng');
                 err.classList.remove('hidden');
                 usernameInput.setAttribute('aria-invalid', 'true');
                 passwordInput.setAttribute('aria-invalid', 'true');
@@ -1084,11 +1103,11 @@
       } catch (e) {
           console.error(e); 
           // ✨ FIX: Show the exact error message so we know what broke!
-          err.textContent = e.message || 'Cloud network error. Try again.'; 
+          err.textContent = e.message || st('Cloud network error. Try again.', 'Không thể kết nối. Vui lòng thử lại.');
           err.classList.remove('hidden');
       } finally {
           window.authFlowInProgress = false;
-          btn.textContent = authMode === 'register' ? 'Sign Up as Student' : 'Log In';
+          window.refreshAuthLanguage();
           btn.disabled = false;
       }
     }
@@ -1096,12 +1115,14 @@
     
     // ✨ NEW: Google Sign-In Handler
     window.handleGoogleLogin = async function() {
+        const st = window.studentText || ((english) => english);
         const err = document.getElementById('auth-error');
         const btn = document.getElementById('auth-google-btn');
         const originalText = btn.innerHTML;
         
         if (err) err.classList.add('hidden');
         btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Connecting...`;
+        btn.innerHTML = btn.innerHTML.replace('Connecting...', st('Connecting...', 'Đang kết nối...'));
         btn.disabled = true;
         
         try {
@@ -1111,7 +1132,7 @@
         } catch (error) {
             console.error("Lỗi đăng nhập Google:", error);
             if (err) {
-                err.textContent = 'Đăng nhập Google thất bại: ' + error.message;
+                err.textContent = st('Google sign-in failed: ', 'Đăng nhập Google thất bại: ') + error.message;
                 err.classList.remove('hidden');
             }
         } finally {
@@ -1140,7 +1161,11 @@
 
     // ✨ NEW: Forgot Password Handler at Login Stage
     window.promptForgotPassword = function() {
-        showInputPrompt("Reset Password", "Enter your username (or email address if you linked one):", async (inputVal) => {
+        const st = window.studentText || ((english) => english);
+        showInputPrompt(
+          st("Reset Password", "Đặt lại mật khẩu"),
+          st("Enter your username (or email address if you linked one):", "Nhập tên đăng nhập (hoặc email đã liên kết với tài khoản):"),
+          async (inputVal) => {
             const u = inputVal.trim();
             if(!u) return;
             
@@ -1151,17 +1176,30 @@
             
             if (emailToReset.endsWith('@khanhlms.com')) {
                 // Mapped internal emails cannot actually receive real emails.
-                showModalMsg("Teacher Assistance Required", "Since this username maps to an internal address, a reset email cannot be delivered. Ask the administrator to reset it in Firebase Console > Authentication > Users.");
+                showModalMsg(
+                  st("Teacher Assistance Required", "Cần giáo viên hỗ trợ"),
+                  st(
+                    "This username uses an internal address and cannot receive reset emails. Ask your teacher to reset the password.",
+                    "Tên đăng nhập này dùng địa chỉ nội bộ nên không thể nhận email đặt lại mật khẩu. Vui lòng nhờ giáo viên đặt lại mật khẩu."
+                  )
+                );
             } else {
                 try {
                     await window.fsSendPasswordResetEmail(window.auth, emailToReset);
-                    showModalMsg("Success", "A password reset link has been sent to your email address.");
+                    showModalMsg(
+                      st("Success", "Thành công"),
+                      st("A password reset link has been sent to your email address.", "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn.")
+                    );
                 } catch (err) {
                     console.error(err);
-                    showModalMsg("Error", "Could not send reset email: " + err.message);
+                    showModalMsg(
+                      st("Error", "Lỗi"),
+                      st("Could not send reset email: ", "Không thể gửi email đặt lại mật khẩu: ") + err.message
+                    );
                 }
             }
-        });
+          }
+        );
     };
 
     // ✨ NEW: Allow users to change their own password securely

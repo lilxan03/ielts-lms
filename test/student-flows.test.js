@@ -191,6 +191,77 @@ test('student sign-in authenticates, loads access, and starts the LMS', async ()
     assert.equal(elements.get('auth-pass').getAttribute('aria-invalid'), 'false');
 });
 
+test('student login and registration labels follow the selected language', () => {
+    const { context, elements } = createAuthContext();
+
+    context.setStudentLanguage('vi');
+    context.runToggleAuthModeForTest();
+    assert.equal(elements.get('auth-subtitle').textContent, 'Tạo tài khoản học viên');
+    assert.equal(elements.get('auth-submit-btn').textContent, 'Đăng ký học viên');
+    assert.equal(elements.get('auth-toggle-btn').textContent, 'Đã có tài khoản? Đăng nhập');
+
+    context.runToggleAuthModeForTest();
+    assert.equal(elements.get('auth-subtitle').textContent, 'Đăng nhập tài khoản');
+    assert.equal(elements.get('auth-submit-btn').textContent, 'Đăng nhập');
+});
+
+test('student sign-in validation messages follow the selected language', async () => {
+    const { context, elements } = createAuthContext();
+    elements.get('auth-user').value = '';
+    elements.get('auth-pass').value = '';
+    context.setStudentLanguage('vi');
+
+    await context.runAuthSubmitForTest();
+
+    assert.equal(elements.get('auth-error').textContent, 'Vui lòng nhập tên đăng nhập và mật khẩu');
+});
+
+test('student access sync writes only the signed-in student assigned test entries', async () => {
+    const { context } = createAuthContext();
+    const writes = [];
+    context.currentUser = { uid: 'student-uid', user: 'student_01', role: 'student' };
+    context.CLASSES = [{
+        id: 'class-a',
+        assignedTests: ['assigned-test'],
+        enrolledStudents: ['student_01']
+    }, {
+        id: 'class-b',
+        assignedTests: ['other-test'],
+        enrolledStudents: ['another-student']
+    }];
+    context.SCHEDULES = [];
+    context.buildStudentTestAccessEntries = buildStudentTestAccessEntries;
+    context.fsDoc = (collection, id) => ({ collection, id });
+    context.fsGetDocs = async () => ({ docs: [] });
+    context.fsWriteBatch = () => ({
+        set: (reference, value) => writes.push({ reference, value }),
+        delete: reference => writes.push({ reference, deleted: true }),
+        commit: async () => {}
+    });
+
+    await context.syncStudentTestAccess();
+
+    assert.equal(writes.length, 1);
+    assert.equal(writes[0].reference.id, 'assigned-test');
+    assert.equal(writes[0].value.uid, 'student-uid');
+    assert.equal(writes[0].value.username, 'student_01');
+    assert.equal(writes[0].value.classId, 'class-a');
+    assert.equal(writes[0].value.source, 'class');
+});
+
+test('student sign-in accepts an email address directly', async () => {
+    const { context, elements } = createAuthContext();
+    elements.get('auth-user').value = 'student@gmail.com';
+
+    await context.runAuthSubmitForTest();
+
+    assert.equal(context.auth.currentUser.email, 'student@gmail.com');
+    assert.equal(context.currentUser.user, 'student_01');
+    assert.equal(context.booted, true);
+    assert.deepEqual(context.profileLookups, []);
+    assert.equal(context.ownedProfileLookups, 1);
+});
+
 test('sign-in validation marks missing fields for assistive technology', async () => {
     const { context, elements } = createAuthContext();
     elements.get('auth-user').value = '';
