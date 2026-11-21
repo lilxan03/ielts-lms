@@ -157,6 +157,45 @@
 
   <!-- NEW: PUBLIC STOREFRONT (LANDING PAGE) -->
   <div id="public-landing-ui" class="hidden h-screen w-full bg-[#f4f7fb] overflow-y-auto font-sans relative z-[150] animate-fade-in">
+      <!-- Top Promo & Hotline Ribbon -->
+      <div class="bg-slate-950 text-slate-200 text-xs border-b border-white/10 px-4 py-2">
+          <div class="max-w-screen-2xl mx-auto flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2 font-semibold">
+                  <span class="inline-block h-2 w-2 rounded-full bg-emerald-400"></span>
+                  <span>Hệ thống Đào tạo &amp; Luyện thi IELTS trên máy tính (Computer-delivered IELTS LMS)</span>
+              </div>
+              <div class="flex items-center gap-4 font-bold">
+                  <a href="tel:+84913980712" class="text-cyan-300 hover:text-white transition">📞 Hotline/Zalo: 0913 980 712</a>
+                  <span class="hidden sm:inline text-slate-600">|</span>
+                  <span class="hidden sm:inline text-amber-300">🎁 Ưu đãi 20% khi đăng ký trọn gói 4 tháng</span>
+              </div>
+          </div>
+      </div>
+
+      <!-- Sticky Center Navigation Header -->
+      <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+          <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
+              <a href="#" class="flex items-center gap-3 group focus:outline-none">
+                  <div class="h-10 w-10 sm:h-11 sm:w-11 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center text-white font-black text-lg shadow-md">K</div>
+                  <div>
+                      <span class="block text-base sm:text-lg font-black tracking-tight text-blue-950 leading-none">IELTS W KHANH</span>
+                      <span class="block text-[11px] font-bold uppercase tracking-wider text-blue-600 mt-1">Academic Center &amp; EdTech</span>
+                  </div>
+              </a>
+              <nav class="hidden lg:flex items-center gap-6 text-sm font-bold text-slate-700" aria-label="Điều hướng trang chủ">
+                  <a href="#public-roadmap-section" class="hover:text-blue-700 transition">Lộ trình B1–C1</a>
+                  <a href="#public-packages-section" class="hover:text-blue-700 transition">Khóa học &amp; Học phí</a>
+                  <a href="#public-feature-demos-heading" class="hover:text-blue-700 transition">Công nghệ 3D &amp; AI</a>
+                  <a href="#public-profile-details" class="hover:text-blue-700 transition">Giảng viên &amp; Thành tích</a>
+                  <a href="#public-faq-section" class="hover:text-blue-700 transition">Câu hỏi thường gặp</a>
+              </nav>
+              <div class="flex items-center gap-2.5">
+                  <a href="/placement-test.html" class="hidden sm:inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs sm:text-sm font-extrabold text-blue-800 hover:bg-blue-100 transition">Thi thử 5 phút</a>
+                  <button type="button" onclick="window.showAuthFromLanding()" class="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 px-4 py-2.5 text-xs sm:text-sm font-black text-white shadow-sm hover:from-blue-800 hover:to-indigo-800 transition">Đăng nhập LMS &rarr;</button>
+              </div>
+          </div>
+      </header>
+
       <!-- Hero Section -->
       <div class="bg-gradient-to-br from-slate-950 via-blue-950 to-blue-900 py-14 sm:py-20 px-5 sm:px-8 lg:px-12 relative overflow-hidden">
           <div class="absolute top-[-20%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 animate-float"></div>
@@ -166,6 +205,97 @@
               <!-- Content injected via JS -->
           </div>
       </div>
+
+      <!-- Center Key Metrics & Trust Bar -->
+      <section class="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20" aria-label="Chỉ số nổi bật của trung tâm">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 rounded-2xl bg-white p-4 sm:p-6 shadow-xl border border-blue-100">
+              <div class="flex items-start gap-3 p-2">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-xl">🎯</div>
+                  <div>
+                      <p class="text-lg sm:text-xl font-black text-blue-950">IELTS 8.5</p>
+                      <p class="text-xs font-semibold text-slate-600">Giảng viên trực tiếp đứng lớp &amp; chấm chữa 1-1</p>
+                  </div>
+              </div>
+              <div class="flex items-start gap-3 p-2">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-xl">💻</div>
+                  <div>
+                      <p class="text-lg sm:text-xl font-black text-emerald-800">100% Thi Máy</p>
+                      <p class="text-xs font-semibold text-slate-600">Giao diện Computer-delivered chuẩn IDP &amp; BC</p>
+                  </div>
+              </div>
+              <div class="flex items-start gap-3 p-2">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-xl">🧊</div>
+                  <div>
+                      <p class="text-lg sm:text-xl font-black text-indigo-900">3D &amp; AI LMS</p>
+                      <p class="text-xs font-semibold text-slate-600">Mô hình 3D Writing Task 1 &amp; Micro-Dictation</p>
+                  </div>
+              </div>
+              <div class="flex items-start gap-3 p-2">
+                  <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-xl">📈</div>
+                  <div>
+                      <p class="text-lg sm:text-xl font-black text-amber-800">Lộ trình B1 → C1</p>
+                      <p class="text-xs font-semibold text-slate-600">Cá nhân hóa theo trình độ đầu vào &amp; mục tiêu</p>
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      <!-- Visual 3-Stage IELTS Training Roadmap -->
+      <section id="public-roadmap-section" class="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-12 scroll-mt-20" aria-labelledby="public-roadmap-heading">
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+              <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                  <div>
+                      <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-700">Hệ thống đào tạo chuẩn CEFR</p>
+                      <h2 id="public-roadmap-heading" class="mt-1 text-2xl sm:text-3xl font-black text-slate-900">Lộ trình học IELTS 3 chặng tinh gọn &amp; thực chiến</h2>
+                  </div>
+                  <a href="/placement-test.html" class="inline-flex items-center gap-2 rounded-xl bg-blue-50 border border-blue-200 px-4 py-2.5 text-sm font-extrabold text-blue-800 hover:bg-blue-100 transition shrink-0">
+                      <span>📝 Kiểm tra xem bạn thuộc chặng nào (5 phút)</span>
+                      <span aria-hidden="true">&rarr;</span>
+                  </a>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <article class="rounded-2xl border-2 border-sky-100 bg-gradient-to-b from-sky-50/70 to-white p-6 flex flex-col">
+                      <div class="flex items-center justify-between gap-2">
+                          <span class="rounded-full bg-sky-100 px-3 py-1 text-xs font-black text-sky-900">CHẶNG 1 • TRÌNH ĐỘ B1</span>
+                          <span class="text-xs font-extrabold text-sky-700">Đầu ra 4.5 – 5.5</span>
+                      </div>
+                      <h3 class="mt-4 text-xl font-black text-slate-900">IELTS Foundation</h3>
+                      <p class="mt-2 text-sm text-slate-600">Dành cho học viên cần củng cố nền tảng từ vựng học thuật, ngữ pháp cốt lõi và làm quen cấu trúc đề thi IELTS 4 kỹ năng.</p>
+                      <ul class="mt-4 space-y-2 text-sm text-slate-700 flex-1">
+                          <li class="flex items-start gap-2"><span class="font-bold text-sky-600">✓</span><span>Chuẩn hóa phát âm IPA &amp; nghe chép Micro-Dictation theo câu ngắn.</span></li>
+                          <li class="flex items-start gap-2"><span class="font-bold text-sky-600">✓</span><span>Đọc hiểu đoạn văn ngắn với công cụ tách cụm Syntax Chunking.</span></li>
+                          <li class="flex items-start gap-2"><span class="font-bold text-sky-600">✓</span><span>Viết đoạn văn chuẩn ngữ pháp với khung Scaffolded Writing.</span></li>
+                      </ul>
+                  </article>
+                  <article class="rounded-2xl border-2 border-blue-400 bg-gradient-to-b from-blue-50/80 to-white p-6 shadow-md flex flex-col relative">
+                      <div class="flex items-center justify-between gap-2">
+                          <span class="rounded-full bg-blue-600 px-3 py-1 text-xs font-black text-white">CHẶNG 2 • TRÌNH ĐỘ B2</span>
+                          <span class="text-xs font-extrabold text-blue-700">Đầu ra 5.5 – 6.5</span>
+                      </div>
+                      <h3 class="mt-4 text-xl font-black text-slate-900">IELTS Intensive</h3>
+                      <p class="mt-2 text-sm text-slate-600">Làm chủ chiến thuật xử lý toàn bộ dạng câu hỏi Reading &amp; Listening Cambridge và hoàn thiện bố cục bài viết Writing Task 1 &amp; Task 2.</p>
+                      <ul class="mt-4 space-y-2 text-sm text-slate-700 flex-1">
+                          <li class="flex items-start gap-2"><span class="font-bold text-blue-600">✓</span><span>Phân tích bẫy Distractors &amp; từ nối chuyển ý (Signposts) trong Listening.</span></li>
+                          <li class="flex items-start gap-2"><span class="font-bold text-blue-600">✓</span><span>Học Writing Task 1 trực quan qua mô hình 3D Map (Before/After) &amp; Process.</span></li>
+                          <li class="flex items-start gap-2"><span class="font-bold text-blue-600">✓</span><span>Luyện Speaking Part 1–2–3 bấm giờ tự động chuẩn phòng thi.</span></li>
+                      </ul>
+                  </article>
+                  <article class="rounded-2xl border-2 border-emerald-200 bg-gradient-to-b from-emerald-50/70 to-white p-6 flex flex-col">
+                      <div class="flex items-center justify-between gap-2">
+                          <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-900">CHẶNG 3 • TRÌNH ĐỘ C1</span>
+                          <span class="text-xs font-extrabold text-emerald-700">Đầu ra 6.5 – 7.5+</span>
+                      </div>
+                      <h3 class="mt-4 text-xl font-black text-slate-900">IELTS Mastery</h3>
+                      <p class="mt-2 text-sm text-slate-600">Tối ưu tốc độ làm bài dưới áp lực thời gian thực, nâng cấp từ vựng C1–C2 (Lexical Resource) và cấu trúc câu phức để bứt phá Band 7.0+.</p>
+                      <ul class="mt-4 space-y-2 text-sm text-slate-700 flex-1">
+                          <li class="flex items-start gap-2"><span class="font-bold text-emerald-600">✓</span><span>Thi thử Full Mock Exam 3 kỹ năng liên hoàn trên giao diện máy tính.</span></li>
+                          <li class="flex items-start gap-2"><span class="font-bold text-emerald-600">✓</span><span>Giảng viên 8.5 + AI chấm chữa chi tiết từng tiêu chí Writing &amp; Speaking.</span></li>
+                          <li class="flex items-start gap-2"><span class="font-bold text-emerald-600">✓</span><span>Hệ thống Grammar &amp; Vocab Highlights giải thích sâu từng câu khó.</span></li>
+                      </ul>
+                  </article>
+              </div>
+          </div>
+      </section>
 
       <!-- Packages Section -->
       <div id="public-packages-section" class="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 scroll-mt-8">
@@ -265,7 +395,7 @@
 
           <div id="public-profile-details" class="mt-12 space-y-8"></div>
 
-          <section class="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)]" aria-label="Câu hỏi thường gặp và liên hệ">
+          <section id="public-faq-section" class="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)] scroll-mt-20" aria-label="Câu hỏi thường gặp và liên hệ">
               <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                   <p class="text-sm font-black uppercase tracking-[0.16em] text-blue-700">Hỗ trợ học viên</p>
                   <h2 class="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Câu hỏi thường gặp</h2>
@@ -355,6 +485,54 @@
               <p class="text-sm text-slate-500 font-medium">Tạo tài khoản để bắt đầu học và theo dõi lộ trình của bạn.</p>
           </div>
       </div>
+
+      <!-- Professional English Center Footer -->
+      <footer class="bg-slate-950 text-slate-300 border-t border-slate-800">
+          <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div>
+                  <div class="flex items-center gap-3">
+                      <div class="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-lg">K</div>
+                      <div>
+                          <p class="text-base font-black text-white">IELTS W KHANH</p>
+                          <p class="text-xs font-semibold text-blue-400">Academic IELTS &amp; EdTech Center</p>
+                      </div>
+                  </div>
+                  <p class="mt-3 text-sm leading-relaxed text-slate-400">
+                      Hệ thống đào tạo IELTS thực chiến kết hợp nền tảng thi thử trên máy tính (Computer-delivered LMS), mô hình 3D Writing Task 1 và công cụ nghe chép Micro-Dictation theo câu.
+                  </p>
+              </div>
+              <div>
+                  <h3 class="text-xs font-black uppercase tracking-wider text-white">Lộ trình &amp; Khóa học</h3>
+                  <ul class="mt-3 space-y-2 text-sm text-slate-400">
+                      <li><a href="#public-roadmap-section" class="hover:text-white transition">IELTS Foundation (B1 • 4.5–5.5)</a></li>
+                      <li><a href="#public-roadmap-section" class="hover:text-white transition">IELTS Intensive (B2 • 5.5–6.5)</a></li>
+                      <li><a href="#public-roadmap-section" class="hover:text-white transition">IELTS Mastery (C1 • 6.5–7.5+)</a></li>
+                      <li><a href="#public-packages-section" class="hover:text-white transition">Bảng học phí &amp; Ưu đãi gói 4 tháng</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h3 class="text-xs font-black uppercase tracking-wider text-white">Công cụ học thử miễn phí</h3>
+                  <ul class="mt-3 space-y-2 text-sm text-slate-400">
+                      <li><a href="/placement-test.html" class="hover:text-cyan-300 transition">→ Thi thử IELTS đầu vào (5 phút)</a></li>
+                      <li><a href="/writing-3d-demo.html" class="hover:text-cyan-300 transition">→ Mô hình 3D Writing Task 1</a></li>
+                      <li><a href="/micro-dictation-demo.html" class="hover:text-cyan-300 transition">→ Luyện nghe Micro-Dictation</a></li>
+                      <li><a href="/reading-ai-demo.html" class="hover:text-cyan-300 transition">→ Reading Vocab IPA &amp; Grammar</a></li>
+                  </ul>
+              </div>
+              <div>
+                  <h3 class="text-xs font-black uppercase tracking-wider text-white">Liên hệ &amp; Tư vấn xếp lớp</h3>
+                  <ul class="mt-3 space-y-2 text-sm text-slate-400">
+                      <li>📍 Lớp Online toàn quốc &amp; Offline Quận 7, TP.HCM</li>
+                      <li>📞 Hotline / Zalo: <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="font-bold text-white hover:underline">0913 980 712</a></li>
+                      <li>✉️ Email: <a href="mailto:lyquockhanh03@gmail.com" class="hover:text-white">lyquockhanh03@gmail.com</a></li>
+                      <li>🌐 Facebook: <a href="https://web.facebook.com/lilqkhanh/" target="_blank" rel="noopener noreferrer" class="hover:text-white">fb.com/lilqkhanh</a></li>
+                  </ul>
+              </div>
+          </div>
+          <div class="border-t border-slate-800/80 py-4 px-4 text-center text-xs text-slate-500">
+              © 2026 IELTS W KHANH. All rights reserved. Hệ thống LMS luyện thi IELTS chuyên sâu.
+          </div>
+      </footer>
   </div>
 
   <!-- ✨ NEW: HOF FULL SCREEN MODAL -->
