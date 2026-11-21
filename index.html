@@ -182,12 +182,24 @@
                       <p id="public-pricing-estimate-note" class="text-sm leading-relaxed text-slate-500">Ước tính dựa trên đơn giá mỗi buổi của từng gói. Gói 4 tháng giảm 20%; chưa tính ưu đãi giới thiệu (nếu có). Số tiền cuối cùng sẽ được xác nhận ở bước thanh toán.</p>
                   </div>
               </div>
-              <div class="mb-8 flex flex-col gap-4 rounded-2xl border border-cyan-100 bg-gradient-to-r from-cyan-50 to-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                  <div>
-                      <h3 class="text-lg font-black text-slate-900">Chưa chắc khóa học nào phù hợp?</h3>
-                      <p class="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">Nhắn Zalo để trao đổi về mục tiêu và trình độ hiện tại. Bạn sẽ được tư vấn, đánh giá trình độ và gợi ý lớp phù hợp.</p>
+              <div class="mb-8 rounded-2xl border border-cyan-100 bg-gradient-to-r from-cyan-50 to-blue-50 p-5 sm:p-6">
+                  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                          <h3 class="text-lg font-black text-slate-900">Chưa chắc khóa học nào phù hợp?</h3>
+                          <p class="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">Để lại thông tin để nhận tư vấn lộ trình 1-1 trong 5 phút, làm thử Mini Test đầu vào hoặc nhắn trực tiếp qua Zalo.</p>
+                      </div>
+                      <div class="flex flex-wrap gap-2 shrink-0">
+                          <a href="/placement-test.html" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-blue-200 bg-white px-4 py-2.5 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50">Thi thử 5 phút</a>
+                          <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">Tư vấn qua Zalo</a>
+                      </div>
                   </div>
-                  <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 px-5 py-3 font-black text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">Tư vấn &amp; xếp lớp qua Zalo</a>
+                  <form id="public-lead-form" onsubmit="window.handlePublicLeadFormSubmit(event)" class="mt-4 grid gap-2.5 sm:grid-cols-4">
+                      <input id="public-lead-name" type="text" required placeholder="Họ và tên *" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                      <input id="public-lead-phone" type="tel" required placeholder="Số điện thoại / Zalo *" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                      <input id="public-lead-target" type="text" placeholder="Band mục tiêu (vd: 6.5)" class="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+                      <button type="submit" class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white shadow-sm transition hover:bg-emerald-700">Đăng ký tư vấn</button>
+                  </form>
+                  <p id="public-lead-msg" class="hidden mt-2 text-xs font-bold"></p>
               </div>
               <section class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="course-operations-heading">
                   <h3 id="course-operations-heading" class="text-lg font-black text-slate-900">Hình thức học &amp; quy trình đăng ký</h3>
@@ -2981,6 +2993,7 @@
   <script src="js/teacher-builder.js"></script>
   <script src="js/billing.js"></script>
   <script src="js/landing.js"></script>
+  <script src="js/lead-capture.js"></script>
   <script src="js/dynamic-mindmap.js"></script>
   <script src="js/scaffolded-writing.js"></script>
   <script src="js/student-dashboard.js"></script>

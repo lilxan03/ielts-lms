@@ -66,12 +66,13 @@
         <input type="text" id="lead-name" placeholder="Họ và tên của bạn" required />
         <input type="tel" id="lead-phone" placeholder="Số điện thoại / Zalo" required />
         <input type="text" id="lead-target" placeholder="Band mục tiêu (ví dụ: 6.5 hoặc 7.5)" />
-        <button class="btn" type="submit" style="background:#10b981;color:#052e16;">Gửi thông tin tư vấn</button>
+        <button class="btn" id="lead-submit-btn" type="submit" style="background:#10b981;color:#052e16;">Gửi thông tin tư vấn</button>
         <p id="lead-msg" style="font-size:13px;color:#a7f3d0;display:none;"></p>
       </form>
     </section>
   </main>
 
+  <script src="js/lead-capture.js"></script>
   <script>
     const QS = [
       { sec: 'reading-qs', q: '1. Vertical farms grow crops indoors throughout the entire year.', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 'TRUE' },
@@ -93,6 +94,8 @@
       document.getElementById(item.sec).appendChild(el);
     });
 
+    let lastPlacementResult = null;
+
     document.getElementById('submit-btn').onclick = () => {
       let score = 0;
       QS.forEach((item, idx) => {
@@ -101,6 +104,11 @@
       });
       const band = score <= 3 ? '4.0 – 4.5' : score <= 5 ? '5.0 – 5.5' : score <= 7 ? '6.0 – 6.5' : score <= 9 ? '7.0' : '7.5+';
       const rec = score <= 4 ? 'Gợi ý lớp: Bands 4 - 5 (B1)' : score <= 7 ? 'Gợi ý lớp: Bands 5 - 6.5 (B2)' : 'Gợi ý lớp: Bands 6.5 - 7.5 (C1)';
+      lastPlacementResult = {
+        placementScore: `${score}/${QS.length}`,
+        placementBand: `Band ${band}`,
+        recommendedClass: rec.replace('Gợi ý lớp: ', '')
+      };
       document.getElementById('band-text').textContent = `Band ${band}`;
       document.getElementById('score-detail').textContent = `Bạn trả lời đúng ${score} / ${QS.length} câu.`;
       document.getElementById('class-rec').textContent = rec;
@@ -109,11 +117,38 @@
       box.scrollIntoView({ behavior: 'smooth' });
     };
 
-    document.getElementById('lead-form').onsubmit = (e) => {
+    document.getElementById('lead-form').onsubmit = async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('lead-submit-btn');
       const msg = document.getElementById('lead-msg');
-      msg.style.display = 'block';
-      msg.textContent = 'Đã ghi nhận thông tin! Thầy/Cô sẽ liên hệ tư vấn lộ trình cho bạn trong thời gian sớm nhất.';
+      const name = document.getElementById('lead-name').value.trim();
+      const phone = document.getElementById('lead-phone').value.trim();
+      const targetBand = document.getElementById('lead-target').value.trim();
+
+      btn.disabled = true;
+      btn.textContent = 'Đang gửi thông tin...';
+      msg.style.display = 'none';
+
+      try {
+        await window.submitLeadConsultation({
+          name,
+          phone,
+          targetBand,
+          source: 'placement-test',
+          ...(lastPlacementResult || {})
+        });
+        msg.style.display = 'block';
+        msg.style.color = '#a7f3d0';
+        msg.textContent = 'Đã gửi thông tin thành công! Thầy/Cô sẽ liên hệ tư vấn lộ trình cho bạn trong ít phút.';
+        e.target.reset();
+      } catch (err) {
+        msg.style.display = 'block';
+        msg.style.color = '#fca5a5';
+        msg.textContent = err.message || 'Gửi thất bại. Bạn vui lòng nhắn Zalo 0913 980 712 để được hỗ trợ ngay.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Gửi thông tin tư vấn';
+      }
     };
   </script>
 </body>
