@@ -1155,9 +1155,10 @@
               return html;
           }).join('');
           
+          const embed3dBlock = p?.embed3dUrl ? `<div class="mt-4 w-full"><iframe src="${String(p.embed3dUrl).replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 dark:border-slate-700" style="height:520px;" loading="lazy" allowfullscreen></iframe></div>` : '';
           if (!isTimeFree) {
               // ✨ FIX: Inject the titleHtml at the very top of the passage container!
-              passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}`;
+              passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}${embed3dBlock}`;
           } else {
               let sampleAnswerBlock = '';
               const partVocabulary = window.filterDynamicMindMapVocabulary?.(
@@ -1200,7 +1201,6 @@
                   }
               }
               // ✨ FIX: Inject the titleHtml here as well!
-              const embed3dBlock = part?.embed3dUrl ? `<div class="mt-4 w-full"><iframe src="${String(part.embed3dUrl).replace(/"/g, '&quot;')}" class="w-full rounded-xl border border-slate-300 dark:border-slate-700" style="height:520px;" loading="lazy" allowfullscreen></iframe></div>` : '';
               passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}${embed3dBlock}${sampleAnswerBlock}`;
               if (mindMapHtml) window.initDynamicMindMap?.(passageContainer);
           }
