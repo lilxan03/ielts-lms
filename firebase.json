@@ -1,0 +1,65 @@
+{
+  "functions": {
+    "source": ".",
+    "codebase": "default",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**",
+      "**/*.exe",
+      "**/*.bat",
+      "**/*.ps1",
+      "**/*.sh",
+      "**/*.dll",
+      "**/*.so",
+      "**/*.dylib",
+      "**/*.cmd",
+      "**/*.msi",
+      "firebaseadmin/**",
+      "index.html",
+      "css/**",
+      "js/**",
+      "README.md",
+      "firestore.rules",
+      "firebase-messaging-sw.js"
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**",
+      "**/*.exe",
+      "**/*.bat",
+      "**/*.ps1",
+      "**/*.sh",
+      "**/*.dll",
+      "**/*.so",
+      "**/*.dylib",
+      "**/*.cmd",
+      "**/*.msi",
+      "firebaseadmin/**",
+      "test/**",
+      "index.js",
+      "test-access-index.js",
+      "package.json",
+      "package-lock.json",
+      "README.md",
+      "firestore.rules"
+    ]
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": false
+    }
+  }
+}
