@@ -163,6 +163,11 @@
     .rich-editor table.no-border th, .rich-editor table.no-border td { border: 1px dashed #cbd5e1; }
     .rich-editor table:not(.no-border) th, .rich-editor table:not(.no-border) td { border: 1px solid #cbd5e1; }
     .rich-editor th { background-color: #f1f5f9; }
+    #questions-container table, #review-right-pane table, #review-left-pane table { width: 100%; max-width: 100%; border-collapse: collapse; margin: 0.75rem 0; }
+    #questions-container th, #questions-container td, #review-right-pane th, #review-right-pane td, #review-left-pane th, #review-left-pane td { border: 1px solid #cbd5e1; padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+    #questions-container th, #review-right-pane th, #review-left-pane th { background-color: #f1f5f9; font-weight: 700; }
+    .dark #questions-container th, .dark #questions-container td, .dark #review-right-pane th, .dark #review-right-pane td, .dark #review-left-pane th, .dark #review-left-pane td { border-color: #334155; }
+    .dark #questions-container th, .dark #review-right-pane th, .dark #review-left-pane th { background-color: #1e293b; color: #f8fafc; }
     
     .rich-editor ul, .exam-reading-pane ul, #questions-container ul, #review-right-pane ul, #review-left-pane ul { 
         list-style-type: disc; 
