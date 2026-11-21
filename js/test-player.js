@@ -1200,7 +1200,7 @@
                   }
               }
               // ✨ FIX: Inject the titleHtml here as well!
-              const embed3dBlock = part?.embed3dUrl ? `<div class="mt-4 w-full"><iframe src="${escapeHtml(part.embed3dUrl)}" class="w-full rounded-xl border border-slate-300 dark:border-slate-700" style="height:520px;" loading="lazy" allowfullscreen></iframe></div>` : '';
+              const embed3dBlock = part?.embed3dUrl ? `<div class="mt-4 w-full"><iframe src="${escapeHtmlAttributeValue(part.embed3dUrl)}" class="w-full rounded-xl border border-slate-300 dark:border-slate-700" style="height:520px;" loading="lazy" allowfullscreen></iframe></div>` : '';
               passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}${embed3dBlock}${sampleAnswerBlock}`;
               if (mindMapHtml) window.initDynamicMindMap?.(passageContainer);
           }
