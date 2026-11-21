@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Writing Task 1 — 3D Interactive Process</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0b1220; color: #e2e8f0; overflow: hidden; }
+    #canvas-wrap { position: fixed; inset: 0; }
+    .hud-top { position: fixed; top: 10px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 10; gap: 8px; }
+    .title-card, .controls { pointer-events: auto; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(10px); border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; }
+    .title-card h1 { font-size: 13px; font-weight: 700; color: #f8fafc; }
+    .title-card p { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+    .controls { display: flex; gap: 6px; align-items: center; padding: 6px 10px; }
+    button { background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 7px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+    button:hover { background: #334155; }
+    button.primary { background: #2563eb; border-color: #3b82f6; color: #fff; }
+    .info-panel { position: fixed; bottom: 12px; left: 12px; width: 330px; max-width: calc(100vw - 24px); background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px); border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; z-index: 10; }
+    .step-badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: #1d4ed8; color: #fff; margin-bottom: 4px; }
+    .info-panel h2 { font-size: 14px; color: #f8fafc; margin-bottom: 4px; }
+    .info-panel .desc { font-size: 12px; color: #cbd5e1; line-height: 1.4; margin-bottom: 8px; }
+    .vocab-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 7px 9px; font-size: 11px; line-height: 1.45; }
+    .vocab-box b { color: #38bdf8; }
+    .steps-bar { position: fixed; bottom: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 5px; max-width: 260px; justify-content: flex-end; z-index: 10; }
+    .step-pill { padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(30, 41, 59, 0.85); border: 1px solid #334155; color: #94a3b8; cursor: pointer; }
+    .step-pill.active { background: #10b981; border-color: #34d399; color: #052e16; }
+  </style>
+</head>
+<body>
+  <div id="canvas-wrap"></div>
+  <div class="hud-top">
+    <div class="title-card">
+      <h1 id="proc-title">3D Process</h1>
+      <p>Drag to rotate • Scroll to zoom • Click any stage or press Play</p>
+    </div>
+    <div class="controls">
+      <button id="btn-prev">← Prev</button>
+      <button id="btn-play" class="primary">▶ Play</button>
+      <button id="btn-next">Next →</button>
+    </div>
+  </div>
+  <div class="info-panel">
+    <span class="step-badge" id="step-badge">Step 1</span>
+    <h2 id="step-title"></h2>
+    <div class="desc" id="step-desc"></div>
+    <div class="vocab-box" id="step-vocab"></div>
+  </div>
+  <div class="steps-bar" id="steps-bar"></div>
+
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const PROCESSES = {
+      'cam8-t3': {
+        title: 'Cam 8 Test 3 — Cement & Concrete Production',
+        cycle: false,
+        steps: [
+          { label: '1. Limestone & Clay', shape: 'rocks', color: 0x94a3b8, pos: [-7, 0, -2], title: '1. Raw Materials (Limestone & Clay)', desc: 'Limestone and clay are fed into a crusher.', vocab: '<b>Verbs:</b> are fed into, are crushed<br><b>Sample:</b> <i>First, limestone and clay are crushed together into a fine powder.</i>' },
+          { label: '2. Crusher → Powder', shape: 'hopper', color: 0x64748b, pos: [-4, 0, -2], title: '2. Crushing & Mixing', desc: 'The crushed powder is blended in a rotating mixer.', vocab: '<b>Verbs:</b> is mixed, is blended<br><b>Sample:</b> <i>The resulting powder is then thoroughly mixed before heating.</i>' },
+          { label: '3. Rotating Heater', shape: 'kiln', color: 0xef4444, pos: [-1, 0, -2], title: '3. Rotating Heater (Kiln)', desc: 'The mixture passes through a rotating heater with intense heat.', vocab: '<b>Verbs:</b> is heated, passes through<br><b>Sample:</b> <i>Subsequently, the mixture enters a rotating heater at high temperature.</i>' },
+          { label: '4. Grinder → Cement', shape: 'cylinder', color: 0xf59e0b, pos: [2, 0, -2], title: '4. Grinding & Bagging', desc: 'Heated material is ground into cement and packed into bags.', vocab: '<b>Verbs:</b> is ground into, is packed<br><b>Sample:</b> <i>Once cooled, it is ground into cement and packaged into bags.</i>' },
+          { label: '5. Concrete Mixer', shape: 'sphere', color: 0x3b82f6, pos: [5.5, 0, 1], title: '5. Concrete Production', desc: '15% cement, 10% water, 25% sand & 50% gravel are mixed in a concrete mixer.', vocab: '<b>Verbs:</b> are combined, is rotated<br><b>Sample:</b> <i>Finally, cement is mixed with water, sand, and gravel to produce concrete.</i>' },
+        ]
+      },
+      'cam10-t4': {
+        title: 'Cam 10 Test 4 — Life Cycle of the Salmon',
+        cycle: true,
+        steps: [
+          { label: '1. Eggs in Upper River', shape: 'rocks', color: 0xf97316, pos: [-4, 0, -4], title: '1. Spawning in Upper River', desc: 'Salmon lay eggs among reeds and small stones in slow-moving upper river.', vocab: '<b>Verbs:</b> are laid, hatch<br><b>Sample:</b> <i>Adult salmon lay eggs among small stones in the upper river.</i>' },
+          { label: '2. Fry (3–8 cm)', shape: 'fish', color: 0x38bdf8, pos: [2, 0, -4], title: '2. Fry in Lower River (4 years)', desc: 'Fry (3–8 cm) swim to the fast-flowing lower river for about 4 years.', vocab: '<b>Verbs:</b> migrate, grow into<br><b>Sample:</b> <i>After hatching, fry live in the fast-flowing lower river for roughly four years.</i>' },
+          { label: '3. Smolt (12–15 cm)', shape: 'fish', color: 0x0ea5e9, pos: [4, 0, 1], title: '3. Smolt in Open Sea (~5 years)', desc: 'Smolts (12–15 cm) migrate to the open sea where they spend 5 years.', vocab: '<b>Verbs:</b> swim out to, mature<br><b>Sample:</b> <i>Growing into smolts, they swim to the open sea and stay for five years.</i>' },
+          { label: '4. Adult Salmon (70–76 cm)', shape: 'fish', color: 0xef4444, pos: [-2, 0, 4], title: '4. Adult Salmon Return', desc: 'Adult salmon (70–76 cm) return to the upper river to spawn.', vocab: '<b>Verbs:</b> return to, complete the cycle<br><b>Sample:</b> <i>Finally, mature adult salmon return upstream to spawn, restarting the cycle.</i>' },
+        ]
+      },
+      'cam12-t4': {
+        title: 'Cam 12 Test 4 — Geothermal Electricity Production',
+        cycle: false,
+        steps: [
+          { label: '1. Cold Water Injection', shape: 'cylinder', color: 0x3b82f6, pos: [-6, 0, 0], title: '1. Cold Water Pumped Down', desc: 'Cold water is pumped down 4.5 km through an injection well.', vocab: '<b>Verbs:</b> is pumped down, is injected<br><b>Sample:</b> <i>Initially, cold water is pumped 4.5 km underground via an injection well.</i>' },
+          { label: '2. Geothermal Zone', shape: 'rocks', color: 0xef4444, pos: [-2, -0.5, 0], title: '2. Heating by Hot Rocks', desc: 'Water passes through hot rocks in the geothermal zone and heats up.', vocab: '<b>Verbs:</b> passes through, is heated<br><b>Sample:</b> <i>As it flows through hot rocks, the water is heated to high temperatures.</i>' },
+          { label: '3. Production Well', shape: 'cylinder', color: 0xf97316, pos: [2, 0, 0], title: '3. Hot Water Pumped Up', desc: 'Hot water is pumped up the production well to the condenser.', vocab: '<b>Verbs:</b> is pumped up, enters<br><b>Sample:</b> <i>The heated water is then pumped up to the surface condenser.</i>' },
+          { label: '4. Condenser → Steam', shape: 'hopper', color: 0xe2e8f0, pos: [4.5, 0.5, -2], title: '4. Steam Generation', desc: 'In the condenser, hot water turns into steam.', vocab: '<b>Verbs:</b> is converted into, powers<br><b>Sample:</b> <i>Inside the condenser, the hot water produces steam.</i>' },
+          { label: '5. Turbine & Generator', shape: 'kiln', color: 0x22c55e, pos: [6.5, 0.5, 2], title: '5. Electricity Generated', desc: 'Steam drives the turbine, powering the generator to produce electricity.', vocab: '<b>Verbs:</b> drives, generates, is distributed<br><b>Sample:</b> <i>Finally, steam spins the turbine to power the generator, producing electricity.</i>' },
+        ]
+      },
+      'cam15-t3': {
+        title: 'Cam 15 Test 3 — Instant Noodles Manufacturing',
+        cycle: false,
+        steps: [
+          { label: '1. Storage Silos (Flour)', shape: 'cylinder', color: 0xfde047, pos: [-7, 0, -2], title: '1. Flour Silos', desc: 'Flour is delivered by truck and stored in large silos.', vocab: '<b>Verbs:</b> is stored, is transferred<br><b>Sample:</b> <i>First, flour is stored in silos before being mixed with water and oil.</i>' },
+          { label: '2. Mixer & Dough Sheets', shape: 'hopper', color: 0xf59e0b, pos: [-4, 0, -2], title: '2. Mixing & Rolling', desc: 'Flour, water, and oil are mixed and rolled into thin dough sheets.', vocab: '<b>Verbs:</b> are mixed, are rolled into<br><b>Sample:</b> <i>The ingredients are mixed and pressed through rollers into dough sheets.</i>' },
+          { label: '3. Strips & Noodle Discs', shape: 'kiln', color: 0xeab308, pos: [-1, 0, -2], title: '3. Slitting & Shaping', desc: 'Sheets are cut into strips and shaped into circular noodle discs.', vocab: '<b>Verbs:</b> are cut into, are shaped<br><b>Sample:</b> <i>Subsequently, the dough sheets are sliced into strips and formed into discs.</i>' },
+          { label: '4. Cooking Oil & Drying', shape: 'sphere', color: 0xef4444, pos: [2.5, 0, 0], title: '4. Frying & Drying', desc: 'Noodle discs are cooked in oil and dried.', vocab: '<b>Verbs:</b> are fried, are dried<br><b>Sample:</b> <i>Next, the discs are cooked in hot oil and thoroughly dried.</i>' },
+          { label: '5. Cups, Veg, Spices & Seal', shape: 'box', color: 0x22c55e, pos: [6, 0, 1], title: '5. Packaging & Labelling', desc: 'Noodles are placed in cups with vegetables & spices, labelled and sealed.', vocab: '<b>Verbs:</b> are placed into, are sealed<br><b>Sample:</b> <i>Finally, they are put into cups with flavourings, labelled, and sealed.</i>' },
+        ]
+      },
+      'cam16-t2': {
+        title: 'Cam 16 Test 2 — Sugar from Sugar Cane',
+        cycle: false,
+        steps: [
+          { label: '1. Growing (12–18 mos)', shape: 'trees', color: 0x22c55e, pos: [-7, 0, -2], title: '1. Growing Sugar Cane', desc: 'Sugar canes take 12–18 months to grow.', vocab: '<b>Verbs:</b> take, mature<br><b>Sample:</b> <i>Sugar cane is grown for 12 to 18 months until ready for harvest.</i>' },
+          { label: '2. Harvesting', shape: 'box', color: 0xef4444, pos: [-4, 0, -2], title: '2. Manual & Machine Harvesting', desc: 'Canes are harvested either manually or by machine.', vocab: '<b>Verbs:</b> is harvested, is cut<br><b>Sample:</b> <i>Once mature, the cane is harvested either by hand or machinery.</i>' },
+          { label: '3. Crushing → Juice', shape: 'hopper', color: 0x84cc16, pos: [-1, 0, -2], title: '3. Crushing', desc: 'Sugar canes are crushed in a mill to extract juice.', vocab: '<b>Verbs:</b> is crushed, is extracted<br><b>Sample:</b> <i>The harvested cane is crushed to extract raw sugar cane juice.</i>' },
+          { label: '4. Limestone Purifier', shape: 'cylinder', color: 0x06b6d4, pos: [2, 0, 0], title: '4. Purifying Juice', desc: 'Juice is purified through a limestone filter.', vocab: '<b>Verbs:</b> is purified, passes through<br><b>Sample:</b> <i>Next, the juice is purified using a limestone filter.</i>' },
+          { label: '5. Evaporator → Syrup', shape: 'kiln', color: 0xf97316, pos: [4.5, 0, 1.5], title: '5. Evaporation & Centrifuge', desc: 'Heat turns juice into syrup; centrifuge separates sugar crystals, then dried.', vocab: '<b>Verbs:</b> is heated, is separated, is dried<br><b>Sample:</b> <i>Finally, syrup is spun in a centrifuge to separate crystals, which are dried and cooled.</i>' },
+        ]
+      },
+      'cam16-t4': {
+        title: 'Cam 16 Test 4 — Recycling Plastic Bottles',
+        cycle: true,
+        steps: [
+          { label: '1. Bin & Collection', shape: 'cylinder', color: 0x3b82f6, pos: [-5, 0, -4], title: '1. Collection & Transport', desc: 'Used plastic bottles are placed in recycling bins and collected by truck.', vocab: '<b>Verbs:</b> are discarded, are collected<br><b>Sample:</b> <i>Initially, used bottles are placed in recycling bins and collected by trucks.</i>' },
+          { label: '2. Sorting & Compressing', shape: 'box', color: 0xeab308, pos: [1, 0, -4], title: '2. Sorting & Crushing', desc: 'Bottles are sorted at a recycling centre and compressed into blocks.', vocab: '<b>Verbs:</b> are sorted, are compressed<br><b>Sample:</b> <i>At the facility, bottles are sorted and compressed into tight blocks.</i>' },
+          { label: '3. Shredding & Washing', shape: 'hopper', color: 0x06b6d4, pos: [5, 0, 0], title: '3. Crushing & Washing', desc: 'Blocks are crushed into small pieces and washed.', vocab: '<b>Verbs:</b> are crushed, are washed<br><b>Sample:</b> <i>Subsequently, the blocks are shredded into flakes and thoroughly washed.</i>' },
+          { label: '4. Plastic Pellets', shape: 'sphere', color: 0x8b5cf6, pos: [1, 0, 4], title: '4. Heating into Pellets', desc: 'Clean flakes are melted into plastic pellets and raw material.', vocab: '<b>Verbs:</b> are melted, are formed into<br><b>Sample:</b> <i>The clean plastic is then melted to form raw plastic pellets.</i>' },
+          { label: '5. New Products', shape: 'trees', color: 0x22c55e, pos: [-5, 0, 2], title: '5. Manufacturing New Items', desc: 'Raw material is used to make new bottles, clothes, bags, and pens.', vocab: '<b>Verbs:</b> is manufactured into<br><b>Sample:</b> <i>Finally, the recycled pellets are made into new consumer products.</i>' },
+        ]
+      },
+      'cam21-t3': {
+        title: 'Cam 21 Test 3 — Rain-Shadow Desert Formation',
+        cycle: false,
+        steps: [
+          { label: '1. Ocean Evaporation', shape: 'cylinder', color: 0x0ea5e9, pos: [-6, 0, 0], title: '1. Moist Air from Ocean', desc: 'Warm moist air evaporates from the ocean and blows inland.', vocab: '<b>Verbs:</b> evaporates, blows inland<br><b>Sample:</b> <i>Warm, moisture-laden air blows from the ocean toward coastal mountains.</i>' },
+          { label: '2. Rising & Cooling', shape: 'sphere', color: 0x94a3b8, pos: [-2, 1.5, 0], title: '2. Air Rises & Condenses', desc: 'Moist air is forced upward by the mountain range, cooling into clouds.', vocab: '<b>Verbs:</b> is forced upward, condenses<br><b>Sample:</b> <i>As the air rises up the windward slope, it cools and condenses into clouds.</i>' },
+          { label: '3. Windward Rainfall', shape: 'trees', color: 0x22c55e, pos: [1, 2.2, 0], title: '3. Heavy Rain on Windward Side', desc: 'Heavy rain falls on the windward slope, supporting lush vegetation.', vocab: '<b>Verbs:</b> precipitates, falls on<br><b>Sample:</b> <i>Heavy rainfall occurs on the windward side, leaving the air dry.</i>' },
+          { label: '4. Dry Air Descends', shape: 'rocks', color: 0xf59e0b, pos: [5, 0.2, 0], title: '4. Leeward Rain-Shadow Desert', desc: 'Dry air descends on the leeward side, warming up and creating a desert.', vocab: '<b>Verbs:</b> descends, warms up, creates<br><b>Sample:</b> <i>Finally, dry air descends the leeward slope, forming a rain-shadow desert.</i>' },
+        ]
+      }
+    };
+
+    const id = new URLSearchParams(location.search).get('id') || 'cam8-t3';
+    const proc = PROCESSES[id] || PROCESSES['cam8-t3'];
+    document.getElementById('proc-title').textContent = proc.title;
+
+    const wrap = document.getElementById('canvas-wrap');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0b1220);
+    const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 12, 15);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    wrap.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(8, 18, 10);
+    scene.add(dirLight);
+    const grid = new THREE.GridHelper(24, 24, 0x1e293b, 0x111827);
+    grid.position.y = -0.6;
+    scene.add(grid);
+
+    function makeLabel(text) {
+      const c = document.createElement('canvas'); c.width = 512; c.height = 96;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#0f172a'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.roundRect(8, 8, 496, 80, 20); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 28px system-ui, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 256, 48);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
+      sp.scale.set(3.4, 0.64, 1);
+      return sp;
+    }
+
+    function buildShape(shape, color) {
+      const m = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.2 });
+      if (shape === 'hopper') return new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.35, 1.2, 8), m);
+      if (shape === 'kiln') { const x = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.6, 16), m); x.rotation.z = Math.PI / 2.4; return x; }
+      if (shape === 'cylinder') return new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.3, 20), m);
+      if (shape === 'sphere') return new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 1), m);
+      if (shape === 'fish') { const x = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1.3, 10), m); x.rotation.z = -Math.PI / 2; return x; }
+      if (shape === 'trees') return new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.5, 8), m);
+      if (shape === 'rocks') return new THREE.Mesh(new THREE.DodecahedronGeometry(0.7, 0), m);
+      return new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 0.9), m);
+    }
+
+    const nodes = [];
+    const STEPS = proc.steps;
+    STEPS.forEach((s, idx) => {
+      const g = new THREE.Group();
+      g.position.set(...s.pos);
+      const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.2, 0.25, 24), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+      ped.position.y = -0.15;
+      g.add(ped);
+      const mesh = buildShape(s.shape, s.color);
+      mesh.position.y = 0.7;
+      mesh.userData = { stepIdx: idx };
+      g.add(mesh);
+      const lbl = makeLabel(s.label);
+      lbl.position.set(0, 2.1, 0);
+      g.add(lbl);
+      scene.add(g);
+      nodes.push({ mesh, ped, color: s.color, pos: new THREE.Vector3(...s.pos) });
+    });
+
+    const linkCount = proc.cycle ? STEPS.length : STEPS.length - 1;
+    for (let i = 0; i < linkCount; i++) {
+      const a = nodes[i].pos.clone().setY(0.35);
+      const b = nodes[(i + 1) % STEPS.length].pos.clone().setY(0.35);
+      scene.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(a, b), 4, 0.08, 8, false), new THREE.MeshBasicMaterial({ color: 0xfacc15 })));
+    }
+
+    const orb = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+    scene.add(orb);
+
+    let currentStep = 0, playing = false, tProg = 0;
+    const stepsBar = document.getElementById('steps-bar');
+    STEPS.forEach((s, i) => {
+      const p = document.createElement('button'); p.className = 'step-pill'; p.textContent = `${i + 1}`;
+      p.onclick = () => { playing = false; updatePlay(); selectStep(i); };
+      stepsBar.appendChild(p);
+    });
+
+    function selectStep(idx) {
+      currentStep = (idx + STEPS.length) % STEPS.length; tProg = currentStep;
+      const s = STEPS[currentStep];
+      document.getElementById('step-badge').textContent = `Step ${currentStep + 1} / ${STEPS.length}`;
+      document.getElementById('step-title').textContent = s.title;
+      document.getElementById('step-desc').textContent = s.desc;
+      document.getElementById('step-vocab').innerHTML = s.vocab;
+      [...stepsBar.children].forEach((el, i) => el.classList.toggle('active', i === currentStep));
+      nodes.forEach((n, i) => { n.ped.material.emissive.setHex(i === currentStep ? n.color : 0); n.ped.material.emissiveIntensity = i === currentStep ? 0.6 : 0; });
+    }
+    function updatePlay() { document.getElementById('btn-play').textContent = playing ? '⏸ Pause' : '▶ Play'; }
+    document.getElementById('btn-prev').onclick = () => { playing = false; updatePlay(); selectStep(currentStep - 1); };
+    document.getElementById('btn-next').onclick = () => { playing = false; updatePlay(); selectStep(currentStep + 1); };
+    document.getElementById('btn-play').onclick = () => { playing = !playing; updatePlay(); };
+
+    const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
+    window.addEventListener('click', (e) => {
+      if (e.target.closest('button') || e.target.closest('.info-panel')) return;
+      pointer.x = (e.clientX / window.innerWidth) * 2 - 1; pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(nodes.map(n => n.mesh));
+      if (hits.length) { playing = false; updatePlay(); selectStep(hits[0].object.userData.stepIdx); }
+    });
+    window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+    selectStep(0);
+    function animate() {
+      requestAnimationFrame(animate);
+      if (playing) {
+        tProg += 0.012;
+        if (tProg >= (proc.cycle ? STEPS.length : STEPS.length - 0.01)) tProg = 0;
+        const idx = Math.floor(tProg) % STEPS.length;
+        if (idx !== currentStep) { const prev = tProg; selectStep(idx); tProg = prev; }
+      }
+      const i0 = Math.floor(tProg) % STEPS.length;
+      const i1 = (i0 + 1) % STEPS.length;
+      const frac = tProg - Math.floor(tProg);
+      orb.position.lerpVectors(nodes[i0].pos, nodes[i1].pos, frac);
+      orb.position.y = 0.35;
+      controls.update(); renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
