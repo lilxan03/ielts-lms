@@ -79,26 +79,9 @@
         });
     }
 
-    function buildMicroDictationSegments(part, audioDuration, segmentDuration) {
-        if (!Number.isFinite(audioDuration) || audioDuration <= 0 ||
-            !Number.isFinite(segmentDuration) || segmentDuration < 5 || segmentDuration > 10) return [];
-        const cues = buildCueTimes(part, audioDuration);
-        const segmentCount = Math.ceil(audioDuration / segmentDuration);
-        if (!cues.length || segmentCount > 3000) return [];
-        const segmentTexts = Array.from({ length: segmentCount }, () => []);
-        cues.forEach(cue => {
-            const words = cue.text.split(/\s+/).filter(Boolean);
-            words.forEach((word, wordIndex) => {
-                const wordTime = cue.start + (cue.end - cue.start) * (wordIndex + 0.5) / words.length;
-                const segmentIndex = Math.min(segmentCount - 1, Math.floor(wordTime / segmentDuration));
-                segmentTexts[segmentIndex].push(word);
-            });
-        });
-        return Array.from({ length: segmentCount }, (_, index) => {
-            const start = index * segmentDuration;
-            const end = Math.min(audioDuration, start + segmentDuration);
-            return { start, end, text: segmentTexts[index].join(' ') };
-        }).filter(segment => segment.text);
+    function buildMicroDictationSegments(part, audioDuration) {
+        if (!Number.isFinite(audioDuration) || audioDuration <= 0) return [];
+        return buildCueTimes(part, audioDuration).filter(segment => segment.text && segment.text.trim());
     }
 
     function normalizeAnswer(value) {
