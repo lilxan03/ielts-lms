@@ -117,3 +117,39 @@ test('lead-webhook succeeds gracefully when env vars are not configured yet', as
     }
   }
 });
+
+test('lead-capture Mini CRM stores, updates status, and deletes consultation leads', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const vm = require('node:vm');
+
+  const store = new Map();
+  const context = {
+    localStorage: {
+      getItem: (k) => (store.has(k) ? store.get(k) : null),
+      setItem: (k, v) => store.set(k, String(v))
+    }
+  };
+  context.window = context;
+  vm.createContext(context);
+  const code = fs.readFileSync(path.join(__dirname, '..', 'js', 'lead-capture.js'), 'utf8');
+  vm.runInContext(code, context);
+
+  const saved = context.saveLeadBackup({
+    name: 'Trần Minh',
+    phone: '0987654321',
+    targetBand: '6.5',
+    source: 'placement-test',
+    placementScore: '7/10',
+    placementBand: 'Band 6.0 – 6.5'
+  });
+
+  assert.equal(context.getConsultationLeads().length, 1);
+  assert.equal(context.getConsultationLeads()[0].status, 'new');
+
+  context.updateConsultationLeadStatus(saved.id, 'contacted');
+  assert.equal(context.getConsultationLeads()[0].status, 'contacted');
+
+  context.deleteConsultationLead(saved.id);
+  assert.equal(context.getConsultationLeads().length, 0);
+});

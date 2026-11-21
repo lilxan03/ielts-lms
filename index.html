@@ -201,6 +201,36 @@
                   </form>
                   <p id="public-lead-msg" class="hidden mt-2 text-xs font-bold"></p>
               </div>
+              <section class="mb-8 rounded-2xl border border-indigo-100 bg-white p-5 sm:p-6 shadow-sm" aria-labelledby="public-feature-demos-heading">
+                  <div class="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                          <h3 id="public-feature-demos-heading" class="text-lg font-black text-slate-900">Trải nghiệm công nghệ học IELTS độc quyền (Miễn phí)</h3>
+                          <p class="mt-0.5 text-sm text-slate-600">Dùng thử ngay trên trình duyệt — không cần tạo tài khoản hay đăng nhập.</p>
+                      </div>
+                  </div>
+                  <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <a href="/placement-test.html" class="group rounded-xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-blue-400 hover:bg-blue-50/40">
+                          <span class="inline-block rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-extrabold text-blue-800">5 PHÚT • CHẤM TỰ ĐỘNG</span>
+                          <h4 class="mt-2 font-black text-slate-900 group-hover:text-blue-700">Thi Thử IELTS Đầu Vào</h4>
+                          <p class="mt-1 text-xs leading-relaxed text-slate-600">10 câu Mini Reading &amp; Grammar, dự đoán ngay Band 4.0–7.5+ kèm giải thích chi tiết từng câu.</p>
+                      </a>
+                      <a href="/writing-3d-demo.html" class="group rounded-xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-emerald-400 hover:bg-emerald-50/40">
+                          <span class="inline-block rounded-md bg-emerald-100 px-2 py-0.5 text-[11px] font-extrabold text-emerald-800">3D XOAY 360°</span>
+                          <h4 class="mt-2 font-black text-slate-900 group-hover:text-emerald-700">Mô Hình 3D Writing Task 1</h4>
+                          <p class="mt-1 text-xs leading-relaxed text-slate-600">Trực tiếp xoay &amp; phóng to sơ đồ Map Before/After và quy trình Process chuẩn sách Cambridge.</p>
+                      </a>
+                      <a href="/micro-dictation-demo.html" class="group rounded-xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-indigo-400 hover:bg-indigo-50/40">
+                          <span class="inline-block rounded-md bg-indigo-100 px-2 py-0.5 text-[11px] font-extrabold text-indigo-800">THEO TỪNG CÂU</span>
+                          <h4 class="mt-2 font-black text-slate-900 group-hover:text-indigo-700">Micro-Dictation Listening</h4>
+                          <p class="mt-1 text-xs leading-relaxed text-slate-600">Nghe chép từng câu hoàn chỉnh, hiện sẵn tên người nói (WOMAN/MAN), tập trung bắt số liệu &amp; tên riêng.</p>
+                      </a>
+                      <a href="/reading-ai-demo.html" class="group rounded-xl border border-slate-200 bg-slate-50/70 p-4 transition hover:border-cyan-400 hover:bg-cyan-50/40">
+                          <span class="inline-block rounded-md bg-cyan-100 px-2 py-0.5 text-[11px] font-extrabold text-cyan-800">IPA &amp; GIẢI THÍCH ĐÁP ÁN</span>
+                          <h4 class="mt-2 font-black text-slate-900 group-hover:text-cyan-700">Reading Vocab &amp; Grammar</h4>
+                          <p class="mt-1 text-xs leading-relaxed text-slate-600">Bấm trực tiếp vào từ vựng và cấu trúc ngữ pháp trong bài đọc để xem IPA, synonyms và lý do chọn đáp án.</p>
+                      </a>
+                  </div>
+              </section>
               <section class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="course-operations-heading">
                   <h3 id="course-operations-heading" class="text-lg font-black text-slate-900">Hình thức học &amp; quy trình đăng ký</h3>
                   <div class="mt-4 grid gap-4 sm:grid-cols-2">
@@ -2300,6 +2330,37 @@
                 </div>
                 <div class="overflow-x-auto" id="registry-table-container">
                     <!-- JS Injected Table -->
+                </div>
+            </div>
+
+            <div id="consultation-leads-crm" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-20 animate-fade-in-up">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border-b border-slate-100 bg-slate-50/50 gap-4">
+                    <div>
+                        <h3 class="text-base font-black text-blue-950 flex items-center gap-2">
+                            <span>📋</span> Danh sách Lead đăng ký tư vấn (Mini CRM)
+                            <span id="consultation-leads-count" class="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-black text-blue-700">0</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Học viên điền form từ Trang chủ, Mini Placement Test và 3 trang SEO Demo</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="window.renderConsultationLeadsCRM && window.renderConsultationLeadsCRM()" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50">↻ Làm mới</button>
+                        <button type="button" onclick="window.exportConsultationLeadsCSV && window.exportConsultationLeadsCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white hover:bg-emerald-700">⬇ Xuất CSV</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-slate-200 bg-slate-50 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                                <th class="px-4 py-3">Thời gian</th>
+                                <th class="px-4 py-3">Họ và tên</th>
+                                <th class="px-4 py-3">SĐT / Zalo</th>
+                                <th class="px-4 py-3">Mục tiêu &amp; Nguồn</th>
+                                <th class="px-4 py-3">Kết quả Mini Test</th>
+                                <th class="px-4 py-3">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consultation-leads-tbody"></tbody>
+                    </table>
                 </div>
             </div>
           </div>
