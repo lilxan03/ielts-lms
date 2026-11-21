@@ -16,13 +16,13 @@
     button { background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 7px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.15s; }
     button:hover { background: #334155; }
     button.primary { background: #2563eb; border-color: #3b82f6; color: #fff; }
-    .info-panel { position: fixed; bottom: 12px; left: 12px; width: 330px; max-width: calc(100vw - 24px); background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px); border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; z-index: 10; }
+    .info-panel { position: fixed; bottom: 12px; left: 12px; width: 350px; max-width: calc(100vw - 24px); background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px); border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; z-index: 10; }
     .step-badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: #1d4ed8; color: #fff; margin-bottom: 4px; }
     .info-panel h2 { font-size: 14px; color: #f8fafc; margin-bottom: 4px; }
     .info-panel .desc { font-size: 12px; color: #cbd5e1; line-height: 1.4; margin-bottom: 8px; }
     .vocab-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 7px 9px; font-size: 11px; line-height: 1.45; }
     .vocab-box b { color: #38bdf8; }
-    .steps-bar { position: fixed; bottom: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 5px; max-width: 260px; justify-content: flex-end; z-index: 10; }
+    .steps-bar { position: fixed; bottom: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 5px; max-width: 280px; justify-content: flex-end; z-index: 10; }
     .step-pill { padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(30, 41, 59, 0.85); border: 1px solid #334155; color: #94a3b8; cursor: pointer; }
     .step-pill.active { background: #10b981; border-color: #34d399; color: #052e16; }
   </style>
@@ -57,78 +57,85 @@
 
     const PROCESSES = {
       'cam8-t3': {
-        title: 'Cam 8 Test 3 — Cement & Concrete Production',
+        title: 'Cam 8 Test 3 — Cement Production & Concrete Production',
         cycle: false,
         steps: [
-          { label: '1. Limestone & Clay', shape: 'rocks', color: 0x94a3b8, pos: [-7, 0, -2], title: '1. Raw Materials (Limestone & Clay)', desc: 'Limestone and clay are fed into a crusher.', vocab: '<b>Verbs:</b> are fed into, are crushed<br><b>Sample:</b> <i>First, limestone and clay are crushed together into a fine powder.</i>' },
-          { label: '2. Crusher → Mixer', shape: 'hopper', color: 0x64748b, pos: [-4, 0, -2], title: '2. Crushing & Mixing', desc: 'The crushed powder is blended in a rotating mixer.', vocab: '<b>Verbs:</b> is mixed, is blended<br><b>Sample:</b> <i>The resulting powder is then thoroughly mixed before heating.</i>' },
-          { label: '3. Rotating Heater', shape: 'kiln', color: 0xef4444, pos: [-1, 0, -2], title: '3. Rotating Heater (Kiln)', desc: 'The mixture passes through a rotating heater with intense heat.', vocab: '<b>Verbs:</b> is heated, passes through<br><b>Sample:</b> <i>Subsequently, the mixture enters a rotating heater at high temperature.</i>' },
-          { label: '4. Grinder → Cement Bags', shape: 'bags', color: 0xf59e0b, pos: [2, 0, -2], title: '4. Grinding & Bagging', desc: 'Heated material is ground into cement and packed into bags.', vocab: '<b>Verbs:</b> is ground into, is packed<br><b>Sample:</b> <i>Once cooled, it is ground into cement and packaged into bags.</i>' },
-          { label: '5. Concrete Mixer', shape: 'concrete_mixer', color: 0x3b82f6, pos: [5.5, 0, 1], title: '5. Concrete Production', desc: '15% cement, 10% water, 25% sand & 50% gravel are mixed in a concrete mixer.', vocab: '<b>Verbs:</b> are combined, is rotated<br><b>Sample:</b> <i>Finally, cement is mixed with water, sand, and gravel to produce concrete.</i>' },
+          { label: '1. Limestone + Clay → Crusher', shape: 'hopper', color: 0x94a3b8, pos: [-7.5, 0, -1.5], title: '1. Crushing (Limestone & Clay)', desc: 'Limestone and clay are fed into a crusher to produce powder.', vocab: '<b>Verbs:</b> are fed into, are crushed into<br><b>Sample:</b> <i>First, limestone and clay are crushed together into a fine powder.</i>' },
+          { label: '2. Powder → Mixer', shape: 'box', color: 0x64748b, pos: [-4.5, 0, -1.5], title: '2. Mixing', desc: 'The crushed powder passes into a cylindrical mixer.', vocab: '<b>Verbs:</b> passes into, is blended<br><b>Sample:</b> <i>The resulting powder is then transferred to a mixer.</i>' },
+          { label: '3. Rotating Heater (Heat)', shape: 'kiln', color: 0xef4444, pos: [-1.5, 0, -1.5], title: '3. Rotating Heater', desc: 'The mixture enters a rotating heater where heat is applied at the lower end.', vocab: '<b>Verbs:</b> is heated, passes through<br><b>Sample:</b> <i>Subsequently, the mixture goes through a rotating heater.</i>' },
+          { label: '4. Grinder → Cement → Bags', shape: 'bags', color: 0xf59e0b, pos: [1.8, 0, -1.5], title: '4. Grinding & Bagging Cement', desc: 'Heated material is ground by a grinder into cement and packed into bags.', vocab: '<b>Verbs:</b> is ground into, is packed<br><b>Sample:</b> <i>It is then ground into cement and packaged into bags.</i>' },
+          { label: '5. Concrete Mixer (15% Cement, 10% Water, 25% Sand, 50% Gravel)', shape: 'concrete_mixer', color: 0x3b82f6, pos: [6.0, 0, 1.2], title: '5. Concrete Production', desc: '15% cement, 10% water, 25% sand and 50% gravel (small stones) are combined in a rotating concrete mixer.', vocab: '<b>Proportions:</b> 50% gravel, 25% sand, 15% cement, 10% water<br><b>Sample:</b> <i>To make concrete, 15% cement, 10% water, 25% sand, and 50% gravel are blended in a concrete mixer.</i>' },
         ]
       },
       'cam10-t4': {
         title: 'Cam 10 Test 4 — Life Cycle of the Salmon',
         cycle: true,
         steps: [
-          { label: '1. Eggs in Upper River', shape: 'rocks', color: 0xf97316, pos: [-4, 0, -4], title: '1. Spawning in Upper River', desc: 'Salmon lay eggs among reeds and small stones in slow-moving upper river.', vocab: '<b>Verbs:</b> are laid, hatch<br><b>Sample:</b> <i>Adult salmon lay eggs among small stones in the upper river.</i>' },
-          { label: '2. Fry (3–8 cm)', shape: 'fish', color: 0x38bdf8, pos: [2, 0, -4], title: '2. Fry in Lower River (4 years)', desc: 'Fry (3–8 cm) swim to the fast-flowing lower river for about 4 years.', vocab: '<b>Verbs:</b> migrate, grow into<br><b>Sample:</b> <i>After hatching, fry live in the fast-flowing lower river for roughly four years.</i>' },
-          { label: '3. Smolt (12–15 cm)', shape: 'fish', color: 0x0ea5e9, pos: [4, 0, 1], title: '3. Smolt in Open Sea (~5 years)', desc: 'Smolts (12–15 cm) migrate to the open sea where they spend 5 years.', vocab: '<b>Verbs:</b> swim out to, mature<br><b>Sample:</b> <i>Growing into smolts, they swim to the open sea and stay for five years.</i>' },
-          { label: '4. Adult Salmon (70–76 cm)', shape: 'fish', color: 0xef4444, pos: [-2, 0, 4], title: '4. Adult Salmon Return', desc: 'Adult salmon (70–76 cm) return to the upper river to spawn.', vocab: '<b>Verbs:</b> return to, complete the cycle<br><b>Sample:</b> <i>Finally, mature adult salmon return upstream to spawn, restarting the cycle.</i>' },
+          { label: '1. Upper River (slow moving) • Eggs (~5–6 mos)', shape: 'reeds_eggs', color: 0xf97316, pos: [-4.5, 0, -4.0], title: '1. Upper River (approx. 5–6 months)', desc: 'Salmon eggs are laid among reeds and small stones in the slow-moving upper river for approx. 5–6 months.', vocab: '<b>Details:</b> slow moving, reeds, small stones, ~5–6 months<br><b>Sample:</b> <i>Salmon lay eggs among reeds and small stones in the slow-moving upper river, where they stay for 5–6 months.</i>' },
+          { label: '2. ① Fry (3–8 cm) → Lower River (~4 yrs)', shape: 'fish_sm', color: 0x38bdf8, pos: [2.5, 0, -4.0], title: '2. Fry in Lower River (approx. 4 years)', desc: '① "Fry" (3–8 cm) swim to the fast-flowing lower river for approx. 4 years.', vocab: '<b>Details:</b> fry (3–8 cm), fast flowing, ~4 years<br><b>Sample:</b> <i>Hatching as fry (3–8 cm), they migrate to the fast-flowing lower river for around four years.</i>' },
+          { label: '3. ② Smolt (12–15 cm) → Open Sea (~5 yrs)', shape: 'fish_md', color: 0x0ea5e9, pos: [4.0, 0, 2.0], title: '3. Smolt in Open Sea (approx. 5 years)', desc: '② "Smolt" (12–15 cm) swim out to the open sea for approx. 5 years.', vocab: '<b>Details:</b> smolt (12–15 cm), open sea, ~5 years<br><b>Sample:</b> <i>At 12–15 cm, smolts move to the open sea, remaining there for roughly five years.</i>' },
+          { label: '4. ③ Adult Salmon (70–76 cm) → Spawn', shape: 'fish_lg', color: 0xef4444, pos: [-3.0, 0, 3.5], title: '4. Adult Salmon (70–76 cm)', desc: '③ "Adult salmon" (70–76 cm) return to the upper river to spawn.', vocab: '<b>Details:</b> adult salmon (70–76 cm), return upstream<br><b>Sample:</b> <i>Fully grown adult salmon (70–76 cm) return to the upper river to lay eggs, completing the cycle.</i>' },
         ]
       },
       'cam12-t4': {
-        title: 'Cam 12 Test 4 — Geothermal Electricity Production',
+        title: 'Cam 12 Test 4 — Geothermal Power Plant',
         cycle: false,
         steps: [
-          { label: '1. Cold Water Injection', shape: 'cylinder', color: 0x3b82f6, pos: [-6, 0, 0], title: '1. Cold Water Pumped Down', desc: 'Cold water is pumped down 4.5 km through an injection well.', vocab: '<b>Verbs:</b> is pumped down, is injected<br><b>Sample:</b> <i>Initially, cold water is pumped 4.5 km underground via an injection well.</i>' },
-          { label: '2. Geothermal Zone', shape: 'rocks', color: 0xef4444, pos: [-2, -0.5, 0], title: '2. Heating by Hot Rocks', desc: 'Water passes through hot rocks in the geothermal zone and heats up.', vocab: '<b>Verbs:</b> passes through, is heated<br><b>Sample:</b> <i>As it flows through hot rocks, the water is heated to high temperatures.</i>' },
-          { label: '3. Production Well', shape: 'cylinder', color: 0xf97316, pos: [2, 0, 0], title: '3. Hot Water Pumped Up', desc: 'Hot water is pumped up the production well to the condenser.', vocab: '<b>Verbs:</b> is pumped up, enters<br><b>Sample:</b> <i>The heated water is then pumped up to the surface condenser.</i>' },
-          { label: '4. Condenser → Steam', shape: 'hopper', color: 0xe2e8f0, pos: [4.5, 0.5, -2], title: '4. Steam Generation', desc: 'In the condenser, hot water turns into steam.', vocab: '<b>Verbs:</b> is converted into, powers<br><b>Sample:</b> <i>Inside the condenser, the hot water produces steam.</i>' },
-          { label: '5. Turbine & Generator', shape: 'kiln', color: 0x22c55e, pos: [6.5, 0.5, 2], title: '5. Electricity Generated', desc: 'Steam drives the turbine, powering the generator to produce electricity.', vocab: '<b>Verbs:</b> drives, generates, is distributed<br><b>Sample:</b> <i>Finally, steam spins the turbine to power the generator, producing electricity.</i>' },
+          { label: '1. Cold water → Injection well (4.5 km)', shape: 'cylinder', color: 0x3b82f6, pos: [-6.5, 0.5, 0], title: '1–2. Cold Water Pumped Down (4.5 km)', desc: '① Cold water is ② pumped down 4.5 km underground through the injection well.', vocab: '<b>Details:</b> 4.5 km deep, injection well<br><b>Sample:</b> <i>First, cold water is pumped down 4.5 km through an injection well.</i>' },
+          { label: '2. Geothermal zone (hot rocks)', shape: 'rocks', color: 0xef4444, pos: [-2.0, -1.2, 0], title: '2. Geothermal Zone (Hot Rocks)', desc: 'Water passes through hot rocks in the geothermal zone and heats up.', vocab: '<b>Verbs:</b> passes through, is heated<br><b>Sample:</b> <i>Underground, it flows through hot rocks in the geothermal zone.</i>' },
+          { label: '3. Hot water pumped up (Production well)', shape: 'cylinder', color: 0xf97316, pos: [2.0, 0.5, 0], title: '3. Production Well', desc: '③ Hot water is pumped up through the production well to the surface.', vocab: '<b>Verbs:</b> is pumped up<br><b>Sample:</b> <i>Heated water is then pumped back up via the production well.</i>' },
+          { label: '4. Condenser → Steam', shape: 'hopper', color: 0xe2e8f0, pos: [4.8, 1.2, -1.5], title: '4. Condenser & Steam', desc: '④ In the condenser, hot water produces steam.', vocab: '<b>Verbs:</b> enters, produces steam<br><b>Sample:</b> <i>Inside the condenser, the hot water generates steam.</i>' },
+          { label: '5. Turbine → Generator → Pylon', shape: 'pylon', color: 0x22c55e, pos: [6.8, 1.2, 2.0], title: '5. Turbine, Generator & Electricity', desc: '⑤ Steam powers the turbine, which drives the generator to produce electricity sent to the pylon.', vocab: '<b>Verbs:</b> is powered by, produces electricity<br><b>Sample:</b> <i>Finally, steam drives the turbine and generator to produce electricity.</i>' },
         ]
       },
       'cam15-t3': {
-        title: 'Cam 15 Test 3 — Instant Noodles Manufacturing',
+        title: 'Cam 15 Test 3 — Manufacturing Instant Noodles',
         cycle: false,
         steps: [
-          { label: '1. Storage Silos (Flour)', shape: 'cylinder', color: 0xfde047, pos: [-7, 0, -2], title: '1. Flour Silos', desc: 'Flour is delivered by truck and stored in large silos.', vocab: '<b>Verbs:</b> is stored, is transferred<br><b>Sample:</b> <i>First, flour is stored in silos before being mixed with water and oil.</i>' },
-          { label: '2. Mixer & Dough Sheets', shape: 'hopper', color: 0xf59e0b, pos: [-4, 0, -2], title: '2. Mixing & Rolling', desc: 'Flour, water, and oil are mixed and rolled into thin dough sheets.', vocab: '<b>Verbs:</b> are mixed, are rolled into<br><b>Sample:</b> <i>The ingredients are mixed and pressed through rollers into dough sheets.</i>' },
-          { label: '3. Strips & Noodle Discs', shape: 'kiln', color: 0xeab308, pos: [-1, 0, -2], title: '3. Slitting & Shaping', desc: 'Sheets are cut into strips and shaped into circular noodle discs.', vocab: '<b>Verbs:</b> are cut into, are shaped<br><b>Sample:</b> <i>Subsequently, the dough sheets are sliced into strips and formed into discs.</i>' },
-          { label: '4. Cooking Oil & Drying', shape: 'sphere', color: 0xef4444, pos: [2.5, 0, 0], title: '4. Frying & Drying', desc: 'Noodle discs are cooked in oil and dried.', vocab: '<b>Verbs:</b> are fried, are dried<br><b>Sample:</b> <i>Next, the discs are cooked in hot oil and thoroughly dried.</i>' },
-          { label: '5. Cups, Veg, Spices & Seal', shape: 'box', color: 0x22c55e, pos: [6, 0, 1], title: '5. Packaging & Labelling', desc: 'Noodles are placed in cups with vegetables & spices, labelled and sealed.', vocab: '<b>Verbs:</b> are placed into, are sealed<br><b>Sample:</b> <i>Finally, they are put into cups with flavourings, labelled, and sealed.</i>' },
+          { label: '1. Flour Truck → Storage Silos', shape: 'silos', color: 0xfde047, pos: [-7.5, 0, -2.5], title: '1. Storage Silos', desc: '① Flour is delivered by truck and stored in storage silos.', vocab: '<b>Verbs:</b> is delivered, is stored in<br><b>Sample:</b> <i>Initially, flour is stored in large silos.</i>' },
+          { label: '2. Mixer (+ Water + Oil)', shape: 'hopper', color: 0xf59e0b, pos: [-5.0, 0, -1.0], title: '2. Mixer', desc: '② Flour is mixed with water and oil in a mixer.', vocab: '<b>Verbs:</b> is combined with<br><b>Sample:</b> <i>The flour is then mixed with water and oil.</i>' },
+          { label: '3. Rollers → Dough Sheets', shape: 'box', color: 0xeab308, pos: [-2.5, 0, -1.0], title: '3. Dough Sheets', desc: '③ The mixture passes through rollers to form flat dough sheets.', vocab: '<b>Verbs:</b> is rolled into<br><b>Sample:</b> <i>Rollers flatten the mixture into thin dough sheets.</i>' },
+          { label: '4. Dough Strips', shape: 'box', color: 0x84cc16, pos: [0, 0, -1.0], title: '4. Dough Strips', desc: '④ The sheets are cut into long dough strips.', vocab: '<b>Verbs:</b> are sliced into<br><b>Sample:</b> <i>Subsequently, the sheets are cut into strips.</i>' },
+          { label: '5. Noodles Discs', shape: 'cylinder', color: 0xfacc15, pos: [2.5, 0, -1.0], title: '5. Noodles Discs', desc: '⑤ Strips are shaped into circular noodle discs.', vocab: '<b>Verbs:</b> are shaped into<br><b>Sample:</b> <i>The strips are then formed into circular noodle discs.</i>' },
+          { label: '6. Cooking (oil) + Drying', shape: 'kiln', color: 0xef4444, pos: [5.0, 0, -1.0], title: '6. Cooking (oil) + Drying', desc: '⑥ Noodle discs are cooked in oil and dried.', vocab: '<b>Verbs:</b> are fried, are dried<br><b>Sample:</b> <i>Next, the discs are cooked in oil and dried.</i>' },
+          { label: '7. Cups + Vegetables + Spices', shape: 'cylinder', color: 0x06b6d4, pos: [5.5, 0, 2.2], title: '7. Cups, Vegetables + Spices', desc: '⑦ Dried noodles are placed into cups with vegetables and spices.', vocab: '<b>Verbs:</b> are placed into, are added<br><b>Sample:</b> <i>They are packed into cups along with vegetables and spices.</i>' },
+          { label: '8. Labelling + Sealing', shape: 'bags', color: 0x22c55e, pos: [2.5, 0, 3.2], title: '8. Labelling + Sealing', desc: '⑧ Cups are sealed and labelled for distribution.', vocab: '<b>Verbs:</b> are labelled, are sealed<br><b>Sample:</b> <i>Finally, the cups are sealed and labelled.</i>' },
         ]
       },
       'cam16-t2': {
-        title: 'Cam 16 Test 2 — Sugar from Sugar Cane',
+        title: 'Cam 16 Test 2 — How Sugar Is Produced from Sugar Cane',
         cycle: false,
         steps: [
-          { label: '1. Growing (12–18 mos)', shape: 'trees', color: 0x22c55e, pos: [-7, 0, -2], title: '1. Growing Sugar Cane', desc: 'Sugar canes take 12–18 months to grow.', vocab: '<b>Verbs:</b> take, mature<br><b>Sample:</b> <i>Sugar cane is grown for 12 to 18 months until ready for harvest.</i>' },
-          { label: '2. Harvesting', shape: 'box', color: 0xef4444, pos: [-4, 0, -2], title: '2. Manual & Machine Harvesting', desc: 'Canes are harvested either manually or by machine.', vocab: '<b>Verbs:</b> is harvested, is cut<br><b>Sample:</b> <i>Once mature, the cane is harvested either by hand or machinery.</i>' },
-          { label: '3. Crushing → Juice', shape: 'hopper', color: 0x84cc16, pos: [-1, 0, -2], title: '3. Crushing', desc: 'Sugar canes are crushed in a mill to extract juice.', vocab: '<b>Verbs:</b> is crushed, is extracted<br><b>Sample:</b> <i>The harvested cane is crushed to extract raw sugar cane juice.</i>' },
-          { label: '4. Limestone Purifier', shape: 'cylinder', color: 0x06b6d4, pos: [2, 0, 0], title: '4. Purifying Juice', desc: 'Juice is purified through a limestone filter.', vocab: '<b>Verbs:</b> is purified, passes through<br><b>Sample:</b> <i>Next, the juice is purified using a limestone filter.</i>' },
-          { label: '5. Evaporator → Syrup', shape: 'kiln', color: 0xf97316, pos: [4.5, 0, 1.5], title: '5. Evaporation & Centrifuge', desc: 'Heat turns juice into syrup; centrifuge separates sugar crystals, then dried.', vocab: '<b>Verbs:</b> is heated, is separated, is dried<br><b>Sample:</b> <i>Finally, syrup is spun in a centrifuge to separate crystals, which are dried and cooled.</i>' },
+          { label: '1. Growing (12–18 months)', shape: 'trees', color: 0x22c55e, pos: [-7.0, 0, -3.0], title: '1. Growing (12–18 months)', desc: '① Sugar canes grow for 12–18 months until mature.', vocab: '<b>Details:</b> 12–18 months<br><b>Sample:</b> <i>Sugar cane takes 12 to 18 months to grow to maturity.</i>' },
+          { label: '2. Harvesting (Machine & Manual)', shape: 'box', color: 0xef4444, pos: [-3.5, 0, -3.0], title: '2. Harvesting', desc: '② Sugar canes are harvested either by a harvesting machine or manually.', vocab: '<b>Verbs:</b> is harvested mechanically / by hand<br><b>Sample:</b> <i>The mature cane is harvested either by machinery or by hand.</i>' },
+          { label: '3. Crushing → Juice', shape: 'hopper', color: 0x84cc16, pos: [0, 0, -2.0], title: '3. Crushing', desc: '③ Canes are crushed in a mill to extract juice.', vocab: '<b>Verbs:</b> is crushed, is extracted<br><b>Sample:</b> <i>Next, the canes are crushed to extract raw juice.</i>' },
+          { label: '4. Purifying Juice (Limestone filter)', shape: 'cylinder', color: 0x06b6d4, pos: [3.5, 0, -1.0], title: '4. Purifying Juice', desc: '④ The juice is purified through a limestone filter.', vocab: '<b>Verbs:</b> is purified, passes through<br><b>Sample:</b> <i>The juice is then filtered through limestone to purify it.</i>' },
+          { label: '5. Evaporator (Heat → Syrup)', shape: 'kiln', color: 0xf97316, pos: [4.5, 0, 2.2], title: '5. Evaporator (juice becomes syrup)', desc: '⑤ Heat evaporates water in the evaporator so juice becomes syrup.', vocab: '<b>Verbs:</b> is heated, thickens into<br><b>Sample:</b> <i>Subsequently, it is heated in an evaporator until it becomes syrup.</i>' },
+          { label: '6. Centrifuge (crystals from syrup)', shape: 'concrete_mixer', color: 0x8b5cf6, pos: [0.5, 0, 3.0], title: '6. Centrifuge', desc: '⑥ A centrifuge spins to separate sugar crystals from syrup.', vocab: '<b>Verbs:</b> is spun, separates<br><b>Sample:</b> <i>A centrifuge separates the sugar crystals from the syrup.</i>' },
+          { label: '7. Drying and cooling → Sugar', shape: 'bags', color: 0xe2e8f0, pos: [-3.5, 0, 3.0], title: '7. Drying and Cooling', desc: '⑦ Sugar crystals are dried and cooled to produce final sugar.', vocab: '<b>Verbs:</b> are dried and cooled<br><b>Sample:</b> <i>Finally, the crystals are dried and cooled.</i>' },
         ]
       },
       'cam16-t4': {
-        title: 'Cam 16 Test 4 — Recycling Plastic Bottles',
+        title: 'Cam 16 Test 4 — How Plastic Bottles Are Recycled',
         cycle: true,
         steps: [
-          { label: '1. Bin & Collection', shape: 'cylinder', color: 0x3b82f6, pos: [-5, 0, -4], title: '1. Collection & Transport', desc: 'Used plastic bottles are placed in recycling bins and collected by truck.', vocab: '<b>Verbs:</b> are discarded, are collected<br><b>Sample:</b> <i>Initially, used bottles are placed in recycling bins and collected by trucks.</i>' },
-          { label: '2. Sorting & Compressing', shape: 'box', color: 0xeab308, pos: [1, 0, -4], title: '2. Sorting & Crushing', desc: 'Bottles are sorted at a recycling centre and compressed into blocks.', vocab: '<b>Verbs:</b> are sorted, are compressed<br><b>Sample:</b> <i>At the facility, bottles are sorted and compressed into tight blocks.</i>' },
-          { label: '3. Shredding & Washing', shape: 'hopper', color: 0x06b6d4, pos: [5, 0, 0], title: '3. Crushing & Washing', desc: 'Blocks are crushed into small pieces and washed.', vocab: '<b>Verbs:</b> are crushed, are washed<br><b>Sample:</b> <i>Subsequently, the blocks are shredded into flakes and thoroughly washed.</i>' },
-          { label: '4. Plastic Pellets', shape: 'sphere', color: 0x8b5cf6, pos: [1, 0, 4], title: '4. Heating into Pellets', desc: 'Clean flakes are melted into plastic pellets and raw material.', vocab: '<b>Verbs:</b> are melted, are formed into<br><b>Sample:</b> <i>The clean plastic is then melted to form raw plastic pellets.</i>' },
-          { label: '5. New Products', shape: 'trees', color: 0x22c55e, pos: [-5, 0, 2], title: '5. Manufacturing New Items', desc: 'Raw material is used to make new bottles, clothes, bags, and pens.', vocab: '<b>Verbs:</b> is manufactured into<br><b>Sample:</b> <i>Finally, the recycled pellets are made into new consumer products.</i>' },
+          { label: '1. Recycling Bin', shape: 'cylinder', color: 0x3b82f6, pos: [-6, 0, -4.5], title: '1. Discarding in Recycling Bin', desc: '① Used plastic bottles are placed into recycling bins.', vocab: '<b>Verbs:</b> are placed into, are discarded<br><b>Sample:</b> <i>First, used plastic bottles are deposited in recycling bins.</i>' },
+          { label: '2. Collection Truck', shape: 'box', color: 0x64748b, pos: [-1, 0, -4.5], title: '2. Collection by Truck', desc: '② Bottles are collected and transported by truck.', vocab: '<b>Verbs:</b> are collected, are transported<br><b>Sample:</b> <i>They are then collected and transported to a recycling centre.</i>' },
+          { label: '3. Recycling centre: Sorting (✓ / ✗)', shape: 'box', color: 0xeab308, pos: [4.5, 0, -4.5], title: '3. Sorting', desc: '③ At the recycling centre, bottles are sorted by hand (✓ kept, ✗ rejected).', vocab: '<b>Verbs:</b> are sorted<br><b>Sample:</b> <i>At the centre, workers sort the bottles on a conveyor belt.</i>' },
+          { label: '4. Compressing into blocks', shape: 'bags', color: 0x94a3b8, pos: [5.5, 0, 0], title: '4. Compressing into Blocks', desc: '④ Sorted bottles are compressed into dense rectangular blocks.', vocab: '<b>Verbs:</b> are compressed into<br><b>Sample:</b> <i>Selected bottles are compressed into large blocks.</i>' },
+          { label: '5. Crushing & Washing', shape: 'hopper', color: 0x06b6d4, pos: [4.5, 0, 4.5], title: '5. Crushing & Washing', desc: '⑤ Blocks are crushed by rollers and washed in a tank.', vocab: '<b>Verbs:</b> are crushed, are washed<br><b>Sample:</b> <i>The blocks are crushed into flakes and washed clean.</i>' },
+          { label: '6–7. Plastic Pellets → Heating', shape: 'kiln', color: 0xf97316, pos: [-0.5, 0, 4.5], title: '6–7. Pellets & Heating to Raw Material', desc: '⑥ Turned into plastic pellets, then ⑦ heated to form raw material.', vocab: '<b>Verbs:</b> are formed into pellets, are heated<br><b>Sample:</b> <i>The clean flakes are turned into pellets and heated into raw material.</i>' },
+          { label: '8–9. Raw Material → End Products', shape: 'trees', color: 0x22c55e, pos: [-5.5, 0, 2.0], title: '8–9. Raw Material & End Products', desc: '⑧ Stacked raw material is used for ⑨ end products: bottles, food boxes, T-shirts, bags, pens.', vocab: '<b>Products:</b> bottles, clothes, bags, pens<br><b>Sample:</b> <i>Finally, the raw material is manufactured into new products, restarting the cycle.</i>' },
         ]
       },
       'cam21-t3': {
-        title: 'Cam 21 Test 3 — Rain-Shadow Desert Formation',
+        title: 'Cam 21 Test 3 — The Formation of Rain-Shadow Deserts',
         cycle: false,
         steps: [
-          { label: '1. Ocean Evaporation', shape: 'ocean', color: 0x0ea5e9, pos: [-6, 0, 0], title: '1. Moist Air from Ocean', desc: 'Warm moist air evaporates from the ocean and blows inland.', vocab: '<b>Verbs:</b> evaporates, blows inland<br><b>Sample:</b> <i>Warm, moisture-laden air blows from the ocean toward coastal mountains.</i>' },
-          { label: '2. Rising & Cooling', shape: 'mountain', color: 0x64748b, pos: [-1.5, 0, 0], title: '2. Air Rises & Condenses', desc: 'Moist air is forced upward by the mountain range, cooling into clouds.', vocab: '<b>Verbs:</b> is forced upward, condenses<br><b>Sample:</b> <i>As the air rises up the windward slope, it cools and condenses into clouds.</i>' },
-          { label: '3. Windward Rainfall', shape: 'rain_cloud', color: 0x22c55e, pos: [1.5, 1.8, 0], title: '3. Heavy Rain on Windward Side', desc: 'Heavy rain falls on the windward slope, supporting lush vegetation.', vocab: '<b>Verbs:</b> precipitates, falls on<br><b>Sample:</b> <i>Heavy rainfall occurs on the windward side, leaving the air dry.</i>' },
-          { label: '4. Dry Air Descends', shape: 'desert', color: 0xf59e0b, pos: [5.5, 0, 0], title: '4. Leeward Rain-Shadow Desert', desc: 'Dry air descends on the leeward side, warming up and creating a desert.', vocab: '<b>Verbs:</b> descends, warms up, creates<br><b>Sample:</b> <i>Finally, dry air descends the leeward slope, forming a rain-shadow desert.</i>' },
+          { label: '1. Sea & Coast: Winds approach', shape: 'ocean', color: 0x0284c7, pos: [-7.0, 0, 0], title: '1. Winds Approach Coast (Sea)', desc: '① Moist winds blow from the Sea toward the Coast.', vocab: '<b>Verbs:</b> approach, blow from<br><b>Sample:</b> <i>Moist winds blow inland from the sea toward the coast.</i>' },
+          { label: '2–3. Windward side: Moist air rises & cools', shape: 'mountain', color: 0x475569, pos: [-2.2, 0, 0], title: '2–3. Winds Pushed Upwards, Air Rises & Cools', desc: '② Winds are pushed upwards along the Windward side of Mountains; ③ moist air rises and cools.', vocab: '<b>Details:</b> windward side, pushed upwards, cools<br><b>Sample:</b> <i>Forced up the windward slope of the mountains, the moist air rises and cools.</i>' },
+          { label: '4–5. Clouds form → Rain falls', shape: 'rain_cloud', color: 0x38bdf8, pos: [0.5, 2.2, 0], title: '4–5. Clouds Form & Rain Falls', desc: '④ Clouds form above the mountain ridge and ⑤ rain falls on the windward side.', vocab: '<b>Verbs:</b> condense into clouds, falls as rain<br><b>Sample:</b> <i>Clouds form and heavy rain falls on the windward side.</i>' },
+          { label: '6–7. Leeward side: Dry air → Rain-shadow desert', shape: 'desert', color: 0xd97706, pos: [5.8, 0, 0], title: '6–7. Dry Air Descends → Rain-Shadow Desert (Inland)', desc: '⑥ Dry air continues over the mountain down the Leeward side; ⑦ dry winds reach inland areas, forming a Rain-shadow desert (Thousands of kilometres).', vocab: '<b>Details:</b> leeward side, inland, thousands of kilometres<br><b>Sample:</b> <i>Dry air then descends the leeward side into inland areas, creating a rain-shadow desert.</i>' },
         ]
       }
     };
@@ -137,35 +144,28 @@
     const proc = PROCESSES[id] || PROCESSES['cam8-t3'];
     document.getElementById('proc-title').textContent = proc.title;
 
-    const wrap = document.getElementById('canvas-wrap');
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b1220);
+    const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0b1220);
     const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 12, 15);
+    camera.position.set(0, 12, 16);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    wrap.appendChild(renderer.domElement);
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-
+    renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    document.getElementById('canvas-wrap').appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true;
     scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    dirLight.position.set(8, 18, 10);
-    scene.add(dirLight);
-    const grid = new THREE.GridHelper(24, 24, 0x1e293b, 0x111827);
-    grid.position.y = -0.6;
-    scene.add(grid);
+    const dl = new THREE.DirectionalLight(0xffffff, 1.2); dl.position.set(8, 18, 10); scene.add(dl);
+    const grid = new THREE.GridHelper(26, 26, 0x1e293b, 0x111827); grid.position.y = -0.6; scene.add(grid);
 
     function makeLabel(text) {
-      const c = document.createElement('canvas'); c.width = 512; c.height = 96;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#0f172a'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.roundRect(8, 8, 496, 80, 20); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 28px system-ui, sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 256, 48);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
-      sp.scale.set(3.4, 0.64, 1);
+      const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+      ctx.font = 'bold 26px system-ui, sans-serif';
+      const tw = Math.ceil(ctx.measureText(text).width);
+      c.width = Math.max(256, tw + 36); c.height = 68;
+      ctx.font = 'bold 26px system-ui, sans-serif';
+      ctx.fillStyle = '#0f172a'; ctx.strokeStyle = '#475569'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.roundRect(4, 4, c.width - 8, 60, 16); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, c.width / 2, 34);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
+      sp.scale.set(c.width / 120, 68 / 120, 1); sp.renderOrder = 5;
       return sp;
     }
 
@@ -173,100 +173,79 @@
       const g = new THREE.Group();
       const m = (col) => new THREE.MeshStandardMaterial({ color: col, roughness: 0.4, metalness: 0.2 });
       if (shape === 'hopper') {
-        const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.3, 0.9, 8), m(color)); funnel.position.y = 0.85;
-        const base = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 0.9), m(0x334155)); base.position.y = 0.25;
-        g.add(funnel, base);
+        const f = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.3, 0.9, 8), m(color)); f.position.y = 0.85;
+        const b = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 0.9), m(0x334155)); b.position.y = 0.25; g.add(f, b);
       } else if (shape === 'kiln') {
-        const drum = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.7, 16), m(0x94a3b8)); drum.rotation.z = Math.PI / 2.3; drum.position.y = 0.7;
-        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.7, 10), new THREE.MeshBasicMaterial({ color: 0xf97316 })); flame.rotation.z = Math.PI / 2; flame.position.set(0.7, 0.4, 0);
-        g.add(drum, flame);
+        const d = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.7, 16), m(0x94a3b8)); d.rotation.z = Math.PI / 2.3; d.position.y = 0.7;
+        const fl = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.7, 10), new THREE.MeshBasicMaterial({ color: 0xf97316 })); fl.rotation.z = Math.PI / 2; fl.position.set(0.7, 0.4, 0); g.add(d, fl);
       } else if (shape === 'bags') {
-        for (let i = 0; i < 3; i++) {
-          const bag = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.25, 0.55), m(0xd97706));
-          bag.position.set((i % 2) * 0.1, 0.2 + i * 0.28, 0);
-          g.add(bag);
-        }
+        for (let i = 0; i < 3; i++) { const bg = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.25, 0.55), m(color)); bg.position.set((i % 2) * 0.1, 0.2 + i * 0.28, 0); g.add(bg); }
       } else if (shape === 'concrete_mixer') {
-        const drum = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), m(color)); drum.scale.set(1.2, 0.9, 0.9); drum.position.y = 0.85;
-        const stand = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.4, 0.7), m(0x334155)); stand.position.y = 0.2;
-        g.add(drum, stand);
-      } else if (shape === 'fish') {
-        const body = new THREE.Mesh(new THREE.SphereGeometry(0.45, 14, 12), m(color)); body.scale.set(1.8, 0.75, 0.6); body.position.y = 0.65;
-        const tail = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 6), m(color)); tail.rotation.z = -Math.PI / 2; tail.position.set(-0.9, 0.65, 0);
-        g.add(body, tail);
+        const d = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), m(color)); d.scale.set(1.2, 0.9, 0.9); d.position.y = 0.85;
+        const st = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.4, 0.7), m(0x334155)); st.position.y = 0.2; g.add(d, st);
+      } else if (shape === 'reeds_eggs') {
+        for (let i = -2; i <= 2; i++) { const reed = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.2, 6), m(0x16a34a)); reed.position.set(i * 0.22, 0.6, 0); g.add(reed); }
+        for (let i = 0; i < 5; i++) { const egg = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), m(0xf97316)); egg.position.set((i - 2) * 0.2, 0.15, 0.35); g.add(egg); }
+      } else if (shape.startsWith('fish_')) {
+        const sc = shape === 'fish_sm' ? 0.65 : shape === 'fish_md' ? 0.95 : 1.35;
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.45 * sc, 14, 12), m(color)); body.scale.set(1.8, 0.75, 0.6); body.position.y = 0.65;
+        const tail = new THREE.Mesh(new THREE.ConeGeometry(0.35 * sc, 0.5 * sc, 6), m(color)); tail.rotation.z = -Math.PI / 2; tail.position.set(-0.9 * sc, 0.65, 0); g.add(body, tail);
+      } else if (shape === 'pylon') {
+        const tower = new THREE.Mesh(new THREE.ConeGeometry(0.45, 2.2, 4), m(0x94a3b8)); tower.position.y = 1.1;
+        const gen = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.7, 0.7), m(color)); gen.position.set(-0.7, 0.35, 0); g.add(tower, gen);
+      } else if (shape === 'silos') {
+        [-0.4, 0.4].forEach(sx => { const s = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.6, 16), m(color)); s.position.set(sx, 0.8, 0); g.add(s); });
       } else if (shape === 'ocean') {
-        const water = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.35, 1.6), m(0x0284c7)); water.position.y = 0.15;
-        const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 8), m(0xbae6fd)); arrow.position.set(0, 1.1, 0);
-        g.add(water, arrow);
+        const w = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.35, 1.8), m(0x0284c7)); w.position.y = 0.15;
+        const a = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 8), m(0xbae6fd)); a.rotation.z = -Math.PI / 2; a.position.set(0.2, 0.9, 0); g.add(w, a);
       } else if (shape === 'mountain') {
-        const peak = new THREE.Mesh(new THREE.ConeGeometry(1.5, 2.4, 6), m(0x475569)); peak.position.y = 1.2;
-        const green = new THREE.Mesh(new THREE.ConeGeometry(1.1, 1.5, 6), m(0x16a34a)); green.position.set(-0.4, 0.75, 0.3);
-        g.add(peak, green);
+        const pk = new THREE.Mesh(new THREE.ConeGeometry(1.7, 2.6, 6), m(0x475569)); pk.position.y = 1.3;
+        const gr = new THREE.Mesh(new THREE.ConeGeometry(1.2, 1.6, 6), m(0x16a34a)); gr.position.set(-0.5, 0.8, 0.3); g.add(pk, gr);
       } else if (shape === 'rain_cloud') {
-        [[-0.4, 1.2], [0.2, 1.35], [0.6, 1.15]].forEach(([cx, cy]) => {
-          const puff = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 12), m(0xcbd5e1)); puff.position.set(cx, cy, 0); g.add(puff);
-        });
-        for (let r = -2; r <= 2; r++) {
-          const drop = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 6), m(0x38bdf8)); drop.position.set(r * 0.25, 0.5, 0); g.add(drop);
-        }
+        [[-0.4, 1.2], [0.2, 1.35], [0.6, 1.15]].forEach(([cx, cy]) => { const p = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 12), m(0xcbd5e1)); p.position.set(cx, cy, 0); g.add(p); });
+        for (let r = -2; r <= 2; r++) { const d = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 6), m(0x38bdf8)); d.position.set(r * 0.25, 0.5, 0); g.add(d); }
       } else if (shape === 'desert') {
-        const dune = new THREE.Mesh(new THREE.SphereGeometry(1.1, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), m(0xd97706)); dune.scale.set(1.4, 0.7, 1.0);
-        const cactus = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.9, 8), m(0x15803d)); cactus.position.set(0.3, 0.7, 0.2);
-        g.add(dune, cactus);
+        const dn = new THREE.Mesh(new THREE.SphereGeometry(1.2, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), m(0xd97706)); dn.scale.set(1.5, 0.65, 1.1);
+        const cac = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.9, 8), m(0x15803d)); cac.position.set(0.3, 0.65, 0.2); g.add(dn, cac);
       } else if (shape === 'cylinder') {
-        const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.4, 20), m(color)); cyl.position.y = 0.7; g.add(cyl);
-      } else if (shape === 'sphere') {
-        const sp = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 1), m(color)); sp.position.y = 0.75; g.add(sp);
+        const c = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.3, 20), m(color)); c.position.y = 0.65; g.add(c);
       } else if (shape === 'trees') {
         [[-0.35, 0], [0.35, 0.2], [0, -0.35]].forEach(([tx, tz]) => {
           const t = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.6, 8), m(0x78350f)); t.position.set(tx, 0.3, tz);
-          const c = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.1, 8), m(color)); c.position.set(tx, 0.95, tz);
-          g.add(t, c);
+          const c = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.1, 8), m(color)); c.position.set(tx, 0.95, tz); g.add(t, c);
         });
       } else if (shape === 'rocks') {
-        [[-0.35, 0], [0.35, 0.2], [0, -0.25]].forEach(([rx, rz], k) => {
-          const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + k * 0.08, 0), m(color)); rk.position.set(rx, 0.35, rz); g.add(rk);
-        });
+        [[-0.35, 0], [0.35, 0.2], [0, -0.25]].forEach(([rx, rz], k) => { const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + k * 0.08, 0), m(color)); rk.position.set(rx, 0.35, rz); g.add(rk); });
       } else {
         const bx = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 0.9), m(color)); bx.position.y = 0.45; g.add(bx);
       }
       return g;
     }
 
-    const nodes = [];
-    const STEPS = proc.steps;
+    const nodes = [], STEPS = proc.steps;
     STEPS.forEach((s, idx) => {
-      const g = new THREE.Group();
-      g.position.set(...s.pos);
+      const g = new THREE.Group(); g.position.set(...s.pos);
       const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.2, 0.25, 24), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
-      ped.position.y = -0.15;
-      g.add(ped);
+      ped.position.y = -0.15; g.add(ped);
       const mesh = buildShape(s.shape, s.color);
       mesh.traverse(ch => { if (ch.isMesh) ch.userData = { stepIdx: idx }; });
       g.add(mesh);
-      const lbl = makeLabel(s.label);
-      lbl.position.set(0, 2.1, 0);
-      g.add(lbl);
-      scene.add(g);
-      nodes.push({ mesh, ped, color: s.color, pos: new THREE.Vector3(...s.pos) });
+      const lbl = makeLabel(s.label); lbl.position.set(0, 2.3, 0); g.add(lbl);
+      scene.add(g); nodes.push({ mesh, ped, color: s.color, pos: new THREE.Vector3(...s.pos) });
     });
 
     const linkCount = proc.cycle ? STEPS.length : STEPS.length - 1;
     for (let i = 0; i < linkCount; i++) {
-      const a = nodes[i].pos.clone().setY(0.35);
-      const b = nodes[(i + 1) % STEPS.length].pos.clone().setY(0.35);
+      const a = nodes[i].pos.clone().setY(0.35), b = nodes[(i + 1) % STEPS.length].pos.clone().setY(0.35);
       scene.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.LineCurve3(a, b), 4, 0.08, 8, false), new THREE.MeshBasicMaterial({ color: 0xfacc15 })));
     }
 
-    const orb = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
-    scene.add(orb);
-
+    const orb = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), new THREE.MeshBasicMaterial({ color: 0x38bdf8 })); scene.add(orb);
     let currentStep = 0, playing = false, tProg = 0;
     const stepsBar = document.getElementById('steps-bar');
     STEPS.forEach((s, i) => {
       const p = document.createElement('button'); p.className = 'step-pill'; p.textContent = `${i + 1}`;
-      p.onclick = () => { playing = false; updatePlay(); selectStep(i); };
-      stepsBar.appendChild(p);
+      p.onclick = () => { playing = false; updatePlay(); selectStep(i); }; stepsBar.appendChild(p);
     });
 
     function selectStep(idx) {
@@ -295,7 +274,7 @@
     window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 
     selectStep(0);
-    function animate() {
+    (function animate() {
       requestAnimationFrame(animate);
       if (playing) {
         tProg += 0.012;
@@ -303,14 +282,10 @@
         const idx = Math.floor(tProg) % STEPS.length;
         if (idx !== currentStep) { const prev = tProg; selectStep(idx); tProg = prev; }
       }
-      const i0 = Math.floor(tProg) % STEPS.length;
-      const i1 = (i0 + 1) % STEPS.length;
-      const frac = tProg - Math.floor(tProg);
-      orb.position.lerpVectors(nodes[i0].pos, nodes[i1].pos, frac);
-      orb.position.y = 0.35;
+      const i0 = Math.floor(tProg) % STEPS.length, i1 = (i0 + 1) % STEPS.length, frac = tProg - Math.floor(tProg);
+      orb.position.lerpVectors(nodes[i0].pos, nodes[i1].pos, frac); orb.position.y = 0.35;
       controls.update(); renderer.render(scene, camera);
-    }
-    animate();
+    })();
   </script>
 </body>
 </html>
