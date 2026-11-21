@@ -511,6 +511,20 @@
       const isClassRoute = routeSection === 'class' || routeSection === 'timetable';
       const isTestBankRoute = routeSection === 'test-bank';
       const isStudyToolsRoute = routeSection === 'study-tools' || routeSection === 'flashcards';
+      const activeTopTab = isTestBankRoute ? 'test-bank' : isClassRoute ? 'class' : isStudyToolsRoute ? 'study-tools' : 'dashboard';
+      if (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') {
+          document.querySelectorAll('[data-student-top-tab]').forEach(tabBtn => {
+              const isActive = tabBtn.getAttribute('data-student-top-tab') === activeTopTab;
+              tabBtn.className = isActive
+                  ? 'inline-flex items-center gap-2 rounded-xl bg-white text-blue-950 px-3.5 py-2 text-xs sm:text-sm font-black shadow-sm transition'
+                  : 'inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3.5 py-2 text-xs sm:text-sm font-bold transition';
+          });
+      }
+      window.openStudentSkillBank = function(modValue) {
+          const modSelect = document.getElementById('student-test-filter-mod');
+          if (modSelect && modValue) modSelect.value = modValue;
+          window.navigateAppRoute('student/test-bank');
+      };
       const studyToolsSection = document.getElementById('student-study-tools-section');
       overviewSection?.classList.toggle('hidden', isClassRoute || isTestBankRoute || isStudyToolsRoute);
       classOverviewSection?.classList.toggle('hidden', !isClassRoute);
@@ -577,29 +591,31 @@
         const isLocked = price > 0 && !(currentUser.unlockedTests || []).includes(test.id);
         const isCompleted = completedTestIds.includes(test.id);
         const moduleColors = { reading: 'blue', listening: 'cyan', writing: 'emerald', speaking: 'amber', activity: 'fuchsia' };
+        const moduleIcons = { reading: '📘', listening: '🎧', writing: '✍️', speaking: '🎙️', activity: '⚡' };
         const moduleNames = { reading: st('Reading', 'Đọc'), listening: st('Listening', 'Nghe'), writing: st('Writing', 'Viết'), speaking: st('Speaking', 'Nói'), activity: st('Activities', 'Hoạt động') };
         const color = moduleColors[test.module] || 'slate';
+        const icon = moduleIcons[test.module] || '📝';
         const settings = getClassTestSettings(cls, test.id);
         const dueDate = settings?.dueDate && !isCompleted
-          ? `<span class="text-[10px] font-bold text-rose-600">Due ${settings.dueDate}${settings.dueTime ? ` ${settings.dueTime}` : ''}</span>`
+          ? `<span class="inline-flex items-center gap-1 rounded-md bg-rose-50 border border-rose-200 px-2 py-0.5 text-[10px] font-bold text-rose-600">⏰ Due ${settings.dueDate}${settings.dueTime ? ` ${settings.dueTime}` : ''}</span>`
           : '';
         const status = isCompleted
-          ? `<span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">${st('Completed', 'Đã hoàn thành')}</span>`
+          ? `<span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">✓ ${st('Completed', 'Đã hoàn thành')}</span>`
           : `<span class="text-[10px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">${st('Ready', 'Sẵn sàng')}</span>`;
 
         return `
-          <article class="overflow-hidden bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition p-4 flex flex-col gap-3">
+          <article class="overflow-hidden bg-white border border-slate-200 hover:border-blue-300 rounded-2xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 p-4 flex flex-col gap-3">
             ${test.thumbnail ? `<div class="-mx-4 -mt-4 mb-1"><img src="${escapeForumHtml(test.thumbnail)}" alt="${escapeForumHtml(test.title)}" class="block aspect-video w-full object-cover"></div>` : ''}
             <div class="flex items-start justify-between gap-2">
-              <span class="text-[10px] font-bold px-2 py-1 rounded bg-${color}-100 text-${color}-800 uppercase tracking-wide">${moduleNames[test.module] || test.module || st('Test', 'Bài thi')}</span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-lg bg-${color}-100 text-${color}-800 uppercase tracking-wide"><span>${icon}</span><span>${moduleNames[test.module] || test.module || st('Test', 'Bài thi')}</span></span>
               ${status}
             </div>
             <div class="flex-1">
-              <h3 class="font-bold text-slate-900 leading-snug">${escapeForumHtml(cardTitle)}</h3>
-              <p class="text-xs text-slate-500 mt-2">${part ? `${escapeForumHtml(window.cleanTestBankLabel(test.title))} · ${st(`Part ${entry.partIndex + 1} only`, `Chỉ phần ${entry.partIndex + 1}`)}` : `${test.parts?.length || 0} ${st('part(s)', 'phần')}`}${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
+              <h3 class="font-black text-slate-900 leading-snug text-base">${escapeForumHtml(cardTitle)}</h3>
+              <p class="text-xs font-medium text-slate-500 mt-1.5">${part ? `${escapeForumHtml(window.cleanTestBankLabel(test.title))} · ${st(`Part ${entry.partIndex + 1} only`, `Chỉ phần ${entry.partIndex + 1}`)}` : `${test.parts?.length || 0} ${st('part(s)', 'phần')}`}${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
               ${dueDate ? `<div class="mt-2">${dueDate}</div>` : ''}
             </div>
-            <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"${part ? ` data-student-bank-part="${entry.partIndex}"` : ''}`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} rounded-lg py-2.5 text-sm font-black transition">
+            <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"${part ? ` data-student-bank-part="${entry.partIndex}"` : ''}`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : isCompleted ? 'bg-slate-900 hover:bg-black text-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm'} rounded-xl py-2.5 text-sm font-black transition">
               ${isLocked ? `🔒 ${st('Unlock', 'Mở khóa')} ${price} 💎` : isCompleted ? st('Take Again →', 'Làm lại →') : st('Take Test →', 'Làm bài →')}
             </button>
           </article>`;
@@ -775,6 +791,58 @@
           </article>`;
       if (overviewContent) {
           overviewContent.innerHTML = `
+            <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-blue-600">${st('Course Progress', 'Tiến độ khóa học')}</div>
+                <div class="mt-1 text-2xl font-black text-blue-950">${progressPct}%</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${completedCount}/${totalTests} ${st('assigned tests', 'bài được giao')}</div>
+              </div>
+              <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-emerald-700">${st('Submissions', 'Lượt nộp bài')}</div>
+                <div class="mt-1 text-2xl font-black text-emerald-950">${mySubs.length}</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${st('Saved attempts', 'Bài làm đã lưu')}</div>
+              </div>
+              <div class="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-amber-700">${st('Urgent Homework', 'Bài tập đến hạn')}</div>
+                <div class="mt-1 text-2xl font-black text-amber-950">${pendingDeadlines.length}</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${pendingDeadlines.length ? st('Needs attention', 'Cần hoàn thành') : st('All caught up', 'Đã hoàn tất')}</div>
+              </div>
+              <div class="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-indigo-700">${st('Active Class', 'Lớp đang học')}</div>
+                <div class="mt-1 text-base font-black text-indigo-950 truncate" title="${escapeForumHtml(displayClassName)}">${escapeForumHtml(displayClassName)}</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${peers.length + 1} ${st('students', 'học viên')}</div>
+              </div>
+            </div>
+            <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                <div>
+                  <h3 class="text-sm font-black text-slate-900">${st('Quick Practice by Skill', 'Luyện tập nhanh theo kỹ năng')}</h3>
+                  <p class="text-xs text-slate-500">${st('Jump straight into a specific IELTS module or launch a full mock exam.', 'Chọn nhanh kỹ năng muốn luyện hoặc bắt đầu bài thi thử tổng hợp.')}</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                <button type="button" onclick="window.openStudentSkillBank('reading')" class="flex items-center gap-2.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 p-3 text-left transition shadow-sm">
+                  <span class="text-xl">📘</span>
+                  <span><span class="block text-xs font-black text-slate-900">Reading</span><span class="block text-[10px] font-semibold text-blue-600">Vocab &amp; Grammar</span></span>
+                </button>
+                <button type="button" onclick="window.openStudentSkillBank('listening')" class="flex items-center gap-2.5 rounded-xl border border-cyan-200 bg-white hover:bg-cyan-50 p-3 text-left transition shadow-sm">
+                  <span class="text-xl">🎧</span>
+                  <span><span class="block text-xs font-black text-slate-900">Listening</span><span class="block text-[10px] font-semibold text-cyan-700">Micro-Dictation</span></span>
+                </button>
+                <button type="button" onclick="window.openStudentSkillBank('writing')" class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-white hover:bg-emerald-50 p-3 text-left transition shadow-sm">
+                  <span class="text-xl">✍️</span>
+                  <span><span class="block text-xs font-black text-slate-900">Writing</span><span class="block text-[10px] font-semibold text-emerald-700">3D Map &amp; AI</span></span>
+                </button>
+                <button type="button" onclick="window.openStudentSkillBank('speaking')" class="flex items-center gap-2.5 rounded-xl border border-amber-200 bg-white hover:bg-amber-50 p-3 text-left transition shadow-sm">
+                  <span class="text-xl">🎙️</span>
+                  <span><span class="block text-xs font-black text-slate-900">Speaking</span><span class="block text-[10px] font-semibold text-amber-700">Part 2 Sim</span></span>
+                </button>
+                <button type="button" onclick="window.startFullExam()" class="col-span-2 sm:col-span-1 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 p-3 text-left text-white transition shadow-sm">
+                  <span class="text-xl">🎓</span>
+                  <span><span class="block text-xs font-black">${st('Mock Exam', 'Thi thử Full')}</span><span class="block text-[10px] text-blue-100">3 Skills</span></span>
+                </button>
+              </div>
+            </div>
             ${deadlineOverviewHtml}
             ${nextLessonHtml}
             <article class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm transition hover:shadow-md">
