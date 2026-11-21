@@ -61,10 +61,10 @@
         cycle: false,
         steps: [
           { label: '1. Limestone & Clay', shape: 'rocks', color: 0x94a3b8, pos: [-7, 0, -2], title: '1. Raw Materials (Limestone & Clay)', desc: 'Limestone and clay are fed into a crusher.', vocab: '<b>Verbs:</b> are fed into, are crushed<br><b>Sample:</b> <i>First, limestone and clay are crushed together into a fine powder.</i>' },
-          { label: '2. Crusher → Powder', shape: 'hopper', color: 0x64748b, pos: [-4, 0, -2], title: '2. Crushing & Mixing', desc: 'The crushed powder is blended in a rotating mixer.', vocab: '<b>Verbs:</b> is mixed, is blended<br><b>Sample:</b> <i>The resulting powder is then thoroughly mixed before heating.</i>' },
+          { label: '2. Crusher → Mixer', shape: 'hopper', color: 0x64748b, pos: [-4, 0, -2], title: '2. Crushing & Mixing', desc: 'The crushed powder is blended in a rotating mixer.', vocab: '<b>Verbs:</b> is mixed, is blended<br><b>Sample:</b> <i>The resulting powder is then thoroughly mixed before heating.</i>' },
           { label: '3. Rotating Heater', shape: 'kiln', color: 0xef4444, pos: [-1, 0, -2], title: '3. Rotating Heater (Kiln)', desc: 'The mixture passes through a rotating heater with intense heat.', vocab: '<b>Verbs:</b> is heated, passes through<br><b>Sample:</b> <i>Subsequently, the mixture enters a rotating heater at high temperature.</i>' },
-          { label: '4. Grinder → Cement', shape: 'cylinder', color: 0xf59e0b, pos: [2, 0, -2], title: '4. Grinding & Bagging', desc: 'Heated material is ground into cement and packed into bags.', vocab: '<b>Verbs:</b> is ground into, is packed<br><b>Sample:</b> <i>Once cooled, it is ground into cement and packaged into bags.</i>' },
-          { label: '5. Concrete Mixer', shape: 'sphere', color: 0x3b82f6, pos: [5.5, 0, 1], title: '5. Concrete Production', desc: '15% cement, 10% water, 25% sand & 50% gravel are mixed in a concrete mixer.', vocab: '<b>Verbs:</b> are combined, is rotated<br><b>Sample:</b> <i>Finally, cement is mixed with water, sand, and gravel to produce concrete.</i>' },
+          { label: '4. Grinder → Cement Bags', shape: 'bags', color: 0xf59e0b, pos: [2, 0, -2], title: '4. Grinding & Bagging', desc: 'Heated material is ground into cement and packed into bags.', vocab: '<b>Verbs:</b> is ground into, is packed<br><b>Sample:</b> <i>Once cooled, it is ground into cement and packaged into bags.</i>' },
+          { label: '5. Concrete Mixer', shape: 'concrete_mixer', color: 0x3b82f6, pos: [5.5, 0, 1], title: '5. Concrete Production', desc: '15% cement, 10% water, 25% sand & 50% gravel are mixed in a concrete mixer.', vocab: '<b>Verbs:</b> are combined, is rotated<br><b>Sample:</b> <i>Finally, cement is mixed with water, sand, and gravel to produce concrete.</i>' },
         ]
       },
       'cam10-t4': {
@@ -125,10 +125,10 @@
         title: 'Cam 21 Test 3 — Rain-Shadow Desert Formation',
         cycle: false,
         steps: [
-          { label: '1. Ocean Evaporation', shape: 'cylinder', color: 0x0ea5e9, pos: [-6, 0, 0], title: '1. Moist Air from Ocean', desc: 'Warm moist air evaporates from the ocean and blows inland.', vocab: '<b>Verbs:</b> evaporates, blows inland<br><b>Sample:</b> <i>Warm, moisture-laden air blows from the ocean toward coastal mountains.</i>' },
-          { label: '2. Rising & Cooling', shape: 'sphere', color: 0x94a3b8, pos: [-2, 1.5, 0], title: '2. Air Rises & Condenses', desc: 'Moist air is forced upward by the mountain range, cooling into clouds.', vocab: '<b>Verbs:</b> is forced upward, condenses<br><b>Sample:</b> <i>As the air rises up the windward slope, it cools and condenses into clouds.</i>' },
-          { label: '3. Windward Rainfall', shape: 'trees', color: 0x22c55e, pos: [1, 2.2, 0], title: '3. Heavy Rain on Windward Side', desc: 'Heavy rain falls on the windward slope, supporting lush vegetation.', vocab: '<b>Verbs:</b> precipitates, falls on<br><b>Sample:</b> <i>Heavy rainfall occurs on the windward side, leaving the air dry.</i>' },
-          { label: '4. Dry Air Descends', shape: 'rocks', color: 0xf59e0b, pos: [5, 0.2, 0], title: '4. Leeward Rain-Shadow Desert', desc: 'Dry air descends on the leeward side, warming up and creating a desert.', vocab: '<b>Verbs:</b> descends, warms up, creates<br><b>Sample:</b> <i>Finally, dry air descends the leeward slope, forming a rain-shadow desert.</i>' },
+          { label: '1. Ocean Evaporation', shape: 'ocean', color: 0x0ea5e9, pos: [-6, 0, 0], title: '1. Moist Air from Ocean', desc: 'Warm moist air evaporates from the ocean and blows inland.', vocab: '<b>Verbs:</b> evaporates, blows inland<br><b>Sample:</b> <i>Warm, moisture-laden air blows from the ocean toward coastal mountains.</i>' },
+          { label: '2. Rising & Cooling', shape: 'mountain', color: 0x64748b, pos: [-1.5, 0, 0], title: '2. Air Rises & Condenses', desc: 'Moist air is forced upward by the mountain range, cooling into clouds.', vocab: '<b>Verbs:</b> is forced upward, condenses<br><b>Sample:</b> <i>As the air rises up the windward slope, it cools and condenses into clouds.</i>' },
+          { label: '3. Windward Rainfall', shape: 'rain_cloud', color: 0x22c55e, pos: [1.5, 1.8, 0], title: '3. Heavy Rain on Windward Side', desc: 'Heavy rain falls on the windward slope, supporting lush vegetation.', vocab: '<b>Verbs:</b> precipitates, falls on<br><b>Sample:</b> <i>Heavy rainfall occurs on the windward side, leaving the air dry.</i>' },
+          { label: '4. Dry Air Descends', shape: 'desert', color: 0xf59e0b, pos: [5.5, 0, 0], title: '4. Leeward Rain-Shadow Desert', desc: 'Dry air descends on the leeward side, warming up and creating a desert.', vocab: '<b>Verbs:</b> descends, warms up, creates<br><b>Sample:</b> <i>Finally, dry air descends the leeward slope, forming a rain-shadow desert.</i>' },
         ]
       }
     };
@@ -170,15 +170,67 @@
     }
 
     function buildShape(shape, color) {
-      const m = new THREE.MeshStandardMaterial({ color, roughness: 0.4, metalness: 0.2 });
-      if (shape === 'hopper') return new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.35, 1.2, 8), m);
-      if (shape === 'kiln') { const x = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.6, 16), m); x.rotation.z = Math.PI / 2.4; return x; }
-      if (shape === 'cylinder') return new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.3, 20), m);
-      if (shape === 'sphere') return new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 1), m);
-      if (shape === 'fish') { const x = new THREE.Mesh(new THREE.ConeGeometry(0.4, 1.3, 10), m); x.rotation.z = -Math.PI / 2; return x; }
-      if (shape === 'trees') return new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.5, 8), m);
-      if (shape === 'rocks') return new THREE.Mesh(new THREE.DodecahedronGeometry(0.7, 0), m);
-      return new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 0.9), m);
+      const g = new THREE.Group();
+      const m = (col) => new THREE.MeshStandardMaterial({ color: col, roughness: 0.4, metalness: 0.2 });
+      if (shape === 'hopper') {
+        const funnel = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.3, 0.9, 8), m(color)); funnel.position.y = 0.85;
+        const base = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 0.9), m(0x334155)); base.position.y = 0.25;
+        g.add(funnel, base);
+      } else if (shape === 'kiln') {
+        const drum = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.7, 16), m(0x94a3b8)); drum.rotation.z = Math.PI / 2.3; drum.position.y = 0.7;
+        const flame = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.7, 10), new THREE.MeshBasicMaterial({ color: 0xf97316 })); flame.rotation.z = Math.PI / 2; flame.position.set(0.7, 0.4, 0);
+        g.add(drum, flame);
+      } else if (shape === 'bags') {
+        for (let i = 0; i < 3; i++) {
+          const bag = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.25, 0.55), m(0xd97706));
+          bag.position.set((i % 2) * 0.1, 0.2 + i * 0.28, 0);
+          g.add(bag);
+        }
+      } else if (shape === 'concrete_mixer') {
+        const drum = new THREE.Mesh(new THREE.SphereGeometry(0.7, 16, 16), m(color)); drum.scale.set(1.2, 0.9, 0.9); drum.position.y = 0.85;
+        const stand = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.4, 0.7), m(0x334155)); stand.position.y = 0.2;
+        g.add(drum, stand);
+      } else if (shape === 'fish') {
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.45, 14, 12), m(color)); body.scale.set(1.8, 0.75, 0.6); body.position.y = 0.65;
+        const tail = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.5, 6), m(color)); tail.rotation.z = -Math.PI / 2; tail.position.set(-0.9, 0.65, 0);
+        g.add(body, tail);
+      } else if (shape === 'ocean') {
+        const water = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.35, 1.6), m(0x0284c7)); water.position.y = 0.15;
+        const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.7, 8), m(0xbae6fd)); arrow.position.set(0, 1.1, 0);
+        g.add(water, arrow);
+      } else if (shape === 'mountain') {
+        const peak = new THREE.Mesh(new THREE.ConeGeometry(1.5, 2.4, 6), m(0x475569)); peak.position.y = 1.2;
+        const green = new THREE.Mesh(new THREE.ConeGeometry(1.1, 1.5, 6), m(0x16a34a)); green.position.set(-0.4, 0.75, 0.3);
+        g.add(peak, green);
+      } else if (shape === 'rain_cloud') {
+        [[-0.4, 1.2], [0.2, 1.35], [0.6, 1.15]].forEach(([cx, cy]) => {
+          const puff = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 12), m(0xcbd5e1)); puff.position.set(cx, cy, 0); g.add(puff);
+        });
+        for (let r = -2; r <= 2; r++) {
+          const drop = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 6), m(0x38bdf8)); drop.position.set(r * 0.25, 0.5, 0); g.add(drop);
+        }
+      } else if (shape === 'desert') {
+        const dune = new THREE.Mesh(new THREE.SphereGeometry(1.1, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), m(0xd97706)); dune.scale.set(1.4, 0.7, 1.0);
+        const cactus = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.9, 8), m(0x15803d)); cactus.position.set(0.3, 0.7, 0.2);
+        g.add(dune, cactus);
+      } else if (shape === 'cylinder') {
+        const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.4, 20), m(color)); cyl.position.y = 0.7; g.add(cyl);
+      } else if (shape === 'sphere') {
+        const sp = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 1), m(color)); sp.position.y = 0.75; g.add(sp);
+      } else if (shape === 'trees') {
+        [[-0.35, 0], [0.35, 0.2], [0, -0.35]].forEach(([tx, tz]) => {
+          const t = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.6, 8), m(0x78350f)); t.position.set(tx, 0.3, tz);
+          const c = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.1, 8), m(color)); c.position.set(tx, 0.95, tz);
+          g.add(t, c);
+        });
+      } else if (shape === 'rocks') {
+        [[-0.35, 0], [0.35, 0.2], [0, -0.25]].forEach(([rx, rz], k) => {
+          const rk = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + k * 0.08, 0), m(color)); rk.position.set(rx, 0.35, rz); g.add(rk);
+        });
+      } else {
+        const bx = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 0.9), m(color)); bx.position.y = 0.45; g.add(bx);
+      }
+      return g;
     }
 
     const nodes = [];
@@ -190,8 +242,7 @@
       ped.position.y = -0.15;
       g.add(ped);
       const mesh = buildShape(s.shape, s.color);
-      mesh.position.y = 0.7;
-      mesh.userData = { stepIdx: idx };
+      mesh.traverse(ch => { if (ch.isMesh) ch.userData = { stepIdx: idx }; });
       g.add(mesh);
       const lbl = makeLabel(s.label);
       lbl.position.set(0, 2.1, 0);
@@ -238,7 +289,7 @@
       if (e.target.closest('button') || e.target.closest('.info-panel')) return;
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1; pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(nodes.map(n => n.mesh));
+      const hits = raycaster.intersectObjects(nodes.map(n => n.mesh), true);
       if (hits.length) { playing = false; updatePlay(); selectStep(hits[0].object.userData.stepIdx); }
     });
     window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
