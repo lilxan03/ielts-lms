@@ -121,19 +121,76 @@
         localStorage.setItem('ielts_fontsize', s);
     }
     
+        window.teacherNotificationFilter = window.teacherNotificationFilter || 'all';
+
+        window.setTeacherNotificationFilter = function(filter, e) {
+            if (e) e.stopPropagation();
+            window.teacherNotificationFilter = filter || 'all';
+            if (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') {
+                document.querySelectorAll('[data-teacher-notif-filter]').forEach(btn => {
+                    const active = btn.getAttribute('data-teacher-notif-filter') === window.teacherNotificationFilter;
+                    btn.className = active
+                        ? 'rounded-lg bg-blue-600 text-white px-2.5 py-1 text-[11px] font-black whitespace-nowrap transition'
+                        : 'rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition';
+                });
+            }
+            window.updateTeacherBadges();
+        };
+
+        window.markAllTeacherNotificationsRead = async function(e) {
+            if (e) e.stopPropagation();
+            const now = new Date();
+            // 1. Mark new bookings read
+            (SCHEDULES || []).forEach(s => {
+                if (s.isNewBooking) {
+                    s.isNewBooking = false;
+                    try {
+                        window.fsUpdateDoc?.(window.fsDoc(window.db, window.fPath('schedules'), String(s.id)), { isNewBooking: false }).catch(() => {});
+                    } catch (_) {}
+                }
+            });
+            // 2. Mark student replies read
+            (SUBMISSIONS || []).forEach(s => {
+                if (s.studentReply && !s.teacherReadReply) {
+                    s.teacherReadReply = true;
+                    try {
+                        window.fsUpdateDoc?.(window.fsDoc(window.db, window.fPath('submissions'), String(s.id)), { teacherReadReply: true }).catch(() => {});
+                    } catch (_) {}
+                }
+            });
+            // 3. Mark question feedback reports read
+            (QUESTION_FEEDBACK || []).forEach(report => {
+                if (!report.teacherReadAt) {
+                    report.teacherReadAt = now;
+                    try {
+                        window.fsUpdateDoc?.(window.fsDoc(window.db, window.fPath('question_feedback'), report.id), { teacherReadAt: window.fsServerTimestamp ? window.fsServerTimestamp() : now }).catch(() => {});
+                    } catch (_) {}
+                }
+            });
+            // 4. Mark new local CRM consultation leads as contacted if desired? Keep status 'new' unless teacher contacts them, or mark seen
+            window.updateTeacherBadges();
+            window.showToast?.('Đã đánh dấu đã đọc', 'Các thông báo phản hồi, đặt lịch và báo lỗi câu hỏi đã được đánh dấu đã xem.', 'success');
+        };
+
         window.updateTeacherBadges = function() {
         if (!currentUser || currentUser.role !== 'teacher') return;
 
-        const pendingStudents = USERS.filter(u => u.role === 'student' && u.paymentStatus === 'pending').length;
-        const pendingSubs = SUBMISSIONS.filter(s => s.score === 'Pending Grade').length;
-        
-        // ✨ NEW: Calculate new Bookings and Student Replies
-        const newBookings = SCHEDULES.filter(s => s.isNewBooking).length;
-        const newReplies = SUBMISSIONS.filter(s => s.studentReply && !s.teacherReadReply).length;
-        const testsPendingReview = TEST_BANK.filter(t => t.status === 'review_ready').length;
-        const unreadQuestionFeedback = QUESTION_FEEDBACK.filter(report => !report.teacherReadAt);
+        const pendingStudentList = (USERS || []).filter(u => u.role === 'student' && u.paymentStatus === 'pending');
+        const pendingSubList = (SUBMISSIONS || []).filter(s => s.score === 'Pending Grade');
+        const newBookingList = (SCHEDULES || []).filter(s => s.isNewBooking);
+        const newReplyList = (SUBMISSIONS || []).filter(s => s.studentReply && !s.teacherReadReply);
+        const reviewReadyTestList = (TEST_BANK || []).filter(t => t.status === 'review_ready');
+        const unreadQuestionFeedback = (QUESTION_FEEDBACK || []).filter(report => !report.teacherReadAt);
+        const newLeadsList = (typeof window.getConsultationLeads === 'function' ? window.getConsultationLeads() : []).filter(l => (l.status || 'new') === 'new');
 
-        const totalNots = pendingStudents + pendingSubs + newBookings + newReplies + testsPendingReview + unreadQuestionFeedback.length;
+        const pendingStudents = pendingStudentList.length;
+        const pendingSubs = pendingSubList.length;
+        const newBookings = newBookingList.length;
+        const newReplies = newReplyList.length;
+        const testsPendingReview = reviewReadyTestList.length;
+        const newLeads = newLeadsList.length;
+
+        const totalNots = pendingStudents + pendingSubs + newBookings + newReplies + testsPendingReview + unreadQuestionFeedback.length + newLeads;
 
         const el = document.getElementById('badge-global-notifications');
         if (el) {
@@ -146,54 +203,118 @@
             if (totalNots > 0) { el.classList.remove('hidden'); el.classList.add('flex'); }
             else { el.classList.add('hidden'); el.classList.remove('flex'); }
         }
+        const countPill = document.getElementById('teacher-notifications-count-pill');
+        if (countPill) countPill.textContent = String(totalNots);
+
+        const activeFilter = window.teacherNotificationFilter || 'all';
+        const showGrading = activeFilter === 'all' || activeFilter === 'grading';
+        const showAdmin = activeFilter === 'all' || activeFilter === 'admin';
+        const showContent = activeFilter === 'all' || activeFilter === 'content';
 
         const list = document.getElementById('teacher-notifications-list');
         if (list) {
             let html = '';
-            if (newBookings > 0) {
-                html += `<button onclick="window.clearBookingNotifications()" class="text-left px-4 py-3 hover:bg-indigo-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">📅 New Bookings</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${newBookings}</b> new student appointment(s).</span>
-                </button>`;
-            }
-            if (newReplies > 0) {
-                html += `<button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-emerald-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">💬 Student Replies</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${newReplies}</b> new reply/question(s) on graded tests.</span>
-                </button>`;
-            }
-            if (unreadQuestionFeedback.length > 0) {
-                html += `<div class="border-b border-slate-100">
-                    <div class="px-4 py-3">
-                        <span class="text-[10px] font-black text-amber-700 uppercase tracking-widest">⚑ Question feedback</span>
-                        <span class="ml-1 text-[10px] font-bold text-amber-700">${unreadQuestionFeedback.length} new</span>
-                    </div>
-                    ${unreadQuestionFeedback.slice(0, 5).map(report => `<button onclick="window.openQuestionFeedback('${lmsEscapeHtml(report.id)}'); window.toggleTeacherNotifications();" class="w-full px-4 pb-3 text-left hover:bg-amber-50 transition">
-                        <span class="block truncate text-sm font-bold text-slate-700">${lmsEscapeHtml(report.student)}</span>
-                        <span class="block truncate text-xs text-slate-500">${lmsEscapeHtml(report.testTitle)} · Q${(report.questionIds || []).map(lmsEscapeHtml).join(', ')}</span>
-                    </button>`).join('')}
-                    ${unreadQuestionFeedback.length > 5 ? `<p class="px-4 pb-3 text-xs text-slate-500">And ${unreadQuestionFeedback.length - 5} more report(s).</p>` : ''}
+
+            if (showAdmin && pendingStudents > 0) {
+                html += `<div class="bg-rose-50/40">
+                    <button onclick="toggleEditorTab('payments'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-rose-50 transition flex items-center justify-between gap-2 w-full">
+                        <div>
+                            <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest block">💸 Xác nhận học phí (${pendingStudents})</span>
+                            <span class="text-xs font-semibold text-slate-700">${pendingStudentList.slice(0, 3).map(u => lmsEscapeHtml(u.user)).join(', ')}${pendingStudents > 3 ? ` +${pendingStudents - 3}` : ''} đang chờ duyệt chuyển khoản</span>
+                        </div>
+                        <span class="text-xs font-black text-rose-600 shrink-0">Duyệt &rarr;</span>
+                    </button>
                 </div>`;
             }
-            if (pendingSubs > 0) {
-                html += `<button onclick="toggleEditorTab('bank'); toggleDashboardView('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">📝 Submissions</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${pendingSubs}</b> ungraded test(s) waiting for review.</span>
+
+            if (showAdmin && newLeads > 0) {
+                html += `<div class="bg-cyan-50/40">
+                    <button onclick="toggleEditorTab('students'); window.toggleTeacherNotifications(); setTimeout(() => document.getElementById('consultation-leads-crm')?.scrollIntoView({ behavior: 'smooth' }), 120);" class="text-left px-4 py-3 hover:bg-cyan-50 transition flex items-center justify-between gap-2 w-full">
+                        <div>
+                            <span class="text-[10px] font-black text-cyan-700 uppercase tracking-widest block">📋 Lead tư vấn mới (${newLeads})</span>
+                            <span class="text-xs font-semibold text-slate-700">${newLeadsList.slice(0, 2).map(l => `${lmsEscapeHtml(l.name)} (${lmsEscapeHtml(l.phone)})`).join(' · ')}</span>
+                        </div>
+                        <span class="text-xs font-black text-cyan-700 shrink-0">Mở CRM &rarr;</span>
+                    </button>
+                </div>`;
+            }
+
+            if (showAdmin && newBookings > 0) {
+                html += `<button onclick="window.clearBookingNotifications()" class="text-left px-4 py-3 hover:bg-indigo-50 transition flex items-center justify-between gap-2 w-full">
+                    <div>
+                        <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">📅 Lịch học đặt mới (${newBookings})</span>
+                        <span class="text-xs font-semibold text-slate-700">Có <b>${newBookings}</b> lịch hẹn mới từ học viên trên thời khóa biểu.</span>
+                    </div>
+                    <span class="text-xs font-black text-indigo-600 shrink-0">Xem lịch &rarr;</span>
                 </button>`;
             }
-            if (pendingStudents > 0) {
-                html += `<button onclick="toggleEditorTab('students'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-rose-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest">💸 Payments</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${pendingStudents}</b> student action(s) to verify.</span>
+
+            if (showGrading && newReplies > 0) {
+                html += `<div class="bg-emerald-50/30">
+                    <div class="px-4 pt-2.5 pb-1 flex items-center justify-between">
+                        <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">💬 Phản hồi bài chấm từ học viên (${newReplies})</span>
+                        <button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="text-[11px] font-bold text-emerald-700 hover:underline">Xem tất cả</button>
+                    </div>
+                    ${newReplyList.slice(0, 4).map(sub => `<button onclick="openGradingView(${sub.id}); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-emerald-50 transition flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(sub.student)} · ${lmsEscapeHtml(sub.testName || 'Bài thi')}</span>
+                            <span class="block truncate text-[11px] text-slate-500">“${lmsEscapeHtml(String(sub.studentReply || '').slice(0, 70))}”</span>
+                        </div>
+                        <span class="text-[11px] font-black text-emerald-700 shrink-0">Trả lời &rarr;</span>
+                    </button>`).join('')}
+                </div>`;
+            }
+
+            if (showGrading && pendingSubs > 0) {
+                html += `<div>
+                    <div class="px-4 pt-2.5 pb-1 flex items-center justify-between">
+                        <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">📝 Bài nộp chờ chấm (${pendingSubs})</span>
+                        <button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="text-[11px] font-bold text-blue-600 hover:underline">Mở hộp thư</button>
+                    </div>
+                    ${pendingSubList.slice(0, 4).map(sub => `<button onclick="openGradingView(${sub.id}); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-blue-50 transition flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(sub.student)} <span class="font-normal text-slate-400">(${lmsEscapeHtml(sub.className || 'Class')})</span></span>
+                            <span class="block truncate text-[11px] text-slate-500">${lmsEscapeHtml(sub.testName || 'Test')} · ${lmsEscapeHtml(sub.date || '')}</span>
+                        </div>
+                        <span class="text-[11px] font-black text-blue-600 shrink-0">Chấm ngay &rarr;</span>
+                    </button>`).join('')}
+                    ${pendingSubs > 4 ? `<button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="w-full px-4 pb-2.5 text-left text-[11px] font-bold text-blue-600 hover:underline">+ Xem thêm ${pendingSubs - 4} bài nộp chờ chấm...</button>` : ''}
+                </div>`;
+            }
+
+            if (showContent && unreadQuestionFeedback.length > 0) {
+                html += `<div>
+                    <div class="px-4 pt-2.5 pb-1 flex items-center justify-between">
+                        <span class="text-[10px] font-black text-amber-700 uppercase tracking-widest">⚑ Báo lỗi câu hỏi (${unreadQuestionFeedback.length})</span>
+                    </div>
+                    ${unreadQuestionFeedback.slice(0, 5).map(report => `<button onclick="window.openQuestionFeedback('${lmsEscapeHtml(report.id)}'); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-amber-50 transition flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <span class="block truncate text-xs font-bold text-slate-800">${lmsEscapeHtml(report.student)}</span>
+                            <span class="block truncate text-[11px] text-slate-500">${lmsEscapeHtml(report.testTitle)} · Q${(report.questionIds || []).map(lmsEscapeHtml).join(', ')}</span>
+                        </div>
+                        <span class="text-[11px] font-black text-amber-700 shrink-0">Xem &rarr;</span>
+                    </button>`).join('')}
+                    ${unreadQuestionFeedback.length > 5 ? `<p class="px-4 pb-2.5 text-[11px] text-slate-500">+ ${unreadQuestionFeedback.length - 5} báo cáo khác.</p>` : ''}
+                </div>`;
+            }
+
+            if (showContent && testsPendingReview > 0) {
+                html += `<button onclick="toggleEditorTab('bank'); document.getElementById('bank-filter-status').value = 'review_ready'; renderTestBank(true); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-purple-50 transition flex items-center justify-between gap-2 w-full">
+                    <div>
+                        <span class="text-[10px] font-black text-purple-600 uppercase tracking-widest block">🟣 Đề CTV chờ duyệt (${testsPendingReview})</span>
+                        <span class="text-xs font-semibold text-slate-700">Collaborators đã đánh dấu <b>${testsPendingReview}</b> đề sẵn sàng duyệt.</span>
+                    </div>
+                    <span class="text-xs font-black text-purple-600 shrink-0">Duyệt đề &rarr;</span>
                 </button>`;
             }
-            if (testsPendingReview > 0) {
-                html += `<button onclick="toggleEditorTab('bank'); document.getElementById('bank-filter-status').value = 'review_ready'; renderTestBank(true); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-purple-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-purple-600 uppercase tracking-widest">🟣 Tests to Review</span>
-                    <span class="text-sm font-medium text-slate-700">Collaborators marked <b>${testsPendingReview}</b> test(s) ready for review.</span>
-                </button>`;
+
+            if (html === '') {
+                html = `<div class="p-6 text-center">
+                    <div class="text-2xl mb-1">✨</div>
+                    <div class="text-xs font-black text-slate-700">Không có thông báo nào trong mục này</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Mọi bài nộp, học phí và phản hồi đều đã được xử lý.</div>
+                </div>`;
             }
-            if (html === '') html = `<div class="p-4 text-center text-sm text-slate-500 italic">You're all caught up!</div>`;
             list.innerHTML = html;
         }
         window.renderTeacherOverview();

@@ -65,6 +65,9 @@
     if (typeof global.renderConsultationLeadsCRM === 'function') {
       global.renderConsultationLeadsCRM();
     }
+    if (typeof global.updateTeacherBadges === 'function') {
+      global.updateTeacherBadges();
+    }
     return record;
   }
 
@@ -156,6 +159,7 @@
       }
     } catch (_) {}
     renderConsultationLeadsCRM();
+    if (typeof global.updateTeacherBadges === 'function') global.updateTeacherBadges();
   }
 
   function deleteConsultationLead(leadId) {
@@ -167,6 +171,7 @@
       }
     } catch (_) {}
     renderConsultationLeadsCRM();
+    if (typeof global.updateTeacherBadges === 'function') global.updateTeacherBadges();
   }
 
   function exportConsultationLeadsCSV() {
