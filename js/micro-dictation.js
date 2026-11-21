@@ -258,8 +258,7 @@
         };
 
         const buildSegments = () => {
-            const duration = Number(durationSelect.value);
-            segments = buildMicroDictationSegments(part, audio.duration, duration);
+            segments = buildMicroDictationSegments(part, audio.duration);
             activeSegment = 0;
             if (!segments.length) {
                 content.innerHTML = '<p>Không đủ thông tin thời lượng hoặc transcript để chia đoạn nghe.</p>';
@@ -272,9 +271,6 @@
         audio.addEventListener('error', () => {
             content.innerHTML = '<p>Không thể tải audio cho Micro-Dictation. Kiểm tra liên kết audio của bài nghe.</p>';
         }, { once: true });
-        durationSelect.addEventListener('change', () => {
-            if (Number.isFinite(audio.duration) && audio.duration > 0) buildSegments();
-        });
         if (audio.readyState >= 1 && Number.isFinite(audio.duration)) buildSegments();
     };
 })();
