@@ -2155,12 +2155,21 @@
       <!-- LEFT SECTION -->
       <div class="flex items-center gap-6 flex-1 relative z-10 min-w-0">
         <!-- Default State: Logo & Tabs -->
-        <div id="editor-default-header" class="flex items-center gap-4 w-full">
-            <button type="button" onclick="window.goToAppHome('teacher')" class="text-left text-2xl font-black tracking-tight text-white flex items-center gap-2 drop-shadow-sm" title="Go to Home">
+        <div id="editor-default-header" class="flex items-center gap-3 lg:gap-5 w-full min-w-0">
+            <button type="button" onclick="window.goToAppHome('teacher')" class="text-left text-xl lg:text-2xl font-black tracking-tight text-white flex items-center gap-2 drop-shadow-sm shrink-0" title="Go to Home">
                 <div id="app-logo-teacher" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm overflow-hidden shrink-0">🛠</div>
-                LMS <span class="font-light text-blue-200 text-lg">| Teacher</span>
+                <span>LMS <span class="font-light text-blue-200 text-base lg:text-lg">| Teacher</span></span>
             </button>
-            <button type="button" class="app-sidebar-toggle w-10 h-10 items-center justify-center rounded-xl bg-white/10 text-white border border-white/20 text-xl" onclick="window.toggleAppSidebar('teacher')" aria-label="Open navigation menu" aria-expanded="false" aria-controls="editor-sidebar">☰</button>
+            <button type="button" class="app-sidebar-toggle w-10 h-10 items-center justify-center rounded-xl bg-white/10 text-white border border-white/20 text-xl shrink-0" onclick="window.toggleAppSidebar('teacher')" aria-label="Open navigation menu" aria-expanded="false" aria-controls="editor-sidebar">☰</button>
+            <nav id="teacher-top-nav" class="hidden md:flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-1" aria-label="Teacher quick navigation">
+                <button type="button" data-teacher-top-tab="overview" onclick="window.navigateFromSidebar('teacher','teacher/overview')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition"><span>📊</span><span>Overview</span></button>
+                <button type="button" data-teacher-top-tab="bank" onclick="window.navigateFromSidebar('teacher','teacher/bank/tests')" class="inline-flex items-center gap-1.5 rounded-xl bg-white text-blue-950 px-3 py-1.5 text-xs font-black shadow-sm whitespace-nowrap transition"><span>📚</span><span>Test Bank</span></button>
+                <button type="button" data-teacher-top-tab="classes" onclick="window.navigateFromSidebar('teacher','teacher/bank/classes')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition"><span>👥</span><span>Classes &amp; Subs</span></button>
+                <button type="button" data-teacher-top-tab="students" onclick="window.navigateFromSidebar('teacher','teacher/students')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition"><span>🎓</span><span>Students &amp; CRM</span></button>
+                <button type="button" data-teacher-top-tab="payments" onclick="window.navigateFromSidebar('teacher','teacher/payments')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition"><span>💳</span><span>Payments</span></button>
+                <button type="button" data-teacher-top-tab="timetable" onclick="window.navigateFromSidebar('teacher','teacher/timetable')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition"><span>🗓️</span><span>Timetable</span></button>
+                <button type="button" data-teacher-top-tab="landing" onclick="window.navigateFromSidebar('teacher','teacher/landing')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition"><span>🌐</span><span>Landing Page</span></button>
+            </nav>
         </div>
 
         <!-- Builder State: Back Button & Controls -->
@@ -2289,25 +2298,33 @@
         <section class="rounded-3xl bg-gradient-to-r from-slate-950 via-blue-950 to-indigo-900 p-6 md:p-8 text-white shadow-lg">
           <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p class="text-xs font-black uppercase tracking-[0.22em] text-blue-200">Teacher workspace</p>
-              <h1 class="mt-2 text-3xl md:text-4xl font-black tracking-tight">Overview</h1>
-              <p class="mt-2 max-w-2xl text-sm md:text-base text-blue-100/80">A quick read on learning activity, student access, and what needs your attention.</p>
+              <p class="text-xs font-black uppercase tracking-[0.22em] text-blue-200">Teacher workspace • IELTS W KHANH</p>
+              <h1 class="mt-2 text-3xl md:text-4xl font-black tracking-tight">Trung tâm điều hành &amp; Tổng quan</h1>
+              <p class="mt-2 max-w-2xl text-sm md:text-base text-blue-100/80">Theo dõi nhanh hoạt động học tập, bài nộp chờ chấm, học phí, Lead tư vấn mới và lịch giảng dạy hôm nay.</p>
             </div>
-            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm">
-              <span class="text-blue-200">Today</span>
+            <div class="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm shrink-0">
+              <span class="text-blue-200">Hôm nay</span>
               <span id="teacher-overview-date" class="ml-2 font-bold text-white"></span>
             </div>
           </div>
+          <div class="mt-6 pt-5 border-t border-white/15 flex flex-wrap items-center gap-2.5">
+            <span class="text-[11px] font-black uppercase tracking-wider text-blue-200 mr-1">Thao tác nhanh:</span>
+            <button type="button" onclick="window.navigateAppRoute('teacher/bank/tests'); setTimeout(() => window.openCreateTestModal && window.openCreateTestModal(), 100);" class="inline-flex items-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3.5 py-2 text-xs font-black shadow-sm transition">＋ Tạo đề thi mới</button>
+            <button type="button" onclick="window.navigateAppRoute('teacher/bank/classes')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 text-xs font-bold transition">📝 Chấm bài &amp; Lớp học</button>
+            <button type="button" onclick="window.navigateAppRoute('teacher/students'); setTimeout(() => typeof promptCreateStudent === 'function' && promptCreateStudent(), 100);" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 text-xs font-bold transition">🎓 Thêm học viên</button>
+            <button type="button" onclick="window.navigateAppRoute('teacher/students'); setTimeout(() => document.getElementById('consultation-leads-crm')?.scrollIntoView({ behavior: 'smooth' }), 150);" class="inline-flex items-center gap-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 px-3.5 py-2 text-xs font-black transition">📋 Xem Lead Tư Vấn (CRM)</button>
+            <button type="button" onclick="window.navigateAppRoute('teacher/payments')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 text-xs font-bold transition">💳 Duyệt học phí</button>
+          </div>
         </section>
 
-        <section id="teacher-overview-stats" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" aria-live="polite"></section>
+        <section id="teacher-overview-stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" aria-live="polite"></section>
 
         <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
           <section class="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
               <div>
-                <h2 class="text-lg font-black text-slate-900">Needs attention</h2>
-                <p class="mt-1 text-xs font-medium text-slate-500">Items that may need a teacher follow-up</p>
+                <h2 class="text-lg font-black text-slate-900">Cần xử lý ưu tiên (Needs attention)</h2>
+                <p class="mt-1 text-xs font-medium text-slate-500">Các hạng mục cần giáo viên kiểm tra hoặc phản hồi</p>
               </div>
               <span id="teacher-overview-attention-count" class="rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-700">0</span>
             </div>
@@ -2315,31 +2332,47 @@
           </section>
 
           <section class="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="p-5 border-b border-slate-100">
-              <h2 class="text-lg font-black text-slate-900">Upcoming classes</h2>
-              <p class="mt-1 text-xs font-medium text-slate-500">Next scheduled lessons</p>
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-black text-slate-900">Lịch dạy sắp tới</h2>
+                <p class="mt-1 text-xs font-medium text-slate-500">Các buổi học tiếp theo trên thời khóa biểu</p>
+              </div>
+              <button type="button" onclick="window.navigateAppRoute('teacher/timetable')" class="text-xs font-black text-blue-600 hover:text-blue-800">Mở lịch &rarr;</button>
             </div>
             <div id="teacher-overview-upcoming" class="divide-y divide-slate-100"></div>
           </section>
         </div>
 
-        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div>
-              <h2 class="text-lg font-black text-slate-900">Recent student sign-ins</h2>
-              <p class="mt-1 text-xs font-medium text-slate-500">Latest recorded LMS sign-in activity</p>
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-black text-slate-900">Bài nộp mới nhất của học viên</h2>
+                <p class="mt-1 text-xs font-medium text-slate-500">Bấm trực tiếp để mở màn hình chấm bài / xem chi tiết</p>
+              </div>
+              <button type="button" onclick="window.navigateAppRoute('teacher/bank/classes')" class="text-xs font-black text-blue-600 hover:text-blue-800">Xem tất cả &rarr;</button>
             </div>
-            <span id="teacher-overview-login-summary" class="text-xs font-bold text-slate-500"></span>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[620px] text-left">
-              <thead class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400">
-                <tr><th class="px-5 py-3 font-black">Student</th><th class="px-5 py-3 font-black">Access</th><th class="px-5 py-3 font-black text-right">Last sign-in</th></tr>
-              </thead>
-              <tbody id="teacher-overview-logins" class="divide-y divide-slate-100 text-sm"></tbody>
-            </table>
-          </div>
-        </section>
+            <div id="teacher-overview-recent-subs" class="divide-y divide-slate-100"></div>
+          </section>
+
+          <section class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <h2 class="text-lg font-black text-slate-900">Hoạt động đăng nhập gần đây</h2>
+                <p class="mt-1 text-xs font-medium text-slate-500">Lịch sử truy cập hệ thống của học viên</p>
+              </div>
+              <span id="teacher-overview-login-summary" class="text-xs font-bold text-slate-500"></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[480px] text-left">
+                <thead class="bg-slate-50 text-[10px] uppercase tracking-widest text-slate-400">
+                  <tr><th class="px-5 py-3 font-black">Student</th><th class="px-5 py-3 font-black">Access</th><th class="px-5 py-3 font-black text-right">Last sign-in</th></tr>
+                </thead>
+                <tbody id="teacher-overview-logins" class="divide-y divide-slate-100 text-sm"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
       </div>
     </div>
 

@@ -395,11 +395,15 @@
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
 
+        const newLeadsList = (typeof window.getConsultationLeads === 'function' ? window.getConsultationLeads() : []).filter(l => (l.status || 'new') === 'new');
+        const unreadQuestionFeedback = (QUESTION_FEEDBACK || []).filter(report => !report.teacherReadAt);
+
         const statCards = [
             { label: 'Students with access', value: `${activeStudents} / ${studentUsers.length}`, note: 'Active access / total students', icon: '🎓', iconBg: 'bg-emerald-50', route: 'teacher/students' },
             { label: 'Tests in bank', value: TEST_BANK.length, note: `${pendingTests.length} ready for review`, icon: '📚', iconBg: 'bg-blue-50', route: 'teacher/bank/tests' },
-            { label: 'Ungraded submissions', value: pendingSubs.length, note: 'Waiting for teacher review', icon: '📝', iconBg: 'bg-amber-50', route: 'teacher/bank/classes' },
-            { label: 'Classes today', value: todayClasses, note: `${upcomingClasses.length} next scheduled shown below`, icon: '📅', iconBg: 'bg-indigo-50', route: 'teacher/timetable' }
+            { label: 'Ungraded submissions', value: pendingSubs.length, note: `${SUBMISSIONS.length} total submissions`, icon: '📝', iconBg: 'bg-amber-50', route: 'teacher/bank/classes' },
+            { label: 'Classes today', value: todayClasses, note: `${upcomingClasses.length} next scheduled shown below`, icon: '📅', iconBg: 'bg-indigo-50', route: 'teacher/timetable' },
+            { label: 'Consultation Leads', value: newLeadsList.length, note: 'New leads in Mini CRM', icon: '📋', iconBg: 'bg-cyan-50', route: 'teacher/students' }
         ];
         stats.innerHTML = statCards.map(card => `
             <button type="button" onclick="window.navigateAppRoute('${card.route}')" class="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -414,6 +418,8 @@
         const attentionItems = [
             { count: pendingSubs.length, label: 'Submissions need grading', detail: 'Review learner work and send feedback.', icon: '📝', route: 'teacher/bank/classes', iconBg: 'bg-amber-50' },
             { count: pendingStudents.length, label: 'Payment requests to review', detail: 'Confirm payment and update student access.', icon: '💳', route: 'teacher/payments', iconBg: 'bg-rose-50' },
+            { count: newLeadsList.length, label: 'New consultation leads (Mini CRM)', detail: 'Prospective students waiting for consultation.', icon: '📋', route: 'teacher/students', iconBg: 'bg-cyan-50' },
+            { count: unreadQuestionFeedback.length, label: 'Question feedback reports', detail: 'Students flagged a question or typo.', icon: '⚑', route: 'teacher/bank/tests', iconBg: 'bg-amber-50' },
             { count: pendingTests.length, label: 'Tests ready for review', detail: 'Check tests submitted by collaborators.', icon: '📚', route: 'teacher/bank/tests', iconBg: 'bg-purple-50' },
             { count: SCHEDULES.filter(schedule => schedule.isNewBooking).length, label: 'New class bookings', detail: 'Check new student booking requests.', icon: '🗓️', route: 'teacher/timetable', iconBg: 'bg-indigo-50' },
             { count: SUBMISSIONS.filter(submission => submission.studentReply && !submission.teacherReadReply).length, label: 'Student replies to read', detail: 'Follow up on learner questions.', icon: '💬', route: 'teacher/bank/classes', iconBg: 'bg-emerald-50' }
@@ -446,6 +452,27 @@
                 <td class="px-5 py-3 text-right text-xs font-medium text-slate-500">${escapeText(date.toLocaleString())}</td>
               </tr>`).join('')
             : '<tr><td colspan="3" class="px-5 py-6 text-center text-sm text-slate-500">Sign-in activity will appear here after students next sign in.</td></tr>';
+
+        const recentSubsEl = document.getElementById('teacher-overview-recent-subs');
+        if (recentSubsEl) {
+            const latestSubs = [...(SUBMISSIONS || [])].sort((a, b) => Number(b.id || 0) - Number(a.id || 0)).slice(0, 6);
+            recentSubsEl.innerHTML = latestSubs.length
+                ? latestSubs.map(sub => {
+                    const isPending = sub.score === 'Pending Grade';
+                    const scoreBadge = isPending
+                        ? 'bg-amber-50 text-amber-800 border-amber-200'
+                        : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    return `<button type="button" onclick="openGradingView(${sub.id})" class="flex w-full items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50">
+                        <span class="min-w-0 flex-1">
+                            <span class="block truncate text-sm font-black text-slate-800">👤 ${escapeText(getStudentDisplayName(sub.student))} <span class="text-xs font-semibold text-slate-400">· ${escapeText(sub.className || 'Class')}</span></span>
+                            <span class="mt-0.5 block truncate text-xs font-medium text-slate-500">${escapeText(sub.testName || 'Test')} · ${escapeText(sub.date || '')}</span>
+                        </span>
+                        <span class="shrink-0 rounded-full border px-2.5 py-1 text-xs font-black ${scoreBadge}">${escapeText(sub.score || 'Pending')}</span>
+                        <span class="text-xs font-black text-blue-600 shrink-0">${isPending ? 'Chấm ngay →' : 'Xem →'}</span>
+                    </button>`;
+                }).join('')
+                : '<div class="p-6 text-sm font-medium text-slate-500">Chưa có bài nộp nào từ học viên.</div>';
+        }
     };
     
     // ✨ NEW: Helper to clear booking notifications when clicked
@@ -460,9 +487,28 @@
     };
 
 
+    window.updateTeacherTopNavActive = function(tab) {
+      const dashView = sessionStorage.getItem('lms_dash_view') || 'tests';
+      const activeKey = tab === 'bank' && dashView === 'classes' ? 'classes' : tab;
+      if (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') {
+          document.querySelectorAll('[data-teacher-top-tab]').forEach(btn => {
+              const key = btn.getAttribute('data-teacher-top-tab');
+              if (key === 'overview' && currentUser?.role === 'collaborator') {
+                  btn.classList.add('hidden');
+                  return;
+              }
+              const isActive = key === activeKey;
+              btn.className = isActive
+                  ? 'inline-flex items-center gap-1.5 rounded-xl bg-white text-blue-950 px-3 py-1.5 text-xs font-black shadow-sm whitespace-nowrap transition'
+                  : 'inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition';
+          });
+      }
+    };
+
     window.toggleDashboardView = function(view) {
       sessionStorage.setItem('lms_dash_view', view);
       setSidebarRoute('teacher', `teacher/bank/${view}`);
+      window.updateTeacherTopNavActive?.('bank');
       const testsView = document.getElementById('dash-view-tests');
       const classesView = document.getElementById('dash-view-classes');
       const btnTests = document.getElementById('dash-btn-tests');
@@ -570,6 +616,7 @@
         }
         if(b) b.className = `app-sidebar-link${t === tab ? ' is-active' : ''}`;
       });
+      window.updateTeacherTopNavActive?.(tab);
 
       if (tab === 'builder') {
         document.getElementById('editor-view-builder').classList.remove('hidden');
