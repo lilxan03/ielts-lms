@@ -2,7 +2,7 @@
   "name": "ielts-lms-functions",
   "private": true,
   "scripts": {
-    "test": "node --test test/auth-helpers.test.js test/student-flows.test.js test/test-access-index.test.js",
+    "test": "node --test test/auth-helpers.test.js test/student-flows.test.js test/test-access-index.test.js test/lead-webhook.test.js",
     "test:rules": "firebase emulators:exec --only firestore --project demo-ielts-lms \"node --test test/firestore-rules.test.js\""
   },
   "engines": {

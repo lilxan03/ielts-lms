@@ -478,9 +478,13 @@ test('Micro-Dictation targets numbers, proper names, and longer words', () => {
     const segments = context.buildMicroDictationSegments({
         text: 'The museum hosted researchers in 2024. Visitors travelled from Australia.'
     }, 17, 5);
-    assert.deepEqual(Array.from(segments, segment => [segment.start, segment.end]), [
-        [0, 5], [5, 10], [10, 15], [15, 17]
+    assert.deepEqual(Array.from(segments, segment => segment.text), [
+        'The museum hosted researchers in 2024.',
+        'Visitors travelled from Australia.'
     ]);
+    assert.equal(segments[0].start, 0);
+    assert.equal(segments[1].start, segments[0].end);
+    assert.equal(segments[1].end, 17);
     assert.equal(segments.map(segment => segment.text).join(' ').split(/\s+/).length, 10);
     assert.deepEqual(Array.from(context.buildMicroDictationSegments({ text: 'One sentence.' }, Infinity, 8)), []);
 });
