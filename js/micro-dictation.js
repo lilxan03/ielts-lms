@@ -137,13 +137,7 @@
                 <h3>Micro-Dictation · Nghe chép ngắt quãng</h3>
                 <p>Nghe từng đoạn ngắn, điền từ nghe được. Bài tập ưu tiên số liệu, tên riêng và từ dài.</p>
               </div>
-              <label>Đoạn nghe
-                <select id="micro-dictation-duration" aria-label="Segment length">
-                  <option value="5">5 giây</option>
-                  <option value="8" selected>8 giây</option>
-                  <option value="10">10 giây</option>
-                </select>
-              </label>
+              <span class="text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full">Theo từng câu</span>
             </div>
             <audio id="micro-dictation-audio" preload="metadata" src="${escapeHtml(audioUrl.href)}"></audio>
             <div id="micro-dictation-content" class="micro-dictation__content" aria-live="polite">
