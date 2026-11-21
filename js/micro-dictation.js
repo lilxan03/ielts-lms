@@ -150,8 +150,7 @@
         const root = document.getElementById('micro-dictation');
         const audio = root?.querySelector('#micro-dictation-audio');
         const content = root?.querySelector('#micro-dictation-content');
-        const durationSelect = root?.querySelector('#micro-dictation-duration');
-        if (!root || !audio || !content || !durationSelect) return;
+        if (!root || !audio || !content) return;
         window.stopMicroDictation?.();
         activeAudio = audio;
 
