@@ -93,9 +93,12 @@
     }
 
     function getTargetWords(sentence) {
+        const speakerMatch = sentence.match(/^[A-Z][A-Z\s.'-]{0,24}:\s*/);
+        const speakerEnd = speakerMatch ? speakerMatch[0].length : 0;
         const matches = [...sentence.matchAll(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu)];
         const targets = [];
         matches.forEach((match, index) => {
+            if (match.index < speakerEnd) return;
             const word = match[0];
             const lower = word.toLocaleLowerCase();
             const isNumber = /\d/.test(word) || numberWords.has(lower);
