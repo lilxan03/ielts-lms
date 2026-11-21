@@ -219,6 +219,7 @@ function createTestPlayerContext({ failSubmissionWrite = false } = {}) {
     context.renderStudentDashboard = () => {};
 
     vm.createContext(context);
+    vm.runInContext(readAppScript('reading-player.js'), context);
     vm.runInContext(readAppScript('test-player.js'), context);
     return { context, elements, savedDocuments, modalMessages, loggedErrors };
 }
@@ -771,6 +772,7 @@ test('reading syntax chunking keeps the selected range when a label button takes
     context.getSelection = () => selection;
     context.window.getSelection = context.getSelection;
     vm.createContext(context);
+    vm.runInContext(readAppScript('reading-player.js'), context);
     vm.runInContext(readAppScript('test-player.js'), context);
 
     documentListeners.selectionchange();
