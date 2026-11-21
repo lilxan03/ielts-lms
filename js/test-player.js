@@ -380,7 +380,7 @@
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('exam-ui').classList.remove('hidden');
       window.refreshStudentLanguageLock?.();
-      document.getElementById('exam-candidate-name').textContent = currentUser.user;
+      document.getElementById('exam-candidate-name').textContent = window.getStudentDisplayName ? window.getStudentDisplayName(currentUser) : currentUser.user;
       document.getElementById('exam-preview-badge').classList.add('hidden');
       document.getElementById('exam-module-title').textContent = APP_DATA.title + (window.isFullExamMode ? ` (Full Exam - Section ${window.fullExamCurrentIndex + 1}/3)` : '');
       document.getElementById('exam-action-btn-text').textContent = window.isFullExamMode ? (window.fullExamCurrentIndex < 2 ? "NEXT SECTION" : "SUBMIT EXAM") : "SUBMIT TEST";

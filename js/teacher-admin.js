@@ -305,7 +305,7 @@
         const input = document.getElementById('modal-input');
         const cancel = document.getElementById('modal-cancel');
         const confirm = document.getElementById('modal-confirm');
-        title.textContent = `Payment Deadline: ${student.user}`;
+        title.textContent = `Payment Deadline: ${window.getStudentDisplayName ? window.getStudentDisplayName(student) : student.user}`;
         message.innerHTML = `
             <label for="student-billing-deadline-input" class="block text-sm font-bold text-slate-700 mb-2">Last day to pay (access remains available through this date)</label>
             <input id="student-billing-deadline-input" type="date" value="${formatBillingDateInput(getBillingExpiryMillis(student))}" class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold text-slate-800 outline-none focus:border-blue-500">
@@ -715,7 +715,9 @@
         window.studentProfilePreviewUser = student.user;
         window.isStudentProfilePreview = true;
         currentUser = { ...student, role: 'student' };
-        label.textContent = `${student.realName || student.user} (@${student.user})`;
+        const isUidUser = window.LMSAuthHelpers?.isLikelyUid ? window.LMSAuthHelpers.isLikelyUid(student.user, student.uid) : /^[A-Za-z0-9_-]{20,}$/.test(String(student.user || ''));
+        const friendlyPreviewName = student.realName || (window.getStudentDisplayName ? window.getStudentDisplayName(student) : student.user);
+        label.textContent = isUidUser ? friendlyPreviewName : `${friendlyPreviewName} (@${student.user})`;
         banner.classList.remove('hidden');
         document.getElementById('editor-ui')?.classList.add('hidden');
         document.getElementById('start-screen')?.classList.remove('hidden');
@@ -772,9 +774,9 @@
                     const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
                     const isPending = s.paymentStatus === 'pending';
                     const billing = getStudentBillingStatus(s);
-                    const accountLabel = s.email && !s.email.toLowerCase().endsWith('@khanhlms.com')
+                    const accountLabel = (s.email && !s.email.toLowerCase().endsWith('@khanhlms.com'))
                         ? s.email
-                        : s.user;
+                        : (window.getStudentDisplayName ? window.getStudentDisplayName(s) : s.user);
                     
                     let statusBadge = '';
                     if (isPending) {
@@ -886,13 +888,14 @@
                         });
                     }
 
+                    const staffLabel = window.getStudentDisplayName ? window.getStudentDisplayName(s) : s.user;
                     return `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-4">
                             <div class="flex items-center gap-3">
-                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${s.user}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
+                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffLabel)}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-slate-800 text-sm">${s.user} ${isMe ? '<span class="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded ml-1 uppercase tracking-widest">You</span>' : ''}</span>
+                                    <span class="font-bold text-slate-800 text-sm">${staffLabel} ${isMe ? '<span class="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded ml-1 uppercase tracking-widest">You</span>' : ''}</span>
                                     <span class="text-[10px] font-medium text-slate-400">Added: ${s.createdAt || 'N/A'}</span>
                                 </div>
                             </div>

@@ -53,9 +53,10 @@
     }
 
     function getStudentDisplayName(user = currentUser) {
-      return window.LMSAuthHelpers.getStudentDisplayName(user, window.auth?.currentUser);
+      return window.LMSAuthHelpers.getStudentDisplayName(user, window.auth?.currentUser, typeof USERS !== 'undefined' ? USERS : []);
     }
     window.getStudentDisplayName = getStudentDisplayName;
+    window.formatUserDisplayName = getStudentDisplayName;
 
     function parseBillingDeadlineDate(value) {
       const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);

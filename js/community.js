@@ -122,7 +122,7 @@
             return `
                 <button onclick="window.selectForumThread('${thread.id}')" class="w-full text-left rounded-xl border ${isActive ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-slate-200 bg-white hover:border-indigo-300'} p-3 transition">
                     <div class="font-black text-sm text-slate-800">${escapeForumHtml(thread.title || 'Untitled question')}</div>
-                    <div class="text-[11px] text-slate-500 mt-1">${replies} reply${replies === 1 ? '' : 'ies'} • ${escapeForumHtml(thread.author || 'Student')}</div>
+                    <div class="text-[11px] text-slate-500 mt-1">${replies} reply${replies === 1 ? '' : 'ies'} • ${escapeForumHtml(window.getStudentDisplayName ? window.getStudentDisplayName(thread.author) : (thread.author || 'Student'))}</div>
                 </button>`;
         }).join('');
 
@@ -168,7 +168,7 @@
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <div class="font-black text-lg text-slate-800">${escapeForumHtml(thread.title || 'Untitled question')}</div>
-                        <div class="text-xs text-slate-500 mt-1">${escapeForumHtml(thread.author || 'Student')} • ${new Date(thread.timestamp || Date.now()).toLocaleString()}</div>
+                        <div class="text-xs text-slate-500 mt-1">${escapeForumHtml(window.getStudentDisplayName ? window.getStudentDisplayName(thread.author) : (thread.author || 'Student'))} • ${new Date(thread.timestamp || Date.now()).toLocaleString()}</div>
                     </div>
                     <div class="flex items-center gap-2">
                         ${thread.role === 'teacher' ? '<span class="bg-rose-100 text-rose-700 text-[10px] font-black uppercase px-2 py-1 rounded">Teacher</span>' : ''}
@@ -183,7 +183,7 @@
             return isEditingReply ? `
                 <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                     <div class="flex items-center justify-between gap-2 mb-2">
-                        <div class="font-black text-sm text-slate-800">${escapeForumHtml(reply.author || 'Student')}</div>
+                        <div class="font-black text-sm text-slate-800">${escapeForumHtml(window.getStudentDisplayName ? window.getStudentDisplayName(reply.author) : (reply.author || 'Student'))}</div>
                         <div class="text-[11px] text-slate-500">${new Date(reply.timestamp || Date.now()).toLocaleString()}</div>
                     </div>
                     <textarea id="forum-edit-body" class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm min-h-[100px] outline-none focus:border-indigo-500">${escapeForumHtml(reply.text || '')}</textarea>
@@ -194,7 +194,7 @@
                 </div>` : `
                 <div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                     <div class="flex items-center justify-between gap-2">
-                        <div class="font-black text-sm text-slate-800">${escapeForumHtml(reply.author || 'Student')}</div>
+                        <div class="font-black text-sm text-slate-800">${escapeForumHtml(window.getStudentDisplayName ? window.getStudentDisplayName(reply.author) : (reply.author || 'Student'))}</div>
                         <div class="flex items-center gap-2">
                             <div class="text-[11px] text-slate-500">${new Date(reply.timestamp || Date.now()).toLocaleString()}</div>
                             ${canEdit ? `<button onclick="window.editForumPost('${reply.id}')" class="text-indigo-600 hover:text-indigo-800 text-xs font-bold">Edit</button>` : ''}

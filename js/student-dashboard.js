@@ -144,12 +144,13 @@
             else if (i === 1) rankStyles = "text-slate-500 bg-slate-100 border-slate-300";
             else if (i === 2) rankStyles = "text-amber-800 bg-orange-50 border-orange-200";
             const isMe = u.user === currentUser.user;
+            const uLabel = window.getStudentDisplayName ? window.getStudentDisplayName(u) : u.user;
             html += `
             <div class="flex items-center justify-between p-2.5 rounded-xl border ${isMe ? 'bg-blue-50/50 border-blue-200 shadow-sm' : 'border-slate-100 bg-slate-50'} transition">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
                     <div class="w-7 h-7 flex items-center justify-center font-black text-xs rounded-lg border ${rankStyles} shrink-0">${i+1}</div>
-                    <img src="${u.avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(u.user) + '&background=random')}" class="w-8 h-8 rounded-full border border-slate-200 shrink-0 object-cover shadow-sm">
-                    <span class="font-bold text-sm truncate ${isMe ? 'text-blue-800' : 'text-slate-700'}">${u.user} ${isMe ? '<span class="text-[9px] uppercase tracking-widest opacity-50 ml-1">(You)</span>' : ''}</span>
+                    <img src="${u.avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(uLabel) + '&background=random')}" class="w-8 h-8 rounded-full border border-slate-200 shrink-0 object-cover shadow-sm">
+                    <span class="font-bold text-sm truncate ${isMe ? 'text-blue-800' : 'text-slate-700'}">${escapeForumHtml(uLabel)} ${isMe ? '<span class="text-[9px] uppercase tracking-widest opacity-50 ml-1">(You)</span>' : ''}</span>
                 </div>
                 <div class="font-black text-amber-500 text-xs bg-white border border-slate-100 shadow-sm px-2.5 py-1.5 rounded-lg shrink-0 ml-3 flex items-center gap-1">${(u.gems||0).toLocaleString()} <span class="text-[10px]">💎</span></div>
             </div>`;
@@ -880,15 +881,18 @@
             </div>
             <h4 class="text-[10px] font-black uppercase text-emerald-600 mb-3 tracking-widest flex items-center gap-1.5"><span>👥</span> ${st('Classmates', 'Bạn cùng lớp')} (${classmates.length})</h4>
             <div class="space-y-2">
-              ${classmates.map(({ student, online, activityLabel }) => `
+              ${classmates.map(({ student, online, activityLabel }) => {
+                const mateLabel = window.getStudentDisplayName ? window.getStudentDisplayName(student) : student;
+                return `
                 <div class="flex items-center gap-3 p-3 rounded-xl ${student === currentUser.user ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'bg-slate-50 border border-slate-100'}">
-                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student)}&background=random" class="w-8 h-8 rounded-full shadow-sm border border-white">
+                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(mateLabel)}&background=random" class="w-8 h-8 rounded-full shadow-sm border border-white">
                   <div class="min-w-0">
-                    <span class="text-xs font-bold ${student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${escapeForumHtml(student)}${student === currentUser.user ? `<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(${st('You', 'Bạn')})</span>` : ''}</span>
+                    <span class="text-xs font-bold ${student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${escapeForumHtml(mateLabel)}${student === currentUser.user ? `<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(${st('You', 'Bạn')})</span>` : ''}</span>
                     <span class="flex items-center gap-1.5 mt-1 text-[10px] font-bold ${online ? 'text-emerald-600' : 'text-slate-400'}"><span class="w-2 h-2 rounded-full ${online ? 'bg-emerald-500' : 'bg-slate-300'}"></span>${escapeForumHtml(activityLabel)}</span>
                   </div>
                 </div>
-              `).join('') || `<p class="text-xs text-slate-400 italic">${st('No other students in this class yet.', 'Chưa có học viên nào khác trong lớp.')}</p>`}
+              `;
+              }).join('') || `<p class="text-xs text-slate-400 italic">${st('No other students in this class yet.', 'Chưa có học viên nào khác trong lớp.')}</p>`}
             </div>`;
       }
       prog.innerHTML = `

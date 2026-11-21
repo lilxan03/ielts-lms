@@ -220,7 +220,7 @@
                     <button onclick="toggleEditorTab('payments'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-rose-50 transition flex items-center justify-between gap-2 w-full">
                         <div>
                             <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest block">💸 Xác nhận học phí (${pendingStudents})</span>
-                            <span class="text-xs font-semibold text-slate-700">${pendingStudentList.slice(0, 3).map(u => lmsEscapeHtml(u.user)).join(', ')}${pendingStudents > 3 ? ` +${pendingStudents - 3}` : ''} đang chờ duyệt chuyển khoản</span>
+                            <span class="text-xs font-semibold text-slate-700">${pendingStudentList.slice(0, 3).map(u => lmsEscapeHtml(getStudentDisplayName(u))).join(', ')}${pendingStudents > 3 ? ` +${pendingStudents - 3}` : ''} đang chờ duyệt chuyển khoản</span>
                         </div>
                         <span class="text-xs font-black text-rose-600 shrink-0">Duyệt &rarr;</span>
                     </button>
@@ -257,7 +257,7 @@
                     </div>
                     ${newReplyList.slice(0, 4).map(sub => `<button onclick="openGradingView(${sub.id}); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-emerald-50 transition flex items-center justify-between gap-2">
                         <div class="min-w-0">
-                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(sub.student)} · ${lmsEscapeHtml(sub.testName || 'Bài thi')}</span>
+                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(getStudentDisplayName(sub.student))} · ${lmsEscapeHtml(sub.testName || 'Bài thi')}</span>
                             <span class="block truncate text-[11px] text-slate-500">“${lmsEscapeHtml(String(sub.studentReply || '').slice(0, 70))}”</span>
                         </div>
                         <span class="text-[11px] font-black text-emerald-700 shrink-0">Trả lời &rarr;</span>
@@ -273,7 +273,7 @@
                     </div>
                     ${pendingSubList.slice(0, 4).map(sub => `<button onclick="openGradingView(${sub.id}); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-blue-50 transition flex items-center justify-between gap-2">
                         <div class="min-w-0">
-                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(sub.student)} <span class="font-normal text-slate-400">(${lmsEscapeHtml(sub.className || 'Class')})</span></span>
+                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(getStudentDisplayName(sub.student))} <span class="font-normal text-slate-400">(${lmsEscapeHtml(sub.className || 'Class')})</span></span>
                             <span class="block truncate text-[11px] text-slate-500">${lmsEscapeHtml(sub.testName || 'Test')} · ${lmsEscapeHtml(sub.date || '')}</span>
                         </div>
                         <span class="text-[11px] font-black text-blue-600 shrink-0">Chấm ngay &rarr;</span>
@@ -289,7 +289,7 @@
                     </div>
                     ${unreadQuestionFeedback.slice(0, 5).map(report => `<button onclick="window.openQuestionFeedback('${lmsEscapeHtml(report.id)}'); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-amber-50 transition flex items-center justify-between gap-2">
                         <div class="min-w-0">
-                            <span class="block truncate text-xs font-bold text-slate-800">${lmsEscapeHtml(report.student)}</span>
+                            <span class="block truncate text-xs font-bold text-slate-800">${lmsEscapeHtml(getStudentDisplayName(report.student))}</span>
                             <span class="block truncate text-[11px] text-slate-500">${lmsEscapeHtml(report.testTitle)} · Q${(report.questionIds || []).map(lmsEscapeHtml).join(', ')}</span>
                         </div>
                         <span class="text-[11px] font-black text-amber-700 shrink-0">Xem &rarr;</span>
@@ -325,7 +325,7 @@
         const modal = document.getElementById('question-feedback-report-modal');
         if (!report || !modal) return;
 
-        document.getElementById('question-feedback-report-student').textContent = report.student || 'Student';
+        document.getElementById('question-feedback-report-student').textContent = getStudentDisplayName(report.student);
         document.getElementById('question-feedback-report-test').textContent =
             `${report.testTitle || 'Test'} · ${report.partTitle || `Part ${(report.partIndex || 0) + 1}`} · Q${(report.questionIds || []).join(', ')}`;
         document.getElementById('question-feedback-report-description').textContent = report.description || '';
@@ -441,7 +441,7 @@
             `${signInsThisWeek} student${signInsThisWeek === 1 ? '' : 's'} signed in during the last 7 days`;
         logins.innerHTML = recentSignIns.length
             ? recentSignIns.slice(0, 8).map(({ user, date }) => `<tr>
-                <td class="px-5 py-3"><span class="block font-bold text-slate-800">${escapeText(user.email && !user.email.toLowerCase().endsWith('@khanhlms.com') ? user.email : user.user)}</span><span class="mt-0.5 block text-xs text-slate-500">${escapeText(user.realName || 'No name set')}</span></td>
+                <td class="px-5 py-3"><span class="block font-bold text-slate-800">${escapeText(getStudentDisplayName(user))}</span><span class="mt-0.5 block text-xs text-slate-500">${escapeText(user.realName || (user.email && !user.email.toLowerCase().endsWith('@khanhlms.com') ? user.email : 'Student'))}</span></td>
                 <td class="px-5 py-3"><span class="rounded-full ${hasActiveStudentAccess(user) ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'} px-2.5 py-1 text-[10px] font-black uppercase">${hasActiveStudentAccess(user) ? 'Active' : 'Locked'}</span></td>
                 <td class="px-5 py-3 text-right text-xs font-medium text-slate-500">${escapeText(date.toLocaleString())}</td>
               </tr>`).join('')
@@ -1309,37 +1309,15 @@
         }
     };
 
-    function getStudentDisplayName(student) {
-        const profile = typeof student === 'object'
-            ? student
-            : USERS.find(user => user.user === student || user.username === student || user.uid === student);
-        if (!profile) return 'Học viên không rõ tên';
-
-        const username = String(profile.username || profile.user || '').trim();
-        const isUidUsername = Boolean(username && (
-            (profile.uid && username === String(profile.uid)) ||
-            /^[A-Za-z0-9_-]{20,}$/.test(username)
-        ));
-        const email = String(profile.email || '').trim();
-        const readableEmail = email && !email.toLowerCase().endsWith('@khanhlms.com') ? email : '';
-        return (isUidUsername ? '' : username) ||
-            readableEmail || String(profile.realName || '').trim() || 'Học viên không rõ tên';
+    function getStudentDisplayName(student = currentUser) {
+        if (window.LMSAuthHelpers?.getStudentDisplayName) {
+            return window.LMSAuthHelpers.getStudentDisplayName(student, window.auth?.currentUser, typeof USERS !== 'undefined' ? USERS : []);
+        }
+        return 'Student';
     }
 
     function getStudentUsername(student) {
-        const profile = typeof student === 'object'
-            ? student
-            : USERS.find(user => user.user === student || user.username === student || user.uid === student);
-        const internalEmailUsername = String(profile?.email || '').match(/^([^@]+)@khanhlms\.com$/i)?.[1];
-        const candidates = [
-            profile?.username,
-            internalEmailUsername,
-            profile?.user,
-            typeof student === 'string' ? student : ''
-        ];
-        return candidates
-            .map(value => String(value || '').trim())
-            .find(value => value && value !== String(profile?.uid || '')) || 'Username unavailable';
+        return getStudentDisplayName(student);
     }
 
     function renderClasses() {
@@ -1683,7 +1661,7 @@
                             <div class="text-sm p-3 bg-white rounded-xl shadow-sm border border-slate-200 relative overflow-hidden group">
                                 <div class="absolute left-0 top-0 bottom-0 w-1 ${s.score.includes('Band') || s.score.includes('/') ? 'bg-emerald-400' : 'bg-amber-400'}"></div>
                                 <div class="flex justify-between font-bold mb-1 pl-2">
-                                    <span class="text-slate-800">${s.student}</span>
+                                    <span class="text-slate-800">${lmsEscapeHtml(getStudentDisplayName(s.student))}</span>
                                     <span class="${s.score.includes('Band') || s.score.includes('/') ? 'text-emerald-600' : 'text-amber-500'}">${s.score}</span>
                                 </div>
                                 <div class="flex justify-between items-center pl-2 mt-2 pt-2 border-t border-slate-50">
