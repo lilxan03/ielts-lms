@@ -13,15 +13,20 @@
     .title-card h1 { font-size: 13px; font-weight: 700; color: #f8fafc; }
     .title-card p { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .controls { display: flex; gap: 6px; align-items: center; padding: 6px 10px; }
-    button { background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 7px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+    button { background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 7px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
     button:hover { background: #334155; }
     button.active { background: #2563eb; border-color: #3b82f6; color: #fff; }
-    .info-panel { position: fixed; bottom: 12px; left: 12px; width: 340px; max-width: calc(100vw - 24px); background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(12px); border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; z-index: 10; }
+    .info-panel { position: fixed; bottom: 12px; left: 12px; width: 360px; max-width: calc(100vw - 24px); max-height: 46vh; overflow: auto; background: rgba(15, 23, 42, 0.93); backdrop-filter: blur(12px); border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; z-index: 10; }
     .badge { display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; background: #10b981; color: #052e16; margin-bottom: 4px; }
     .info-panel h2 { font-size: 14px; color: #f8fafc; margin-bottom: 4px; }
-    .info-panel .desc { font-size: 12px; color: #cbd5e1; line-height: 1.4; margin-bottom: 8px; }
-    .vocab-box { background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 7px 9px; font-size: 11px; line-height: 1.45; }
+    .info-panel .desc { font-size: 12px; color: #cbd5e1; line-height: 1.4; margin-bottom: 6px; }
+    .info-panel ul { padding-left: 16px; font-size: 11.5px; line-height: 1.5; color: #cbd5e1; }
+    .vocab-box { margin-top: 6px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 7px 9px; font-size: 11px; line-height: 1.45; }
     .vocab-box b { color: #38bdf8; }
+    .legend { position: fixed; bottom: 12px; right: 12px; min-width: 150px; background: rgba(15, 23, 42, 0.93); border: 1px solid #334155; border-radius: 10px; padding: 8px 12px; z-index: 10; font-size: 12px; }
+    .legend h3 { font-size: 11px; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
+    .legend div { display: flex; gap: 8px; align-items: center; line-height: 1.7; }
+    .legend span.sym { display: inline-block; min-width: 22px; text-align: center; font-weight: 700; color: #fde047; }
   </style>
 </head>
 <body>
@@ -29,7 +34,7 @@
   <div class="hud-top">
     <div class="title-card">
       <h1 id="map-title">3D Map</h1>
-      <p>Drag to rotate • Scroll to zoom • Toggle Before / After & click landmarks</p>
+      <p>Drag to rotate • Scroll to zoom • Switch the two maps • Click any feature</p>
     </div>
     <div class="controls">
       <button id="btn-before" class="active">Before</button>
@@ -40,8 +45,10 @@
     <span class="badge" id="state-badge">Before</span>
     <h2 id="item-title">Overview</h2>
     <div class="desc" id="item-desc"></div>
+    <ul id="item-changes"></ul>
     <div class="vocab-box" id="item-vocab"></div>
   </div>
+  <div class="legend" id="legend"></div>
 
   <script type="importmap">
     { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
@@ -50,222 +57,577 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    const MAPS = {
-      'cam9-t1': {
-        title: 'Cam 9 Test 1 — Tourist Island (Before & After)',
-        beforeLabel: 'Before Construction', afterLabel: 'After Construction',
-        groundColor: 0x15803d, surroundColor: 0x0284c7,
-        vocab: '<b>Key Verbs:</b> was constructed, was transformed into, remained untouched<br><b>Sample:</b> <i>The formerly uninhabited island was developed with accommodation huts, a reception, and a pier.</i>',
-        before: [
-          { label: 'Beach (West)', pos: [-6.5, 0.1, 0], size: [1.8, 0.2, 5], color: 0xfde047, desc: 'Sandy beach on the western coast.' },
-          { label: 'Palm Trees', pos: [-2, 0.8, -2], size: [1.2, 1.6, 1.2], color: 0x22c55e, desc: 'Scattered trees across the island.' },
-          { label: 'Palm Trees (East)', pos: [4, 0.8, 1.5], size: [1.2, 1.6, 1.2], color: 0x22c55e, desc: 'Natural woodland on the eastern side.' },
-        ],
-        after: [
-          { label: 'Swimming Beach', pos: [-6.5, 0.1, 0], size: [1.8, 0.2, 5], color: 0xfde047, desc: 'Designated swimming area at the western beach.' },
-          { label: 'West Huts', pos: [-3.5, 0.6, 0], size: [2.2, 1.0, 2.5], color: 0xf97316, desc: 'Circular accommodation huts linked by footpaths.' },
-          { label: 'Reception', pos: [0, 0.7, 0], size: [1.8, 1.3, 1.6], color: 0x3b82f6, desc: 'Central reception building along the vehicle track.' },
-          { label: 'Restaurant', pos: [0, 0.8, -3.5], size: [2.2, 1.4, 1.6], color: 0xef4444, desc: 'New restaurant built north of reception.' },
-          { label: 'Pier & Boats', pos: [0, 0.2, 6.2], size: [1.0, 0.3, 3.2], color: 0x94a3b8, desc: 'Pier extended into the southern sea for boats.' },
-          { label: 'East Huts', pos: [3.8, 0.6, 0], size: [2.4, 1.0, 2.8], color: 0xf97316, desc: 'Additional accommodation huts in the east.' },
-        ]
-      },
-      'cam12-t2': {
-        title: 'Cam 12 Test 2 — Islip Town Centre (Now vs Planned)',
-        beforeLabel: 'Now', afterLabel: 'Planned Development',
-        groundColor: 0x334155, surroundColor: 0x15803d,
-        vocab: '<b>Key Verbs:</b> will be pedestrianised, will be encircled by a dual carriageway<br><b>Sample:</b> <i>The main road is set to become pedestrian-only, encircled by a dual carriageway.</i>',
-        before: [
-          { label: 'Main Road (E–W)', pos: [0, 0.08, 0], size: [14, 0.12, 1.4], color: 0x1e293b, desc: 'Busy two-way main road running through the centre.' },
-          { label: 'Shops (North)', pos: [-1, 0.7, -2.5], size: [8, 1.2, 1.8], color: 0x3b82f6, desc: 'Row of shops north of the main road.' },
-          { label: 'Shops (South)', pos: [-1, 0.7, 2.5], size: [8, 1.2, 1.8], color: 0x3b82f6, desc: 'Row of shops south of the main road.' },
-          { label: 'Countryside (North)', pos: [0, 0.2, -5.8], size: [12, 0.3, 2.5], color: 0x22c55e, desc: 'Open countryside to the north.' },
-          { label: 'School (SW)', pos: [-5.5, 0.8, 5.2], size: [2.2, 1.4, 2.0], color: 0xf59e0b, desc: 'School in the south-west.' },
-          { label: 'Park (SE)', pos: [4.5, 0.2, 5.0], size: [3.5, 0.3, 2.8], color: 0x16a34a, desc: 'Public park in the south-east.' },
-        ],
-        after: [
-          { label: 'Pedestrianised Street', pos: [0, 0.08, 0], size: [10, 0.12, 1.6], color: 0xfde047, desc: 'Central main road converted into a pedestrian-only zone.' },
-          { label: 'Dual Carriageway', pos: [0, 0.06, -5.5], size: [14, 0.1, 1.2], color: 0x0f172a, desc: 'New ring road (dual carriageway) encircling the centre.' },
-          { label: 'Bus Station & Shopping', pos: [-1.5, 0.7, -2.5], size: [7, 1.3, 1.8], color: 0x06b6d4, desc: 'North shops replaced by bus station, shopping centre & car park.' },
-          { label: 'New Housing', pos: [4.2, 0.7, -2.5], size: [2.8, 1.2, 1.8], color: 0xf97316, desc: 'New housing built on the north-east side.' },
-          { label: 'School (SW)', pos: [-5.5, 0.8, 5.2], size: [2.2, 1.4, 2.0], color: 0xf59e0b, desc: 'School remains in the south-west.' },
-          { label: 'Smaller Park (SE)', pos: [4.5, 0.2, 5.0], size: [2.2, 0.3, 2.0], color: 0x16a34a, desc: 'Park reduced slightly to make room for new housing.' },
-        ]
-      },
-      'cam13-t1': {
-        title: 'Cam 13 Test 1 — City Hospital Road Access (2007 vs 2010)',
-        beforeLabel: '2007', afterLabel: '2010',
-        groundColor: 0x1e293b, surroundColor: 0x0f172a,
-        vocab: '<b>Key Verbs:</b> were added, was expanded into, was relocated to<br><b>Sample:</b> <i>Two roundabouts were constructed at the intersections, while public parking was moved east.</i>',
-        before: [
-          { label: 'City Hospital', pos: [0, 1.2, -3.5], size: [4.5, 2.2, 3.0], color: 0xe2e8f0, desc: 'Main City Hospital building surrounded by Ring Road.' },
-          { label: 'Car Park (Staff & Public)', pos: [4.0, 0.15, 0.5], size: [2.6, 0.2, 2.6], color: 0x3b82f6, desc: 'Shared staff and public car park east of Hospital Road.' },
-          { label: 'Hospital Road', pos: [0, 0.08, 1.5], size: [1.4, 0.1, 6.0], color: 0x475569, desc: 'Main access road with bus stops along both sides.' },
-          { label: 'City Road (E–W)', pos: [0, 0.08, 5.2], size: [14, 0.1, 1.4], color: 0x475569, desc: 'Southern City Road.' },
-        ],
-        after: [
-          { label: 'City Hospital', pos: [0, 1.2, -3.5], size: [4.5, 2.2, 3.0], color: 0xe2e8f0, desc: 'City Hospital unchanged in the north.' },
-          { label: 'Staff Car Park', pos: [4.0, 0.15, 0.5], size: [2.6, 0.2, 2.6], color: 0x2563eb, desc: 'Former shared car park dedicated solely to staff.' },
-          { label: 'Public Car Park (New)', pos: [5.5, 0.15, -3.5], size: [2.8, 0.2, 2.8], color: 0x10b981, desc: 'New public car park constructed east of the hospital.' },
-          { label: 'Bus Station (West)', pos: [-4.2, 0.5, 2.0], size: [2.6, 0.9, 2.2], color: 0xf59e0b, desc: 'New bus station built west of Hospital Road.' },
-          { label: '2 Roundabouts', pos: [0, 0.25, 4.8], size: [2.0, 0.35, 2.0], color: 0xef4444, desc: 'Two new roundabouts added at Hospital Road junctions.' },
-        ]
-      },
-      'cam13-t4': {
-        title: 'Cam 13 Test 4 — University Sports Centre (Now vs Future)',
-        beforeLabel: 'Now', afterLabel: 'After Redevelopment',
-        groundColor: 0x1e293b, surroundColor: 0x0f172a,
-        vocab: '<b>Key Verbs:</b> will be knocked down, will be replaced by, will be extended<br><b>Sample:</b> <i>Both outdoor courts will be replaced by a leisure pool and a sports hall.</i>',
-        before: [
-          { label: '25m Pool & Gym', pos: [0, 0.8, 0], size: [4.5, 1.5, 4.5], color: 0x06b6d4, desc: 'Central 25m pool, gym, seating & changing room.' },
-          { label: 'Outdoor Courts (West)', pos: [-5.5, 0.12, 0], size: [3.2, 0.18, 4.5], color: 0x22c55e, desc: 'Outdoor courts on the western side.' },
-          { label: 'Outdoor Courts (East)', pos: [5.5, 0.12, 0], size: [3.2, 0.18, 4.5], color: 0x22c55e, desc: 'Outdoor courts on the eastern side.' },
-        ],
-        after: [
-          { label: '25m Pool & Larger Gym', pos: [0, 0.9, 0], size: [4.5, 1.7, 5.2], color: 0x06b6d4, desc: 'Central pool retained; gym extended northward.' },
-          { label: 'Leisure Pool (West)', pos: [-5.5, 0.7, 0], size: [3.6, 1.3, 5.0], color: 0x3b82f6, desc: 'Western outdoor courts replaced by indoor leisure pool.' },
-          { label: 'Sports Hall & Studios (East)', pos: [5.5, 0.8, 0], size: [3.6, 1.5, 5.0], color: 0xf97316, desc: 'Eastern courts replaced by sports hall, dance studios & café.' },
-        ]
-      },
-      'cam16-t3': {
-        title: 'Cam 16 Test 3 — Airport Redevelopment (Now vs Next Year)',
-        beforeLabel: 'Now', afterLabel: 'Next Year',
-        groundColor: 0x1e293b, surroundColor: 0x0f172a,
-        vocab: '<b>Key Verbs:</b> will be expanded, will be doubled in number, will be introduced<br><b>Sample:</b> <i>The number of gates will more than double from 8 to 18 along a new Y-shaped concourse.</i>',
-        before: [
-          { label: 'Check-in & Security', pos: [0, 0.7, 2.5], size: [7.5, 1.2, 3.0], color: 0x3b82f6, desc: 'Main terminal with check-in (west) and café (east).' },
-          { label: '8 Gates (Walkway)', pos: [0, 0.5, -2.5], size: [6.0, 0.9, 1.8], color: 0x94a3b8, desc: 'Single straight concourse with 8 boarding gates.' },
-        ],
-        after: [
-          { label: 'Expanded Terminal + Sky Train', pos: [0, 0.8, 2.5], size: [9.5, 1.4, 3.6], color: 0x2563eb, desc: 'Expanded terminal with bag drop, shops & sky train.' },
-          { label: 'Y-shaped Concourse (18 Gates)', pos: [0, 0.6, -3.0], size: [10.0, 1.1, 3.5], color: 0xf59e0b, desc: 'New Y-shaped concourse expanding capacity to 18 gates.' },
-        ]
-      },
-      'cam19-t2': {
-        title: 'Cam 19 Test 2 — Harbour (2000 vs Today)',
-        beforeLabel: '2000', afterLabel: 'Today',
-        groundColor: 0x334155, surroundColor: 0x0284c7,
-        vocab: '<b>Key Verbs:</b> has been converted into, has been added, has been relocated<br><b>Sample:</b> <i>The disused castle in the south-east was converted into a hotel, and a new marina was added.</i>',
-        before: [
-          { label: 'Fishing Boats', pos: [-4, 0.2, 0], size: [2.5, 0.3, 2.5], color: 0x38bdf8, desc: 'Berth for fishing boats on the west.' },
-          { label: 'Public Beach (NE)', pos: [4.5, 0.1, -3.5], size: [3.2, 0.2, 2.2], color: 0xfde047, desc: 'Public beach in the north-east.' },
-          { label: 'Disused Castle (SE)', pos: [4.5, 1.1, 3.5], size: [2.6, 2.0, 2.4], color: 0x64748b, desc: 'Disused castle on the south-eastern headland.' },
-        ],
-        after: [
-          { label: 'Marina & Yachts', pos: [-4, 0.2, 0], size: [3.0, 0.3, 3.2], color: 0x0ea5e9, desc: 'Expanded marina for private yachts.' },
-          { label: 'Cafes & Shops', pos: [-2, 0.7, -3.5], size: [4.0, 1.2, 1.8], color: 0xf97316, desc: 'New cafes and shops along the northern road.' },
-          { label: 'Hotel (ex-Castle)', pos: [4.5, 1.2, 3.5], size: [2.8, 2.2, 2.6], color: 0xef4444, desc: 'Disused castle converted into a luxury hotel with private beach.' },
-        ]
-      },
-      'cam21-t2': {
-        title: 'Cam 21 Test 2 — College Café (Before vs Now)',
-        beforeLabel: 'Before Redesign', afterLabel: 'Now',
-        groundColor: 0x334155, surroundColor: 0x0f172a,
-        vocab: '<b>Key Verbs:</b> was replaced by, was moved to, was installed<br><b>Sample:</b> <i>The counter was relocated and a new seating area with sofa booths was introduced.</i>',
-        before: [
-          { label: 'Serving Counter (North)', pos: [0, 0.6, -4], size: [6.0, 1.1, 1.4], color: 0xf59e0b, desc: 'Long serving counter along the north wall.' },
-          { label: 'Square Tables', pos: [0, 0.4, 0.5], size: [5.5, 0.7, 4.5], color: 0x94a3b8, desc: 'Uniform square tables in the centre.' },
-          { label: 'Vending Machine', pos: [5, 0.8, -3], size: [1.2, 1.5, 1.2], color: 0xef4444, desc: 'Old vending machine in the north-east.' },
-        ],
-        after: [
-          { label: 'Self-Service & Counter (West)', pos: [-4.5, 0.6, 0], size: [1.8, 1.1, 6.0], color: 0x3b82f6, desc: 'Relocated serving counter and self-service bar on the west.' },
-          { label: 'Sofa Booths & Round Tables', pos: [1, 0.5, 0], size: [5.5, 0.8, 5.0], color: 0x10b981, desc: 'Mix of round tables and comfortable sofa booths.' },
-          { label: 'Coffee Bar & Study Nook', pos: [4.8, 0.7, -3.5], size: [2.0, 1.3, 2.2], color: 0xf97316, desc: 'New coffee bar and quiet study corner.' },
-        ]
-      }
+    // ---------- item builders (coordinates are PIXELS read from the book figure) ----------
+    const R   = (label, x1, y1, x2, y2, color, h = 0.6, o = {}) => ({ k: 'R', label, x1, y1, x2, y2, color, h, ...o });
+    const F   = (label, x1, y1, x2, y2, color, o = {}) => ({ k: 'R', label, x1, y1, x2, y2, color, h: 0.07, ...o });
+    const P   = (label, pts, color, h = 0.07, o = {}) => ({ k: 'P', label, pts, color, h, ...o });
+    const RD  = (pts, w, label, color = 0x1f2937) => ({ k: 'RD', pts, w, label, color });
+    const DOT = (pts, color = 0xffffff, step = 0.24) => ({ k: 'DOT', pts, color, step });
+    const T   = (x, y) => ({ k: 'T', x, y });
+    const HUT = (x, y) => ({ k: 'HUT', x, y });
+    const BOAT = (x, y, rot = 0, color = 0xe2e8f0) => ({ k: 'BOAT', x, y, rot, color });
+    const ICON = (g, x, y, desc) => ({ k: 'ICON', g, x, y, desc });
+    const GATE = (n, x, y) => ({ k: 'GATE', n, x, y });
+    const TXT = (label, x, y) => ({ k: 'TXT', label, x, y });
+    const OCT = (label, x, y, r, color, h = 1.2) => ({ k: 'OCT', label, x, y, r, color, h });
+    const RA  = (x, y, r) => ({ k: 'RA', x, y, r });
+    const TBL = (x, y, round = false) => ({ k: 'TBL', x, y, round });
+    const ELL = (label, x, y, rx, rz, color, h = 0.08) => ({ k: 'ELL', label, x, y, rx, rz, color, h });
+    const SCALE = (x, y, len, text) => ({ k: 'SCALE', x, y, len, text });
+    const rr = (x1, y1, x2, y2, r, n = 8) => {
+      const pts = []; const arc = (cx, cy, a0) => { for (let i = 0; i <= n; i++) { const a = a0 + (i / n) * Math.PI / 2; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } };
+      arc(x2 - r, y1 + r, -Math.PI / 2); arc(x2 - r, y2 - r, 0); arc(x1 + r, y2 - r, Math.PI / 2); arc(x1 + r, y1 + r, Math.PI); pts.push(pts[0]); return pts;
     };
 
-    const id = new URLSearchParams(location.search).get('id') || 'cam9-t1';
-    const mapCfg = MAPS[id] || MAPS['cam9-t1'];
+    const ROAD = 0x1f2937, GREEN = 0x16a34a, SAND = 0xfde047, BLUE = 0x3b82f6, ORANGE = 0xf97316, GREY = 0x94a3b8, WATER = 0x38bdf8, PURPLE = 0x8b5cf6, RED = 0xef4444, AMBER = 0xf59e0b, TEAL = 0x06b6d4;
+
+    const MAPS = {
+      // ===================================================== Cam 9 Test 1
+      'cam9-t1': {
+        title: 'Cam 9 Test 1 — An island before and after the construction of tourist facilities',
+        sea: true, s: 1,
+        vocab: '<b>Key language:</b> was constructed, was built, was transformed into, remained / was left untouched, linked by footpaths, to the west / to the north of<br><b>Sample:</b> <i>Reception and a restaurant were built in the centre of the island, with a pier added on the south coast.</i>',
+        states: {
+          before: {
+            label: 'Before', cx: 0, cy: 0, ground: null, s: 1, width: 16,
+            legend: [['100 m', 'Scale bar']],
+            changes: ['Undeveloped island surrounded by sea', 'A beach on the west coast', 'Palm trees scattered in the west-centre, north-east and south-east'],
+            items: [
+              { k: 'LAND', rx: 7.2, rz: 2.6 },
+              ELL('Beach', -6.9, 0.4, 0.9, 0.8, SAND),
+              T(-3.6, 0.4), T(-3.0, 0.7),
+              T(3.4, -1.6), T(4.0, -1.8), T(4.5, -1.5), T(3.7, -1.0), T(4.2, -0.8),
+              T(4.0, 0.3), T(4.5, 0.2), T(4.5, 0.9),
+              TXT('Sea', -1.0, -3.4), TXT('Sea', 2.2, 3.4),
+              SCALE(-2.4, 4.6, 5.7, '100 Metres'),
+            ],
+          },
+          after: {
+            label: 'After', cx: 0, cy: 0, ground: null, s: 1, width: 16,
+            legend: [['┄┄', 'Footpath'], ['▬▬', 'Vehicle track'], ['100 m', 'Scale bar']],
+            changes: [
+              'The west beach is now used for swimming',
+              'Accommodation huts built: 6 in the west and about 9 in an eastern loop, all linked by footpaths',
+              'Reception built in the centre, ringed by a vehicle track',
+              'Restaurant built to the north of reception',
+              'A pier with two sailing boats added on the south coast, joined to reception by a vehicle track',
+              'Palm trees remain mainly in the east and north-east',
+            ],
+            items: [
+              { k: 'LAND', rx: 7.2, rz: 2.6 },
+              ELL('Beach (swimming)', -6.9, 0.3, 0.9, 0.8, SAND),
+              T(-3.65, -0.07), T(-2.9, 0.37),
+              T(3.6, -2.0), T(4.7, -2.1), T(3.7, -1.5), T(4.2, -1.4),
+              T(3.7, 0.0), T(4.45, 0.4), T(4.9, 0.5),
+              // footpaths
+              DOT([[-6.2, 0.3], [-5.0, 0.3], [-4.4, 0.7], [-3.2, 0.5], [-2.4, 0.4]], 0xffffff),
+              DOT([[-4.4, 0.7], [-4.3, 1.0], [-3.2, 1.3], [-2.2, 1.3], [-2.0, 0.9]], 0xffffff),
+              DOT([[-4.3, -0.2], [-3.4, -0.6], [-2.6, -0.6], [-2.3, 0.0]], 0xffffff),
+              DOT([[-0.4, 0.2], [0.3, -0.1], [0.2, -0.6], [0.8, -0.9], [1.8, -0.9], [2.3, -0.5], [2.0, 0.1], [1.0, 0.2], [0.3, -0.1]], 0xffffff),
+              // vehicle track
+              RD([[-2.4, -0.05], [-0.45, -0.05], [-0.45, 0.85], [-2.4, 0.85], [-2.4, -0.05]], 0.1, null, 0x6b7280),
+              RD([[-0.5, 0.85], [-0.3, 1.2], [0.3, 1.5]], 0.1, null, 0x6b7280),
+              // buildings
+              R('Restaurant', -2.1, -1.55, -1.0, -0.65, 0x111827, 0.9),
+              R('Reception', -1.9, 0.1, -0.9, 0.75, 0x374151, 0.8),
+              HUT(-4.3, 0.0), HUT(-3.5, -0.4), HUT(-2.7, -0.45),
+              HUT(-4.2, 0.9), HUT(-3.1, 1.1), HUT(-2.3, 1.1),
+              HUT(0.0, -1.0), HUT(0.7, -1.2), HUT(1.3, -1.2), HUT(2.2, -1.1),
+              HUT(-0.4, -0.4), HUT(2.5, -0.4),
+              HUT(0.4, 0.4), HUT(1.2, 0.4), HUT(2.0, 0.15),
+              TXT('Accommodation', -3.4, 2.1),
+              // pier (T-shape) + boats
+              R('Pier', 0.3, 1.3, 2.2, 1.55, 0x78716c, 0.18),
+              R(null, 1.0, 1.5, 1.25, 2.6, 0x78716c, 0.18),
+              BOAT(-1.4, 2.3, 0.3), BOAT(2.4, 1.6, -0.2),
+              TXT('Sea', -1.0, -3.4), TXT('Sea', 3.4, 3.1),
+              SCALE(-2.4, 4.6, 5.7, '100 Metres'),
+            ],
+          },
+        },
+      },
+
+      // ===================================================== Cam 12 Test 2
+      'cam12-t2': {
+        title: 'Cam 12 Test 2 — Islip town centre: now and planned development',
+        s: 0.01916,
+        vocab: '<b>Key language:</b> will be pedestrianised, will be encircled by a dual carriageway, will be replaced by, to the north / south of, new housing will be built<br><b>Sample:</b> <i>The main road will become pedestrians only and a dual carriageway will encircle the town centre.</i>',
+        states: {
+          before: {
+            label: 'Islip town centre now', cx: 742, cy: 1050, ground: [325, 850, 1160, 1250], groundColor: 0x334155, width: 16,
+            legend: [],
+            changes: ['Countryside at the top (north)', 'Shops on both sides of the main road', 'Housing in the middle and south', 'A park in the east and a school in the south-west', 'A curved road leads from the main road down to the school'],
+            items: [
+              F('Countryside', 325, 850, 1160, 950, GREEN),
+              R('Shops', 495, 915, 1005, 955, BLUE, 0.7),
+              RD([[325, 967], [1160, 967]], 26, 'Main road'),
+              R('Shops', 510, 982, 1000, 1022, BLUE, 0.7),
+              F('Housing', 520, 1025, 1000, 1085, AMBER, { h: 0.5 }),
+              F('Park', 880, 1085, 1015, 1160, GREEN),
+              F('Housing', 650, 1180, 860, 1235, AMBER, { h: 0.5 }),
+              R('School', 510, 1185, 615, 1225, RED, 0.8),
+              RD([[330, 992], [470, 994], [505, 1050], [520, 1115], [580, 1160], [635, 1165]], 24, null),
+              RD([[1015, 985], [1010, 1075]], 18, null),
+            ],
+          },
+          after: {
+            label: 'Islip town centre: planned development', cx: 747, cy: 1567, ground: [327, 1335, 1167, 1800], groundColor: 0x334155, width: 16,
+            legend: [],
+            changes: [
+              'A dual carriageway will encircle the town centre',
+              'The main road becomes “Pedestrians only”',
+              'Bus station, shopping centre, car park and new housing replace the countryside/north shops area',
+              'New housing is added in the south-east; the park becomes smaller',
+              'Shops south of the pedestrian street remain; the school and southern housing stay outside the ring',
+            ],
+            items: [
+              RD(rr(520, 1355, 1000, 1715, 95), 28, null, ROAD),
+              DOT(rr(520, 1355, 1000, 1715, 95), 0xfde047, 0.3),
+              RD([[327, 1515], [520, 1515]], 26, null), RD([[1000, 1515], [1167, 1515]], 26, null),
+              TXT('Dual carriageway', 410, 1650),
+              R('Bus station', 538, 1380, 634, 1500, TEAL, 0.9),
+              R('Shopping centre', 636, 1380, 762, 1500, TEAL, 1.1),
+              R('Car park', 764, 1380, 826, 1500, GREY, 0.2),
+              R('New housing', 830, 1420, 975, 1500, ORANGE, 0.6),
+              F('Pedestrians only', 538, 1515, 975, 1548, SAND),
+              R('Shops', 538, 1548, 975, 1592, BLUE, 0.7),
+              F('Housing', 538, 1600, 760, 1690, AMBER, { h: 0.5 }),
+              R('New housing', 780, 1600, 890, 1690, ORANGE, 0.6),
+              F('Park', 900, 1620, 975, 1662, GREEN),
+              R('School', 515, 1735, 615, 1785, RED, 0.8),
+              F('Housing', 700, 1740, 950, 1790, AMBER, { h: 0.5 }),
+            ],
+          },
+        },
+      },
+
+      // ===================================================== Cam 13 Test 1
+      'cam13-t1': {
+        title: 'Cam 13 Test 1 — Road access to a city hospital in 2007 and 2010',
+        s: 0.026,
+        vocab: '<b>Key language:</b> was constructed / were added, was relocated to, was replaced by, public / staff car park, to the east / west of<br><b>Sample:</b> <i>By 2010 two roundabouts had been added and a bus station replaced the bus stops along Hospital Road.</i>',
+        states: {
+          before: {
+            label: 'City Hospital 2007', cx: 692, cy: 1015, ground: [415, 765, 970, 1265], groundColor: 0x334155, width: 14.4,
+            legend: [['🚌', 'Bus stop']],
+            changes: ['City Hospital surrounded by Ring Road', 'Hospital Road runs south to City Road with 3 bus stops on each side (6 in total)', 'One car park for staff and public, east of Hospital Road'],
+            items: [
+              RD(rr(480, 768, 827, 1020, 45), 30, 'Ring Road'),
+              R('CITY HOSPITAL', 512, 800, 795, 988, 0xe2e8f0, 1.6),
+              RD([[655, 1020], [655, 1262]], 30, 'Hospital Rd'),
+              RD([[415, 1196], [893, 1196]], 32, 'City Road'),
+              R('Car park: staff and public', 672, 1020, 785, 1180, BLUE, 0.15),
+              ICON('🚌', 615, 1050), ICON('🚌', 615, 1103), ICON('🚌', 615, 1157),
+              ICON('🚌', 697, 1050), ICON('🚌', 697, 1103), ICON('🚌', 697, 1157),
+            ],
+          },
+          after: {
+            label: 'City Hospital 2010', cx: 692, cy: 1567, ground: [420, 1305, 970, 1830], groundColor: 0x334155, width: 14.4,
+            legend: [['◎', 'Roundabout']],
+            changes: ['Two roundabouts built: one where Hospital Road meets Ring Road and one at City Road', 'The bus stops are gone; a bus station is built west of Hospital Road', 'A new public car park is built east of the hospital', 'The old shared car park becomes the staff car park'],
+            items: [
+              RD(rr(485, 1308, 830, 1555, 45), 30, 'Ring Road'),
+              R('CITY HOSPITAL', 517, 1338, 800, 1522, 0xe2e8f0, 1.6),
+              RD([[655, 1575], [655, 1705]], 30, 'Hospital Rd'),
+              RD([[420, 1733], [897, 1733]], 34, 'City Road'),
+              RD([[660, 1770], [660, 1830]], 30, null),
+              RA(660, 1537, 40), RA(660, 1735, 40),
+              R('Bus station', 443, 1577, 610, 1680, AMBER, 0.7),
+              R('Staff car park', 670, 1555, 790, 1745, 0x2563eb, 0.15),
+              R('Public car park', 830, 1337, 968, 1528, 0x10b981, 0.15),
+            ],
+          },
+        },
+      },
+
+      // ===================================================== Cam 13 Test 4
+      'cam13-t4': {
+        title: 'Cam 13 Test 4 — University sports centre: present and future plans',
+        s: 0.0195,
+        vocab: '<b>Key language:</b> will be replaced by, will be extended / enlarged, will be added, will be demolished, to the west / east of the main building<br><b>Sample:</b> <i>The outdoor courts will be replaced by a leisure pool and a sports hall, and two dance studios will be added.</i>',
+        states: {
+          before: {
+            label: 'University Sports Centre (present)', cx: 722, cy: 1052, ground: [330, 850, 1105, 1245], groundColor: 0x334155, width: 15.4,
+            legend: [['↑', 'Main entrance']],
+            changes: ['Central building: gym (north), changing room (west), 25 m pool, seating (east), reception (south)', 'Outdoor courts on both the west and east sides'],
+            items: [
+              F(null, 555, 868, 880, 1232, 0x475569),
+              R('Gym', 613, 870, 880, 925, ORANGE, 1.0),
+              R('Changing room', 557, 925, 612, 1135, PURPLE, 0.9),
+              F('25m Pool', 658, 943, 776, 1117, WATER, { h: 0.12 }),
+              R('Seating', 822, 925, 878, 1135, GREY, 0.5),
+              R('Reception', 638, 1135, 795, 1185, AMBER, 0.7),
+              F('Outdoor courts', 348, 935, 523, 1167, GREEN),
+              F('Outdoor courts', 910, 933, 1085, 1165, GREEN),
+              ICON('↑', 718, 1225),
+            ],
+          },
+          after: {
+            label: 'University Sports Centre (future plans)', cx: 719, cy: 1527, ground: [318, 1335, 1122, 1715], groundColor: 0x334155, width: 16,
+            legend: [['↑', 'Main entrance']],
+            changes: ['Outdoor courts removed: a leisure pool replaces the west courts, and a sports hall replaces the east courts', 'Gym enlarged across the north of the building', 'Two dance studios added on the east side', 'Extra changing rooms (west and east), a sports shop and a café added at the front'],
+            items: [
+              F(null, 318, 1343, 1120, 1708, 0x475569),
+              P('Leisure pool', [[345, 1420], [380, 1375], [450, 1370], [500, 1390], [515, 1440], [500, 1520], [470, 1560], [420, 1595], [360, 1570], [342, 1500]], WATER, 0.12),
+              R('Changing room', 557, 1345, 612, 1595, PURPLE, 0.9),
+              R('Gym', 613, 1345, 1060, 1400, ORANGE, 1.0),
+              F('25m Pool', 660, 1418, 776, 1593, WATER, { h: 0.12 }),
+              R('Seating', 823, 1403, 878, 1608, GREY, 0.5),
+              R('Sports hall', 885, 1403, 1027, 1587, RED, 1.2),
+              R('Dance studio', 1060, 1345, 1118, 1435, 0xec4899, 0.8),
+              R('Dance studio', 1060, 1460, 1118, 1555, 0xec4899, 0.8),
+              R('Reception', 638, 1610, 795, 1660, AMBER, 0.7),
+              R('Changing room', 319, 1610, 480, 1708, PURPLE, 0.9),
+              R('Sports shop', 483, 1625, 595, 1708, BLUE, 0.8),
+              R('Café', 847, 1630, 957, 1708, 0xca8a04, 0.8),
+              R('Changing room', 958, 1608, 1118, 1708, PURPLE, 0.9),
+              ICON('↑', 718, 1708),
+            ],
+          },
+        },
+      },
+
+      // ===================================================== Cam 16 Test 3
+      'cam16-t3': {
+        title: 'Cam 16 Test 3 — Southwest Airport: now and after development',
+        s: 0.03,
+        vocab: '<b>Key language:</b> will be expanded, will increase from 8 to 18, will be replaced by, will be added, bag drop, sky train, car hire<br><b>Sample:</b> <i>The straight walkway will be replaced by a Y-shaped concourse with 18 gates, linked to the terminal by a sky train.</i>',
+        states: {
+          before: {
+            label: 'Southwest Airport — NOW', cx: 451, cy: 1217, ground: [265, 1000, 640, 1440], groundColor: 0x334155, width: 12,
+            legend: [['C', 'Check-in'], ['☕', 'Café'], ['🚶', 'Walkway'], ['①–⑧', 'Gates 1–8']],
+            changes: ['Small terminal with Departures (west) and Arrivals (east)', 'Check-in desk and one café', 'A short walkway leads north to a single block with gates 1–8'],
+            items: [
+              F(null, 273, 1222, 630, 1420, 0x475569),
+              P(null, [[273, 1222], [405, 1155], [498, 1155], [630, 1222]], 0x64748b, 0.3),
+              R('Security / Passport control', 273, 1222, 450, 1280, BLUE, 0.6),
+              R('Passport control / Customs', 452, 1222, 630, 1280, BLUE, 0.6),
+              R('Walkway', 405, 1038, 498, 1155, GREY, 0.5),
+              ICON('🚶', 428, 1062), ICON('🚶', 428, 1135),
+              ICON('C', 295, 1320, 'Check-in'), ICON('☕', 428, 1302, 'Café'),
+              GATE(1, 388, 1140), GATE(2, 388, 1095), GATE(3, 388, 1052), GATE(4, 428, 1018), GATE(5, 475, 1018),
+              GATE(6, 512, 1052), GATE(7, 512, 1095), GATE(8, 512, 1140),
+              TXT('Departures', 360, 1450), TXT('Arrivals', 542, 1450),
+            ],
+          },
+          after: {
+            label: 'Southwest Airport — AFTER DEVELOPMENT', cx: 900, cy: 1155, ground: [690, 880, 1110, 1440], groundColor: 0x334155, width: 12.6,
+            legend: [['C', 'Check-in'], ['B', 'Bag drop'], ['☕', 'Café'], ['$', 'ATM'], ['🚆', 'Sky train'], ['🚗', 'Car hire'], ['①–⑱', 'Gates 1–18']],
+            changes: ['Gates increase from 8 to 18 along a new Y-shaped concourse', 'The walkway is replaced by a sky train (train icons at both ends)', 'New bag drop, ATM and car hire; a second café', 'Shops added on the departures side; arrivals hall extended to the east'],
+            items: [
+              F(null, 700, 1222, 1058, 1420, 0x475569), F(null, 1058, 1370, 1100, 1420, 0x475569),
+              P('Shops', [[700, 1222], [830, 1155], [930, 1155], [1058, 1222]], 0x64748b, 0.3),
+              R('Security / Passport control', 700, 1222, 878, 1280, BLUE, 0.6),
+              R('Passport control / Customs', 880, 1222, 1058, 1280, BLUE, 0.6),
+              R(null, 830, 1035, 925, 1155, 0x64748b, 0.3),
+              R('Sky train', 865, 990, 893, 1155, 0x22c55e, 0.45),
+              ICON('🚆', 878, 1003, 'Sky train'), ICON('🚆', 878, 1135, 'Sky train'),
+              P('Y-shaped concourse', [[830, 1035], [715, 945], [762, 888], [880, 985]], AMBER, 0.5),
+              P('Y-shaped concourse', [[925, 1035], [1045, 945], [1000, 888], [880, 985]], AMBER, 0.5),
+              GATE(1, 815, 1140), GATE(2, 815, 1097), GATE(3, 815, 1052), GATE(4, 780, 1025), GATE(5, 746, 997), GATE(6, 712, 968),
+              GATE(7, 719, 910), GATE(8, 798, 895), GATE(9, 832, 925), GATE(10, 920, 925), GATE(11, 955, 895), GATE(12, 1037, 910),
+              GATE(13, 1048, 970), GATE(14, 1012, 998), GATE(15, 979, 1025), GATE(16, 945, 1052), GATE(17, 945, 1097), GATE(18, 945, 1140),
+              ICON('B', 722, 1325, 'Bag drop'), ICON('C', 852, 1325, 'Check-in'), ICON('☕', 722, 1395, 'Café'),
+              ICON('☕', 1032, 1303, 'Café'), ICON('$', 1032, 1358, 'ATM'), ICON('🚗', 1075, 1398, 'Car hire'),
+              TXT('Departures', 785, 1450), TXT('Arrivals', 968, 1450),
+            ],
+          },
+        },
+      },
+
+      // ===================================================== Cam 19 Test 2
+      'cam19-t2': {
+        title: 'Cam 19 Test 2 — Porth Harbour in 2000 and today',
+        sea: true, s: 0.0233,
+        vocab: '<b>Key language:</b> has been converted into, has been added / extended, has been replaced by, was swapped with, public / private beach, to the east of<br><b>Sample:</b> <i>The disused castle has been converted into a hotel with a private beach, and cafés and shops have appeared next to the lifeboat station.</i>',
+        states: {
+          before: {
+            label: 'Porth Harbour (in 2000)', cx: 706, cy: 1005, ground: null, width: 16.5,
+            legend: [],
+            changes: ['Showers & toilets, a car park and the marina (private yachts) in the north-west; fishing boats and a second car park below', 'Dock and passenger ferries in the north-east; public beach in the north-east corner', 'Lifeboat station on the headland road; a disused castle on the headland; public beach along the south shore'],
+            items: [
+              P(null, [[385, 765], [524, 765], [524, 1245], [385, 1245]], 0x64748b, 0.1),
+              P(null, [[385, 1245], [385, 1190], [700, 1140], [800, 1100], [895, 1040], [900, 995], [955, 985], [1005, 1050], [1012, 1215], [940, 1228], [510, 1245]], 0x64748b, 0.1),
+              RD([[374, 765], [374, 1245]], 26, 'Main road'),
+              R('Showers & toilets', 433, 882, 510, 920, PURPLE, 0.7),
+              R('Car park', 433, 935, 512, 978, GREY, 0.15),
+              R('Car park', 433, 1058, 512, 1133, GREY, 0.15),
+              F('Marina (private yachts)', 524, 883, 610, 975, WATER, { h: 0.12 }),
+              F('Fishing boats', 524, 1005, 610, 1135, WATER, { h: 0.12 }),
+              P('Dock', [[764, 828], [808, 822], [862, 878], [812, 948]], 0x78716c, 0.2),
+              P(null, [[828, 846], [868, 826], [930, 888], [892, 935]], 0x78716c, 0.2),
+              BOAT(720, 865, -0.6), BOAT(850, 935, 0.7),
+              TXT('Passenger ferries', 815, 980),
+              ICON('↖', 835, 790, 'Public beach (north-east)'), TXT('Public beach', 815, 770),
+              R('Lifeboat', 755, 1078, 830, 1105, RED, 0.7),
+              RD([[385, 1195], [560, 1185], [700, 1145], [790, 1105]], 14, 'Road'),
+              OCT('Castle (disused)', 937, 1160, 46, 0x6b7280, 1.4),
+              P('Public beach', [[740, 1170], [900, 1205], [895, 1222], [735, 1185]], SAND, 0.14),
+            ],
+          },
+          after: {
+            label: 'Porth Harbour (today)', cx: 706, cy: 1572, ground: null, width: 16.5,
+            legend: [],
+            changes: ['Fishing boats and the marina have swapped places: fishing boats north, marina (private yachts) south', 'A second showers & toilets block and car park added', 'Docks extended: three piers instead of two', 'Cafés & shops built beside the lifeboat station', 'The disused castle is now a hotel and the south-shore beach is a private beach for the hotel'],
+            items: [
+              P(null, [[385, 1335], [524, 1335], [524, 1810], [385, 1810]], 0x64748b, 0.1),
+              P(null, [[385, 1810], [385, 1755], [700, 1705], [800, 1665], [895, 1610], [900, 1560], [955, 1550], [1005, 1615], [1012, 1780], [940, 1793], [510, 1810]], 0x64748b, 0.1),
+              RD([[374, 1335], [374, 1810]], 26, 'Main road'),
+              R('Showers & toilets', 433, 1447, 510, 1490, PURPLE, 0.7),
+              R('Car park', 433, 1500, 512, 1545, GREY, 0.15),
+              R('Showers & toilets', 433, 1573, 510, 1612, PURPLE, 0.7),
+              R('Car park', 433, 1625, 512, 1700, GREY, 0.15),
+              F('Fishing boats', 524, 1450, 610, 1535, WATER, { h: 0.12 }),
+              F('Marina (private yachts)', 524, 1583, 610, 1700, WATER, { h: 0.12 }),
+              P(null, [[625, 1432], [652, 1422], [672, 1500], [645, 1505]], 0x78716c, 0.2),
+              P('Dock', [[692, 1405], [735, 1392], [750, 1520], [708, 1530]], 0x78716c, 0.2),
+              P(null, [[764, 1392], [808, 1385], [862, 1450], [815, 1515]], 0x78716c, 0.2),
+              P(null, [[828, 1410], [868, 1392], [930, 1455], [892, 1500]], 0x78716c, 0.2),
+              BOAT(640, 1470, -0.2), BOAT(720, 1455, -0.2), BOAT(850, 1500, 0.7),
+              TXT('Passenger ferries', 815, 1545),
+              ICON('↖', 835, 1357, 'Public beach (north-east)'), TXT('Public beach', 815, 1335),
+              R('Cafés & shops', 612, 1645, 740, 1668, AMBER, 0.7),
+              R('Lifeboat', 755, 1647, 830, 1668, RED, 0.7),
+              RD([[385, 1760], [560, 1750], [700, 1710], [790, 1668]], 14, 'Road'),
+              OCT('Hotel', 937, 1725, 46, 0xdc2626, 1.8),
+              P('Private beach (for the hotel)', [[740, 1738], [900, 1772], [895, 1788], [735, 1752]], SAND, 0.14),
+            ],
+          },
+        },
+      },
+
+      // ===================================================== Cam 21 Test 2
+      'cam21-t2': {
+        title: 'Cam 21 Test 2 — A college café before it was redesigned and today',
+        s: 0.0275,
+        vocab: '<b>Key language:</b> was replaced by, was converted into, was installed, was added, now offers, located in the north-west / along the west wall<br><b>Sample:</b> <i>The serving area was replaced by a hot meals counter, and the staff dining rooms became a take-away food counter and a coffee bar.</i>',
+        states: {
+          before: {
+            label: 'Café before redesign', cx: 780, cy: 1191, ground: [500, 1020, 1060, 1360], groundColor: 0x334155, width: 15,
+            legend: [['🚪', 'Door']],
+            changes: ['Kitchen with one serving area for all food & drink', 'Two staff dining rooms next to the serving area', 'One large area of tables and chairs, a bin and toilets'],
+            items: [
+              F('Tables and chairs', 507, 1147, 1052, 1357, 0xcbd5e1),
+              R('Kitchen', 507, 1025, 741, 1145, GREY, 0.8),
+              R('Serving area (all food & drink)', 587, 1113, 707, 1147, AMBER, 0.7),
+              R('Staff dining rooms', 741, 1147, 912, 1233, PURPLE, 0.7, { lbl: true }),
+              TBL(783, 1195, true), TBL(868, 1195, true),
+              R('Bin', 1025, 1250, 1050, 1280, 0x64748b, 0.5),
+              R('Toilets', 932, 1318, 1050, 1355, TEAL, 0.7),
+              ICON('🚪', 1052, 1195, 'Door'),
+            ],
+          },
+          after: {
+            label: 'Café today', cx: 780, cy: 1622, ground: [500, 1400, 1060, 1845], groundColor: 0x334155, width: 15,
+            legend: [['🚪', 'Door']],
+            changes: ['The serving area is replaced by a “Hot meals” counter', 'The staff dining rooms become a take-away food counter and a coffee bar', 'A salad bar is added along the west wall', 'A barbecue and outdoor seating are added in the south', 'The bin is replaced by recycling bins'],
+            items: [
+              F('Tables and chairs', 507, 1527, 1052, 1735, 0xcbd5e1),
+              R('Kitchen', 507, 1405, 741, 1525, GREY, 0.8),
+              R('Hot meals', 587, 1493, 707, 1527, AMBER, 0.7),
+              R('Take away food', 741, 1527, 827, 1612, ORANGE, 0.7),
+              R('Coffee bar', 827, 1527, 912, 1612, 0xca8a04, 0.7),
+              R('Salad bar', 510, 1572, 543, 1692, 0x22c55e, 0.6),
+              R('Recycling bins', 1012, 1610, 1050, 1680, 0x16a34a, 0.5),
+              R('Toilets', 932, 1698, 1050, 1733, TEAL, 0.7),
+              R('Barbecue', 510, 1755, 543, 1835, RED, 0.6),
+              F('Outdoor seating', 560, 1750, 1040, 1815, 0xa3e635),
+              TBL(597, 1785), TBL(660, 1770), TBL(660, 1802), TBL(842, 1770), TBL(842, 1802), TBL(945, 1770), TBL(945, 1802), TBL(1015, 1785),
+              ICON('🚪', 1052, 1560, 'Door'),
+            ],
+          },
+        },
+      },
+    };
+
+    // ---------------------------------------------------------------------------------
+    const params = new URLSearchParams(location.search);
+    const mapCfg = MAPS[params.get('id')] || MAPS['cam9-t1'];
     document.getElementById('map-title').textContent = mapCfg.title;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0b1220);
-    const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 13, 14);
+    const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 200);
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     document.getElementById('canvas-wrap').appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const dl = new THREE.DirectionalLight(0xffffff, 1.1); dl.position.set(8, 18, 10); scene.add(dl);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-    const dl = new THREE.DirectionalLight(0xffffff, 1.15); dl.position.set(8, 16, 10); scene.add(dl);
+    const group = new THREE.Group(); scene.add(group);
+    let clickable = [];
+    const mat = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.55, metalness: 0.05, ...o });
 
-    const surround = new THREE.Mesh(new THREE.PlaneGeometry(34, 34), new THREE.MeshStandardMaterial({ color: mapCfg.surroundColor, roughness: 0.8 }));
-    surround.rotation.x = -Math.PI / 2; surround.position.y = -0.1; scene.add(surround);
-    const ground = new THREE.Mesh(new THREE.BoxGeometry(16, 0.2, 13), new THREE.MeshStandardMaterial({ color: mapCfg.groundColor, roughness: 0.7 }));
-    ground.position.y = -0.05; scene.add(ground);
-
-    function makeLabel(text, bg = '#0f172a') {
-      const c = document.createElement('canvas'); c.width = 512; c.height = 96;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = bg; ctx.strokeStyle = '#475569'; ctx.lineWidth = 4;
-      ctx.beginPath(); ctx.roundRect(8, 8, 496, 80, 20); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 28px system-ui, sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 256, 48);
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
-      sp.scale.set(3.2, 0.6, 1);
+    function makeLabel(text, { bg = '#0f172a', size = 24 } = {}) {
+      const c = document.createElement('canvas'); const ctx = c.getContext('2d');
+      ctx.font = `bold ${size}px system-ui, sans-serif`;
+      const tw = Math.ceil(ctx.measureText(text).width);
+      c.width = tw + 28; c.height = size + 20;
+      ctx.font = `bold ${size}px system-ui, sans-serif`;
+      ctx.fillStyle = bg; ctx.strokeStyle = '#64748b'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.roundRect(2, 2, c.width - 4, c.height - 4, 12); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, c.width / 2, c.height / 2 + 1);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
+      sp.scale.set(c.width / 120, c.height / 120, 1); sp.renderOrder = 5;
       return sp;
     }
-
-    // Compass N/S/E/W
-    [['N', 0, -7.8], ['S', 0, 7.8], ['E', 9.2, 0], ['W', -9.2, 0]].forEach(([t, x, z]) => {
-      const sp = makeLabel(t, '#1e293b'); sp.scale.set(1.3, 0.5, 1); sp.position.set(x, 0.5, z); scene.add(sp);
-    });
-
-    const activeGroup = new THREE.Group();
-    scene.add(activeGroup);
-    let clickable = [];
-
-    function renderState(mode) {
-      while (activeGroup.children.length) activeGroup.remove(activeGroup.children[0]);
-      clickable = [];
-      const items = mode === 'before' ? mapCfg.before : mapCfg.after;
-      document.getElementById('btn-before').classList.toggle('active', mode === 'before');
-      document.getElementById('btn-after').classList.toggle('active', mode === 'after');
-      document.getElementById('state-badge').textContent = mode === 'before' ? mapCfg.beforeLabel : mapCfg.afterLabel;
-      document.getElementById('item-title').textContent = mode === 'before' ? mapCfg.beforeLabel : mapCfg.afterLabel;
-      document.getElementById('item-desc').textContent = 'Click any building or zone on the 3D map to inspect details.';
-      document.getElementById('item-vocab').innerHTML = mapCfg.vocab;
-
-      items.forEach(it => {
-        const box = new THREE.Mesh(
-          new THREE.BoxGeometry(...it.size),
-          new THREE.MeshStandardMaterial({ color: it.color, roughness: 0.45 })
-        );
-        box.position.set(...it.pos);
-        box.userData = it;
-        activeGroup.add(box);
-        clickable.push(box);
-
-        const lbl = makeLabel(it.label);
-        lbl.position.set(it.pos[0], it.pos[1] + it.size[1] / 2 + 0.7, it.pos[2]);
-        activeGroup.add(lbl);
-      });
+    function makeIcon(glyph, size = 0.62, bg = '#0f172a') {
+      const c = document.createElement('canvas'); c.width = c.height = 96; const ctx = c.getContext('2d');
+      ctx.fillStyle = bg; ctx.strokeStyle = '#fde047'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(48, 48, 42, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#f8fafc'; ctx.font = `bold ${glyph.length > 1 ? 34 : 50}px system-ui, "Segoe UI Emoji", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(glyph, 48, 52);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
+      sp.scale.set(size, size, 1); sp.renderOrder = 6; return sp;
     }
 
-    document.getElementById('btn-before').onclick = () => renderState('before');
-    document.getElementById('btn-after').onclick = () => renderState('after');
+    function build(stateKey) {
+      while (group.children.length) group.remove(group.children[0]);
+      clickable = [];
+      const st = mapCfg.states[stateKey];
+      const s = st.s || mapCfg.s;
+      const W = (x, y) => [(x - st.cx) * s, (y - st.cy) * s];
+      const add = (o) => group.add(o);
+
+      // base: sea or ground
+      if (mapCfg.sea) {
+        const sea = new THREE.Mesh(new THREE.BoxGeometry(60, 0.2, 40), mat(0x0369a1)); sea.position.y = -0.12; add(sea);
+      }
+      let gw = st.width, gd = st.width * 0.6;
+      if (st.ground) {
+        const [gx1, gy1, gx2, gy2] = st.ground; const [ax, az] = W(gx1, gy1), [bx, bz] = W(gx2, gy2);
+        gw = bx - ax; gd = bz - az;
+        const g = new THREE.Mesh(new THREE.BoxGeometry(gw, 0.2, gd), mat(st.groundColor || 0x334155));
+        g.position.set((ax + bx) / 2, -0.1, (az + bz) / 2); add(g);
+      }
+      // compass
+      [['N', 0, -gd / 2 - 0.6], ['S', 0, gd / 2 + 0.6], ['E', gw / 2 + 0.6, 0], ['W', -gw / 2 - 0.6, 0]].forEach(([t, x, z]) => {
+        const c = makeLabel(t, { bg: '#1e3a8a', size: 30 }); c.position.set(x, 0.4, z); add(c);
+      });
+      const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 12), mat(0xef4444)); arrow.position.set(-gw / 2 - 0.6, 0.4, -gd / 2 - 0.2); add(arrow);
+
+      const seg = (a, b, w, color, h, y) => {
+        const dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz); if (len < 1e-4) return;
+        const m = new THREE.Mesh(new THREE.BoxGeometry(len, h, w), mat(color)); m.position.set((a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2); m.rotation.y = -Math.atan2(dz, dx); add(m);
+      };
+      const lbl = (text, x, y, z, opts) => { if (!text) return; const l = makeLabel(text, opts); l.position.set(x, y, z); add(l); };
+
+      st.items.forEach(it => {
+        switch (it.k) {
+          case 'LAND': {
+            const m = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.5, 64), mat(0x15803d)); m.scale.set(it.rx, 1, it.rz); m.position.y = -0.08; add(m); break;
+          }
+          case 'ELL': {
+            const m = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, it.h, 40), mat(it.color)); m.scale.set(it.rx, 1, it.rz); m.position.set(it.x, 0.2, it.y); m.userData = { label: it.label, desc: it.label }; add(m); clickable.push(m);
+            lbl(it.label, it.x, 0.75, it.y); break;
+          }
+          case 'R': {
+            const [ax, az] = W(it.x1, it.y1), [bx, bz] = W(it.x2, it.y2);
+            const w = Math.abs(bx - ax), d = Math.abs(bz - az);
+            const m = new THREE.Mesh(new THREE.BoxGeometry(w, it.h, d), mat(it.color));
+            m.position.set((ax + bx) / 2, it.h / 2, (az + bz) / 2); m.userData = { label: it.label, desc: it.desc || it.label }; add(m); clickable.push(m);
+            if (it.label) lbl(it.label, (ax + bx) / 2, it.h + 0.32, (az + bz) / 2, { size: w < 1.2 ? 20 : 24 }); break;
+          }
+          case 'P': {
+            const pts = it.pts.map(p => W(p[0], p[1]));
+            const shape = new THREE.Shape(); shape.moveTo(pts[0][0], -pts[0][1]); pts.slice(1).forEach(p => shape.lineTo(p[0], -p[1])); shape.closePath();
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: it.h, bevelEnabled: false }); geo.rotateX(-Math.PI / 2);
+            const m = new THREE.Mesh(geo, mat(it.color)); m.userData = { label: it.label, desc: it.label }; add(m); clickable.push(m);
+            if (it.label) { const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length, cz = pts.reduce((a, p) => a + p[1], 0) / pts.length; lbl(it.label, cx, it.h + 0.32, cz); } break;
+          }
+          case 'RD': {
+            const pts = it.pts.map(p => W(p[0], p[1])); const w = it.w * s;
+            for (let i = 0; i < pts.length - 1; i++) seg(pts[i], pts[i + 1], w, it.color, 0.08, 0.1);
+            pts.forEach(p => { const j = new THREE.Mesh(new THREE.CylinderGeometry(w / 2, w / 2, 0.08, 14), mat(it.color)); j.position.set(p[0], 0.1, p[1]); add(j); });
+            if (it.label) { const mid = pts[Math.floor(pts.length / 2)]; lbl(it.label, mid[0], 0.5, mid[1] + 0.05, { size: 20 }); } break;
+          }
+          case 'DOT': {
+            const pts = it.pts.map(p => (st.cx === 0 && st.cy === 0 && s === 1) ? [p[0], p[1]] : W(p[0], p[1]));
+            let carry = 0;
+            for (let i = 0; i < pts.length - 1; i++) {
+              const a = pts[i], b = pts[i + 1], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+              for (let d = carry; d < len; d += it.step) { const t = d / len; const m = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), mat(it.color, { emissive: it.color, emissiveIntensity: 0.4 })); m.position.set(a[0] + (b[0] - a[0]) * t, 0.2, a[1] + (b[1] - a[1]) * t); add(m); carry = d + it.step - len; }
+            } break;
+          }
+          case 'T': {
+            const [x, z] = (s === 1 && st.cx === 0) ? [it.x, it.y] : W(it.x, it.y);
+            const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.7, 6), mat(0x78350f)); tr.position.set(x, 0.35, z);
+            const lf = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), mat(0x22c55e)); lf.scale.set(1, 0.6, 1); lf.position.set(x, 0.8, z); add(tr); add(lf); break;
+          }
+          case 'HUT': {
+            const [x, z] = (s === 1 && st.cx === 0) ? [it.x, it.y] : W(it.x, it.y);
+            const b = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.28, 12), mat(0xd6a86b)); b.position.set(x, 0.14, z);
+            const r = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.3, 12), mat(0x92400e)); r.position.set(x, 0.43, z); b.userData = { label: 'Accommodation hut', desc: 'Accommodation (hut)' }; add(b); add(r); clickable.push(b); break;
+          }
+          case 'BOAT': {
+            const [x, z] = (s === 1 && st.cx === 0) ? [it.x, it.y] : W(it.x, it.y);
+            const g = new THREE.Group(); const hull = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.14, 0.24), mat(0xf8fafc)); const sail = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.7, 3), mat(it.color)); sail.position.y = 0.42;
+            g.add(hull, sail); g.position.set(x, 0.12, z); g.rotation.y = it.rot; g.userData = { label: 'Boat', desc: 'Boat' }; add(g); break;
+          }
+          case 'ICON': { const [x, z] = W(it.x, it.y); const sp = makeIcon(it.g); sp.position.set(x, 0.55, z); sp.userData = { label: it.desc || it.g, desc: it.desc || it.g }; add(sp); break; }
+          case 'GATE': { const [x, z] = W(it.x, it.y); const sp = makeIcon(String(it.n), 0.5, '#7c2d12'); sp.position.set(x, 0.75, z); sp.userData = { label: `Gate ${it.n}`, desc: `Gate ${it.n}` }; add(sp); break; }
+          case 'TXT': { const [x, z] = (s === 1 && st.cx === 0) ? [it.x, it.y] : W(it.x, it.y); lbl(it.label, x, 0.35, z, { bg: '#1e293b' }); break; }
+          case 'OCT': {
+            const [x, z] = W(it.x, it.y);
+            const m = new THREE.Mesh(new THREE.CylinderGeometry(it.r * s, it.r * s, it.h, 8), mat(it.color)); m.position.set(x, it.h / 2, z); m.rotation.y = Math.PI / 8;
+            m.userData = { label: it.label, desc: it.label }; add(m); clickable.push(m); lbl(it.label, x, it.h + 0.35, z); break;
+          }
+          case 'RA': {
+            const [x, z] = W(it.x, it.y);
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(it.r * s * 0.8, it.r * s * 0.28, 8, 32), mat(ROAD)); ring.rotation.x = Math.PI / 2; ring.position.set(x, 0.12, z);
+            const mid = new THREE.Mesh(new THREE.CylinderGeometry(it.r * s * 0.5, it.r * s * 0.5, 0.1, 24), mat(0x16a34a)); mid.position.set(x, 0.1, z);
+            ring.userData = { label: 'Roundabout', desc: 'Roundabout' }; add(ring); add(mid); clickable.push(ring); break;
+          }
+          case 'TBL': {
+            const [x, z] = W(it.x, it.y);
+            const geo = it.round ? new THREE.CylinderGeometry(0.28, 0.28, 0.16, 16) : new THREE.BoxGeometry(0.75, 0.16, 0.5);
+            const m = new THREE.Mesh(geo, mat(0x7c4a21)); m.position.set(x, 0.14, z); add(m); break;
+          }
+          case 'SCALE': {
+            for (let i = 0; i < 6; i++) { const b = new THREE.Mesh(new THREE.BoxGeometry(it.len / 6, 0.1, 0.18), mat(i % 2 ? 0x111827 : 0xf8fafc)); b.position.set(it.x + (i + 0.5) * it.len / 6, 0.1, it.y); add(b); }
+            lbl(it.text, it.x + it.len / 2, 0.45, it.y + 0.4); break;
+          }
+        }
+      });
+
+      // UI
+      document.getElementById('btn-before').textContent = mapCfg.states.before.label;
+      document.getElementById('btn-after').textContent = mapCfg.states.after.label;
+      document.getElementById('btn-before').classList.toggle('active', stateKey === 'before');
+      document.getElementById('btn-after').classList.toggle('active', stateKey === 'after');
+      document.getElementById('state-badge').textContent = st.label;
+      document.getElementById('item-title').textContent = st.label;
+      document.getElementById('item-desc').textContent = 'Features shown on this map (click any block/icon to inspect):';
+      document.getElementById('item-changes').innerHTML = (st.changes || []).map(c => `<li>${c}</li>`).join('');
+      document.getElementById('item-vocab').innerHTML = mapCfg.vocab;
+      const lg = document.getElementById('legend');
+      lg.style.display = st.legend && st.legend.length ? 'block' : 'none';
+      lg.innerHTML = '<h3>Key</h3>' + (st.legend || []).map(([sym, t]) => `<div><span class="sym">${sym}</span>${t}</div>`).join('');
+
+      const dist = Math.max(gw, gd) * 1.05 + 4;
+      camera.position.set(0, dist * 0.85, dist * 0.7);
+      controls.target.set(0, 0, 0); controls.update();
+    }
+
+    document.getElementById('btn-before').onclick = () => build('before');
+    document.getElementById('btn-after').onclick = () => build('after');
 
     const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
     window.addEventListener('click', (e) => {
-      if (e.target.closest('button') || e.target.closest('.info-panel')) return;
+      if (e.target.closest('button') || e.target.closest('.info-panel') || e.target.closest('.legend')) return;
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1; pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(clickable);
+      const hits = raycaster.intersectObjects(clickable, true);
       if (hits.length) {
-        const it = hits[0].object.userData;
-        document.getElementById('item-title').textContent = it.label;
-        document.getElementById('item-desc').textContent = it.desc;
+        let o = hits[0].object; while (o && !(o.userData && o.userData.label)) o = o.parent;
+        if (o) { document.getElementById('item-title').textContent = o.userData.label; document.getElementById('item-desc').textContent = o.userData.desc || o.userData.label; }
       }
     });
     window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 
-    renderState('before');
-    function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }
-    animate();
+    build('before');
+    (function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); })();
   </script>
 </body>
 </html>
