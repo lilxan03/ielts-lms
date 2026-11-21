@@ -199,25 +199,26 @@
     baseRing.position.y = -0.35;
     scene.add(baseRing);
 
-    // Big red CO2 return arc on the right side (matching the red arrow in the diagram!)
+    // Big red CO2 return arc from Vehicles (Step 9) back to Sunlight + Plants (Step 1)
     const co2Curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(6.8, 0.3, 4.5),
-      new THREE.Vector3(8.2, 0.6, 0.0),
-      new THREE.Vector3(6.6, 0.8, -4.8),
-      new THREE.Vector3(2.8, 0.9, -6.8),
+      new THREE.Vector3(6.2, 0.35, 3.6),
+      new THREE.Vector3(8.4, 0.7, 0.0),
+      new THREE.Vector3(6.8, 0.9, -5.0),
+      new THREE.Vector3(1.5, 1.1, -7.2),
+      new THREE.Vector3(-2.6, 1.3, -6.4),
     ]);
     const co2Tube = new THREE.Mesh(
-      new THREE.TubeGeometry(co2Curve, 40, 0.24, 10, false),
-      new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x7f1d1d, emissiveIntensity: 0.4 })
+      new THREE.TubeGeometry(co2Curve, 56, 0.24, 10, false),
+      new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x7f1d1d, emissiveIntensity: 0.45 })
     );
     scene.add(co2Tube);
     const arrowCone = new THREE.Mesh(
       new THREE.ConeGeometry(0.55, 1.1, 12),
       new THREE.MeshStandardMaterial({ color: 0xef4444 })
     );
-    arrowCone.position.set(2.5, 0.9, -6.9);
+    arrowCone.position.set(-2.6, 1.3, -6.4);
     arrowCone.rotation.z = Math.PI / 2;
-    arrowCone.rotation.y = 0.4;
+    arrowCone.rotation.y = -0.25;
     scene.add(arrowCone);
 
     function makeLabel(text, bg = '#0f172a', border = '#475569') {
@@ -373,6 +374,14 @@
     );
     scene.add(orb);
 
+    const co2Label = makeLabel('Carbon Dioxide (CO₂)', '#7f1d1d', '#ef4444');
+    co2Label.position.set(8.2, 1.9, -0.5);
+    scene.add(co2Label);
+
+    const sunLabel = makeLabel('Energy (Sunlight + CO₂)', '#713f12', '#facc15');
+    sunLabel.position.set(-3.2, 3.6, -6.4);
+    scene.add(sunLabel);
+
     let currentStep = 0;
     let playing = false;
     let tProgress = 0;
@@ -444,10 +453,14 @@
         }
       }
       const i0 = Math.floor(tProgress) % STEPS.length;
-      const i1 = (i0 + 1) % STEPS.length;
       const frac = tProgress - Math.floor(tProgress);
-      orb.position.lerpVectors(stageNodes[i0].pos, stageNodes[i1].pos, frac);
-      orb.position.y = 0.35;
+      if (i0 === STEPS.length - 1) {
+        orb.position.copy(co2Curve.getPoint(frac));
+      } else {
+        const i1 = i0 + 1;
+        orb.position.lerpVectors(stageNodes[i0].pos, stageNodes[i1].pos, frac);
+        orb.position.y = 0.35;
+      }
       controls.update();
       renderer.render(scene, camera);
     }
