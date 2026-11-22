@@ -205,6 +205,78 @@
       </div>
     </section>
 
+    <!-- IMMERSIVE 3-SKILL WORKPLACE SHIFT SIMULATOR -->
+    <section id="workplace-simulator" class="cheat-sheet no-print" style="border-color:#10b981;">
+      <div class="cheat-header">
+        <div>
+          <span class="badge" style="background:rgba(16,185,129,0.2);border-color:#10b981;color:#6ee7b7;margin-bottom:4px;">IMMERSIVE 3-SKILL WORKPLACE SIMULATOR • MÔ PHỎNG CA LÀM VIỆC THỰC TẾ</span>
+          <h2 style="font-size:22px;color:#fff;">🏢 Thực Chiến 3 Kỹ Năng Trên Bàn Làm Việc: 🎧 Nghe Cuộc Gọi → 🎙️ Bấm Mic Nói → ✉️ Soạn Email Xác Nhận</h2>
+        </div>
+      </div>
+
+      <!-- STEP 1: LISTENING DESK MEMO -->
+      <div class="card" style="margin-bottom:16px;border-color:#38bdf8;">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+          <h3 style="color:#38bdf8;margin:0;">🎧 BƯỚC 1 (LISTENING): Nghe Cuộc Gọi Khẩn Từ Mr. Tanaka &amp; Ghi Phiếu Desk Memo</h3>
+          <div style="display:flex;wrap:wrap;gap:8px;">
+            <button type="button" class="btn-action" style="background:#0284c7;color:#fff;" onclick="playShiftCall(0.76)">▶ Nghe Chậm (0.75x)</button>
+            <button type="button" class="btn-action" style="background:#2563eb;color:#fff;" onclick="playShiftCall(0.95)">▶ Nghe Tốc Độ Thực Tế (1.0x)</button>
+          </div>
+        </div>
+        <p style="font-size:13px;color:#94a3b8;margin-bottom:12px;">Tình huống: Chuông điện thoại bàn reo. Ông Tanaka gọi từ văn phòng Tokyo để cập nhật lô hàng. Hãy bấm nghe và điền ngay 4 thông số vào tờ phiếu ghi nháp trên bàn:</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#7dd3fc;">1. MÃ VẬN ĐƠN (B/L NUMBER):</label>
+            <input id="sim-bl" type="text" placeholder="VD: ONEU7392" style="width:100%;margin-top:4px;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-weight:700;" />
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#7dd3fc;">2. SỐ CONTAINER:</label>
+            <input id="sim-cont" type="text" placeholder="VD: MSCU482" style="width:100%;margin-top:4px;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-weight:700;" />
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#7dd3fc;">3. NGÀY TÀU CHẠY (ETD):</label>
+            <input id="sim-etd" type="text" placeholder="VD: May 15" style="width:100%;margin-top:4px;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-weight:700;" />
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:800;color:#7dd3fc;">4. SỐ NGÀY TÀU TRỄ (DELAY):</label>
+            <input id="sim-delay" type="text" placeholder="VD: 2 days" style="width:100%;margin-top:4px;padding:9px 12px;border-radius:8px;border:1px solid #475569;background:#0f172a;color:#fff;font-weight:700;" />
+          </div>
+        </div>
+        <button type="button" class="btn-action" style="margin-top:12px;background:#38bdf8;color:#082f49;" onclick="checkShiftListening()">✓ Kiểm Tra Phiếu Ghi Nháp (Desk Memo)</button>
+        <div id="sim-listen-msg" style="display:none;margin-top:10px;padding:10px;border-radius:8px;font-size:13px;"></div>
+      </div>
+
+      <!-- STEP 2: SPEAKING PHONE HEADSET -->
+      <div class="card" style="margin-bottom:16px;border-color:#a78bfa;">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
+          <h3 style="color:#c4b5fd;margin:0;">🎙️ BƯỚC 2 (SPEAKING): Bấm Mic Trả Lời Điện Thoại Bằng Khung Câu Repeat &amp; Confirm + Xin Lỗi 3 Bước</h3>
+          <button type="button" class="speak-btn" onclick="speakText('Let me repeat to confirm: Bill of Lading O N E U 7 3 9 2, container M S C U 4 8 2, E T D May fifteenth. I sincerely apologize for the two days delay due to port congestion.')">🔊 Nghe câu mẫu chuẩn</button>
+        </div>
+        <p style="font-size:13px;color:#cbd5e1;margin-bottom:10px;">Hãy nhìn khung câu gợi ý dưới đây, bấm nút <strong>🎙️ Bấm Để Nói Vào Điện Thoại</strong> và đọc to bằng tiếng Anh:</p>
+        <div style="background:#0f172a;border:1px dashed #8b5cf6;border-radius:10px;padding:12px;font-size:14px;color:#e0e7ff;margin-bottom:10px;">
+          🛟 <strong>Khung câu cần nói:</strong> <em>"Let me <span class="slot">repeat to confirm</span>: B/L <span class="slot">ONEU 7392</span>, container <span class="slot">MSCU 482</span>, ETD <span class="slot">May 15th</span>. I <span class="slot">sincerely apologize</span> for the <span class="slot">2 days delay</span> due to <span class="slot">port congestion</span>."</em>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
+          <button type="button" class="btn-action btn-primary" onclick="runShiftSpeakingCheck()">🎙️ Bấm Để Nói Vào Điện Thoại (Chấm Từ Khóa Giọng Nói)</button>
+        </div>
+        <div id="sim-speak-msg" style="display:none;margin-top:10px;padding:10px;border-radius:8px;font-size:13px;"></div>
+      </div>
+
+      <!-- STEP 3: WRITING POST-CALL CONFIRMATION EMAIL -->
+      <div class="card" style="border-color:#34d399;">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;">
+          <h3 style="color:#6ee7b7;margin:0;">✉️ BƯỚC 3 (WRITING): Soạn Email Xác Nhận Sau Cuộc Gọi Gửi Mr. Tanaka (Bullet Points)</h3>
+          <button type="button" class="btn-action btn-print" onclick="fillShiftEmailTemplate()">📋 Chèn Khung Template Mẫu Chuẩn Nhật</button>
+        </div>
+        <div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#94a3b8;margin-bottom:8px;">
+          <div><strong style="color:#fff;">To:</strong> tanaka@tokyo-logistics.co.jp</div>
+          <div><strong style="color:#fff;">Subject:</strong> [Confirmation] Shipment Update - B/L #ONEU7392 (Container MSCU482)</div>
+        </div>
+        <textarea id="sim-email-box" rows="9" oninput="checkShiftEmail()" style="width:100%;padding:12px;border-radius:10px;border:1px solid #475569;background:#0f172a;color:#fff;font-family:system-ui,sans-serif;font-size:13.5px;line-height:1.6;" placeholder="Bấm '📋 Chèn Khung Template Mẫu Chuẩn Nhật' rồi hoàn thiện thông số lô hàng..."></textarea>
+        <div id="sim-email-checklist" style="margin-top:10px;padding:12px;border-radius:10px;background:#0f172a;border:1px solid #334155;font-size:12.5px;"></div>
+      </div>
+    </section>
+
     <!-- JAPANGLISH LISTENING & PHONE REFLEX DRILL -->
     <section id="japanglish-drill" class="card no-print" style="margin-bottom:26px;">
       <span class="badge">LUYỆN PHẢN XẠ NGHE ĐIỆN THOẠI • JAPANESE ACCENT &amp; LOGISTICS</span>
@@ -339,6 +411,107 @@
     }
 
     decodeNatoCode();
+
+    const SHIFT_CALL_SCRIPT = 'Hello, this is Tanaka from Tokyo office. Please check our shipment. The Bill of Lading number is Oscar, November, Echo, Uniform, seven, three, nine, two. The kontena number is Mike, Sierra, Charlie, Uniform, four, eight, two. The E T D is May fifteenth, but I heard there is a two days direi due to port congestion. Please confirm and send me an email right now.';
+
+    function playShiftCall(rate) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(SHIFT_CALL_SCRIPT);
+      u.lang = 'en-US';
+      u.rate = rate || 0.88;
+      window.speechSynthesis.speak(u);
+    }
+
+    function checkShiftListening() {
+      const bl = (document.getElementById('sim-bl').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const cont = (document.getElementById('sim-cont').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const etd = (document.getElementById('sim-etd').value || '').toLowerCase();
+      const delay = (document.getElementById('sim-delay').value || '').toLowerCase();
+      const okBl = bl.includes('ONEU7392');
+      const okCont = cont.includes('MSCU482');
+      const okEtd = etd.includes('may') && etd.includes('15');
+      const okDelay = delay.includes('2') || delay.includes('two');
+      const count = [okBl, okCont, okEtd, okDelay].filter(Boolean).length;
+      const box = document.getElementById('sim-listen-msg');
+      box.style.display = 'block';
+      box.style.background = count === 4 ? 'rgba(16,185,129,0.16)' : 'rgba(253,224,71,0.14)';
+      box.style.border = count === 4 ? '1px solid #10b981' : '1px solid #eab308';
+      box.style.color = count === 4 ? '#a7f3d0' : '#fef08a';
+      box.innerHTML = `<strong>Kết quả nghe ghi phiếu: ${count}/4 thông số chính xác!</strong><br>Đáp án chuẩn trong cuộc gọi của Mr. Tanaka: <b>1. B/L: ONEU7392</b> · <b>2. Container: MSCU482</b> · <b>3. ETD: May 15th</b> · <b>4. Delay: 2 days</b>.`;
+    }
+
+    function runShiftSpeakingCheck() {
+      const box = document.getElementById('sim-speak-msg');
+      box.style.display = 'block';
+      const keywords = ['confirm', '7392', '482', 'may', 'apologize', 'delay'];
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        box.style.background = 'rgba(253,224,71,0.14)';
+        box.style.border = '1px solid #eab308';
+        box.style.color = '#fef08a';
+        box.innerHTML = 'Trình duyệt hiện tại chưa bật Web Speech Recognition trực tiếp. Bạn hãy bấm "🔊 Nghe câu mẫu chuẩn" ở góc phải và luyện đọc to 3 lần, hoặc đăng nhập vào LMS để ghi âm nộp bài cho giáo viên nhé!';
+        return;
+      }
+      const rec = new SR();
+      rec.lang = 'en-US';
+      box.style.background = 'rgba(56,189,248,0.15)';
+      box.style.border = '1px solid #38bdf8';
+      box.style.color = '#bae6fd';
+      box.innerHTML = '🎙️ <strong>Đang thu giọng nói của bạn...</strong> Hãy đọc to khung câu tiếng Anh ở trên!';
+      rec.onresult = (e) => {
+        const transcript = String(e.results?.[0]?.[0]?.transcript || '');
+        const lower = transcript.toLowerCase();
+        const hit = keywords.filter(k => lower.includes(k));
+        box.style.background = hit.length >= 4 ? 'rgba(16,185,129,0.16)' : 'rgba(253,224,71,0.14)';
+        box.style.border = hit.length >= 4 ? '1px solid #10b981' : '1px solid #eab308';
+        box.style.color = hit.length >= 4 ? '#a7f3d0' : '#fef08a';
+        box.innerHTML = `🗣️ <strong>Hệ thống nghe được:</strong> "${transcript}"<br>✓ Đã bắt được <b>${hit.length}/${keywords.length}</b> từ khóa quan trọng (${hit.join(', ') || '—'}).`;
+      };
+      rec.onerror = () => {
+        box.innerHTML = 'Không truy cập được microphone. Hãy cấp quyền Mic trên trình duyệt hoặc bấm nghe câu mẫu để luyện nói theo nhé!';
+      };
+      rec.start();
+    }
+
+    function fillShiftEmailTemplate() {
+      const tpl = [
+        'Dear Mr. Tanaka,',
+        '',
+        'Thank you very much for your time on the phone today.',
+        'As discussed, I would like to confirm the updated details of your shipment as follows:',
+        '',
+        '- B/L Number: ONEU-7392',
+        '- Container Number: MSCU-482 (1 x 40ft container)',
+        '- Current Status: Completed customs clearance; delayed by 2 days due to port congestion.',
+        '- ETD / Revised ETA: ETD May 15th -> New ETA May 18th at Tokyo Port.',
+        '- Next Action: We will update you again at 10:00 AM tomorrow.',
+        '',
+        'We sincerely apologize for the inconvenience and appreciate your kind understanding.',
+        '',
+        'Best regards,',
+        'Logistics Operations Team'
+      ].join('\n');
+      document.getElementById('sim-email-box').value = tpl;
+      checkShiftEmail();
+    }
+
+    function checkShiftEmail() {
+      const val = document.getElementById('sim-email-box')?.value || '';
+      const checks = [
+        { ok: /Dear\s+Mr\.\s+Tanaka/i.test(val), label: '1. Chào hỏi đúng chuẩn Nhật (Dear Mr. Tanaka)' },
+        { ok: /Thank you.*(phone|call|time)/i.test(val), label: '2. Cảm ơn sau cuộc gọi (Thank you for your time on the phone)' },
+        { ok: /ONEU[- ]?7392/i.test(val) && /MSCU[- ]?482/i.test(val), label: '3. Ghi chính xác mã B/L (ONEU-7392) & Container (MSCU-482)' },
+        { ok: /May\s+15/i.test(val) && /(2\s+days|port congestion)/i.test(val), label: '4. Nêu rõ ngày ETD (May 15th) & lý do trễ 2 ngày (port congestion)' },
+        { ok: /(sincerely apologize|Best regards)/i.test(val), label: '5. Có câu xin lỗi chân thành (sincerely apologize) & chữ ký (Best regards)' }
+      ];
+      const passed = checks.filter(c => c.ok).length;
+      const el = document.getElementById('sim-email-checklist');
+      if (!el) return;
+      el.innerHTML = `<div style="font-weight:800;color:#fff;margin-bottom:6px;">📋 Tự động kiểm tra chuẩn Email Nhật Bản: <span style="color:#34d399;">${passed}/5 tiêu chí hoàn thành</span></div>` +
+        checks.map(c => `<div style="color:${c.ok ? '#34d399' : '#94a3b8'};font-weight:${c.ok ? '700' : '400'};">${c.ok ? '✓' : '○'} ${c.label}</div>`).join('');
+    }
+    checkShiftEmail();
 
     const CORP_QS = [
       {
