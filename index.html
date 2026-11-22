@@ -2100,7 +2100,7 @@
               <div class="flex flex-wrap items-center gap-2">
                 <input type="text" id="student-test-search" onkeyup="renderStudentDashboard()" placeholder="Search tests or part titles..." data-student-placeholder-en="Search tests or part titles..." data-student-placeholder-vi="Tìm bài thi hoặc tiêu đề phần..." class="flex-1 min-w-[140px] border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none bg-white shadow-sm transition font-medium">
                 <select id="student-test-filter-mod" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer">
-                  <option value="all" data-student-en="All Modules" data-student-vi="Tất cả chương trình">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option><option value="toeic">TOEIC</option><option value="corporate" data-student-en="Corporate / Staff" data-student-vi="Tiếng Anh Doanh nghiệp">Corporate / Staff</option><option value="activity" data-student-en="Activities" data-student-vi="Hoạt động">Activities</option>
+                  <option value="all" data-student-en="All Modules" data-student-vi="Tất cả chương trình">All Modules</option><option value="ielts" data-student-en="IELTS (4 Skills)" data-student-vi="IELTS (4 kỹ năng)">IELTS (4 Skills)</option><option value="toeic">TOEIC</option><option value="corporate" data-student-en="Corporate / Staff" data-student-vi="Tiếng Anh Doanh nghiệp">Corporate / Staff</option><option value="activity" data-student-en="Activities" data-student-vi="Hoạt động">Activities</option>
                 </select>
                 <select id="student-test-filter-tag" onchange="renderStudentDashboard()" class="border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none font-bold text-slate-600 bg-white shadow-sm transition cursor-pointer hidden md:block">
                   <option value="all" data-student-en="All Tags" data-student-vi="Tất cả chủ đề">All Tags</option>
@@ -2112,7 +2112,7 @@
             </div>
             <div id="student-progress-section" class="hidden p-4 pt-0 flex-col gap-4"></div>
             <div id="student-test-bank-practice-actions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 pt-0">
-              <button type="button" onclick="window.startFullExam()" class="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left text-blue-900 transition hover:bg-blue-100">
+              <button id="student-mock-exam-btn" type="button" onclick="window.startFullExam()" class="flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 text-left text-blue-900 transition hover:bg-blue-100">
                 <span class="text-2xl">🎓</span>
                 <span><span class="block font-black" data-student-en="Mock Exam" data-student-vi="Thi thử">Mock Exam</span><span class="block text-xs font-medium text-blue-700" data-student-en="Start a full-length practice exam." data-student-vi="Bắt đầu bài thi thử đầy đủ.">Start a full-length practice exam.</span></span>
               </button>
@@ -2482,7 +2482,17 @@
                  <input type="text" id="bank-search" onkeyup="renderTestBank(true)" placeholder="Search test or part titles, or tags..." class="w-full border-2 border-slate-100 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:ring-0 outline-none transition-colors font-medium text-slate-700 bg-slate-50 hover:bg-white focus:bg-white">
               </div>
               <select id="bank-filter-mod" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
-                <option value="all">All Modules</option><option value="reading">Reading</option><option value="listening">Listening</option><option value="writing">Writing</option><option value="speaking">Speaking</option><option value="toeic">TOEIC Certificate</option><option value="corporate">Corporate / Adult Staff</option><option value="activity">Activities</option>
+                <option value="all">All Modules</option>
+                <option value="ielts">IELTS (4 Skills)</option>
+                <option value="toeic">TOEIC Certificate</option>
+                <option value="corporate">Corporate / Adult Staff</option>
+                <option value="activity">Activities</option>
+                <optgroup label="IELTS Individual Skills">
+                  <option value="reading">Reading</option>
+                  <option value="listening">Listening</option>
+                  <option value="writing">Writing</option>
+                  <option value="speaking">Speaking</option>
+                </optgroup>
               </select>
               <select id="bank-filter-tag" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
                 <option value="all">All Tags</option>
@@ -3346,6 +3356,7 @@
   <script src="js/scheduling.js"></script>
   <script src="js/auth-helpers.js"></script>
   <script src="js/student-test-access.js"></script>
+  <script src="js/program-modules.js"></script>
   <script src="js/test-bank-entries.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/teacher-dashboard.js"></script>

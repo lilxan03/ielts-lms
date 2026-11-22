@@ -576,9 +576,16 @@
       if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
 
       const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && window.classSubmissionMatches(s, cls));
-      const assignedTestItems = getClassAssignedTests(cls)
-          .filter(testId => TEST_BANK.some(test => test.id === testId))
-          .map(testId => ({ testId }));
+      const rawAssignedTests = getClassAssignedTests(cls)
+          .map(testId => TEST_BANK.find(test => test.id === testId))
+          .filter(Boolean);
+      const visiblePrograms = typeof window.getStudentVisiblePrograms === 'function'
+          ? window.getStudentVisiblePrograms(cls, currentUser, rawAssignedTests)
+          : ['ielts', 'toeic', 'corporate', 'activity'];
+      const assignedTests = typeof window.filterTestsByAllowedPrograms === 'function'
+          ? window.filterTestsByAllowedPrograms(rawAssignedTests, visiblePrograms)
+          : rawAssignedTests;
+      const assignedTestItems = assignedTests.map(test => ({ testId: test.id }));
       const totalTests = assignedTestItems.length;
       const completedTestIds = [...new Set(mySubs.map(s => s.testId).filter(Boolean))]; 
       const completedCount = assignedTestItems.filter(item => completedTestIds.includes(item.testId)).length;
@@ -650,13 +657,40 @@
       }
       
       const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
-      const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
+      const modSelect = document.getElementById('student-test-filter-mod');
+      if (modSelect) {
+          const prevMod = modSelect.value || 'all';
+          const metaMap = window.PROGRAM_MODULE_META || {};
+          const optionRows = [];
+          if (visiblePrograms.length > 1) {
+              optionRows.push(`<option value="all">${st('All Modules', 'Tất cả chương trình')}</option>`);
+          }
+          visiblePrograms.forEach(prog => {
+              const meta = metaMap[prog];
+              const label = meta ? st(meta.filterEn, meta.filterVi) : prog.toUpperCase();
+              optionRows.push(`<option value="${prog}">${label}</option>`);
+          });
+          modSelect.innerHTML = optionRows.join('');
+          const validValues = new Set(visiblePrograms.length > 1 ? ['all', ...visiblePrograms] : visiblePrograms);
+          if (validValues.has(prevMod)) {
+              modSelect.value = prevMod;
+          } else {
+              modSelect.value = visiblePrograms.length > 1 ? 'all' : (visiblePrograms[0] || 'all');
+          }
+      }
+      const mockExamBtn = document.getElementById('student-mock-exam-btn');
+      if (mockExamBtn) {
+          const showIeltsMock = visiblePrograms.includes('ielts');
+          mockExamBtn.classList.toggle('hidden', !showIeltsMock);
+          if (testBankPracticeActions) {
+              testBankPracticeActions.classList.toggle('sm:grid-cols-2', showIeltsMock);
+              testBankPracticeActions.classList.toggle('sm:grid-cols-1', !showIeltsMock);
+          }
+      }
+      const mod = modSelect?.value || (visiblePrograms.length === 1 ? visiblePrograms[0] : 'all');
       const sort = document.getElementById('student-test-sort')?.value || 'default';
       const tagSelect = document.getElementById('student-test-filter-tag');
       const selectedTag = tagSelect ? tagSelect.value : 'all';
-      const assignedTests = assignedTestItems
-          .map(item => TEST_BANK.find(test => test.id === item.testId))
-          .filter(Boolean);
       const studentTestBankEntries = window.buildTestBankEntries(assignedTests);
       const allTags = new Set(assignedTests.flatMap(test => test.topics || []));
 
@@ -667,7 +701,9 @@
 
       const filteredTests = studentTestBankEntries.filter(entry =>
           window.matchesTestBankEntry(entry, query) &&
-          (mod === 'all' || entry.test.module === mod) &&
+          (typeof window.matchesProgramFilter === 'function'
+              ? window.matchesProgramFilter(entry.test, mod)
+              : (mod === 'all' || entry.test.module === mod)) &&
           (selectedTag === 'all' || (entry.test.topics || []).includes(selectedTag))
       );
       const getEntryTitle = entry => Number.isInteger(entry.partIndex)
@@ -817,39 +853,34 @@
             <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                 <div>
-                  <h3 class="text-sm font-black text-slate-900">${st('Quick Practice by Skill', 'Luyện tập nhanh theo kỹ năng')}</h3>
-                  <p class="text-xs text-slate-500">${st('Jump straight into a specific IELTS module or launch a full mock exam.', 'Chọn nhanh kỹ năng muốn luyện hoặc bắt đầu bài thi thử tổng hợp.')}</p>
+                  <h3 class="text-sm font-black text-slate-900">${st('Quick Practice by Program', 'Luyện tập nhanh theo chương trình')}</h3>
+                  <p class="text-xs text-slate-500">${st('Jump straight into an assigned program module.', 'Chọn nhanh chương trình bạn đang theo học để bắt đầu luyện tập.')}</p>
                 </div>
               </div>
-              <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
-                <button type="button" onclick="window.openStudentSkillBank('reading')" class="flex items-center gap-2.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 p-3 text-left transition shadow-sm">
-                  <span class="text-xl">📘</span>
-                  <span><span class="block text-xs font-black text-slate-900">Reading</span><span class="block text-[10px] font-semibold text-blue-600">Vocab &amp; Grammar</span></span>
-                </button>
-                <button type="button" onclick="window.openStudentSkillBank('listening')" class="flex items-center gap-2.5 rounded-xl border border-cyan-200 bg-white hover:bg-cyan-50 p-3 text-left transition shadow-sm">
-                  <span class="text-xl">🎧</span>
-                  <span><span class="block text-xs font-black text-slate-900">Listening</span><span class="block text-[10px] font-semibold text-cyan-700">Micro-Dictation</span></span>
-                </button>
-                <button type="button" onclick="window.openStudentSkillBank('writing')" class="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-white hover:bg-emerald-50 p-3 text-left transition shadow-sm">
-                  <span class="text-xl">✍️</span>
-                  <span><span class="block text-xs font-black text-slate-900">Writing</span><span class="block text-[10px] font-semibold text-emerald-700">3D Map &amp; AI</span></span>
-                </button>
-                <button type="button" onclick="window.openStudentSkillBank('speaking')" class="flex items-center gap-2.5 rounded-xl border border-amber-200 bg-white hover:bg-amber-50 p-3 text-left transition shadow-sm">
-                  <span class="text-xl">🎙️</span>
-                  <span><span class="block text-xs font-black text-slate-900">Speaking</span><span class="block text-[10px] font-semibold text-amber-700">Part 2 Sim</span></span>
-                </button>
-                <button type="button" onclick="window.openStudentSkillBank('toeic')" class="flex items-center gap-2.5 rounded-xl border border-teal-200 bg-white hover:bg-teal-50 p-3 text-left transition shadow-sm">
-                  <span class="text-xl">💼</span>
-                  <span><span class="block text-xs font-black text-slate-900">TOEIC</span><span class="block text-[10px] font-semibold text-teal-700">L&amp;R / S&amp;W</span></span>
-                </button>
-                <button type="button" onclick="window.openStudentSkillBank('corporate')" class="flex items-center gap-2.5 rounded-xl border border-violet-200 bg-white hover:bg-violet-50 p-3 text-left transition shadow-sm">
-                  <span class="text-xl">🏢</span>
-                  <span><span class="block text-xs font-black text-slate-900">Corporate</span><span class="block text-[10px] font-semibold text-violet-700">Staff Training</span></span>
-                </button>
-                <button type="button" onclick="window.startFullExam()" class="col-span-2 sm:col-span-2 lg:col-span-1 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 p-3 text-left text-white transition shadow-sm">
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                ${visiblePrograms.map(prog => {
+                    const meta = (window.PROGRAM_MODULE_META || {})[prog] || {
+                        id: prog,
+                        icon: '📚',
+                        labelEn: prog.toUpperCase(),
+                        labelVi: prog.toUpperCase(),
+                        subEn: 'Practice',
+                        subVi: 'Luyện tập',
+                        borderClass: 'border-slate-200',
+                        hoverBgClass: 'hover:bg-slate-50',
+                        subTextClass: 'text-slate-600'
+                    };
+                    return `
+                <button type="button" onclick="window.openStudentSkillBank('${prog}')" class="flex items-center gap-2.5 rounded-xl border ${meta.borderClass} bg-white ${meta.hoverBgClass} p-3 text-left transition shadow-sm">
+                  <span class="text-xl">${meta.icon}</span>
+                  <span><span class="block text-xs font-black text-slate-900">${st(meta.labelEn, meta.labelVi)}</span><span class="block text-[10px] font-semibold ${meta.subTextClass}">${st(meta.subEn, meta.subVi)}</span></span>
+                </button>`;
+                }).join('')}
+                ${visiblePrograms.includes('ielts') ? `
+                <button type="button" onclick="window.startFullExam()" class="flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 p-3 text-left text-white transition shadow-sm">
                   <span class="text-xl">🎓</span>
                   <span><span class="block text-xs font-black">${st('Mock Exam', 'Thi thử Full')}</span><span class="block text-[10px] text-blue-100">3 Skills</span></span>
-                </button>
+                </button>` : ''}
               </div>
             </div>
             ${deadlineOverviewHtml}

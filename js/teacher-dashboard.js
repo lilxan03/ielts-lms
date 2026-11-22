@@ -732,7 +732,9 @@
       let filtered = window.buildTestBankEntries(TEST_BANK).filter(entry => {
           const t = entry.test;
           const matchQuery = window.matchesTestBankEntry(entry, query);
-          const matchMod = mod === 'all' || t.module === mod;
+          const matchMod = typeof window.matchesProgramFilter === 'function'
+              ? window.matchesProgramFilter(t, mod)
+              : (mod === 'all' || t.module === mod);
           const matchTag = selectedTag === 'all' || (t.topics && t.topics.includes(selectedTag));
           
           const tStatus = t.status || 'not_started';
@@ -1535,8 +1537,22 @@
         const isSmallClass = Boolean(parentClass);
         const hasInvalidHierarchyDepth = Boolean(parentClass?.parentClassId);
         const isMainClass = !isSmallClass;
+        const allowedClassPrograms = typeof window.normalizeProgramList === 'function'
+            ? window.normalizeProgramList(cls.allowedPrograms)
+            : (Array.isArray(cls.allowedPrograms) ? cls.allowedPrograms : []);
+        const programLabels = { ielts: 'IELTS', toeic: 'TOEIC', corporate: 'Corporate', activity: 'Activities' };
+        const programSelectorHtml = `
+                    <div class="flex flex-wrap items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm" title="Restrict visible student modules (leave all unchecked to auto-detect from assigned tests)">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Modules:</span>
+                        ${['ielts', 'toeic', 'corporate', 'activity'].map(prog => {
+                            const active = allowedClassPrograms.includes(prog);
+                            return `<button type="button" onclick="window.toggleClassAllowedProgram('${cls.id}', '${prog}')" class="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg border transition ${active ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}">${programLabels[prog]}</button>`;
+                        }).join('')}
+                        ${allowedClassPrograms.length === 0 ? `<span class="text-[10px] font-semibold text-slate-400 ml-1">Auto</span>` : ''}
+                    </div>`;
         const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center justify-end w-full gap-3">
+                    ${programSelectorHtml}
                     <button onclick="window.openClassHierarchyEditor('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition shadow-sm">Edit / Assign Parent</button>
                     ${!cls.parentClassId ? `<button onclick="window.promptCreateChildClass('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shadow-sm">+ Create Small Class</button>` : ''}
                     ${parentClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100">Small class · ${parentClass.name}</span>` : isMainClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-100">Main class · shared materials · ${childClasses.length} small class${childClasses.length === 1 ? '' : 'es'}</span>` : ''}
@@ -1874,6 +1890,22 @@
         return;
       }
       cls.allowBooking = cls.allowBooking ? false : true;
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+      renderClasses();
+    };
+
+    window.toggleClassAllowedProgram = async function(cid, programId) {
+      const cls = CLASSES.find(c => c.id === cid);
+      if (!cls) return;
+      const current = typeof window.normalizeProgramList === 'function'
+          ? window.normalizeProgramList(cls.allowedPrograms)
+          : (Array.isArray(cls.allowedPrograms) ? [...cls.allowedPrograms] : []);
+      const next = current.includes(programId)
+          ? current.filter(item => item !== programId)
+          : [...current, programId];
+      cls.allowedPrograms = typeof window.normalizeProgramList === 'function'
+          ? window.normalizeProgramList(next)
+          : next;
       await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
       renderClasses();
     };

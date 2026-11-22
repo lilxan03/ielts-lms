@@ -1128,3 +1128,54 @@ test('Listening matching drag-and-drop updates questions without restarting or c
     assert.equal(context.questionsRendered, 1);
     assert.equal(clearMediaCount, 0);
 });
+
+test('program-modules groups 4 IELTS skills into ielts and scopes student visible programs', () => {
+    const {
+        getTestProgramModule,
+        matchesProgramFilter,
+        getStudentVisiblePrograms,
+        filterTestsByAllowedPrograms
+    } = require('../js/program-modules.js');
+
+    assert.equal(getTestProgramModule('reading'), 'ielts');
+    assert.equal(getTestProgramModule('listening'), 'ielts');
+    assert.equal(getTestProgramModule('writing'), 'ielts');
+    assert.equal(getTestProgramModule('speaking'), 'ielts');
+    assert.equal(getTestProgramModule('toeic'), 'toeic');
+    assert.equal(getTestProgramModule('corporate'), 'corporate');
+    assert.equal(getTestProgramModule('activity'), 'activity');
+
+    assert.equal(matchesProgramFilter({ module: 'reading' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'listening' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'writing' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'speaking' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'corporate' }, 'ielts'), false);
+    assert.equal(matchesProgramFilter({ module: 'corporate' }, 'corporate'), true);
+    assert.equal(matchesProgramFilter({ module: 'reading' }, 'reading'), true);
+
+    const mixedTests = [
+        { id: 't1', module: 'reading' },
+        { id: 't2', module: 'writing' },
+        { id: 't3', module: 'toeic' },
+        { id: 't4', module: 'corporate' }
+    ];
+
+    // 1. Explicit class allowedPrograms restricts visibility to Corporate only
+    const corpCls = { id: 'c1', allowedPrograms: ['corporate'] };
+    const corpPrograms = getStudentVisiblePrograms(corpCls, { user: 'staff_01' }, mixedTests);
+    assert.deepEqual(corpPrograms, ['corporate']);
+    assert.deepEqual(filterTestsByAllowedPrograms(mixedTests, corpPrograms).map(t => t.id), ['t4']);
+
+    // 2. Auto-detect from assigned tests groups IELTS skills into ['ielts']
+    const ieltsOnlyTests = [{ id: 'i1', module: 'reading' }, { id: 'i2', module: 'listening' }, { id: 'i3', module: 'speaking' }];
+    assert.deepEqual(getStudentVisiblePrograms({ id: 'c2' }, { user: 'ielts_01' }, ieltsOnlyTests), ['ielts']);
+
+    // 3. Per-student override on class overrides class default
+    const multiCls = {
+        id: 'c3',
+        allowedPrograms: ['ielts', 'toeic'],
+        studentPrograms: { vip_01: ['toeic'] }
+    };
+    assert.deepEqual(getStudentVisiblePrograms(multiCls, { user: 'vip_01' }, mixedTests), ['toeic']);
+    assert.deepEqual(getStudentVisiblePrograms(multiCls, { user: 'reg_01' }, mixedTests), ['ielts', 'toeic']);
+});
