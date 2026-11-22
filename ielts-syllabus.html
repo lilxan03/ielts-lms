@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Syllabus IELTS 3 Chặng (B1 → C1) • 3 Tháng / 36 Buổi | IELTS W KHANH</title>
+  <meta name="description" content="Khung chương trình (Syllabus) chi tiết 3 khóa IELTS Foundation (B1), Intensive (B2), Mastery (C1): 3 tháng/khóa, 12 tuần, 36 buổi theo mô hình 2 Live + 1 LMS Lab.">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+  <link rel="stylesheet" href="/css/tailwind.generated.css">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+  <!-- Top Bar -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <a href="/" class="inline-flex items-center gap-3 group">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center text-white font-black text-lg shadow">K</div>
+        <div>
+          <span class="block text-base font-black tracking-tight text-blue-950 leading-none">IELTS W KHANH</span>
+          <span class="block text-[11px] font-bold uppercase tracking-wider text-blue-600 mt-0.5">Syllabus IELTS 3 Chặng (B1 → C1)</span>
+        </div>
+      </a>
+      <div class="flex items-center gap-2">
+        <a href="/placement-test.html" class="hidden sm:inline-flex items-center rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-extrabold text-blue-800 hover:bg-blue-100 transition">📝 Test đầu vào 5 phút</a>
+        <a href="/#public-packages-section" class="inline-flex items-center rounded-xl bg-blue-700 hover:bg-blue-800 px-3.5 py-2 text-xs font-black text-white shadow-sm transition">← Trang chủ &amp; Học phí</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white py-10 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <div class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 text-xs font-black uppercase tracking-widest text-cyan-300">
+        <span>🎓 Chuẩn 3 Tháng / Khóa • 12 Tuần • 36 Buổi (2 Buổi Live + 1 Buổi LMS Lab / Tuần)</span>
+      </div>
+      <h1 class="mt-3 text-2xl sm:text-4xl font-black tracking-tight">Lộ Trình &amp; Syllabus Chi Tiết Từng Buổi Học IELTS</h1>
+      <p class="mt-2 max-w-3xl text-sm sm:text-base text-blue-100/90">
+        Thiết kế tối ưu theo từng trình độ: <strong>Foundation (B1)</strong> dồn 70% Reading &amp; Listening để nạp từ vựng và kéo band nhanh; <strong>Intensive (B2)</strong> và <strong>Mastery (C1)</strong> đẩy mạnh 65%–75% Writing &amp; Speaking kèm chấm chữa 1-1 trên hệ thống LMS.
+      </p>
+
+      <!-- 3-Course Selector Tabs -->
+      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3" role="tablist" aria-label="Chọn khóa học IELTS">
+        <button type="button" id="tab-foundation" onclick="selectCourse('foundation')" class="course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white text-slate-900 border-sky-400 shadow-lg">
+          <div class="flex items-center justify-between text-xs font-black">
+            <span class="rounded-full bg-sky-100 text-sky-900 px-2.5 py-0.5">KHÓA 1 • B1</span>
+            <span class="text-sky-700">Đầu ra 4.5 – 5.5</span>
+          </div>
+          <div class="mt-2 text-lg font-black">IELTS Foundation (36 Buổi)</div>
+          <div class="mt-1 text-xs font-semibold text-slate-600">70% Reading &amp; Listening • 30% Writing &amp; Speaking nền tảng</div>
+        </button>
+
+        <button type="button" id="tab-intensive" onclick="selectCourse('intensive')" class="course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white/10 text-white border-white/15 hover:bg-white/15">
+          <div class="flex items-center justify-between text-xs font-black">
+            <span class="rounded-full bg-blue-500/30 text-blue-100 px-2.5 py-0.5">KHÓA 2 • B2</span>
+            <span class="text-cyan-300">Đầu ra 5.5 – 6.5</span>
+          </div>
+          <div class="mt-2 text-lg font-black">IELTS Intensive (36 Buổi)</div>
+          <div class="mt-1 text-xs font-semibold text-blue-100/80">65% Writing (3D/Task 2) &amp; Speaking • 35% R/L dạng bẫy</div>
+        </button>
+
+        <button type="button" id="tab-mastery" onclick="selectCourse('mastery')" class="course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white/10 text-white border-white/15 hover:bg-white/15">
+          <div class="flex items-center justify-between text-xs font-black">
+            <span class="rounded-full bg-emerald-500/30 text-emerald-100 px-2.5 py-0.5">KHÓA 3 • C1</span>
+            <span class="text-emerald-300">Đầu ra 6.5 – 7.5+</span>
+          </div>
+          <div class="mt-2 text-lg font-black">IELTS Mastery (36 Buổi)</div>
+          <div class="mt-1 text-xs font-semibold text-blue-100/80">75% Writing &amp; Speaking 7.0+ Coaching • 25% R/L Band 8.0+</div>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Course Overview Summary & Month Filter Bar -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div id="course-summary-banner" class="space-y-1"></div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <span class="text-xs font-black uppercase tracking-wider text-slate-400 mr-1">Lọc theo tháng:</span>
+          <button type="button" onclick="selectMonth('all')" id="m-btn-all" class="month-btn rounded-xl px-3 py-1.5 text-xs font-black bg-blue-600 text-white shadow-sm">Tất cả (36 buổi)</button>
+          <button type="button" onclick="selectMonth(1)" id="m-btn-1" class="month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tháng 1 (Buổi 1–12)</button>
+          <button type="button" onclick="selectMonth(2)" id="m-btn-2" class="month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tháng 2 (Buổi 13–24)</button>
+          <button type="button" onclick="selectMonth(3)" id="m-btn-3" class="month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tháng 3 (Buổi 25–36)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Syllabus Container -->
+    <div id="syllabus-months-container" class="space-y-8"></div>
+
+    <!-- Bottom CTA -->
+    <div class="mt-10 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 p-6 sm:p-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+      <div>
+        <div class="text-xs font-black uppercase tracking-widest text-amber-300">🎁 Chính sách học phí minh bạch</div>
+        <h2 class="mt-1 text-xl sm:text-2xl font-black">Đóng theo tháng (12 buổi) hoặc Combo trọn khóa 3 tháng (36 buổi - Giảm 20%)</h2>
+        <p class="mt-1 text-xs sm:text-sm text-blue-100">Làm bài test đầu vào 5 phút hoặc nhắn Zalo để xếp đúng chặng B1 / B2 / C1.</p>
+      </div>
+      <div class="flex flex-wrap gap-2.5 shrink-0">
+        <a href="/placement-test.html" class="rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs sm:text-sm px-4 py-3 transition">Thi thử 5 phút</a>
+        <a href="/#public-packages-section" class="rounded-xl bg-white hover:bg-blue-50 text-blue-950 font-black text-xs sm:text-sm px-4 py-3 transition">Tính học phí &amp; Đăng ký →</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SYLLABUS_DATA = {
+      foundation: {
+        badge: 'KHÓA 1 • TRÌNH ĐỘ B1 → ĐẦU RA 4.5 – 5.5',
+        title: 'IELTS Foundation — 3 Tháng (12 Tuần • 36 Buổi)',
+        ratioText: 'Tỷ trọng: 70% Reading & Listening (Nạp từ vựng/ngữ pháp & kéo điểm nhanh) • 30% Writing & Speaking nền tảng',
+        rlPct: 70,
+        wsPct: 30,
+        months: [
+          {
+            month: 1,
+            title: 'Tháng 1 (Tuần 1–4 • Buổi 1–12): Xây Gốc Reading & Listening Part 1 + Câu Chuẩn',
+            goal: 'Làm chủ kỹ thuật tách cụm S-V-O (Syntax Chunking), nghe số/tên riêng/ngày tháng Part 1 không sai và trả lời trôi chảy Speaking Part 1.',
+            sessions: [
+              { w: 1, b: 1, mode: 'Live 1', focus: 'Reading Core (70%) + Grammar (30%)', topic: 'Cấu trúc câu & Syntax Chunking', detail: 'Tách Subject – Main Verb – Object trong câu dài IELTS Reading; Skimming tìm ý chính đoạn văn; viết câu đơn & câu ghép chuẩn.' },
+              { w: 1, b: 2, mode: 'Live 2', focus: 'Listening Core (70%) + IPA/Speaking (30%)', topic: 'Spelling, Numbers & Part 1 Form Fill', detail: 'Chuẩn hóa IPA âm cuối; nghe bảng chữ cái, số điện thoại, mã bưu điện, ngày tháng (Part 1); mở rộng câu trả lời Speaking Part 1.' },
+              { w: 1, b: 3, mode: 'LMS Lab 1', focus: 'Thực chiến R & L Tự Chấm', topic: 'Education & Daily Life', detail: 'Micro-Dictation (2 bài bắt tên riêng & số) + Reading Syntax Chunking (Passage 1 ngắn) + Flashcards 30 từ vựng Tuần 1.' },
+              { w: 2, b: 4, mode: 'Live 1', focus: 'Reading Core', topic: 'Scanning & Note/Table Completion', detail: 'Dự đoán từ loại cần điền (Noun/Verb/Adj/Number) và Scanning tìm vị trí thông tin trong Reading Passage 1.' },
+              { w: 2, b: 5, mode: 'Live 2', focus: 'Listening Core + Speaking Part 1', topic: 'Predicting Answers & Self-Correction Traps', detail: 'Đọc trước câu hỏi 30s; bắt bẫy tự sửa thông tin ("Oh wait, make that 15th"); luyện Speaking Part 1 chủ đề Work & Study.' },
+              { w: 2, b: 6, mode: 'LMS Lab 2', focus: 'Thực chiến R & L Tự Chấm', topic: 'Work & Campus', detail: '2 đề Listening Part 1 (tự bắt lỗi chính tả & số ít/nhiều) + 2 bài Reading Gap-fill Passage 1 (13 câu/bài).' },
+              { w: 3, b: 7, mode: 'Live 1', focus: 'Reading Core + Writing Intro', topic: 'True / False / Not Given (Passage 1)', detail: 'Công thức phân biệt rõ False (ngược nghĩa) và Not Given (thiếu dữ kiện); cách viết câu Topic Sentence rõ ý.' },
+              { w: 3, b: 8, mode: 'Live 2', focus: 'Listening Core + Speaking Part 1', topic: 'Places, Accommodation & Number Traps', detail: 'Phân biệt các cặp số dễ nhầm (15 vs 50, 13 vs 30), giá tiền, kích thước trong Listening Part 1; Speaking Part 1 Hometown.' },
+              { w: 3, b: 9, mode: 'LMS Lab 3', focus: 'Thực chiến R & L + Viết Đoạn Ngắn', topic: 'Housing & Cities', detail: '1 Passage Reading (TFNG + Gap-fill) + 1 Micro-Dictation + ghép 1 đoạn văn 90 từ với Scaffolded Writing.' },
+              { w: 4, b: 10, mode: 'Live 1', focus: 'Reading Core', topic: 'Short Answer Questions & Paraphrasing', detail: 'Nhận diện 4 kiểu Paraphrase phổ biến nhất trong Reading; tổng ôn chiến thuật lấy trọn điểm Reading Passage 1.' },
+              { w: 4, b: 11, mode: 'Live 2', focus: 'Listening Core', topic: 'Tăng tốc Listening Part 1 (Mục tiêu 8–10/10)', detail: 'Chạy liền đề Listening Part 1 tốc độ 1.0x; phân tích bảng Signposts & Distractors; ôn phản xạ Speaking Part 1.' },
+              { w: 4, b: 12, mode: 'LMS Lab 4', focus: 'Kiểm tra Cuối Tháng 1 (Progress Test 01)', topic: 'Đánh giá R/L nền tảng', detail: 'Timed Reading Passage 1 + Listening Part 1–2 trên LMS + nộp 1 đoạn Scaffolded Writing & 4 câu ghi âm Speaking Part 1.' }
+            ]
+          },
+          {
+            month: 2,
+            title: 'Tháng 2 (Tuần 5–8 • Buổi 13–24): Chinh Phục Reading Passage 2 & Listening Part 2',
+            goal: 'Xử lý gọn các dạng Map Labelling, Matching Headings, Diagram/Flowchart và làm quen khung Writing Task 1 / Speaking Part 2.',
+            sessions: [
+              { w: 5, b: 13, mode: 'Live 1', focus: 'Reading Core + Writing Task 1 Intro', topic: 'Flowchart/Diagram & Đọc Biểu Đồ', detail: 'Điền từ vào sơ đồ/quy trình trong Reading; cách đọc trục số liệu và viết Introduction + Overview cho Writing Task 1.' },
+              { w: 5, b: 14, mode: 'Live 2', focus: 'Listening Core (Part 2)', topic: 'Monologue Multiple Choice (1 đáp án)', detail: 'Gạch chân từ khóa khác biệt giữa A/B/C trong độc thoại Part 2 và tránh bẫy "nghe thấy từ y hệt" (Word-matching trap).' },
+              { w: 5, b: 15, mode: 'LMS Lab 5', focus: 'Thực chiến R & L Tự Chấm', topic: 'Tourism & Events', detail: '2 bài Listening Part 2 MCQ kèm Transcript Highlights + 1 bài Reading Diagram & TFNG hoàn chỉnh.' },
+              { w: 6, b: 16, mode: 'Live 1', focus: 'Reading Core', topic: 'Matching Headings cơ bản (Passage 1–2)', detail: 'Đọc câu mở đầu – câu chuyển ý – câu kết để nắm Main Idea cho Matching Headings mà không sa đà chi tiết phụ.' },
+              { w: 6, b: 17, mode: 'Live 2', focus: 'Listening Core + Speaking Part 2 Intro', topic: 'Map Labelling & Mô tả địa điểm', detail: '20 cụm từ chỉ vị trí/hướng đi (clockwise, opposite, just past) cho Listening Map; lập dàn ý 1 phút cho Speaking Part 2.' },
+              { w: 6, b: 18, mode: 'LMS Lab 6', focus: 'Thực chiến Map & Headings', topic: 'Town Planning & Places', detail: '2 bài Listening Map Grid/Hotspots + 1 bài Reading Matching Headings kéo thả + 1 bài thu âm Speaking Part 2 Sim (90s).' },
+              { w: 7, b: 19, mode: 'Live 1', focus: 'Reading Core + Writing Task 1', topic: 'Matching Features & Ngôn ngữ Xu hướng', detail: 'Nối tên chuyên gia/địa điểm với phát biểu trong Reading; công thức viết đoạn Body mô tả xu hướng tăng/giảm Task 1.' },
+              { w: 7, b: 20, mode: 'Live 2', focus: 'Listening Core (Part 2)', topic: 'Matching Information (Kéo thả thông tin)', detail: 'Chiến thuật nghe Paraphrase cho dạng nối danh sách A–G trong Listening Part 2 trên trình kéo thả LMS.' },
+              { w: 7, b: 21, mode: 'LMS Lab 7', focus: 'Thực chiến R & L + Task 1', topic: 'Technology & History', detail: '2 bài Listening Matching Drag-and-Drop + Reading Passage 1 & 2 (26 câu / 38 phút) + 1 bài Line Graph 150 từ.' },
+              { w: 8, b: 22, mode: 'Live 1', focus: 'Reading Core + Writing Task 2 Intro', topic: 'Summary Completion & Khung đoạn PEEL', detail: 'Giải dạng Summary Completion (Reading P2); cách viết 1 đoạn Body nghị luận theo công thức P-E-E-L cho Task 2.' },
+              { w: 8, b: 23, mode: 'Live 2', focus: 'Listening Core + Speaking Part 2', topic: 'Chạy liền Part 1 + Part 2 (20 câu)', detail: 'Giữ sự tập trung đạt ≥15/20 câu đúng ở nửa đầu đề Listening; cách kể chuyện quá khứ cho Speaking Part 2.' },
+              { w: 8, b: 24, mode: 'LMS Lab 8', focus: 'Kiểm tra Giữa Khóa (Tháng 2)', topic: 'Mid-Course Assessment (Target 4.5–5.0)', detail: 'Listening Part 1–2 (20 câu) + Reading Passage 1–2 (26 câu) + 1 bài Writing Task 1 + 1 bản thu Speaking Part 2.' }
+            ]
+          },
+          {
+            month: 3,
+            title: 'Tháng 3 (Tuần 9–12 • Buổi 25–36): Mở Rộng Part 3–4 / Passage 3 & Chốt Đầu Ra 5.0–5.5',
+            goal: 'Ăn điểm chắc ở Listening Part 4 & Reading Passage 1–2 (đạt 20–23/40 câu đúng = Band 5.5–6.0 R/L) để kéo Overall đạt 5.0–5.5.',
+            sessions: [
+              { w: 9, b: 25, mode: 'Live 1', focus: 'Reading Core', topic: 'Multiple Choice (1 đáp án) & Chiến thuật P2', detail: 'Khoanh vùng đoạn văn chứa câu hỏi MCQ trong Reading Passage 2 và loại trừ 3 phương án nhiễu.' },
+              { w: 9, b: 26, mode: 'Live 2', focus: 'Listening Core (Part 4)', topic: 'Academic Lecture Note Completion', detail: 'Cách bám theo tiêu đề phụ và từ nối chuyển đoạn của bài giảng Part 4 để điền đúng 1 từ vào chỗ trống.' },
+              { w: 9, b: 27, mode: 'LMS Lab 9', focus: 'Thực chiến Part 4 & Passage 2', topic: 'Nature & Wildlife', detail: '2 bài Micro-Dictation & Note Fill Part 4 + 1 bài Reading Passage 2 hoàn chỉnh bấm giờ 20 phút.' },
+              { w: 10, b: 28, mode: 'Live 1', focus: 'Reading Core + Writing Task 2', topic: 'Nhặt điểm chắc ở Passage 3 & Opinion Essay', detail: 'Chiến thuật ưu tiên làm Gap-fill/TFNG ở Passage 3 trước; hoàn chỉnh bố cục 4 đoạn bài Writing Task 2 cơ bản.' },
+              { w: 10, b: 29, mode: 'Live 2', focus: 'Listening Core (Part 3) + Speaking Part 3 Intro', topic: 'Hội thoại học thuật 2–3 người', detail: 'Phân biệt giọng nhân vật và bắt cụm từ đồng tình/bác bỏ trong Listening Part 3; mở rộng câu trả lời Speaking Part 3.' },
+              { w: 10, b: 30, mode: 'LMS Lab 10', focus: 'Thực chiến Đề R & L + Task 2', topic: 'Society & Media', detail: 'Listening Part 3 + Part 4 (20 câu) + hoàn thành bài luận Scaffolded Writing Task 2 (250 từ) trên LMS.' },
+              { w: 11, b: 31, mode: 'Live 1', focus: 'Reading Full Test Strategy', topic: 'Phân bổ 60 phút lấy chắc 20–23/40 câu', detail: 'Chiến thuật 18 phút (P1) – 22 phút (P2) – 20 phút (P3) giúp học viên B1 đạt Band 5.5–6.0 Reading không bị hết giờ.' },
+              { w: 11, b: 32, mode: 'Live 2', focus: 'Listening Full Test Strategy + Speaking', topic: 'Công thức gom 23/40 câu đúng Listening', detail: 'Mục tiêu P1 (8/10) + P2 (6/10) + P3 (4/10) + P4 (5/10) = 23/40 (Band 6.0); tổng duyệt Speaking Part 1 & 2.' },
+              { w: 11, b: 33, mode: 'LMS Lab 11', focus: 'Thực chiến Full R + L Bấm Giờ', topic: 'Luyện sức bền phòng thi máy', detail: 'Full Listening Test (40 câu) + Full Reading Test (40 câu) liên tiếp trên LMS kèm thống kê dạng câu còn yếu.' },
+              { w: 12, b: 34, mode: 'Live 1', focus: 'Chữa Đề Chuyên Sâu & Khung An Toàn Writing', topic: 'Rà soát lỗi R/L & giới thiệu 3D Map/Process', detail: 'Chữa chi tiết đề Lab 11; tổng hợp bộ khung câu an toàn cho Writing Task 1 (bao gồm 3D Map/Process) & Task 2.' },
+              { w: 12, b: 35, mode: 'LMS Lab 12', focus: 'Full Mock Exam Cuối Khóa (3 Kỹ năng)', topic: 'Listening + Reading + Writing', detail: 'Thi thử liên hoàn Full Mock Exam trên giao diện máy tính LMS để chốt điểm đầu ra Khóa 1.' },
+              { w: 12, b: 36, mode: 'Live 2', focus: 'Speaking Final 1-1 & Tổng Kết Lên Intensive', topic: 'Đánh giá đầu ra 5.0–5.5', detail: 'Thi Speaking 1-1; trả bảng điểm 4 kỹ năng (R/L 5.5–6.0, W/S 4.5–5.0 → Overall 5.0–5.5) và lên lộ trình Intensive.' }
+            ]
+          }
+        ]
+      },
+      intensive: {
+        badge: 'KHÓA 2 • TRÌNH ĐỘ B2 → ĐẦU RA 5.5 – 6.5',
+        title: 'IELTS Intensive — 3 Tháng (12 Tuần • 36 Buổi)',
+        ratioText: 'Tỷ trọng: 65% Writing (3D Map/Process/Charts + 4 dạng Task 2) & Speaking Part 2–3 • 35% Reading & Listening dạng bẫy khó',
+        rlPct: 35,
+        wsPct: 65,
+        months: [
+          {
+            month: 1,
+            title: 'Tháng 1 (Tuần 1–4 • Buổi 1–12): Chuẩn Hóa Writing Task 1–2 B2 & Phá Bẫy R/L',
+            goal: 'Làm chủ biểu đồ Dynamic/Static, bài luận Opinion/Discussion, công thức A-R-E-C cho Speaking Part 3 và các dạng bẫy YNNG / Multi-MCQ.',
+            sessions: [
+              { w: 1, b: 1, mode: 'Live 1', focus: 'Writing Core (Task 1) + Reading', topic: 'Dynamic Charts (Line/Bar theo thời gian)', detail: 'Cách chia 2 đoạn Body theo giai đoạn hoặc nhóm xu hướng để đạt Task Achievement 6.5; 5 cấu trúc mô tả xu hướng B2+.' },
+              { w: 1, b: 2, mode: 'Live 2', focus: 'Speaking Core (Part 1–2) + Listening', topic: 'Fluency & 4 Bẫy Distractors trong Listening', detail: 'Mở rộng câu trả lời Speaking bằng Discourse Markers; giải phẫu 4 loại bẫy trong Listening Part 2 & 3.' },
+              { w: 1, b: 3, mode: 'LMS Lab 1', focus: 'Nộp Writing + Speaking (Chấm 1-1) & R/L', topic: 'Grading Review Feedback 01', detail: 'Viết 1 bài Dynamic Line/Bar (160 từ) + Ghi âm Speaking Part 1–2 + 1 bài Listening Distractor Analysis trên LMS.' },
+              { w: 2, b: 4, mode: 'Live 1', focus: 'Writing Core (Task 2) + Reading YNNG', topic: 'Opinion Essay (Agree / Disagree)', detail: 'Lập luận 2 đoạn Body chặt chẽ cho dạng Agree/Disagree; phân biệt thái độ tác giả trong Yes / No / Not Given (P2–P3).' },
+              { w: 2, b: 5, mode: 'Live 2', focus: 'Speaking Core (Part 2–3) + Listening MCQ', topic: 'Công thức A-R-E-C cho Part 3 & Pick 2 of 5', detail: 'Trả lời câu hỏi thảo luận Speaking Part 3 (Answer – Reason – Example – Consequence); xử lý dạng Choose TWO letters (A–E).' },
+              { w: 2, b: 6, mode: 'LMS Lab 2', focus: 'Nộp Writing + Speaking (Chấm 1-1) & R/L', topic: 'Education & Technology', detail: 'Viết bài Opinion Essay (260 từ) + Thu âm Speaking Part 2–3 Sim + 1 Passage Reading YNNG & Listening Multi-MCQ.' },
+              { w: 3, b: 7, mode: 'Live 1', focus: 'Writing Core (Task 1) + Reading', topic: 'Static Charts & Matching Information', detail: 'Cấu trúc so sánh gấp đôi/chênh lệch lớn cho biểu đồ tĩnh (Pie/Table); chiến thuật làm Matching Information (Reading P2–P3).' },
+              { w: 3, b: 8, mode: 'Live 2', focus: 'Speaking Core + Listening Map Nâng Cao', topic: 'Describing Architecture & Complex Maps', detail: 'Từ vựng B2+ chủ đề Urban Planning cho Speaking Part 2–3; chinh phục sơ đồ Map Labelling nhiều khu vực.' },
+              { w: 3, b: 9, mode: 'LMS Lab 3', focus: 'Nộp Writing + Speaking (Chấm 1-1) & R/L', topic: 'Cities & Infrastructure', detail: 'Viết 1 bài Table/Pie Chart + Ghi âm Speaking chủ đề Buildings + 1 bài Reading Matching Info & Listening Map Grid.' },
+              { w: 4, b: 10, mode: 'Live 1', focus: 'Writing Core (Task 2) + Sửa Bài Trực Tiếp', topic: 'Discuss Both Views & Give Your Opinion', detail: 'Giữ giọng văn khách quan ở 2 đoạn thảo luận và nêu rõ lập trường cá nhân; chữa lỗi Coherence & Cohesion của lớp.' },
+              { w: 4, b: 11, mode: 'Live 2', focus: 'Speaking Core (Part 3) + Listening Part 3', topic: 'Ngôn ngữ So sánh & Thái độ trong Hội thoại', detail: 'So sánh Quá khứ vs Hiện tại, Người trẻ vs Người lớn trong Speaking Part 3; bắt thái độ qua ngữ điệu Listening Part 3.' },
+              { w: 4, b: 12, mode: 'LMS Lab 4', focus: 'Kiểm tra Cuối Tháng 1 (Progress Test 01)', topic: 'Đánh giá mốc 5.5–6.0', detail: '1 đề Reading + Listening + 1 bài Writing Task 2 + 1 bản thu Speaking Part 2–3 chấm chi tiết theo 4 tiêu chí.' }
+            ]
+          },
+          {
+            month: 2,
+            title: 'Tháng 2 (Tuần 5–8 • Buổi 13–24): Làm Chủ 3D Map/Process, 4 Dạng Task 2 & Phản Xạ Speaking B2+',
+            goal: 'Sử dụng thành thạo mô hình 3D Map & 3D Process cho Task 1, kỹ thuật gộp đề Cue Card cho Speaking Part 2 và giải Summary có Wordlist.',
+            sessions: [
+              { w: 5, b: 13, mode: 'Live 1', focus: 'Writing Core (3D Map Task 1)', topic: 'So sánh Bản đồ Before & After trên mô hình 3D', detail: 'Chia đoạn theo khu vực địa lý và dùng bộ động từ quy hoạch (demolished, converted into, made way for) trên 3D Map LMS.' },
+              { w: 5, b: 14, mode: 'Live 2', focus: 'Speaking Core + Listening Part 3 MCQ', topic: 'Chủ đề Environment & Giải đề MCQ Dài', detail: 'Mở rộng vốn từ Environment & Energy bằng Dynamic Mindmap cho Speaking Part 2–3; đọc lướt nhanh câu hỏi MCQ dài Part 3.' },
+              { w: 5, b: 15, mode: 'LMS Lab 5', focus: 'Thực chiến 3D Map + Speaking (Chấm 1-1)', topic: 'Urban Transformation & Nature', detail: 'Xoay mô hình 3D Map trên LMS & viết bài Task 1 + Thu âm Speaking Part 2–3 Sim + 1 bài Listening Part 3 MCQ.' },
+              { w: 6, b: 16, mode: 'Live 1', focus: 'Writing Core (Task 2) + Reading Summary', topic: 'Advantages Outweigh Disadvantages', detail: 'Cách nhấn mạnh mặt vượt trội để đạt Task Response 6.5+; giải dạng Summary Completion có hộp từ A–H (Reading P3).' },
+              { w: 6, b: 17, mode: 'Live 2', focus: 'Speaking Core (Part 2–3)', topic: 'Kỹ thuật Gộp Đề (1 câu chuyện cho 5 Cue Cards)', detail: 'Thiết kế cốt truyện linh hoạt cho nhóm đề People, Experiences & Skills; cách câu giờ tự nhiên khi gặp câu hỏi khó Part 3.' },
+              { w: 6, b: 18, mode: 'LMS Lab 6', focus: 'Nộp Writing Task 2 + Speaking (Chấm 1-1)', topic: 'Work-Life & Modern Society', detail: 'Viết bài luận Advantages/Disadvantages (270 từ) + Ghi âm Speaking Part 2–3 + 1 bài Reading Summary Drag-and-Drop.' },
+              { w: 7, b: 19, mode: 'Live 1', focus: 'Writing Core (3D Process Task 1)', topic: 'Mô tả Quy trình Sản xuất & Tự nhiên với 3D Process', detail: 'Tương tác mô hình 3D Process (Biofuel / Manufacturing); nâng cấp câu bằng mệnh đề phân từ (Once extracted, Having been heated).' },
+              { w: 7, b: 20, mode: 'Live 2', focus: 'Speaking Core + Listening Part 4', topic: 'Intonation/Chunking & Academic Signposts', detail: 'Luyện ngữ điệu và ngắt cụm đẩy Pronunciation lên 6.5; bắt từ nối chuyển đoạn và biến đổi từ loại trong Listening Part 4.' },
+              { w: 7, b: 21, mode: 'LMS Lab 7', focus: 'Thực chiến 3D Process + Speaking + Part 4', topic: 'Science & Production', detail: 'Viết bài 3D Process Task 1 (160 từ) + Micro-Dictation Part 4 + Ghi âm Speaking gửi GV chấm trên LMS.' },
+              { w: 8, b: 22, mode: 'Live 1', focus: 'Writing Core (Task 2) + Sửa Bài Chuyên Sâu', topic: 'Causes – Problems – Solutions Essay', detail: 'Đề xuất nguyên nhân và giải pháp gắn rõ chủ thể (Governments, Businesses, Individuals); workshop sửa bài thực tế của lớp.' },
+              { w: 8, b: 23, mode: 'Live 2', focus: 'Speaking Mock Interview & Listening Flowchart', topic: 'Thực hành phỏng vấn 1-1 ngay trên lớp', detail: 'Phỏng vấn Speaking 3 phần và sửa lỗi ngay sau khi nói; xử lý Flowchart / Table Completion trong Listening Part 2–3.' },
+              { w: 8, b: 24, mode: 'LMS Lab 8', focus: 'Kiểm tra Giữa Khóa (Tháng 2)', topic: 'Mid-Course Mock Exam (Target 6.0+)', detail: 'Thi kiểm tra 4 kỹ năng trên LMS; giảng viên trả nhận xét chi tiết từng tiêu chí Writing & Speaking.' }
+            ]
+          },
+          {
+            month: 3,
+            title: 'Tháng 3 (Tuần 9–12 • Buổi 25–36): Tăng Tốc Thực Chiến 4 Kỹ Năng & Chạm Đích 6.5',
+            goal: 'Viết trọn vẹn Task 1 + Task 2 trong 60 phút, trả lời Speaking 14 phút liên tục và đạt 27–30/40 câu đúng ở Reading & Listening.',
+            sessions: [
+              { w: 9, b: 25, mode: 'Live 1', focus: 'Writing Core (Task 1 Mixed Charts)', topic: 'Biểu đồ kết hợp (Pie + Bar / Line + Table)', detail: 'Công thức xử lý gọn dạng Mixed Charts trong 20 phút (mỗi đoạn Body phân tích 1 biểu đồ + Overview tổng hợp).' },
+              { w: 9, b: 26, mode: 'Live 2', focus: 'Speaking Core (Part 3 Speculation)', topic: 'Ngôn ngữ Dự đoán Tương lai & Giả định', detail: 'Ứng dụng cấu trúc dự đoán (is bound to, will likely give rise to) trong Speaking Part 3; luyện tốc độ Listening 1.1x.' },
+              { w: 9, b: 27, mode: 'LMS Lab 9', focus: 'Nộp Writing Mixed Charts + Speaking + R/L', topic: 'Luyện đề bấm giờ', detail: 'Viết 1 bài Mixed Charts + Thu âm Speaking Part 2–3 + Làm 1 Full Listening Test (40 câu) trên LMS.' },
+              { w: 10, b: 28, mode: 'Live 1', focus: 'Writing Core (Two-Part Questions) + Reading P3', topic: 'Dạng đề 2 câu hỏi riêng biệt & Long MCQ', detail: 'Phân bổ 2 đoạn Body cho Two-Part Questions; giải quyết Long Multiple Choice & Matching Sentence Endings (Reading P3).' },
+              { w: 10, b: 29, mode: 'Live 2', focus: 'Speaking Full 3-Part Pressure Drill', topic: 'Giữ phong độ suốt 14 phút phỏng vấn', detail: 'Cách tự sửa lỗi khéo léo (Self-correction without losing fluency) khi lỡ nói nhầm thì hoặc quên từ trong phòng thi.' },
+              { w: 10, b: 30, mode: 'LMS Lab 10', focus: 'Nộp Writing Task 2 + Full Reading', topic: 'Kiểm tra độ chính xác ≥27/40', detail: 'Viết bài Two-Part Essay + Làm Full Reading Test (40 câu / 60 phút) trên LMS với mục tiêu ≥27/40 câu đúng (Band 6.5).' },
+              { w: 11, b: 31, mode: 'Live 1', focus: 'Writing 60-Minute Management Clinic', topic: 'Chiến thuật 20 phút Task 1 + 40 phút Task 2', detail: 'Lập dàn ý nhanh trong 4 phút, tận dụng bộ đếm từ tự động trên máy và dành 3 phút cuối rà lỗi chia động từ/mạo từ.' },
+              { w: 11, b: 32, mode: 'Live 2', focus: 'Speaking & Listening Final Polish', topic: 'Triệt tiêu lỗi phát âm & tối ưu điểm R/L 6.5–7.0', detail: 'Rà soát danh sách từ hay phát âm sai; chiến thuật giữ điểm Listening & Reading ở mức 28–30/40 để gánh điểm Overall.' },
+              { w: 11, b: 33, mode: 'LMS Lab 11', focus: 'Thực chiến 60-Minute Dual Writing', topic: 'Viết liền Task 1 + Task 2 trong 60 phút', detail: 'Làm 1 đề Writing hoàn chỉnh (Task 1 + Task 2) bấm giờ 60 phút trên trình thi máy LMS để giảng viên chấm tổng duyệt.' },
+              { w: 12, b: 34, mode: 'Live 1', focus: 'Chữa Bài Tổng Duyệt Trước Thi', topic: '1-1 Writing Feedback & Chiến thuật Thi Máy', detail: 'Chữa chi tiết bài Dual Writing của từng học viên ở Buổi 33; hướng dẫn thao tác Highlight, Note và phím tắt.' },
+              { w: 12, b: 35, mode: 'LMS Lab 12', focus: 'Full Mock Exam Cuối Khóa (3 Kỹ năng)', topic: 'Listening + Reading + Writing', detail: 'Thi thử liên hoàn Full Mock Exam chuẩn áp lực thời gian trên LMS.' },
+              { w: 12, b: 36, mode: 'Live 2', focus: 'Speaking Final 1-1 & Tổng Kết Khóa 2', topic: 'Chốt đầu ra 6.0–6.5 & Lộ trình lên Mastery', detail: 'Thi Speaking 1-1; tổng kết bảng điểm 4 kỹ năng (Overall 6.0–6.5) và định hướng lên Khóa 3: IELTS Mastery.' }
+            ]
+          }
+        ]
+      },
+      mastery: {
+        badge: 'KHÓA 3 • TRÌNH ĐỘ C1 → ĐẦU RA 6.5 – 7.5+',
+        title: 'IELTS Mastery — 3 Tháng (12 Tuần • 36 Buổi)',
+        ratioText: 'Tỷ trọng: 75% Writing & Speaking Band 7.0–7.5+ (Tư duy phản biện, Nominalization, Rewrite 1-1) • 25% R/L Band 8.0+ & Full Mock',
+        rlPct: 25,
+        wsPct: 75,
+        months: [
+          {
+            month: 1,
+            title: 'Tháng 1 (Tuần 1–4 • Buổi 1–12): Phá Vỡ Ngưỡng Kẹt 6.0–6.5 ở Writing & Speaking',
+            goal: 'Nâng cấp văn phong học thuật C1 (Nominalization, Concession paragraph, Hedging) và đạt độ chính xác 32–35+/40 ở Reading & Listening.',
+            sessions: [
+              { w: 1, b: 1, mode: 'Live 1', focus: 'Writing 7.0+ Core', topic: 'Tiêu chí Band 7.0+ & Kỹ thuật Nominalization', detail: 'Vì sao dùng nhiều từ khó vẫn kẹt ở 6.0; kỹ thuật Nominalization (danh từ hóa) và Collocations tự nhiên chuẩn C1.' },
+              { w: 1, b: 2, mode: 'Live 2', focus: 'Speaking 7.0+ Core', topic: 'Idiomatic Precision & Prosodic Fluency', detail: 'Dùng Idioms/Phrasal Verbs tinh tế đúng ngữ cảnh (tránh học vẹt); kỹ thuật nhấn trọng âm câu và ngắt nhịp Band 7.5.' },
+              { w: 1, b: 3, mode: 'LMS Lab 1', focus: 'Chấm Chữa Chuyên Sâu W/S + R/L C1', topic: '1-1 Teacher + AI Review 01', detail: 'Viết Writing Task 2 Essay 01 + Ghi âm Speaking Part 2–3 + Làm 1 đề Listening tốc độ cao (Mục tiêu ≥32/40).' },
+              { w: 2, b: 4, mode: 'Live 1', focus: 'Writing 7.0+ Core', topic: 'Đoạn văn Nhượng bộ – Phản biện (Concession)', detail: 'Kỹ thuật viết đoạn phản biện sắc bén (Granted, proponents argue...; Nevertheless, this overlooks...) đạt Task Response 7.5.' },
+              { w: 2, b: 5, mode: 'Live 2', focus: 'Speaking 7.0+ Core + Listening Part 3', topic: 'Góc nhìn đa chiều ở Part 3 & Ẩn ý hội thoại', detail: 'Mở rộng câu trả lời Part 3 theo 3 tầng (Cá nhân → Xã hội → Kinh tế); bắt ẩn ý và sự đồng tình có điều kiện ở Listening Part 3.' },
+              { w: 2, b: 6, mode: 'LMS Lab 2', focus: 'Chấm Chữa Chuyên Sâu W/S + Reading P3', topic: 'Philosophy, Psychology & Economics', detail: 'Viết Writing Task 2 Essay 02 (có đoạn Concession) + Thu âm Speaking Part 3 + 2 bài Reading Passage 3 trừu tượng.' },
+              { w: 3, b: 7, mode: 'Live 1', focus: 'Writing 7.0+ Core (Task 1)', topic: 'Data Synthesis & Cấu trúc lồng số liệu C1', detail: 'Chọn lọc số liệu đắt giá và lồng số liệu mượt mà (respectively, accounting for a mere 14%, triple that of...).' },
+              { w: 3, b: 8, mode: 'Live 2', focus: 'Speaking 7.0+ Core', topic: 'Ngôn ngữ Hedging & Xử lý câu hỏi "hóc búa"', detail: 'Kỹ thuật Hedging (tends to be, to a large extent, arguably) và phản xạ trước câu hỏi lạ về Chính sách, Nghệ thuật, AI.' },
+              { w: 3, b: 9, mode: 'LMS Lab 3', focus: 'Chấm Chữa Chuyên Sâu W/S + R/L', topic: 'Science, AI & Ethics', detail: 'Viết Task 1 (Complex Multi-Line/Table) + Bốc đề Speaking ngẫu nhiên trên LMS + 1 bài Micro-Dictation Part 4 C1.' },
+              { w: 4, b: 10, mode: 'Live 1', focus: 'Writing Rewrite Clinic 01 + Reading 8.0+', topic: 'Sửa trực tiếp bài 6.0 thành 7.5+ trên lớp', detail: 'Giảng viên 8.5 biên tập lại từng câu trong bài viết của học viên ngay trên lớp; giải các câu YNNG/MCQ phân loại 8.0+.' },
+              { w: 4, b: 11, mode: 'Live 2', focus: 'Speaking Live Mock 01 & Listening 8.0+', topic: 'Phỏng vấn áp lực & Phá bẫy 10 câu cuối Listening', detail: 'Phỏng vấn Speaking mô phỏng giám khảo ngắt lời; giữ sự tỉnh táo ở 10 câu cuối Listening để đạt 35+/40 (Band 8.0).' },
+              { w: 4, b: 12, mode: 'LMS Lab 4', focus: 'Kiểm tra Cuối Tháng 1 (Mastery Benchmark 01)', topic: 'Đánh giá toàn diện 4 kỹ năng', detail: 'Full Reading + Listening + Writing + Speaking chấm chi tiết theo rubric giám khảo trên LMS.' }
+            ]
+          },
+          {
+            month: 2,
+            title: 'Tháng 2 (Tuần 5–8 • Buổi 13–24): Chinh Phục Đề Khó Nhất & Tối Đa Hóa Grammatical Range',
+            goal: 'Ứng dụng tự nhiên Đảo ngữ, Câu chẻ, Mệnh đề phân từ, Từ quy chiếu (Reference/Substitution) và hoàn thành Reading trong 50 phút.',
+            sessions: [
+              { w: 5, b: 13, mode: 'Live 1', focus: 'Writing 7.0+ Core', topic: 'Inversion, Cleft Sentences & Participle Clauses', detail: 'Ứng dụng đúng chỗ câu đảo ngữ (Not only does...), câu chẻ (It is X that...) và mệnh đề phân từ để đạt GRA 7.5.' },
+              { w: 5, b: 14, mode: 'Live 2', focus: 'Speaking 7.0+ Core', topic: 'Advanced Storytelling & Emotional Nuance (Part 2)', detail: 'Lồng ghép câu điều kiện loại 3 (Had it not been for...) và câu chẻ (What struck me most was...) vào Speaking Part 2.' },
+              { w: 5, b: 15, mode: 'LMS Lab 5', focus: 'Chấm Chữa Chuyên Sâu W/S + Peer Review', topic: 'Đánh giá chéo & GV chấm trên LMS', detail: 'Viết Writing Task 2 Essay 03 + Peer Review + Thu âm Speaking Part 2–3 + Làm 1 đề Reading bấm giờ 52 phút.' },
+              { w: 6, b: 16, mode: 'Live 1', focus: 'Writing 7.0+ Core (Complex 3D Map & Process)', topic: 'Xử lý đề Map/Process phức tạp trong 18 phút', detail: 'Giải quyết đề 3D Map có >8 chi tiết thay đổi và quy trình sản xuất nhiều nhánh rẽ đảm bảo Coherence & Cohesion 7.5.' },
+              { w: 6, b: 17, mode: 'Live 2', focus: 'Speaking 7.0+ Core', topic: 'Tranh biện 2 chiều & So sánh khái niệm trừu tượng', detail: 'Tranh biện các chủ đề vĩ mô (Globalization, Law, Economy, Cultural Preservation) với từ vựng C1–C2 tức thì.' },
+              { w: 6, b: 18, mode: 'LMS Lab 6', focus: 'Chấm Chữa 3D Map/Process + Speaking + Listening', topic: 'Luyện tốc độ cao', detail: 'Viết 3D Map/Process Advanced (18 phút) + Ghi âm Speaking Part 3 + Làm 1 đề Listening đa giọng (Anh–Úc–Mỹ–Canada).' },
+              { w: 7, b: 19, mode: 'Live 1', focus: 'Writing 7.0+ Core', topic: 'Advanced Cohesion (Reference & Substitution)', detail: 'Nối câu mượt bằng từ quy chiếu (this phenomenon, such initiatives, the former/latter) thay vì lạm dụng Firstly/Moreover.' },
+              { w: 7, b: 20, mode: 'Live 2', focus: 'Speaking Live Mock 02 + R/L Speed Clinic', topic: 'Phỏng vấn câu hỏi xoáy & Đọc 40 câu trong 50 phút', detail: 'Xử lý câu hỏi Devil’s Advocate ở Part 3; kỹ thuật hoàn thành 40 câu Reading trong 50 phút (dư 10 phút kiểm tra lại).' },
+              { w: 7, b: 21, mode: 'LMS Lab 7', focus: 'Chấm Chữa Dual Writing + R/L Sprint', topic: 'Thực chiến áp lực thời gian', detail: 'Timed Writing Task 1 + Task 2 (60 phút) + Timed Reading Sprint (50 phút) trên LMS.' },
+              { w: 8, b: 22, mode: 'Live 1', focus: 'Writing Rewrite Clinic 02', topic: 'Chữa trực tiếp bài Dual Writing Buổi 21', detail: 'Phân tích sâu các lỗi làm rơi điểm từ 7.0 xuống 6.5 (mạo từ, Over-generalization, lập luận thiếu cầu nối).' },
+              { w: 8, b: 23, mode: 'Live 2', focus: 'Speaking Pronunciation & Lexical Clinic', topic: 'Tinh chỉnh chi tiết nhỏ để bứt từ 6.5 lên 7.5', detail: 'Chữa riêng từng thói quen phát âm, filler words và cách chọn collocations dựa trên bản thu LMS của học viên.' },
+              { w: 8, b: 24, mode: 'LMS Lab 8', focus: 'Kiểm tra Giữa Khóa (Tháng 2)', topic: 'Mid-Course Full Mock (Target 7.0)', detail: 'Thi thử 4 kỹ năng chuẩn phòng thi trên LMS kèm bảng nhận xét chi tiết 4 tiêu chí.' }
+            ]
+          },
+          {
+            month: 3,
+            title: 'Tháng 3 (Tuần 9–12 • Buổi 25–36): Nước Rút Thực Chiến & Đảm Bảo Đầu Ra 7.0–7.5+',
+            goal: 'Hoàn thành 3 kỳ Full Mock Exam liên hoàn (2 tiếng 40 phút/kỳ), vá sạch lỗ hổng cá nhân và sẵn sàng 100% cho kỳ thi chính thức.',
+            sessions: [
+              { w: 9, b: 25, mode: 'Live 1', focus: 'Writing Unseen Prompts Sprint 01', topic: 'Lập dàn ý 3 phút cho đề "lạ / khó"', detail: 'Thực hành giải các đề Writing Task 2 khó (Space Exploration, Art Funding, History, Consumerism) ngay trên lớp.' },
+              { w: 9, b: 26, mode: 'Live 2', focus: 'Speaking Forecast & High-Band Topics 01', topic: 'Chinh phục bộ đề khó Quý hiện tại', detail: 'Luyện các đề khó nhất trong bộ Forecast Quý hiện tại với khung từ vựng C1 cá nhân hóa.' },
+              { w: 9, b: 27, mode: 'LMS Lab 9', focus: 'Full Mock Sprint 01 (L + R + W)', topic: 'Thi liên hoàn 2 tiếng 40 phút', detail: 'Làm Full Mock Exam 01 (Listening + Reading + Writing) liên tục không nghỉ trên LMS để rèn sức bền phòng thi.' },
+              { w: 10, b: 28, mode: 'Live 1', focus: 'Debrief Mock 01: Writing & Reading', topic: 'Chữa sâu từng câu sai & bài viết Mock 01', detail: 'Biên tập và chấm chữa chi tiết bài Writing Mock 01 của từng học viên; giải đáp các câu bẫy Reading P2–P3.' },
+              { w: 10, b: 29, mode: 'Live 2', focus: 'Debrief Mock 01: Speaking 1-1 & Listening', topic: 'Thi Speaking cho Mock 01 & sửa lỗi tại chỗ', detail: 'Phỏng vấn Speaking 14 phút chuẩn giám khảo cho từng học viên và chấm điểm trực tiếp 4 tiêu chí.' },
+              { w: 10, b: 30, mode: 'LMS Lab 10', focus: 'Full Mock Sprint 02 (L + R + W)', topic: 'Thi liên hoàn lần 2', detail: 'Làm Full Mock Exam 02 (Listening + Reading + Writing) trên LMS để kiểm chứng sự cải thiện sau Mock 01.' },
+              { w: 11, b: 31, mode: 'Live 1', focus: 'Debrief Mock 02 & Weakness Elimination', topic: 'Vá toàn bộ lỗ hổng cá nhân', detail: 'Dựa trên thống kê lịch sử làm bài LMS qua 10 tuần, giảng viên giao bài tập vá lỗ hổng riêng cho từng học viên.' },
+              { w: 11, b: 32, mode: 'Live 2', focus: 'Speaking Forecast & High-Band Topics 02', topic: 'Tổng duyệt tâm lý & phản xạ phòng thi Speaking', detail: 'Xử lý tình huống tâm lý trong phòng thi (khi bị giám khảo ngắt câu liên tục hoặc cần xin diễn đạt lại tự nhiên).' },
+              { w: 11, b: 33, mode: 'LMS Lab 11', focus: 'Targeted Practice & Flashcard Mastery', topic: 'Ôn tập chọn lọc trước tuần thi tốt nghiệp', detail: 'Hoàn thành bộ đề cá nhân hóa + ôn lại toàn bộ từ vựng/ngữ pháp và lỗi sai đã lưu trên LMS.' },
+              { w: 12, b: 34, mode: 'Live 1', focus: 'Pre-Exam Tactical Briefing', topic: 'Chiến thuật ngày thi thật trên máy tại IDP / BC', detail: 'Quy trình 24h trước giờ thi, chiến thuật phân bổ năng lượng qua 3 môn thi máy buổi sáng và Speaking buổi chiều.' },
+              { w: 12, b: 35, mode: 'LMS Lab 12', focus: 'Graduation Full Mock Exam (L + R + W)', topic: 'Bài thi tốt nghiệp chính thức trên LMS', detail: 'Thi tốt nghiệp 3 kỹ năng trên giao diện thi máy LMS để chốt điểm đầu ra.' },
+              { w: 12, b: 36, mode: 'Live 2', focus: 'Graduation Speaking Exam & Tổng Kết Khóa 3', topic: 'Chốt đầu ra Band 7.0–7.5+ sẵn sàng thi thật', detail: 'Thi Speaking tốt nghiệp 1-1; trả phiếu điểm Overall 4 kỹ năng (L/R 7.5–8.5, W/S 6.5–7.5 → Overall 7.0–7.5+).' }
+            ]
+          }
+        ]
+      }
+    };
+
+    let activeCourse = 'foundation';
+    let activeMonth = 'all';
+
+    function selectCourse(courseKey) {
+      if (!SYLLABUS_DATA[courseKey]) return;
+      activeCourse = courseKey;
+      ['foundation', 'intensive', 'mastery'].forEach(k => {
+        const btn = document.getElementById('tab-' + k);
+        if (!btn) return;
+        if (k === courseKey) {
+          btn.className = 'course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white text-slate-900 border-sky-400 shadow-lg';
+        } else {
+          btn.className = 'course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white/10 text-white border-white/15 hover:bg-white/15';
+        }
+      });
+      if (history.replaceState) {
+        history.replaceState(null, '', '#' + courseKey);
+      }
+      renderSyllabus();
+    }
+
+    function selectMonth(m) {
+      activeMonth = m;
+      ['all', 1, 2, 3].forEach(val => {
+        const btn = document.getElementById('m-btn-' + val);
+        if (!btn) return;
+        if (val === m) {
+          btn.className = 'month-btn rounded-xl px-3 py-1.5 text-xs font-black bg-blue-600 text-white shadow-sm';
+        } else {
+          btn.className = 'month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
+        }
+      });
+      renderSyllabus();
+    }
+
+    function renderSyllabus() {
+      const course = SYLLABUS_DATA[activeCourse];
+      const summaryEl = document.getElementById('course-summary-banner');
+      if (summaryEl) {
+        summaryEl.innerHTML = `
+          <div class="text-xs font-black uppercase tracking-wider text-blue-700">${course.badge}</div>
+          <h2 class="text-xl sm:text-2xl font-black text-slate-900">${course.title}</h2>
+          <p class="text-xs sm:text-sm font-semibold text-slate-600">${course.ratioText}</p>
+          <div class="pt-2 max-w-xl">
+            <div class="flex justify-between text-[11px] font-black mb-1">
+              <span class="text-blue-700">📘🎧 Reading &amp; Listening: ${course.rlPct}%</span>
+              <span class="text-emerald-700">✍️🎙️ Writing &amp; Speaking: ${course.wsPct}%</span>
+            </div>
+            <div class="h-2.5 w-full rounded-full bg-emerald-100 overflow-hidden flex">
+              <div class="bg-blue-600 h-full transition-all" style="width:${course.rlPct}%"></div>
+              <div class="bg-emerald-500 h-full transition-all" style="width:${course.wsPct}%"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      const container = document.getElementById('syllabus-months-container');
+      const months = course.months.filter(m => activeMonth === 'all' || m.month === activeMonth);
+      container.innerHTML = months.map(m => `
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="bg-slate-900 text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 class="text-base sm:text-lg font-black">${m.title}</h3>
+              <p class="text-xs text-blue-200 mt-0.5">${m.goal}</p>
+            </div>
+            <span class="rounded-full bg-white/10 border border-white/15 px-3 py-1 text-xs font-black text-amber-300 shrink-0">12 Buổi (8 Live + 4 LMS Lab)</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  <th class="py-3 px-4 w-24">Tuần / Buổi</th>
+                  <th class="py-3 px-4 w-36">Hình thức</th>
+                  <th class="py-3 px-4 w-64">Trọng tâm Kỹ năng &amp; Chủ đề</th>
+                  <th class="py-3 px-4">Nội dung bài giảng &amp; Thực hành trên LMS</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                ${m.sessions.map(s => {
+                  const isLab = s.mode.includes('LMS');
+                  const modeBadge = isLab
+                    ? `<span class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-xs font-black text-indigo-800">💻 ${s.mode}</span>`
+                    : `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-black text-emerald-800">🟢 ${s.mode}</span>`;
+                  return `
+                    <tr class="${isLab ? 'bg-indigo-50/30' : 'hover:bg-slate-50/80'} transition">
+                      <td class="py-3.5 px-4 align-top whitespace-nowrap">
+                        <div class="text-xs font-bold text-slate-400">Tuần ${s.w}</div>
+                        <div class="font-black text-slate-900">Buổi ${s.b}</div>
+                      </td>
+                      <td class="py-3.5 px-4 align-top whitespace-nowrap">${modeBadge}</td>
+                      <td class="py-3.5 px-4 align-top">
+                        <div class="text-xs font-extrabold text-blue-700">${s.focus}</div>
+                        <div class="font-black text-slate-900 mt-0.5">${s.topic}</div>
+                      </td>
+                      <td class="py-3.5 px-4 align-top text-slate-600 leading-relaxed">${s.detail}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `).join('');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+      if (SYLLABUS_DATA[hash]) {
+        selectCourse(hash);
+      } else {
+        renderSyllabus();
+      }
+    });
+  </script>
+</body>
+</html>
