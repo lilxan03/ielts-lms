@@ -867,7 +867,7 @@
       if (isTimeFree) {
           if (APP_DATA.grammar && APP_DATA.grammar.length > 0) {
               APP_DATA.grammar.forEach((g, gIdx) => {
-                  const cleanTerm = g.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                  const cleanTerm = String(g?.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
                   if (!cleanTerm) return;
                   const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
                   htmlText = htmlText.replace(regex, `<span class="grammar-word" onclick="showGrammarPop(event, ${gIdx})">$1</span>`);
@@ -875,7 +875,7 @@
           }
           if (APP_DATA.vocab && APP_DATA.vocab.length > 0) {
               APP_DATA.vocab.forEach((v, vIdx) => {
-                  const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                  const cleanTerm = String(v?.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
                   if (!cleanTerm) return;
                   const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
                   htmlText = htmlText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
