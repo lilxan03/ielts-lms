@@ -6,99 +6,423 @@
   <title>Syllabus IELTS 3 Chặng (B1 → C1) • 3 Tháng / 36 Buổi | IELTS W KHANH</title>
   <meta name="description" content="Khung chương trình (Syllabus) chi tiết 3 khóa IELTS Foundation (B1), Intensive (B2), Mastery (C1): 3 tháng/khóa, 12 tuần, 36 buổi theo mô hình 2 Live + 1 LMS Lab.">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
-  <link rel="stylesheet" href="/css/tailwind.generated.css">
-  <link rel="stylesheet" href="/css/app.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #475569;
+      --subtle: #64748b;
+      --blue: #1d4ed8;
+      --blue-soft: #eff6ff;
+      --indigo: #4338ca;
+      --emerald: #059669;
+      --emerald-soft: #ecfdf5;
+      --sky: #0284c7;
+    }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font-family: inherit; border: none; background: none; cursor: pointer; }
+
+    /* Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1d4ed8, #312e81);
+      color: #fff;
+      font-weight: 900;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.28);
+    }
+    .brand-name { font-weight: 900; font-size: 15px; color: #172554; line-height: 1.1; }
+    .brand-sub { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #2563eb; margin-top: 2px; }
+    .nav-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 15px;
+      border-radius: 11px;
+      font-size: 12px;
+      font-weight: 800;
+      transition: all 0.18s ease;
+    }
+    .btn-outline { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .btn-outline:hover { background: #dbeafe; }
+    .btn-primary { background: linear-gradient(135deg, #1d4ed8, #4338ca); color: #fff; box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35); }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.18), transparent 45%),
+                  radial-gradient(circle at bottom left, rgba(99, 102, 241, 0.22), transparent 45%),
+                  linear-gradient(145deg, #020617 0%, #0f172a 45%, #1e1b4b 100%);
+      color: #fff;
+      padding: 42px 20px 44px;
+      overflow: hidden;
+    }
+    .hero-inner { max-width: 1240px; margin: 0 auto; position: relative; z-index: 2; }
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #67e8f9;
+    }
+    .hero h1 {
+      margin-top: 14px;
+      font-size: clamp(24px, 3.6vw, 38px);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.18;
+    }
+    .hero-desc {
+      margin-top: 10px;
+      max-width: 800px;
+      font-size: 15px;
+      color: #cbd5e1;
+    }
+    .hero-desc strong { color: #fff; }
+
+    /* Course Selector Cards */
+    .course-tabs {
+      margin-top: 26px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    @media (max-width: 860px) {
+      .course-tabs { grid-template-columns: 1fr; }
+    }
+    .course-tab {
+      text-align: left;
+      padding: 18px 20px;
+      border-radius: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
+      color: #e2e8f0;
+      transition: all 0.2s ease;
+    }
+    .course-tab:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+    .course-tab.active {
+      background: #ffffff;
+      color: #0f172a;
+      border-color: #38bdf8;
+      box-shadow: 0 18px 40px -10px rgba(2, 6, 23, 0.55);
+    }
+    .tab-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .tab-badge {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.14);
+      color: #f8fafc;
+    }
+    .course-tab.active .tab-badge { background: #e0f2fe; color: #0369a1; }
+    .course-tab.active.tab-intensive .tab-badge { background: #dbeafe; color: #1d4ed8; }
+    .course-tab.active.tab-mastery .tab-badge { background: #d1fae5; color: #047857; }
+    .tab-band { color: #67e8f9; }
+    .course-tab.active .tab-band { color: #0284c7; }
+    .course-tab.active.tab-intensive .tab-band { color: #1d4ed8; }
+    .course-tab.active.tab-mastery .tab-band { color: #059669; }
+    .tab-title { margin-top: 10px; font-size: 18px; font-weight: 900; }
+    .tab-sub { margin-top: 4px; font-size: 12px; font-weight: 600; opacity: 0.85; }
+    .course-tab.active .tab-sub { color: #475569; opacity: 1; }
+
+    /* Main Container */
+    .main { max-width: 1240px; margin: 0 auto; padding: 28px 20px 64px; }
+
+    /* Summary & Filters Card */
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px 24px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .summary-left { flex: 1 1 420px; }
+    .summary-eyebrow { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; color: #2563eb; }
+    .summary-title { margin-top: 4px; font-size: 22px; font-weight: 900; color: #0f172a; }
+    .summary-ratio { margin-top: 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .ratio-wrap { margin-top: 12px; max-width: 480px; }
+    .ratio-labels { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; margin-bottom: 6px; }
+    .ratio-labels .rl { color: #1d4ed8; }
+    .ratio-labels .ws { color: #059669; }
+    .ratio-bar { height: 10px; border-radius: 999px; background: #d1fae5; overflow: hidden; display: flex; }
+    .ratio-bar-rl { background: linear-gradient(90deg, #2563eb, #3b82f6); height: 100%; transition: width 0.35s ease; }
+    .ratio-bar-ws { background: linear-gradient(90deg, #10b981, #059669); height: 100%; transition: width 0.35s ease; }
+
+    .filter-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+    @media (max-width: 860px) {
+      .filter-controls { align-items: flex-start; width: 100%; }
+    }
+    .filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .filter-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtle); margin-right: 4px; }
+    .pill-btn {
+      padding: 7px 13px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .pill-btn:hover { background: #e2e8f0; }
+    .pill-btn.active {
+      background: #1d4ed8;
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 3px 10px rgba(29, 78, 216, 0.25);
+    }
+
+    /* Month Section */
+    .months-stack { display: flex; flex-direction: column; gap: 28px; }
+    .month-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 26px -6px rgba(15, 23, 42, 0.06);
+    }
+    .month-header {
+      background: linear-gradient(120deg, #0f172a 0%, #1e293b 100%);
+      color: #fff;
+      padding: 18px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .month-header h3 { font-size: 17px; font-weight: 900; }
+    .month-header p { font-size: 12.5px; color: #bfdbfe; margin-top: 3px; max-width: 820px; }
+    .month-chip {
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 11px;
+      font-weight: 800;
+      color: #fde68a;
+      white-space: nowrap;
+    }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+    thead th {
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+    }
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.15s ease; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody tr.is-lab { background: #f5f7ff; }
+    tbody tr.is-lab:hover { background: #eef2ff; }
+    tbody td { padding: 14px 18px; vertical-align: top; }
+
+    .cell-session { width: 105px; white-space: nowrap; }
+    .week-tag { font-size: 11px; font-weight: 700; color: #94a3b8; }
+    .session-num { font-size: 14px; font-weight: 900; color: #0f172a; margin-top: 1px; }
+
+    .cell-mode { width: 132px; white-space: nowrap; }
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 9px;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+    .mode-live { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .mode-lab { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; }
+
+    .cell-topic { width: 290px; }
+    .focus-text { font-size: 11.5px; font-weight: 800; color: #2563eb; }
+    .topic-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-top: 2px; }
+    .cell-detail { color: #475569; line-height: 1.6; min-width: 280px; }
+
+    /* Bottom CTA */
+    .cta-banner {
+      margin-top: 34px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+      color: #fff;
+      padding: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      box-shadow: 0 16px 36px -10px rgba(30, 58, 138, 0.45);
+    }
+    .cta-eyebrow { font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; color: #fcd34d; }
+    .cta-banner h2 { margin-top: 4px; font-size: 20px; font-weight: 900; }
+    .cta-banner p { margin-top: 4px; font-size: 13px; color: #dbeafe; }
+    .cta-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-emerald { background: #34d399; color: #022c22; }
+    .btn-emerald:hover { background: #6ee7b7; }
+    .btn-white { background: #fff; color: #1e3a8a; }
+    .btn-white:hover { background: #eff6ff; }
+  </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
-  <!-- Top Bar -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
-      <a href="/" class="inline-flex items-center gap-3 group">
-        <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center text-white font-black text-lg shadow">K</div>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/" class="brand">
+        <div class="brand-logo">K</div>
         <div>
-          <span class="block text-base font-black tracking-tight text-blue-950 leading-none">IELTS W KHANH</span>
-          <span class="block text-[11px] font-bold uppercase tracking-wider text-blue-600 mt-0.5">Syllabus IELTS 3 Chặng (B1 → C1)</span>
+          <div class="brand-name">IELTS W KHANH</div>
+          <div class="brand-sub">Syllabus IELTS 3 Chặng (B1 → C1)</div>
         </div>
       </a>
-      <div class="flex items-center gap-2">
-        <a href="/placement-test.html" class="hidden sm:inline-flex items-center rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-extrabold text-blue-800 hover:bg-blue-100 transition">📝 Test đầu vào 5 phút</a>
-        <a href="/#public-packages-section" class="inline-flex items-center rounded-xl bg-blue-700 hover:bg-blue-800 px-3.5 py-2 text-xs font-black text-white shadow-sm transition">← Trang chủ &amp; Học phí</a>
+      <div class="nav-actions">
+        <a href="/placement-test.html" class="btn btn-outline">📝 Test đầu vào 5 phút</a>
+        <a href="/#public-packages-section" class="btn btn-primary">← Trang chủ &amp; Học phí</a>
       </div>
     </div>
   </header>
 
-  <!-- Hero Banner -->
-  <section class="bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white py-10 sm:py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto">
-      <div class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1 text-xs font-black uppercase tracking-widest text-cyan-300">
-        <span>🎓 Chuẩn 3 Tháng / Khóa • 12 Tuần • 36 Buổi (2 Buổi Live + 1 Buổi LMS Lab / Tuần)</span>
-      </div>
-      <h1 class="mt-3 text-2xl sm:text-4xl font-black tracking-tight">Lộ Trình &amp; Syllabus Chi Tiết Từng Buổi Học IELTS</h1>
-      <p class="mt-2 max-w-3xl text-sm sm:text-base text-blue-100/90">
-        Thiết kế tối ưu theo từng trình độ: <strong>Foundation (B1)</strong> dồn 70% Reading &amp; Listening để nạp từ vựng và kéo band nhanh; <strong>Intensive (B2)</strong> và <strong>Mastery (C1)</strong> đẩy mạnh 65%–75% Writing &amp; Speaking kèm chấm chữa 1-1 trên hệ thống LMS.
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-pill">🎓 Chuẩn 3 Tháng / Khóa • 12 Tuần • 36 Buổi (2 Buổi Live + 1 Buổi LMS Lab / Tuần)</div>
+      <h1>Lộ Trình &amp; Syllabus Chi Tiết Từng Buổi Học IELTS</h1>
+      <p class="hero-desc">
+        Thiết kế tối ưu theo từng trình độ: <strong>Foundation (B1)</strong> dồn 70% Reading &amp; Listening để nạp từ vựng và kéo band nhanh; <strong>Intensive (B2)</strong> và <strong>Mastery (C1)</strong> đẩy mạnh 65%–75% Writing &amp; Speaking kèm chấm chữa 1-1 trên LMS.
       </p>
 
-      <!-- 3-Course Selector Tabs -->
-      <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3" role="tablist" aria-label="Chọn khóa học IELTS">
-        <button type="button" id="tab-foundation" onclick="selectCourse('foundation')" class="course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white text-slate-900 border-sky-400 shadow-lg">
-          <div class="flex items-center justify-between text-xs font-black">
-            <span class="rounded-full bg-sky-100 text-sky-900 px-2.5 py-0.5">KHÓA 1 • B1</span>
-            <span class="text-sky-700">Đầu ra 4.5 – 5.5</span>
+      <div class="course-tabs" role="tablist" aria-label="Chọn khóa học IELTS">
+        <button type="button" id="tab-foundation" onclick="selectCourse('foundation')" class="course-tab tab-foundation active">
+          <div class="tab-top">
+            <span class="tab-badge">KHÓA 1 • B1</span>
+            <span class="tab-band">Đầu ra 4.5 – 5.5</span>
           </div>
-          <div class="mt-2 text-lg font-black">IELTS Foundation (36 Buổi)</div>
-          <div class="mt-1 text-xs font-semibold text-slate-600">70% Reading &amp; Listening • 30% Writing &amp; Speaking nền tảng</div>
+          <div class="tab-title">IELTS Foundation (36 Buổi)</div>
+          <div class="tab-sub">70% Reading &amp; Listening • 30% Writing &amp; Speaking nền tảng</div>
         </button>
 
-        <button type="button" id="tab-intensive" onclick="selectCourse('intensive')" class="course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white/10 text-white border-white/15 hover:bg-white/15">
-          <div class="flex items-center justify-between text-xs font-black">
-            <span class="rounded-full bg-blue-500/30 text-blue-100 px-2.5 py-0.5">KHÓA 2 • B2</span>
-            <span class="text-cyan-300">Đầu ra 5.5 – 6.5</span>
+        <button type="button" id="tab-intensive" onclick="selectCourse('intensive')" class="course-tab tab-intensive">
+          <div class="tab-top">
+            <span class="tab-badge">KHÓA 2 • B2</span>
+            <span class="tab-band">Đầu ra 5.5 – 6.5</span>
           </div>
-          <div class="mt-2 text-lg font-black">IELTS Intensive (36 Buổi)</div>
-          <div class="mt-1 text-xs font-semibold text-blue-100/80">65% Writing (3D/Task 2) &amp; Speaking • 35% R/L dạng bẫy</div>
+          <div class="tab-title">IELTS Intensive (36 Buổi)</div>
+          <div class="tab-sub">65% Writing (3D/Task 2) &amp; Speaking • 35% R/L dạng bẫy</div>
         </button>
 
-        <button type="button" id="tab-mastery" onclick="selectCourse('mastery')" class="course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white/10 text-white border-white/15 hover:bg-white/15">
-          <div class="flex items-center justify-between text-xs font-black">
-            <span class="rounded-full bg-emerald-500/30 text-emerald-100 px-2.5 py-0.5">KHÓA 3 • C1</span>
-            <span class="text-emerald-300">Đầu ra 6.5 – 7.5+</span>
+        <button type="button" id="tab-mastery" onclick="selectCourse('mastery')" class="course-tab tab-mastery">
+          <div class="tab-top">
+            <span class="tab-badge">KHÓA 3 • C1</span>
+            <span class="tab-band">Đầu ra 6.5 – 7.5+</span>
           </div>
-          <div class="mt-2 text-lg font-black">IELTS Mastery (36 Buổi)</div>
-          <div class="mt-1 text-xs font-semibold text-blue-100/80">75% Writing &amp; Speaking 7.0+ Coaching • 25% R/L Band 8.0+</div>
+          <div class="tab-title">IELTS Mastery (36 Buổi)</div>
+          <div class="tab-sub">75% Writing &amp; Speaking 7.0+ Coaching • 25% R/L Band 8.0+</div>
         </button>
       </div>
     </div>
   </section>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Course Overview Summary & Month Filter Bar -->
-    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm mb-6">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div id="course-summary-banner" class="space-y-1"></div>
-        <div class="flex flex-wrap items-center gap-2 shrink-0">
-          <span class="text-xs font-black uppercase tracking-wider text-slate-400 mr-1">Lọc theo tháng:</span>
-          <button type="button" onclick="selectMonth('all')" id="m-btn-all" class="month-btn rounded-xl px-3 py-1.5 text-xs font-black bg-blue-600 text-white shadow-sm">Tất cả (36 buổi)</button>
-          <button type="button" onclick="selectMonth(1)" id="m-btn-1" class="month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tháng 1 (Buổi 1–12)</button>
-          <button type="button" onclick="selectMonth(2)" id="m-btn-2" class="month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tháng 2 (Buổi 13–24)</button>
-          <button type="button" onclick="selectMonth(3)" id="m-btn-3" class="month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Tháng 3 (Buổi 25–36)</button>
+  <main class="main">
+    <div class="summary-card">
+      <div id="course-summary-banner" class="summary-left"></div>
+      <div class="filter-controls">
+        <div class="filter-row">
+          <span class="filter-label">Tháng:</span>
+          <button type="button" onclick="selectMonth('all')" id="m-btn-all" class="pill-btn active">Tất cả (36 buổi)</button>
+          <button type="button" onclick="selectMonth(1)" id="m-btn-1" class="pill-btn">Tháng 1 (1–12)</button>
+          <button type="button" onclick="selectMonth(2)" id="m-btn-2" class="pill-btn">Tháng 2 (13–24)</button>
+          <button type="button" onclick="selectMonth(3)" id="m-btn-3" class="pill-btn">Tháng 3 (25–36)</button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Hình thức:</span>
+          <button type="button" onclick="selectMode('all')" id="mode-btn-all" class="pill-btn active">Tất cả</button>
+          <button type="button" onclick="selectMode('live')" id="mode-btn-live" class="pill-btn">🟢 Buổi Live (24)</button>
+          <button type="button" onclick="selectMode('lab')" id="mode-btn-lab" class="pill-btn">💻 LMS Lab (12)</button>
         </div>
       </div>
     </div>
 
-    <!-- Dynamic Syllabus Container -->
-    <div id="syllabus-months-container" class="space-y-8"></div>
+    <div id="syllabus-months-container" class="months-stack"></div>
 
-    <!-- Bottom CTA -->
-    <div class="mt-10 rounded-2xl bg-gradient-to-r from-blue-900 to-indigo-900 p-6 sm:p-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+    <div class="cta-banner">
       <div>
-        <div class="text-xs font-black uppercase tracking-widest text-amber-300">🎁 Chính sách học phí minh bạch</div>
-        <h2 class="mt-1 text-xl sm:text-2xl font-black">Đóng theo tháng (12 buổi) hoặc Combo trọn khóa 3 tháng (36 buổi - Giảm 20%)</h2>
-        <p class="mt-1 text-xs sm:text-sm text-blue-100">Làm bài test đầu vào 5 phút hoặc nhắn Zalo để xếp đúng chặng B1 / B2 / C1.</p>
+        <div class="cta-eyebrow">🎁 Chính sách học phí minh bạch</div>
+        <h2>Đóng theo tháng (12 buổi) hoặc Combo 3 tháng (36 buổi - Giảm 20%)</h2>
+        <p>Làm bài test đầu vào 5 phút hoặc nhắn Zalo 0913 980 712 để được xếp đúng chặng B1 / B2 / C1.</p>
       </div>
-      <div class="flex flex-wrap gap-2.5 shrink-0">
-        <a href="/placement-test.html" class="rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs sm:text-sm px-4 py-3 transition">Thi thử 5 phút</a>
-        <a href="/#public-packages-section" class="rounded-xl bg-white hover:bg-blue-50 text-blue-950 font-black text-xs sm:text-sm px-4 py-3 transition">Tính học phí &amp; Đăng ký →</a>
+      <div class="cta-actions">
+        <a href="/placement-test.html" class="btn btn-emerald">Thi thử 5 phút</a>
+        <a href="/#public-packages-section" class="btn btn-white">Tính học phí &amp; Đăng ký →</a>
       </div>
     </div>
   </main>
@@ -307,6 +631,7 @@
 
     let activeCourse = 'foundation';
     let activeMonth = 'all';
+    let activeMode = 'all';
 
     function selectCourse(courseKey) {
       if (!SYLLABUS_DATA[courseKey]) return;
@@ -314,11 +639,7 @@
       ['foundation', 'intensive', 'mastery'].forEach(k => {
         const btn = document.getElementById('tab-' + k);
         if (!btn) return;
-        if (k === courseKey) {
-          btn.className = 'course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white text-slate-900 border-sky-400 shadow-lg';
-        } else {
-          btn.className = 'course-tab text-left rounded-2xl p-4 border-2 transition cursor-pointer bg-white/10 text-white border-white/15 hover:bg-white/15';
-        }
+        btn.classList.toggle('active', k === courseKey);
       });
       if (history.replaceState) {
         history.replaceState(null, '', '#' + courseKey);
@@ -330,12 +651,16 @@
       activeMonth = m;
       ['all', 1, 2, 3].forEach(val => {
         const btn = document.getElementById('m-btn-' + val);
-        if (!btn) return;
-        if (val === m) {
-          btn.className = 'month-btn rounded-xl px-3 py-1.5 text-xs font-black bg-blue-600 text-white shadow-sm';
-        } else {
-          btn.className = 'month-btn rounded-xl px-3 py-1.5 text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200';
-        }
+        if (btn) btn.classList.toggle('active', val === m);
+      });
+      renderSyllabus();
+    }
+
+    function selectMode(mode) {
+      activeMode = mode;
+      ['all', 'live', 'lab'].forEach(val => {
+        const btn = document.getElementById('mode-btn-' + val);
+        if (btn) btn.classList.toggle('active', val === mode);
       });
       renderSyllabus();
     }
@@ -345,17 +670,17 @@
       const summaryEl = document.getElementById('course-summary-banner');
       if (summaryEl) {
         summaryEl.innerHTML = `
-          <div class="text-xs font-black uppercase tracking-wider text-blue-700">${course.badge}</div>
-          <h2 class="text-xl sm:text-2xl font-black text-slate-900">${course.title}</h2>
-          <p class="text-xs sm:text-sm font-semibold text-slate-600">${course.ratioText}</p>
-          <div class="pt-2 max-w-xl">
-            <div class="flex justify-between text-[11px] font-black mb-1">
-              <span class="text-blue-700">📘🎧 Reading &amp; Listening: ${course.rlPct}%</span>
-              <span class="text-emerald-700">✍️🎙️ Writing &amp; Speaking: ${course.wsPct}%</span>
+          <div class="summary-eyebrow">${course.badge}</div>
+          <h2 class="summary-title">${course.title}</h2>
+          <p class="summary-ratio">${course.ratioText}</p>
+          <div class="ratio-wrap">
+            <div class="ratio-labels">
+              <span class="rl">📘🎧 Reading &amp; Listening: ${course.rlPct}%</span>
+              <span class="ws">✍️🎙️ Writing &amp; Speaking: ${course.wsPct}%</span>
             </div>
-            <div class="h-2.5 w-full rounded-full bg-emerald-100 overflow-hidden flex">
-              <div class="bg-blue-600 h-full transition-all" style="width:${course.rlPct}%"></div>
-              <div class="bg-emerald-500 h-full transition-all" style="width:${course.wsPct}%"></div>
+            <div class="ratio-bar">
+              <div class="ratio-bar-rl" style="width:${course.rlPct}%"></div>
+              <div class="ratio-bar-ws" style="width:${course.wsPct}%"></div>
             </div>
           </div>
         `;
@@ -363,51 +688,57 @@
 
       const container = document.getElementById('syllabus-months-container');
       const months = course.months.filter(m => activeMonth === 'all' || m.month === activeMonth);
-      container.innerHTML = months.map(m => `
-        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div class="bg-slate-900 text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      container.innerHTML = months.map(m => {
+        const visibleSessions = m.sessions.filter(s => {
+          if (activeMode === 'live') return !s.mode.includes('LMS');
+          if (activeMode === 'lab') return s.mode.includes('LMS');
+          return true;
+        });
+        return `
+        <section class="month-card">
+          <div class="month-header">
             <div>
-              <h3 class="text-base sm:text-lg font-black">${m.title}</h3>
-              <p class="text-xs text-blue-200 mt-0.5">${m.goal}</p>
+              <h3>${m.title}</h3>
+              <p>${m.goal}</p>
             </div>
-            <span class="rounded-full bg-white/10 border border-white/15 px-3 py-1 text-xs font-black text-amber-300 shrink-0">12 Buổi (8 Live + 4 LMS Lab)</span>
+            <span class="month-chip">${visibleSessions.length} Buổi hiển thị</span>
           </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
+          <div class="table-wrap">
+            <table>
               <thead>
-                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-black uppercase tracking-wider text-slate-500">
-                  <th class="py-3 px-4 w-24">Tuần / Buổi</th>
-                  <th class="py-3 px-4 w-36">Hình thức</th>
-                  <th class="py-3 px-4 w-64">Trọng tâm Kỹ năng &amp; Chủ đề</th>
-                  <th class="py-3 px-4">Nội dung bài giảng &amp; Thực hành trên LMS</th>
+                <tr>
+                  <th>Tuần / Buổi</th>
+                  <th>Hình thức</th>
+                  <th>Trọng tâm Kỹ năng &amp; Chủ đề</th>
+                  <th>Nội dung bài giảng &amp; Thực hành trên LMS</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100">
-                ${m.sessions.map(s => {
+              <tbody>
+                ${visibleSessions.map(s => {
                   const isLab = s.mode.includes('LMS');
                   const modeBadge = isLab
-                    ? `<span class="inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-xs font-black text-indigo-800">💻 ${s.mode}</span>`
-                    : `<span class="inline-flex items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-black text-emerald-800">🟢 ${s.mode}</span>`;
+                    ? `<span class="mode-badge mode-lab">💻 ${s.mode}</span>`
+                    : `<span class="mode-badge mode-live">🟢 ${s.mode}</span>`;
                   return `
-                    <tr class="${isLab ? 'bg-indigo-50/30' : 'hover:bg-slate-50/80'} transition">
-                      <td class="py-3.5 px-4 align-top whitespace-nowrap">
-                        <div class="text-xs font-bold text-slate-400">Tuần ${s.w}</div>
-                        <div class="font-black text-slate-900">Buổi ${s.b}</div>
+                    <tr class="${isLab ? 'is-lab' : ''}">
+                      <td class="cell-session">
+                        <div class="week-tag">Tuần ${s.w}</div>
+                        <div class="session-num">Buổi ${s.b}</div>
                       </td>
-                      <td class="py-3.5 px-4 align-top whitespace-nowrap">${modeBadge}</td>
-                      <td class="py-3.5 px-4 align-top">
-                        <div class="text-xs font-extrabold text-blue-700">${s.focus}</div>
-                        <div class="font-black text-slate-900 mt-0.5">${s.topic}</div>
+                      <td class="cell-mode">${modeBadge}</td>
+                      <td class="cell-topic">
+                        <div class="focus-text">${s.focus}</div>
+                        <div class="topic-title">${s.topic}</div>
                       </td>
-                      <td class="py-3.5 px-4 align-top text-slate-600 leading-relaxed">${s.detail}</td>
+                      <td class="cell-detail">${s.detail}</td>
                     </tr>
                   `;
                 }).join('')}
               </tbody>
             </table>
           </div>
-        </section>
-      `).join('');
+        </section>`;
+      }).join('');
     }
 
     window.addEventListener('DOMContentLoaded', () => {
