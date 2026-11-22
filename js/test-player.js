@@ -1567,7 +1567,7 @@
                opts.forEach(c => {
                    const isSelected = answers[id] === c;
                    const bgClass = isSelected ? 'bg-[#d0e3f5]' : 'bg-white hover:bg-slate-100';
-                   table += `<td class="border border-slate-300 p-0 text-center cursor-pointer transition-colors ${bgClass}" onclick="handleAns(${id}, this.dataset.val); renderPart(currentPartIdx);" data-val="${q.latexSource ? escapeLatexOption(c) : c.replace(/"/g,"&quot;")}">
+                   table += `<td class="border border-slate-300 p-0 text-center cursor-pointer transition-colors ${bgClass}" onclick="handleAns(${id}, this.dataset.val); window.refreshAnswerZonesUI();" data-val="${q.latexSource ? escapeLatexOption(c) : c.replace(/"/g,"&quot;")}">
                        <div class="w-full h-full flex items-center justify-center min-h-[44px]">
                            ${isSelected ? `<svg class="w-6 h-6 text-[#5cb85c] font-black drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>` : ''}
                        </div>
@@ -2238,6 +2238,24 @@
     }
     function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
     
+    window.refreshAnswerZonesUI = function() {
+        const part = APP_DATA?.parts?.[currentPartIdx];
+        const hasPassageDropZones = Boolean(
+            APP_DATA?.module !== 'listening' &&
+            part &&
+            /\{drop:\d+\}/.test(part.text || '')
+        );
+        if (!hasPassageDropZones) {
+            const savedBlockIdx = currentBlockIdx;
+            renderQuestions();
+            activateQuestionBlock(currentPartIdx, savedBlockIdx);
+            updateExamUI();
+            restoreHighlights();
+            return;
+        }
+        renderPart(currentPartIdx);
+    };
+
     function drop(e, id) { 
         e.preventDefault(); e.currentTarget.classList.remove('drag-over'); 
         
@@ -2250,11 +2268,11 @@
             }
             handleAns(id, droppedText); 
             draggedData=null; 
-            renderPart(currentPartIdx);
+            window.refreshAnswerZonesUI();
         } 
     }
     
-    function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; renderPart(currentPartIdx); triggerAutosave(); updateExamUI(); } }
+    function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; window.refreshAnswerZonesUI(); triggerAutosave(); updateExamUI(); } }
     
     function optionsDragOver(e) { 
         e.preventDefault(); 
@@ -2267,7 +2285,7 @@
         if(draggedData && draggedData.sourceId) {
             answers[draggedData.sourceId] = '';
             draggedData = null;
-            renderPart(currentPartIdx);
+            window.refreshAnswerZonesUI();
             triggerAutosave(); updateExamUI();
         }
     }
@@ -2309,7 +2327,7 @@
             // Overwrite the gap with the new text
             handleAns(id, data.text);
             window.mobileSelectedData = null;
-            renderPart(currentPartIdx);
+            window.refreshAnswerZonesUI();
         } else {
             // They were holding nothing, so they want to clear the gap (return to bank)
             clearDrop(id, e);
@@ -2320,7 +2338,7 @@
         if (window.mobileSelectedData) {
             if (window.mobileSelectedData.sourceId) {
                 answers[window.mobileSelectedData.sourceId] = '';
-                renderPart(currentPartIdx);
+                window.refreshAnswerZonesUI();
                 triggerAutosave(); updateExamUI();
             }
             window.mobileSelectedData.el.classList.remove('mobile-selected');

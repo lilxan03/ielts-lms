@@ -1084,3 +1084,47 @@ test('teacher test bank renders virtual part entries and labels parent-test acti
     assert.match(source, /const cardTitle = isPartEntry \? partTitle : window\.cleanTestBankLabel\(t\.title\)/);
     assert.match(source, /Assign full test; students can choose this part separately/);
 });
+
+
+test('Listening matching drag-and-drop updates questions without restarting or clearing Listening audio', () => {
+    const { context } = createTestPlayerContext();
+    let clearMediaCount = 0;
+    context.clearListeningMedia = () => { clearMediaCount++; };
+    context.draggedData = { text: 'A Education', sourceId: null };
+    context.currentPartIdx = 0;
+    context.currentBlockIdx = 0;
+    context.isTimeFree = true;
+    context.reviewStatus = {};
+    context.document.querySelector = () => null;
+    context.document.querySelectorAll = () => [];
+    vm.runInContext(
+        'updateExamUI = () => {}; renderQuestions = () => { window.questionsRendered = (window.questionsRendered || 0) + 1; }; activateQuestionBlock = () => {}; restoreHighlights = () => {}; triggerAutosave = () => {};',
+        context
+    );
+    context.APP_DATA = {
+        id: 'listening-match-1',
+        title: 'Listening Matching Test',
+        module: 'listening',
+        parts: [{
+            title: 'Part 2',
+            audioUrl: 'https://example.com/audio.mp3',
+            text: 'Transcript text without passage drop zones.',
+            questions: [{
+                type: 'dnd_list',
+                ids: [11, 12],
+                text: '11. First topic {drop:11}\n12. Second topic {drop:12}',
+                options: ['A Education', 'B Transport']
+            }]
+        }]
+    };
+
+    context.drop({
+        preventDefault() {},
+        currentTarget: { classList: { remove() {} } },
+        dataTransfer: { getData: () => 'A Education' }
+    }, 11);
+
+    assert.equal(context.answers[11], 'A Education');
+    assert.equal(context.questionsRendered, 1);
+    assert.equal(clearMediaCount, 0);
+});
