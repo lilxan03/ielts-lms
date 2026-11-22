@@ -1462,7 +1462,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     <div class="p-6 sm:p-9">
                         <p class="text-sm font-black uppercase tracking-[0.16em] text-blue-700">Đội ngũ giảng dạy</p>
                         <h2 id="public-teacher-method-heading" class="mt-2 text-2xl sm:text-3xl font-black text-slate-900">Giới thiệu giáo viên &amp; phương pháp</h2>
-                        <p class="mt-2 text-slate-500">Tìm hiểu chuyên môn và định hướng giảng dạy.</p>
                         ${bio ? `<p class="mt-6 whitespace-pre-line text-base leading-relaxed text-slate-700">${lmsEscapeHtml(bio)}</p>` : ''}
                         ${specialties.length ? `<div class="mt-6"><h3 class="text-sm font-bold uppercase tracking-wider text-slate-500">Chuyên môn</h3><div class="mt-3 flex flex-wrap gap-2">${specialties.map(s => `<span class="rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-900">${lmsEscapeHtml(s)}</span>`).join('')}</div></div>` : ''}
                         ${philosophy ? `<div class="mt-6 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 p-5"><h3 class="font-bold text-emerald-900">Phương pháp giảng dạy</h3><p class="mt-2 whitespace-pre-line leading-relaxed text-slate-700">${lmsEscapeHtml(philosophy)}</p></div>` : ''}
@@ -1496,11 +1495,11 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     </div>
                     <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm">${lmsEscapeHtml(missionTitle)}</h1>
                     <p class="mt-5 max-w-xl text-lg sm:text-xl leading-relaxed text-blue-100">${lmsEscapeHtml(missionText)}</p>
-                    <ul class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm font-semibold text-blue-100/90">
-                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Giảng viên IELTS 8.5 trực tiếp sửa bài</li>
-                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Module IELTS (4 kỹ năng) &amp; TOEIC thi máy</li>
-                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Corporate: Đào tạo nhân sự doanh nghiệp</li>
-                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Activities tương tác, 3D Writing &amp; AI</li>
+                    <ul class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm font-semibold text-blue-100/90">
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Giảng viên IELTS 8.5</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> IELTS &amp; TOEIC thi máy</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Corporate Staff Training</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> 3D Writing, AI &amp; Activities</li>
                     </ul>
                     <div class="mt-8 flex flex-wrap gap-3">
                         <button type="button" onclick="window.scrollToPublicPackages()" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-black text-blue-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Xem khóa học <span class="ml-2" aria-hidden="true">↓</span></button>
