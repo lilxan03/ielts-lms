@@ -1233,53 +1233,57 @@
     }
 
     .auth-card {
-        width: min(900px, calc(100vw - 48px));
-        min-height: 520px;
+        width: min(940px, calc(100vw - 32px));
+        min-height: 540px;
         display: grid;
-        grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+        grid-template-columns: minmax(290px, 0.92fr) minmax(0, 1.08fr);
         overflow: hidden;
-        border-radius: 24px;
+        border-radius: 28px;
     }
     .auth-brand-panel {
+        position: relative;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: clamp(2rem, 5vw, 4rem);
-        background: linear-gradient(145deg, rgba(239, 246, 255, 0.98), rgba(224, 231, 255, 0.9));
-        border-right: 1px solid rgba(148, 163, 184, 0.2);
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: clamp(2rem, 4.5vw, 3.25rem);
+        background: linear-gradient(155deg, #0f172a 0%, #1e3a8a 58%, #312e81 100%);
+        color: #ffffff;
+        overflow: hidden;
     }
     #app-logo-auth-container {
-        width: 100%;
+        width: auto;
     }
     #app-logo-auth-img {
         max-width: 100%;
-        max-height: 96px;
+        max-height: 80px;
     }
     #auth-subtitle {
-        margin: 1rem 0 0;
-        max-width: 18rem;
+        margin: 0.75rem 0 0;
+        max-width: 20rem;
     }
     .auth-brand-caption {
-        margin-top: 2rem;
-        color: #64748b;
-        text-align: center;
-        font-size: 0.9rem;
-        line-height: 1.6;
-        max-width: 18rem;
+        margin-top: 0.75rem;
+        color: rgba(191, 219, 254, 0.85);
+        text-align: left;
+        font-size: 0.875rem;
+        line-height: 1.55;
+        max-width: 20rem;
     }
     .auth-form-panel {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: clamp(1.5rem, 4vw, 3.5rem);
+        padding: clamp(1.75rem, 4vw, 3.25rem);
+        background: #ffffff;
         min-width: 0;
     }
     .auth-form-panel > #auth-error,
+    .auth-form-panel > .auth-form-header,
     .auth-form-panel > .space-y-5 {
         width: 100%;
-        max-width: 460px;
+        max-width: 420px;
     }
 
     @media (max-width: 1024px) and (orientation: portrait) {
@@ -1366,24 +1370,26 @@
             border-radius: 20px;
         }
         .auth-brand-panel {
-            padding: 1.25rem 1.25rem 0.25rem;
-            background: transparent;
-            border-right: 0;
+            padding: 1.5rem 1.5rem 1.25rem;
+            align-items: center;
+            text-align: center;
         }
         #app-logo-auth-text {
-            font-size: 2rem;
+            font-size: 1.75rem;
         }
         #app-logo-auth-img {
-            max-height: 64px;
+            max-height: 56px;
         }
         #auth-subtitle {
             margin-top: 0.35rem;
+            text-align: center;
         }
-        .auth-brand-caption {
+        .auth-brand-caption,
+        .auth-brand-modules {
             display: none;
         }
         .auth-form-panel {
-            padding: 0.5rem 1.25rem 1.5rem;
+            padding: 1.25rem 1.5rem 1.75rem;
         }
         #start-screen > #student-banner-bg {
             padding: 1rem;

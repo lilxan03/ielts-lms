@@ -590,60 +590,87 @@
   </div>
 
   <!-- AUTHENTICATION UI -->
-  <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 absolute z-[200] overflow-hidden">
+  <div id="auth-ui" class="hidden h-screen w-full flex items-center justify-center bg-slate-950 bg-[radial-gradient(ellipse_at_top_left,_rgba(37,99,235,0.35),_transparent_50%),radial-gradient(ellipse_at_bottom_right,_rgba(79,70,229,0.35),_transparent_50%)] absolute z-[200] overflow-hidden p-4">
     <!-- Decorative background elements -->
-    <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 7s;"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-[100px] opacity-40 animate-float" style="animation-duration: 9s;"></div>
+    <div class="pointer-events-none absolute top-[-12%] left-[-8%] w-[28rem] h-[28rem] bg-blue-500/25 rounded-full filter blur-[110px] animate-float" style="animation-duration: 7s;"></div>
+    <div class="pointer-events-none absolute bottom-[-12%] right-[-8%] w-[28rem] h-[28rem] bg-indigo-500/25 rounded-full filter blur-[110px] animate-float" style="animation-duration: 9s;"></div>
     
-    <div class="auth-card bg-white/95 backdrop-blur-sm rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] relative z-10 animate-fade-in-up border border-white/20">
+    <div class="auth-card bg-white shadow-[0_28px_70px_-12px_rgba(2,6,23,0.7)] relative z-10 animate-fade-in-up border border-white/15">
       <section class="auth-brand-panel">
-        <button type="button" id="app-logo-auth-container" data-auth-action="home" class="flex justify-center mb-2 min-h-[40px] cursor-pointer" aria-label="Go to Homepage">
-            <span id="app-logo-auth-text" class="block text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">Khanh LMS</span>
-            <img id="app-logo-auth-img" src="" class="h-16 object-contain hidden">
-        </button>
-        <h1 class="text-center text-slate-500 font-medium" id="auth-subtitle">Login to your account</h1>
-        <p class="auth-brand-caption">Sign in to continue your learning journey.</p>
+        <div class="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-cyan-400/15 blur-3xl"></div>
+        <div class="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-indigo-400/20 blur-3xl"></div>
+
+        <div class="relative z-10 w-full flex items-center justify-between gap-3">
+          <button type="button" data-auth-action="home" class="inline-flex items-center gap-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 px-3 py-1.5 text-xs font-bold text-blue-100 transition cursor-pointer">
+            <span aria-hidden="true">&larr;</span> Trang chủ
+          </button>
+          <span class="rounded-full bg-emerald-400/15 border border-emerald-300/25 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-200">LMS Portal</span>
+        </div>
+
+        <div class="relative z-10 my-6 w-full">
+          <button type="button" id="app-logo-auth-container" data-auth-action="home" class="inline-flex items-center gap-3 text-left cursor-pointer group" aria-label="Go to Homepage">
+              <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 border border-white/25 text-white font-black text-xl shadow-lg group-hover:scale-105 transition">K</span>
+              <span id="app-logo-auth-text" class="block text-2xl sm:text-3xl font-black tracking-tight text-white">Khanh LMS</span>
+              <img id="app-logo-auth-img" src="" class="h-14 object-contain hidden">
+          </button>
+          <h1 class="text-white/95 font-bold text-lg sm:text-xl tracking-tight" id="auth-subtitle">Login to your account</h1>
+          <p class="auth-brand-caption">Sign in to access your classes, computer-delivered tests, and study tools.</p>
+        </div>
+
+        <div class="auth-brand-modules relative z-10 w-full pt-5 border-t border-white/15">
+          <div class="text-[10px] font-black uppercase tracking-widest text-blue-200/75 mb-2.5">Active Learning Modules</div>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="rounded-lg bg-white/10 border border-white/15 px-2.5 py-1 text-[11px] font-bold text-white">🎓 IELTS</span>
+            <span class="rounded-lg bg-white/10 border border-white/15 px-2.5 py-1 text-[11px] font-bold text-white">💼 TOEIC</span>
+            <span class="rounded-lg bg-white/10 border border-white/15 px-2.5 py-1 text-[11px] font-bold text-white">🏢 Corporate</span>
+            <span class="rounded-lg bg-white/10 border border-white/15 px-2.5 py-1 text-[11px] font-bold text-white">🎯 Activities</span>
+          </div>
+        </div>
       </section>
 
       <section class="auth-form-panel">
-        <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded text-sm font-bold text-center" role="alert" aria-live="assertive" aria-atomic="true"></div>
+        <div class="auth-form-header mb-6">
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Welcome back</h2>
+          <p class="text-xs font-medium text-slate-500 mt-1">Enter your student or teacher credentials below.</p>
+        </div>
+        <div id="auth-error" class="hidden mb-4 p-3 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-sm font-bold text-center" role="alert" aria-live="assertive" aria-atomic="true"></div>
 
-        <form id="auth-form" class="space-y-5" novalidate>
+        <form id="auth-form" class="space-y-4" novalidate>
         <div>
-          <label for="auth-user" class="block text-sm font-bold text-slate-700 mb-1">Username or email</label>
-          <input type="text" id="auth-user" name="username" autocomplete="username" required aria-describedby="auth-error" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors" placeholder="e.g. student123 or name@gmail.com">
+          <label for="auth-user" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600 mb-1.5">Username or email</label>
+          <input type="text" id="auth-user" name="username" autocomplete="username" required aria-describedby="auth-error" class="w-full border border-slate-200 bg-slate-50/70 focus:bg-white rounded-xl px-4 py-3 text-sm font-semibold text-slate-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 focus:outline-none transition-all" placeholder="e.g. student123 or name@gmail.com">
         </div>
         <div>
-          <label for="auth-pass" class="block text-sm font-bold text-slate-700 mb-1">Password</label>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="auth-pass" class="block text-xs font-extrabold uppercase tracking-wider text-slate-600">Password</label>
+            <button type="button" data-auth-action="forgot-password" class="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline transition">Forgot password?</button>
+          </div>
           <div class="relative">
-              <input type="password" id="auth-pass" name="password" autocomplete="current-password" required aria-describedby="auth-error" class="w-full border-2 border-slate-200 rounded-lg px-4 py-2.5 pr-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors" placeholder="••••••••">
-              <button type="button" data-auth-action="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600 transition-colors" aria-label="Show password" aria-pressed="false">
+              <input type="password" id="auth-pass" name="password" autocomplete="current-password" required aria-describedby="auth-error" class="w-full border border-slate-200 bg-slate-50/70 focus:bg-white rounded-xl px-4 py-3 pr-11 text-sm font-semibold text-slate-900 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/15 focus:outline-none transition-all" placeholder="••••••••">
+              <button type="button" data-auth-action="toggle-password" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-blue-600 transition-colors" aria-label="Show password" aria-pressed="false">
                   <svg aria-hidden="true" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
               </button>
           </div>
-          <div class="text-right mt-1.5">
-              <button type="button" data-auth-action="forgot-password" class="text-xs font-bold text-blue-600 hover:underline transition">Forgot password?</button>
-          </div>
         </div>
 
-        <button type="submit" id="auth-submit-btn" class="w-full btn-primary text-white font-bold py-3 rounded-lg shadow-lg mt-4 text-lg tracking-wide">Log In</button>
+        <button type="submit" id="auth-submit-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black py-3.5 rounded-xl shadow-lg shadow-blue-600/25 hover:shadow-blue-600/35 hover:-translate-y-0.5 active:translate-y-0 transition-all mt-2 text-base tracking-wide">Log In</button>
         
         <!-- ✨ NEW: Google Sign In Button -->
-        <div class="relative flex py-5 items-center">
+        <div class="relative flex py-3 items-center">
             <div class="flex-grow border-t border-slate-200"></div>
-            <span class="flex-shrink-0 mx-4 text-slate-400 text-xs font-bold uppercase tracking-widest">Or</span>
+            <span class="flex-shrink-0 mx-3 text-slate-400 text-[11px] font-bold uppercase tracking-widest">Or continue with</span>
             <div class="flex-grow border-t border-slate-200"></div>
         </div>
-        <button type="button" data-auth-action="google-login" id="auth-google-btn" class="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-2.5 rounded-lg shadow-sm transition-all text-base">
+        <button type="button" data-auth-action="google-login" id="auth-google-btn" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl shadow-sm transition-all text-sm">
             <svg aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Sign in with Google
         </button>
         
-        <div class="text-center mt-5 pt-5 border-t border-slate-100 flex flex-col gap-4">
-            <button type="button" data-auth-action="demo-login" class="hidden w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg border border-slate-200 transition text-sm flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
+        <div class="text-center mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
+            <button type="button" data-auth-action="demo-login" class="hidden w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl border border-slate-200 transition text-sm flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
                 🕹️ Try Demo Student Account
             </button>
-            <button type="button" data-auth-action="toggle-mode" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:underline transition">Need a student account? Sign up</button>
+            <button type="button" data-auth-action="toggle-mode" id="auth-toggle-btn" class="text-blue-600 font-bold text-sm hover:text-blue-700 hover:underline transition">Need a student account? Sign up</button>
         </div>
         </form>
       </section>
