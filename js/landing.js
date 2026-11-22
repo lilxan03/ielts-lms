@@ -1354,13 +1354,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
 
             const monthlyTotal = feePerLesson * lessonsPerMonth;
-            const fourMonthTotal = monthlyTotal * 4;
-            const fullCourseSavings = Math.round(fourMonthTotal * 0.2);
+            const threeMonthTotal = monthlyTotal * 3;
+            const fullCourseSavings = Math.round(threeMonthTotal * 0.2);
             prompt.textContent = '';
             summary.querySelector('[data-monthly-total]').textContent = formatVND(monthlyTotal);
-            summary.querySelector('[data-full-course-before]').textContent = formatVND(fourMonthTotal);
+            summary.querySelector('[data-full-course-before]').textContent = formatVND(threeMonthTotal);
             summary.querySelector('[data-full-course-savings]').textContent = `−${formatVND(fullCourseSavings)}`;
-            summary.querySelector('[data-full-course-total]').textContent = formatVND(fourMonthTotal - fullCourseSavings);
+            summary.querySelector('[data-full-course-total]').textContent = formatVND(threeMonthTotal - fullCourseSavings);
             results.classList.remove('hidden');
         });
     };
@@ -1575,10 +1575,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             <div class="public-package-pricing-summary mb-4 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm" data-fee-per-lesson="${hasPackageFee ? feePerLesson : ''}">
                                 <p data-estimate-prompt class="text-slate-600"></p>
                                 <dl data-estimate-results class="hidden space-y-2">
-                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Thanh toán theo tháng</dt><dd data-monthly-total class="text-right font-bold text-slate-900"></dd></div>
-                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Trọn 4 tháng, trước ưu đãi</dt><dd data-full-course-before class="text-right font-semibold text-slate-700"></dd></div>
-                                    <div class="flex justify-between gap-3"><dt class="font-bold text-emerald-800">Tiết kiệm 20%</dt><dd data-full-course-savings class="text-right font-black text-emerald-800"></dd></div>
-                                    <div class="flex justify-between gap-3 border-t border-emerald-200 pt-2"><dt class="font-bold text-slate-800">Trọn 4 tháng, sau ưu đãi</dt><dd data-full-course-total class="text-right font-black text-emerald-800"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Đóng theo tháng (không giảm)</dt><dd data-monthly-total class="text-right font-bold text-slate-900"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Combo 3 tháng, trước ưu đãi</dt><dd data-full-course-before class="text-right font-semibold text-slate-700"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="font-bold text-emerald-800">Giảm 20% (đóng 1 lần)</dt><dd data-full-course-savings class="text-right font-black text-emerald-800"></dd></div>
+                                    <div class="flex justify-between gap-3 border-t border-emerald-200 pt-2"><dt class="font-bold text-slate-800">Combo 3 tháng, sau ưu đãi</dt><dd data-full-course-total class="text-right font-black text-emerald-800"></dd></div>
                                 </dl>
                             </div>
                             <button type="button" onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Đăng ký khóa học</button>

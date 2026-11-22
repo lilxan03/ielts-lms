@@ -399,19 +399,14 @@
             for (let credit = 0; credit < referralDiscountCount; credit++) discounted = Math.round(discounted * 0.9);
             return discounted;
         };
-        const configuredComboRate = Number(BILLING_SETTINGS.discCombo);
-        const comboRate = Number.isFinite(configuredComboRate) ? configuredComboRate : 10;
         const courseRate = 20;
         const p1Raw = fpl * lpm;
-        const p2Raw = fpl * lpm * 2;
-        const p2Disc = p2Raw * (1 - (comboRate / 100));
-        const p4Raw = fpl * lpm * 4;
-        const p4Disc = p4Raw * (1 - (courseRate / 100));
+        const p3Raw = fpl * lpm * 3;
+        const p3Disc = p3Raw * (1 - (courseRate / 100));
 
         window.checkoutPlans = [
-            { id: 1, title: '1 Month Standard', months: 1, lessons: lpm, raw: p1Raw, final: applyReferralDiscounts(p1Raw), label: 'Pay as you go' },
-            { id: 2, title: '2 Month Combo', months: 2, lessons: lpm*2, raw: p2Raw, final: applyReferralDiscounts(p2Disc), label: `Save ${comboRate}%`, pop: true },
-            { id: 4, title: 'Full Course (4M)', months: 4, lessons: lpm*4, raw: p4Raw, final: applyReferralDiscounts(p4Disc), label: `Save ${courseRate}%` }
+            { id: 1, title: '1 Month Standard', months: 1, lessons: lpm, raw: p1Raw, final: applyReferralDiscounts(p1Raw), label: 'Pay monthly (no discount)' },
+            { id: 3, title: 'Full Course Combo (3M)', months: 3, lessons: lpm*3, raw: p3Raw, final: applyReferralDiscounts(p3Disc), label: `Pay upfront · Save ${courseRate}%`, pop: true }
         ];
         window.checkoutPlans.forEach(plan => {
             plan.referralCreditsApplied = referralDiscountCount;
