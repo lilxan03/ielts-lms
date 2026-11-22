@@ -591,9 +591,9 @@
         const price = Number(test.price) || 0;
         const isLocked = price > 0 && !(currentUser.unlockedTests || []).includes(test.id);
         const isCompleted = completedTestIds.includes(test.id);
-        const moduleColors = { reading: 'blue', listening: 'cyan', writing: 'emerald', speaking: 'amber', activity: 'fuchsia' };
-        const moduleIcons = { reading: '📘', listening: '🎧', writing: '✍️', speaking: '🎙️', activity: '⚡' };
-        const moduleNames = { reading: st('Reading', 'Đọc'), listening: st('Listening', 'Nghe'), writing: st('Writing', 'Viết'), speaking: st('Speaking', 'Nói'), activity: st('Activities', 'Hoạt động') };
+        const moduleColors = { reading: 'blue', listening: 'cyan', writing: 'emerald', speaking: 'amber', toeic: 'teal', corporate: 'violet', activity: 'fuchsia' };
+        const moduleIcons = { reading: '📘', listening: '🎧', writing: '✍️', speaking: '🎙️', toeic: '💼', corporate: '🏢', activity: '⚡' };
+        const moduleNames = { reading: st('Reading', 'Đọc'), listening: st('Listening', 'Nghe'), writing: st('Writing', 'Viết'), speaking: st('Speaking', 'Nói'), toeic: st('TOEIC', 'Chứng chỉ TOEIC'), corporate: st('Corporate / Staff', 'Tiếng Anh Doanh nghiệp'), activity: st('Activities', 'Hoạt động') };
         const color = moduleColors[test.module] || 'slate';
         const icon = moduleIcons[test.module] || '📝';
         const settings = getClassTestSettings(cls, test.id);
@@ -821,7 +821,7 @@
                   <p class="text-xs text-slate-500">${st('Jump straight into a specific IELTS module or launch a full mock exam.', 'Chọn nhanh kỹ năng muốn luyện hoặc bắt đầu bài thi thử tổng hợp.')}</p>
                 </div>
               </div>
-              <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
                 <button type="button" onclick="window.openStudentSkillBank('reading')" class="flex items-center gap-2.5 rounded-xl border border-blue-200 bg-white hover:bg-blue-50 p-3 text-left transition shadow-sm">
                   <span class="text-xl">📘</span>
                   <span><span class="block text-xs font-black text-slate-900">Reading</span><span class="block text-[10px] font-semibold text-blue-600">Vocab &amp; Grammar</span></span>
@@ -838,7 +838,15 @@
                   <span class="text-xl">🎙️</span>
                   <span><span class="block text-xs font-black text-slate-900">Speaking</span><span class="block text-[10px] font-semibold text-amber-700">Part 2 Sim</span></span>
                 </button>
-                <button type="button" onclick="window.startFullExam()" class="col-span-2 sm:col-span-1 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 p-3 text-left text-white transition shadow-sm">
+                <button type="button" onclick="window.openStudentSkillBank('toeic')" class="flex items-center gap-2.5 rounded-xl border border-teal-200 bg-white hover:bg-teal-50 p-3 text-left transition shadow-sm">
+                  <span class="text-xl">💼</span>
+                  <span><span class="block text-xs font-black text-slate-900">TOEIC</span><span class="block text-[10px] font-semibold text-teal-700">L&amp;R / S&amp;W</span></span>
+                </button>
+                <button type="button" onclick="window.openStudentSkillBank('corporate')" class="flex items-center gap-2.5 rounded-xl border border-violet-200 bg-white hover:bg-violet-50 p-3 text-left transition shadow-sm">
+                  <span class="text-xl">🏢</span>
+                  <span><span class="block text-xs font-black text-slate-900">Corporate</span><span class="block text-[10px] font-semibold text-violet-700">Staff Training</span></span>
+                </button>
+                <button type="button" onclick="window.startFullExam()" class="col-span-2 sm:col-span-2 lg:col-span-1 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 p-3 text-left text-white transition shadow-sm">
                   <span class="text-xl">🎓</span>
                   <span><span class="block text-xs font-black">${st('Mock Exam', 'Thi thử Full')}</span><span class="block text-[10px] text-blue-100">3 Skills</span></span>
                 </button>

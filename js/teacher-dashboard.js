@@ -762,7 +762,7 @@
             ? window.cleanTestBankLabel(t.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`)
             : '';
         const cardTitle = isPartEntry ? partTitle : window.cleanTestBankLabel(t.title);
-        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber', activity:'fuchsia' };
+        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber', toeic:'teal', corporate:'violet', activity:'fuchsia' };
         const c = modColors[t.module] || 'slate';
         
         const assignedClasses = CLASSES.filter(cls => cls.assignedTests && cls.assignedTests.includes(t.id)).map(cls => cls.name);
@@ -1096,6 +1096,19 @@
             return [
                 { title: "Warm-up Game", text: "", questions: [{ blockId: 'a1_'+Date.now(), type: 'vocab_game', ids: [1], instruction: '' }] },
                 { title: "Main Activity", text: "", questions: [{ blockId: 'a2_'+Date.now(), type: 'pair_roleplay', ids: [2], instruction: 'Find a partner. Decide who is Student A and Student B.', text: 'You are a tourist asking for directions.', hint: 'You are a local giving directions.' }] }
+            ];
+        } else if (mod === 'toeic') {
+            return [
+                { title: "Part 1 & 2: Photographs & Question-Response", text: "", audioUrl: "", questions: [] },
+                { title: "Part 3 & 4: Conversations & Short Talks", text: "", audioUrl: "", questions: [] },
+                { title: "Part 5 & 6: Incomplete Sentences & Text Completion", text: "", questions: [] },
+                { title: "Part 7: Business Reading Comprehension", text: "", questions: [] }
+            ];
+        } else if (mod === 'corporate') {
+            return [
+                { title: "Module 1: Workplace Communication & Business Emails", text: "Scenario: Internal & client email communication for company staff.", questions: [{ blockId: 'c1_'+Date.now(), type: 'essay', ids: [1], instruction: 'Write a professional business email responding to the client scenario.', points: 1 }] },
+                { title: "Module 2: Meetings, Presentations & Speaking Roleplay", text: "Practice speaking in meetings, negotiations, and staff updates.", questions: [{ blockId: 'c2_'+Date.now(), type: 'pair_roleplay', ids: [2], instruction: 'Work in pairs or groups from your team (11-staff cohort).', text: 'Staff Member A: Present the quarterly project update and timeline.', hint: 'Staff Member B: Ask follow-up questions on budget and delivery dates.' }] },
+                { title: "Module 3: Practical Business Vocabulary & Comprehension", text: "", questions: [] }
             ];
         }
         return [{ title: "Part 1", text: "", questions: [] }];

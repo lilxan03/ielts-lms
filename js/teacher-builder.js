@@ -1132,6 +1132,9 @@
       if(APP_DATA.module==='writing') qSel.innerHTML = '<option value="essay">Writing Essay Box</option>';
       else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option><option value="essay">Notes / Text Box</option>';
       else if(APP_DATA.module==='activity') qSel.innerHTML = '<option value="pair_roleplay">🎭 Pair Roleplay (Cards)</option><option value="group_debate">🗣️ Group Debate (Teams)</option><option value="vocab_game">🎲 Multiplayer Vocab Board</option>';
+      else if(APP_DATA.module==='toeic' || APP_DATA.module==='corporate') {
+        qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option><option value="tfng">True/False/Not Given</option><option value="matching_info">Matching Information</option><option value="essay">Writing / Business Email Box</option><option value="audio_record">Speaking / Audio Recording Box</option><option value="pair_roleplay">🎭 Workplace Pair Roleplay</option><option value="group_debate">🗣️ Team Discussion / Debate</option><option value="vocab_game">🎲 Business Vocab Board</option>`;
+      }
       else {
         qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option>`;
         if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Information</option><option value="matching_endings">Matching Sentence Endings (Drag &amp; Drop)</option>`;
@@ -3019,6 +3022,8 @@
             listening: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'map_labelling_hotspots', 'map_labelling_grid'],
             writing: ['essay'],
             speaking: ['audio_record', 'essay'],
+            toeic: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'matching_endings', 'essay', 'audio_record'],
+            corporate: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'matching_info', 'essay', 'audio_record', 'pair_roleplay', 'group_debate', 'vocab_game'],
             activity: ['pair_roleplay', 'group_debate', 'vocab_game']
         }[APP_DATA.module] || [];
         if (!choices.includes(requestedType)) {
