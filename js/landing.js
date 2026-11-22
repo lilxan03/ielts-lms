@@ -1492,15 +1492,15 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-10 lg:gap-16 text-left">
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-2 rounded-full border border-blue-300/25 bg-white/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-blue-100">
-                        <span class="h-2 w-2 rounded-full bg-cyan-300"></span>${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Lộ trình học IELTS')} • HỆ THỐNG ĐÀO TẠO &amp; THI MÁY IELTS
+                        <span class="h-2 w-2 rounded-full bg-cyan-300"></span>${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'IELTS W KHANH')} • IELTS · TOEIC · CORPORATE LMS
                     </div>
                     <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm">${lmsEscapeHtml(missionTitle)}</h1>
                     <p class="mt-5 max-w-xl text-lg sm:text-xl leading-relaxed text-blue-100">${lmsEscapeHtml(missionText)}</p>
                     <ul class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm font-semibold text-blue-100/90">
                         <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Giảng viên IELTS 8.5 trực tiếp sửa bài</li>
-                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Thi máy Cambridge + 3D Writing &amp; AI</li>
-                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Lộ trình B1 → C1 cá nhân hóa rõ ràng</li>
-                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Học phí minh bạch, ưu đãi gói 4 tháng</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Module IELTS (4 kỹ năng) &amp; TOEIC thi máy</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Corporate: Đào tạo nhân sự doanh nghiệp</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Activities tương tác, 3D Writing &amp; AI</li>
                     </ul>
                     <div class="mt-8 flex flex-wrap gap-3">
                         <button type="button" onclick="window.scrollToPublicPackages()" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-black text-blue-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Xem khóa học <span class="ml-2" aria-hidden="true">↓</span></button>
