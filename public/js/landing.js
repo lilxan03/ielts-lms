@@ -411,7 +411,7 @@ window.loadChartEditorUI = function() {
     if (!container) return;
 
     document.querySelectorAll('.builder-chart-canvas').forEach(canvas => {
-        const chartStatus = window.Chart?.getChart(canvas);
+        const chartStatus = Chart.getChart(canvas);
         if (chartStatus) chartStatus.destroy();
     });
     container.innerHTML = '';
@@ -1053,16 +1053,7 @@ window.updateStudentChartComparison = function(part, charts) {
 
 // Hàm Render chung (dùng cho cả Teacher Builder và Student Exam)
 window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionContext, renderOptions = {}) {
-    if (config && config.type !== 'table' && !window.Chart) {
-        return window.ensureChartJsLoaded()
-            .then(() => window.renderCanvasChart(canvasId, config, pointColorMap, selectionContext, renderOptions))
-            .catch(error => {
-                console.error('Unable to load Chart.js for chart rendering:', error);
-                window.showToast?.('Chart unavailable', 'Unable to load charts. Check your connection and try again.', 'error');
-                return null;
-            });
-    }
-    const chartStatus = window.Chart?.getChart(canvasId);
+    const chartStatus = Chart.getChart(canvasId);
     if (chartStatus) chartStatus.destroy();
 
     const canvas = document.getElementById(canvasId);
@@ -1285,25 +1276,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     });
 };
 
-    window.publicPackagesStatus = 'loading';
-    window.getPublicPackagesStatusMarkup = function() {
-        if (window.publicPackagesStatus === 'loading') {
-            return `<div class="col-span-full rounded-2xl border border-blue-100 bg-blue-50 p-8 text-center text-slate-700" role="status">Đang tải thông tin khóa học…</div>`;
-        }
-        if (window.publicPackagesStatus === 'error') {
-            return `<div class="col-span-full rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center" role="alert">
-                <h3 class="text-xl font-black text-slate-900">Chưa tải được thông tin khóa học</h3>
-                <p class="mx-auto mt-2 max-w-xl text-slate-600">Vui lòng thử tải lại. Nếu vấn đề tiếp tục, hãy liên hệ để được tư vấn.</p>
-                <button type="button" onclick="window.loadPublicLandingData()" class="mt-5 rounded-xl bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800">Thử tải lại</button>
-            </div>`;
-        }
-        return '';
-    };
-
     window.loadPublicLandingData = function() {
         if (window.publicLandingDataPromise) return window.publicLandingDataPromise;
 
-        window.publicPackagesStatus = 'loading';
         window.renderPublicProfile();
         window.publicLandingDataPromise = (async () => {
             const [profileResult, packagesResult, courseCatalogResult, hallOfFameResult] = await Promise.allSettled([
@@ -1333,7 +1308,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             } else {
                 failures.push(['course_catalog', courseCatalogResult.reason]);
             }
-            window.publicPackagesStatus = packagesResult.status === 'fulfilled' ? 'loaded' : 'error';
 
             if (hallOfFameResult.status === 'fulfilled') {
                 HOF_STUDENTS = hallOfFameResult.value.docs.map(doc => doc.data());
@@ -1380,13 +1354,13 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             }
 
             const monthlyTotal = feePerLesson * lessonsPerMonth;
-            const fourMonthTotal = monthlyTotal * 4;
-            const fullCourseSavings = Math.round(fourMonthTotal * 0.2);
+            const threeMonthTotal = monthlyTotal * 3;
+            const fullCourseSavings = Math.round(threeMonthTotal * 0.2);
             prompt.textContent = '';
             summary.querySelector('[data-monthly-total]').textContent = formatVND(monthlyTotal);
-            summary.querySelector('[data-full-course-before]').textContent = formatVND(fourMonthTotal);
+            summary.querySelector('[data-full-course-before]').textContent = formatVND(threeMonthTotal);
             summary.querySelector('[data-full-course-savings]').textContent = `−${formatVND(fullCourseSavings)}`;
-            summary.querySelector('[data-full-course-total]').textContent = formatVND(fourMonthTotal - fullCourseSavings);
+            summary.querySelector('[data-full-course-total]').textContent = formatVND(threeMonthTotal - fullCourseSavings);
             results.classList.remove('hidden');
         });
     };
@@ -1488,7 +1462,6 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                     <div class="p-6 sm:p-9">
                         <p class="text-sm font-black uppercase tracking-[0.16em] text-blue-700">Đội ngũ giảng dạy</p>
                         <h2 id="public-teacher-method-heading" class="mt-2 text-2xl sm:text-3xl font-black text-slate-900">Giới thiệu giáo viên &amp; phương pháp</h2>
-                        <p class="mt-2 text-slate-500">Tìm hiểu chuyên môn và định hướng giảng dạy.</p>
                         ${bio ? `<p class="mt-6 whitespace-pre-line text-base leading-relaxed text-slate-700">${lmsEscapeHtml(bio)}</p>` : ''}
                         ${specialties.length ? `<div class="mt-6"><h3 class="text-sm font-bold uppercase tracking-wider text-slate-500">Chuyên môn</h3><div class="mt-3 flex flex-wrap gap-2">${specialties.map(s => `<span class="rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-900">${lmsEscapeHtml(s)}</span>`).join('')}</div></div>` : ''}
                         ${philosophy ? `<div class="mt-6 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 p-5"><h3 class="font-bold text-emerald-900">Phương pháp giảng dạy</h3><p class="mt-2 whitespace-pre-line leading-relaxed text-slate-700">${lmsEscapeHtml(philosophy)}</p></div>` : ''}
@@ -1518,15 +1491,22 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-10 lg:gap-16 text-left">
                 <div class="max-w-2xl">
                     <div class="inline-flex items-center gap-2 rounded-full border border-blue-300/25 bg-white/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-blue-100">
-                        <span class="h-2 w-2 rounded-full bg-cyan-300"></span>${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Lộ trình học IELTS')}
+                        <span class="h-2 w-2 rounded-full bg-cyan-300"></span>${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'IELTS W KHANH')} • IELTS · TOEIC · CORPORATE LMS
                     </div>
                     <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm">${lmsEscapeHtml(missionTitle)}</h1>
                     <p class="mt-5 max-w-xl text-lg sm:text-xl leading-relaxed text-blue-100">${lmsEscapeHtml(missionText)}</p>
-                    <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                    <ul class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm font-semibold text-blue-100/90">
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Giảng viên IELTS 8.5</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> IELTS &amp; TOEIC thi máy</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> Corporate Staff Training</li>
+                        <li class="flex items-center gap-2"><span class="text-emerald-400 font-black">✓</span> 3D Writing, AI &amp; Activities</li>
+                    </ul>
+                    <div class="mt-8 flex flex-wrap gap-3">
                         <button type="button" onclick="window.scrollToPublicPackages()" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-black text-blue-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Xem khóa học <span class="ml-2" aria-hidden="true">↓</span></button>
+                        <a href="/placement-test.html" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 text-base font-black text-slate-950 shadow-lg transition hover:-translate-y-0.5 hover:bg-emerald-400 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300/50">Thi thử đầu vào 5 phút</a>
                         <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Tư vấn qua Zalo</a>
                     </div>
-                    <p class="mt-4 text-sm text-blue-200">Bạn đã có tài khoản? <button type="button" onclick="window.showAuthFromLanding()" class="font-bold text-white underline decoration-white/50 underline-offset-4 hover:decoration-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Đăng nhập / đăng ký</button></p>
+                    <p class="mt-4 text-sm text-blue-200">Bạn đã là học viên của trung tâm? <button type="button" onclick="window.showAuthFromLanding()" class="font-bold text-white underline decoration-white/50 underline-offset-4 hover:decoration-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Đăng nhập hệ thống LMS</button></p>
                 </div>
                 <div class="relative mx-auto w-full max-w-md pb-8 md:pb-10">
                     ${teacherImageHtml}
@@ -1542,10 +1522,7 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         // Render Public Packages
         const pgrid = document.getElementById('public-packages-grid');
         if (pgrid) {
-            const packageStatusMarkup = window.getPublicPackagesStatusMarkup();
-            if (packageStatusMarkup) {
-                pgrid.innerHTML = packageStatusMarkup;
-            } else if (PACKAGES.length === 0) {
+            if (PACKAGES.length === 0) {
                 pgrid.innerHTML = `<div class="col-span-full rounded-2xl border border-blue-100 bg-blue-50 p-8 text-center sm:p-10">
                     <h3 class="text-xl font-black text-slate-900">Chưa có gói học được đăng công khai</h3>
                     <p class="mx-auto mt-2 max-w-xl text-slate-600">Liên hệ để được tư vấn về lớp học và học phí phù hợp với mục tiêu của bạn.</p>
@@ -1598,10 +1575,10 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                             <div class="public-package-pricing-summary mb-4 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm" data-fee-per-lesson="${hasPackageFee ? feePerLesson : ''}">
                                 <p data-estimate-prompt class="text-slate-600"></p>
                                 <dl data-estimate-results class="hidden space-y-2">
-                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Thanh toán theo tháng</dt><dd data-monthly-total class="text-right font-bold text-slate-900"></dd></div>
-                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Trọn 4 tháng, trước ưu đãi</dt><dd data-full-course-before class="text-right font-semibold text-slate-700"></dd></div>
-                                    <div class="flex justify-between gap-3"><dt class="font-bold text-emerald-800">Tiết kiệm 20%</dt><dd data-full-course-savings class="text-right font-black text-emerald-800"></dd></div>
-                                    <div class="flex justify-between gap-3 border-t border-emerald-200 pt-2"><dt class="font-bold text-slate-800">Trọn 4 tháng, sau ưu đãi</dt><dd data-full-course-total class="text-right font-black text-emerald-800"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Đóng theo tháng (không giảm)</dt><dd data-monthly-total class="text-right font-bold text-slate-900"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Combo 3 tháng, trước ưu đãi</dt><dd data-full-course-before class="text-right font-semibold text-slate-700"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="font-bold text-emerald-800">Giảm 20% (đóng 1 lần)</dt><dd data-full-course-savings class="text-right font-black text-emerald-800"></dd></div>
+                                    <div class="flex justify-between gap-3 border-t border-emerald-200 pt-2"><dt class="font-bold text-slate-800">Combo 3 tháng, sau ưu đãi</dt><dd data-full-course-total class="text-right font-black text-emerald-800"></dd></div>
                                 </dl>
                             </div>
                             <button type="button" onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Đăng ký khóa học</button>

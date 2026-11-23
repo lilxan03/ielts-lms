@@ -525,6 +525,68 @@
         e.target.value = ''; 
     };
 
+    function renderTestThumbnailPreview() {
+        const preview = document.getElementById('test-thumbnail-preview');
+        if (!preview) return;
+        const thumbnail = APP_DATA?.thumbnail;
+        preview.innerHTML = thumbnail
+            ? `<div class="relative"><img src="${escapeHtmlAttributeValue(thumbnail)}" alt="Test bank thumbnail preview" class="block aspect-video max-h-56 w-full object-cover"><button type="button" class="absolute right-2 top-2 rounded-md bg-rose-500 px-3 py-1.5 text-xs font-bold text-white shadow hover:bg-rose-600" onclick="event.stopPropagation(); window.removeTestThumbnail()">✕ Remove</button></div>`
+            : '<div class="flex min-h-[120px] flex-col items-center justify-center gap-2 p-4 text-sm font-medium text-slate-400"><span class="text-3xl">🖼️</span><span>Paste an image or click to upload</span></div>';
+    }
+
+    window.handleTestThumbnailPaste = function(e) {
+        const clipboard = e.clipboardData || e.originalEvent?.clipboardData;
+        if (!clipboard) return;
+        const imageItem = Array.from(clipboard.items || []).find(item => item.type.startsWith('image/'));
+        if (imageItem) {
+            e.preventDefault();
+            const file = imageItem.getAsFile();
+            if (!file) {
+                window.showModalMsg('Paste Error', 'Could not read the pasted image.');
+                return;
+            }
+            window.processImageFile(file, image => {
+                APP_DATA.thumbnail = image;
+                renderTestThumbnailPreview();
+                window.triggerEditorAutosave();
+            });
+            return;
+        }
+
+        const pastedText = clipboard.getData('text/plain').trim();
+        if (/^https:\/\/\S+$/i.test(pastedText)) {
+            e.preventDefault();
+            APP_DATA.thumbnail = pastedText;
+            renderTestThumbnailPreview();
+            window.triggerEditorAutosave();
+        }
+    };
+
+    window.handleTestThumbnailFile = function(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            window.showModalMsg('Invalid File', 'Please choose an image file.');
+            e.target.value = '';
+            return;
+        }
+        window.processImageFile(file, image => {
+            APP_DATA.thumbnail = image;
+            renderTestThumbnailPreview();
+            window.triggerEditorAutosave();
+        });
+        e.target.value = '';
+    };
+
+    window.removeTestThumbnail = function() {
+        if (!APP_DATA) return;
+        delete APP_DATA.thumbnail;
+        renderTestThumbnailPreview();
+        window.triggerEditorAutosave();
+    };
+
+    window.renderTestThumbnailPreview = renderTestThumbnailPreview;
+
     window.removePartImage = function() {
         APP_DATA.parts[currentEditorPartIdx].image = null;
         loadEditorPart(currentEditorPartIdx);

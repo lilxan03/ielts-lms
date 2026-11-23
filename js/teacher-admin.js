@@ -305,7 +305,7 @@
         const input = document.getElementById('modal-input');
         const cancel = document.getElementById('modal-cancel');
         const confirm = document.getElementById('modal-confirm');
-        title.textContent = `Payment Deadline: ${student.user}`;
+        title.textContent = `Payment Deadline: ${window.getStudentDisplayName ? window.getStudentDisplayName(student) : student.user}`;
         message.innerHTML = `
             <label for="student-billing-deadline-input" class="block text-sm font-bold text-slate-700 mb-2">Last day to pay (access remains available through this date)</label>
             <input id="student-billing-deadline-input" type="date" value="${formatBillingDateInput(getBillingExpiryMillis(student))}" class="w-full border-2 border-slate-200 p-3 rounded-xl font-bold text-slate-800 outline-none focus:border-blue-500">
@@ -434,15 +434,6 @@
     // ✨ NEW: Global Revenue Chart Generator
     window.revenueChartInstance = null;
     window.updateRevenueChart = function(period) {
-        if (!window.Chart) {
-            window.ensureChartJsLoaded()
-                .then(() => window.updateRevenueChart(period))
-                .catch(error => {
-                    console.error('Unable to load Chart.js for the revenue chart:', error);
-                    window.showToast?.('Chart unavailable', 'Unable to load charts. Check your connection and try again.', 'error');
-                });
-            return;
-        }
         ['month', 'quarter', 'year'].forEach(p => {
             const btn = document.getElementById(`btn-chart-${p}`);
             if(btn) {
@@ -704,6 +695,43 @@
         });
     }
 
+    window.openStudentProfilePreview = function(username) {
+        const student = USERS.find(user => user.role === 'student' && user.user === username);
+        if (!student || currentUser?.role !== 'teacher') return;
+        if (window.isStudentProfilePreview) window.exitStudentProfilePreview();
+
+        const banner = document.getElementById('student-preview-banner');
+        const label = document.getElementById('student-preview-name');
+        if (!banner || !label) return;
+
+        window.studentProfilePreviewState = {
+            teacher: currentUser,
+            route: window.location.hash || '#/teacher/bank/tests'
+        };
+        window.studentProfilePreviewUser = student.user;
+        window.isStudentProfilePreview = true;
+        currentUser = { ...student, role: 'student' };
+        const isUidUser = window.LMSAuthHelpers?.isLikelyUid ? window.LMSAuthHelpers.isLikelyUid(student.user, student.uid) : /^[A-Za-z0-9_-]{20,}$/.test(String(student.user || ''));
+        const friendlyPreviewName = student.realName || (window.getStudentDisplayName ? window.getStudentDisplayName(student) : student.user);
+        label.textContent = isUidUser ? friendlyPreviewName : `${friendlyPreviewName} (@${student.user})`;
+        banner.classList.remove('hidden');
+        document.getElementById('editor-ui')?.classList.add('hidden');
+        document.getElementById('start-screen')?.classList.remove('hidden');
+        window.initStudentDashboard();
+        window.navigateAppRoute('student/dashboard', true);
+    };
+
+    window.exitStudentProfilePreview = function() {
+        const state = window.studentProfilePreviewState;
+        if (!window.isStudentProfilePreview || !state) return;
+        window.isStudentProfilePreview = false;
+        window.studentProfilePreviewUser = null;
+        window.studentProfilePreviewState = null;
+        currentUser = state.teacher;
+        document.getElementById('student-preview-banner')?.classList.add('hidden');
+        window.navigateAppRoute(state.route.replace(/^#\/?/, ''), true);
+    };
+
     function renderStudentsList() {
         const container = document.getElementById('registry-table-container');
         const countBadge = document.getElementById('student-count-badge');
@@ -742,9 +770,9 @@
                     const remaining = s.totalLessonsPaid ? Math.max(0, s.totalLessonsPaid - trackedAtt) : 'N/A';
                     const isPending = s.paymentStatus === 'pending';
                     const billing = getStudentBillingStatus(s);
-                    const accountLabel = s.email && !s.email.toLowerCase().endsWith('@khanhlms.com')
+                    const accountLabel = (s.email && !s.email.toLowerCase().endsWith('@khanhlms.com'))
                         ? s.email
-                        : s.user;
+                        : (window.getStudentDisplayName ? window.getStudentDisplayName(s) : s.user);
                     
                     let statusBadge = '';
                     if (isPending) {
@@ -781,6 +809,7 @@
                                     Actions <span aria-hidden="true">⋯</span>
                                 </summary>
                                 <div class="student-actions-menu">
+                                    <button type="button" data-student-profile-preview="${lmsEscapeHtml(s.user)}">👁️ Switch to student dashboard</button>
                                     <button type="button" onclick="togglePaymentStatus('${s.user}', ${isPending || !billing.hasAccess}); this.closest('details').open = false">${isPending ? '✓ Approve payment' : billing.hasAccess ? '🔒 Lock access' : '🔓 Unlock access'}</button>
                                     <button type="button" onclick="window.promptEditStudentContact('${s.user}'); this.closest('details').open = false">✏️ Edit contact info</button>
                                     <button type="button" onclick="window.openRadarEditor('${s.user}'); this.closest('details').open = false">📊 Edit radar chart</button>
@@ -796,6 +825,12 @@
             html += `</tbody></table>`;
             container.innerHTML = html;
             enableStudentRegistryColumnResizing(container.querySelector('.student-registry-table'));
+            container.querySelectorAll('[data-student-profile-preview]').forEach(button => {
+                button.addEventListener('click', () => {
+                    window.openStudentProfilePreview(button.dataset.studentProfilePreview);
+                    button.closest('details').open = false;
+                });
+            });
 
         } else {
             const staff = USERS.filter(u => u.role === 'teacher');
@@ -817,14 +852,14 @@
                 html += staff.map(s => {
                     const isMe = s.user === currentUser.user;
                     const actions = `<button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold" title="Reset Password">🔑 Reset Pass</button>`;
-
+                    const staffLabel = window.getStudentDisplayName ? window.getStudentDisplayName(s) : s.user;
                     return `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-4">
                             <div class="flex items-center gap-3">
-                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${s.user}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
+                                <img src="${s.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(staffLabel)}&background=random`}" class="w-8 h-8 rounded-full border border-slate-200 shadow-sm shrink-0 object-cover">
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-slate-800 text-sm">${s.user} ${isMe ? '<span class="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded ml-1 uppercase tracking-widest">You</span>' : ''}</span>
+                                    <span class="font-bold text-slate-800 text-sm">${staffLabel} ${isMe ? '<span class="text-[9px] font-black text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded ml-1 uppercase tracking-widest">You</span>' : ''}</span>
                                     <span class="text-[10px] font-medium text-slate-400">Added: ${s.createdAt || 'N/A'}</span>
                                 </div>
                             </div>

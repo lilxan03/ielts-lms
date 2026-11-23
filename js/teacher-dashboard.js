@@ -121,18 +121,76 @@
         localStorage.setItem('ielts_fontsize', s);
     }
     
+        window.teacherNotificationFilter = window.teacherNotificationFilter || 'all';
+
+        window.setTeacherNotificationFilter = function(filter, e) {
+            if (e) e.stopPropagation();
+            window.teacherNotificationFilter = filter || 'all';
+            if (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') {
+                document.querySelectorAll('[data-teacher-notif-filter]').forEach(btn => {
+                    const active = btn.getAttribute('data-teacher-notif-filter') === window.teacherNotificationFilter;
+                    btn.className = active
+                        ? 'rounded-lg bg-blue-600 text-white px-2.5 py-1 text-[11px] font-black whitespace-nowrap transition'
+                        : 'rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap transition';
+                });
+            }
+            window.updateTeacherBadges();
+        };
+
+        window.markAllTeacherNotificationsRead = async function(e) {
+            if (e) e.stopPropagation();
+            const now = new Date();
+            // 1. Mark new bookings read
+            (SCHEDULES || []).forEach(s => {
+                if (s.isNewBooking) {
+                    s.isNewBooking = false;
+                    try {
+                        window.fsUpdateDoc?.(window.fsDoc(window.db, window.fPath('schedules'), String(s.id)), { isNewBooking: false }).catch(() => {});
+                    } catch (_) {}
+                }
+            });
+            // 2. Mark student replies read
+            (SUBMISSIONS || []).forEach(s => {
+                if (s.studentReply && !s.teacherReadReply) {
+                    s.teacherReadReply = true;
+                    try {
+                        window.fsUpdateDoc?.(window.fsDoc(window.db, window.fPath('submissions'), String(s.id)), { teacherReadReply: true }).catch(() => {});
+                    } catch (_) {}
+                }
+            });
+            // 3. Mark question feedback reports read
+            (QUESTION_FEEDBACK || []).forEach(report => {
+                if (!report.teacherReadAt) {
+                    report.teacherReadAt = now;
+                    try {
+                        window.fsUpdateDoc?.(window.fsDoc(window.db, window.fPath('question_feedback'), report.id), { teacherReadAt: window.fsServerTimestamp ? window.fsServerTimestamp() : now }).catch(() => {});
+                    } catch (_) {}
+                }
+            });
+            // 4. Mark new local CRM consultation leads as contacted if desired? Keep status 'new' unless teacher contacts them, or mark seen
+            window.updateTeacherBadges();
+            window.showToast?.('Đã đánh dấu đã đọc', 'Các thông báo phản hồi, đặt lịch và báo lỗi câu hỏi đã được đánh dấu đã xem.', 'success');
+        };
+
         window.updateTeacherBadges = function() {
         if (!currentUser || currentUser.role !== 'teacher') return;
 
-        const pendingStudents = USERS.filter(u => u.role === 'student' && u.paymentStatus === 'pending').length;
-        const pendingSubs = SUBMISSIONS.filter(s => s.score === 'Pending Grade').length;
-        
-        // ✨ NEW: Calculate new Bookings and Student Replies
-        const newBookings = SCHEDULES.filter(s => s.isNewBooking).length;
-        const newReplies = SUBMISSIONS.filter(s => s.studentReply && !s.teacherReadReply).length;
-        const testsPendingReview = TEST_BANK.filter(t => t.status === 'review_ready').length;
+        const pendingStudentList = (USERS || []).filter(u => u.role === 'student' && u.paymentStatus === 'pending');
+        const pendingSubList = (SUBMISSIONS || []).filter(s => s.score === 'Pending Grade');
+        const newBookingList = (SCHEDULES || []).filter(s => s.isNewBooking);
+        const newReplyList = (SUBMISSIONS || []).filter(s => s.studentReply && !s.teacherReadReply);
+        const reviewReadyTestList = (TEST_BANK || []).filter(t => t.status === 'review_ready');
+        const unreadQuestionFeedback = (QUESTION_FEEDBACK || []).filter(report => !report.teacherReadAt);
+        const newLeadsList = (typeof window.getConsultationLeads === 'function' ? window.getConsultationLeads() : []).filter(l => (l.status || 'new') === 'new');
 
-        const totalNots = pendingStudents + pendingSubs + newBookings + newReplies + testsPendingReview;
+        const pendingStudents = pendingStudentList.length;
+        const pendingSubs = pendingSubList.length;
+        const newBookings = newBookingList.length;
+        const newReplies = newReplyList.length;
+        const testsPendingReview = reviewReadyTestList.length;
+        const newLeads = newLeadsList.length;
+
+        const totalNots = pendingStudents + pendingSubs + newBookings + newReplies + testsPendingReview + unreadQuestionFeedback.length + newLeads;
 
         const el = document.getElementById('badge-global-notifications');
         if (el) {
@@ -145,44 +203,154 @@
             if (totalNots > 0) { el.classList.remove('hidden'); el.classList.add('flex'); }
             else { el.classList.add('hidden'); el.classList.remove('flex'); }
         }
+        const countPill = document.getElementById('teacher-notifications-count-pill');
+        if (countPill) countPill.textContent = String(totalNots);
+
+        const activeFilter = window.teacherNotificationFilter || 'all';
+        const showGrading = activeFilter === 'all' || activeFilter === 'grading';
+        const showAdmin = activeFilter === 'all' || activeFilter === 'admin';
+        const showContent = activeFilter === 'all' || activeFilter === 'content';
 
         const list = document.getElementById('teacher-notifications-list');
         if (list) {
             let html = '';
-            if (newBookings > 0) {
-                html += `<button onclick="window.clearBookingNotifications()" class="text-left px-4 py-3 hover:bg-indigo-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">📅 New Bookings</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${newBookings}</b> new student appointment(s).</span>
+
+            if (showAdmin && pendingStudents > 0) {
+                html += `<div class="bg-rose-50/40">
+                    <button onclick="toggleEditorTab('payments'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-rose-50 transition flex items-center justify-between gap-2 w-full">
+                        <div>
+                            <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest block">💸 Xác nhận học phí (${pendingStudents})</span>
+                            <span class="text-xs font-semibold text-slate-700">${pendingStudentList.slice(0, 3).map(u => lmsEscapeHtml(getStudentDisplayName(u))).join(', ')}${pendingStudents > 3 ? ` +${pendingStudents - 3}` : ''} đang chờ duyệt chuyển khoản</span>
+                        </div>
+                        <span class="text-xs font-black text-rose-600 shrink-0">Duyệt &rarr;</span>
+                    </button>
+                </div>`;
+            }
+
+            if (showAdmin && newLeads > 0) {
+                html += `<div class="bg-cyan-50/40">
+                    <button onclick="toggleEditorTab('students'); window.toggleTeacherNotifications(); setTimeout(() => document.getElementById('consultation-leads-crm')?.scrollIntoView({ behavior: 'smooth' }), 120);" class="text-left px-4 py-3 hover:bg-cyan-50 transition flex items-center justify-between gap-2 w-full">
+                        <div>
+                            <span class="text-[10px] font-black text-cyan-700 uppercase tracking-widest block">📋 Lead tư vấn mới (${newLeads})</span>
+                            <span class="text-xs font-semibold text-slate-700">${newLeadsList.slice(0, 2).map(l => `${lmsEscapeHtml(l.name)} (${lmsEscapeHtml(l.phone)})`).join(' · ')}</span>
+                        </div>
+                        <span class="text-xs font-black text-cyan-700 shrink-0">Mở CRM &rarr;</span>
+                    </button>
+                </div>`;
+            }
+
+            if (showAdmin && newBookings > 0) {
+                html += `<button onclick="window.clearBookingNotifications()" class="text-left px-4 py-3 hover:bg-indigo-50 transition flex items-center justify-between gap-2 w-full">
+                    <div>
+                        <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest block">📅 Lịch học đặt mới (${newBookings})</span>
+                        <span class="text-xs font-semibold text-slate-700">Có <b>${newBookings}</b> lịch hẹn mới từ học viên trên thời khóa biểu.</span>
+                    </div>
+                    <span class="text-xs font-black text-indigo-600 shrink-0">Xem lịch &rarr;</span>
                 </button>`;
             }
-            if (newReplies > 0) {
-                html += `<button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-emerald-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">💬 Student Replies</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${newReplies}</b> new reply/question(s) on graded tests.</span>
+
+            if (showGrading && newReplies > 0) {
+                html += `<div class="bg-emerald-50/30">
+                    <div class="px-4 pt-2.5 pb-1 flex items-center justify-between">
+                        <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">💬 Phản hồi bài chấm từ học viên (${newReplies})</span>
+                        <button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="text-[11px] font-bold text-emerald-700 hover:underline">Xem tất cả</button>
+                    </div>
+                    ${newReplyList.slice(0, 4).map(sub => `<button onclick="openGradingView(${sub.id}); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-emerald-50 transition flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(getStudentDisplayName(sub.student))} · ${lmsEscapeHtml(sub.testName || 'Bài thi')}</span>
+                            <span class="block truncate text-[11px] text-slate-500">“${lmsEscapeHtml(String(sub.studentReply || '').slice(0, 70))}”</span>
+                        </div>
+                        <span class="text-[11px] font-black text-emerald-700 shrink-0">Trả lời &rarr;</span>
+                    </button>`).join('')}
+                </div>`;
+            }
+
+            if (showGrading && pendingSubs > 0) {
+                html += `<div>
+                    <div class="px-4 pt-2.5 pb-1 flex items-center justify-between">
+                        <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">📝 Bài nộp chờ chấm (${pendingSubs})</span>
+                        <button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="text-[11px] font-bold text-blue-600 hover:underline">Mở hộp thư</button>
+                    </div>
+                    ${pendingSubList.slice(0, 4).map(sub => `<button onclick="openGradingView(${sub.id}); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-blue-50 transition flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <span class="block truncate text-xs font-black text-slate-800">👤 ${lmsEscapeHtml(getStudentDisplayName(sub.student))} <span class="font-normal text-slate-400">(${lmsEscapeHtml(sub.className || 'Class')})</span></span>
+                            <span class="block truncate text-[11px] text-slate-500">${lmsEscapeHtml(sub.testName || 'Test')} · ${lmsEscapeHtml(sub.date || '')}</span>
+                        </div>
+                        <span class="text-[11px] font-black text-blue-600 shrink-0">Chấm ngay &rarr;</span>
+                    </button>`).join('')}
+                    ${pendingSubs > 4 ? `<button onclick="toggleEditorTab('classes'); window.toggleTeacherNotifications();" class="w-full px-4 pb-2.5 text-left text-[11px] font-bold text-blue-600 hover:underline">+ Xem thêm ${pendingSubs - 4} bài nộp chờ chấm...</button>` : ''}
+                </div>`;
+            }
+
+            if (showContent && unreadQuestionFeedback.length > 0) {
+                html += `<div>
+                    <div class="px-4 pt-2.5 pb-1 flex items-center justify-between">
+                        <span class="text-[10px] font-black text-amber-700 uppercase tracking-widest">⚑ Báo lỗi câu hỏi (${unreadQuestionFeedback.length})</span>
+                    </div>
+                    ${unreadQuestionFeedback.slice(0, 5).map(report => `<button onclick="window.openQuestionFeedback('${lmsEscapeHtml(report.id)}'); window.toggleTeacherNotifications();" class="w-full px-4 py-2 text-left hover:bg-amber-50 transition flex items-center justify-between gap-2">
+                        <div class="min-w-0">
+                            <span class="block truncate text-xs font-bold text-slate-800">${lmsEscapeHtml(getStudentDisplayName(report.student))}</span>
+                            <span class="block truncate text-[11px] text-slate-500">${lmsEscapeHtml(report.testTitle)} · Q${(report.questionIds || []).map(lmsEscapeHtml).join(', ')}</span>
+                        </div>
+                        <span class="text-[11px] font-black text-amber-700 shrink-0">Xem &rarr;</span>
+                    </button>`).join('')}
+                    ${unreadQuestionFeedback.length > 5 ? `<p class="px-4 pb-2.5 text-[11px] text-slate-500">+ ${unreadQuestionFeedback.length - 5} báo cáo khác.</p>` : ''}
+                </div>`;
+            }
+
+            if (showContent && testsPendingReview > 0) {
+                html += `<button onclick="toggleEditorTab('bank'); document.getElementById('bank-filter-status').value = 'review_ready'; renderTestBank(true); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-purple-50 transition flex items-center justify-between gap-2 w-full">
+                    <div>
+                        <span class="text-[10px] font-black text-purple-600 uppercase tracking-widest block">🟣 Đề CTV chờ duyệt (${testsPendingReview})</span>
+                        <span class="text-xs font-semibold text-slate-700">Có <b>${testsPendingReview}</b> đề đang chờ duyệt.</span>
+                    </div>
+                    <span class="text-xs font-black text-purple-600 shrink-0">Duyệt đề &rarr;</span>
                 </button>`;
             }
-            if (pendingSubs > 0) {
-                html += `<button onclick="toggleEditorTab('bank'); toggleDashboardView('classes'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-blue-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-blue-600 uppercase tracking-widest">📝 Submissions</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${pendingSubs}</b> ungraded test(s) waiting for review.</span>
-                </button>`;
+
+            if (html === '') {
+                html = `<div class="p-6 text-center">
+                    <div class="text-2xl mb-1">✨</div>
+                    <div class="text-xs font-black text-slate-700">Không có thông báo nào trong mục này</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">Mọi bài nộp, học phí và phản hồi đều đã được xử lý.</div>
+                </div>`;
             }
-            if (pendingStudents > 0) {
-                html += `<button onclick="toggleEditorTab('students'); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-rose-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-rose-600 uppercase tracking-widest">💸 Payments</span>
-                    <span class="text-sm font-medium text-slate-700">You have <b>${pendingStudents}</b> student action(s) to verify.</span>
-                </button>`;
-            }
-            if (testsPendingReview > 0) {
-                html += `<button onclick="toggleEditorTab('bank'); document.getElementById('bank-filter-status').value = 'review_ready'; renderTestBank(true); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-purple-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
-                    <span class="text-[10px] font-black text-purple-600 uppercase tracking-widest">🟣 Tests to Review</span>
-                    <span class="text-sm font-medium text-slate-700"><b>${testsPendingReview}</b> test(s) marked ready for review.</span>
-                </button>`;
-            }
-            if (html === '') html = `<div class="p-4 text-center text-sm text-slate-500 italic">You're all caught up!</div>`;
             list.innerHTML = html;
         }
         window.renderTeacherOverview();
+    };
+
+    window.openQuestionFeedback = async function(reportId) {
+        const report = QUESTION_FEEDBACK.find(item => item.id === reportId);
+        const modal = document.getElementById('question-feedback-report-modal');
+        if (!report || !modal) return;
+
+        document.getElementById('question-feedback-report-student').textContent = getStudentDisplayName(report.student);
+        document.getElementById('question-feedback-report-test').textContent =
+            `${report.testTitle || 'Test'} · ${report.partTitle || `Part ${(report.partIndex || 0) + 1}`} · Q${(report.questionIds || []).join(', ')}`;
+        document.getElementById('question-feedback-report-description').textContent = report.description || '';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        if (!report.teacherReadAt) {
+            try {
+                await window.fsUpdateDoc(
+                    window.fsDoc(window.db, window.fPath('question_feedback'), report.id),
+                    { teacherReadAt: window.fsServerTimestamp() }
+                );
+                report.teacherReadAt = new Date();
+                window.updateTeacherBadges();
+            } catch (error) {
+                console.error('Unable to mark question feedback as read:', error);
+                window.showToast?.('Feedback could not be marked as read', error.message || 'Please try again.', 'error');
+            }
+        }
+    };
+
+    window.closeQuestionFeedbackReport = function() {
+        const modal = document.getElementById('question-feedback-report-modal');
+        modal?.classList.add('hidden');
+        modal?.classList.remove('flex');
     };
 
     window.renderTeacherOverview = function() {
@@ -227,11 +395,15 @@
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
         });
 
+        const newLeadsList = (typeof window.getConsultationLeads === 'function' ? window.getConsultationLeads() : []).filter(l => (l.status || 'new') === 'new');
+        const unreadQuestionFeedback = (QUESTION_FEEDBACK || []).filter(report => !report.teacherReadAt);
+
         const statCards = [
             { label: 'Students with access', value: `${activeStudents} / ${studentUsers.length}`, note: 'Active access / total students', icon: '🎓', iconBg: 'bg-emerald-50', route: 'teacher/students' },
             { label: 'Tests in bank', value: TEST_BANK.length, note: `${pendingTests.length} ready for review`, icon: '📚', iconBg: 'bg-blue-50', route: 'teacher/bank/tests' },
-            { label: 'Ungraded submissions', value: pendingSubs.length, note: 'Waiting for teacher review', icon: '📝', iconBg: 'bg-amber-50', route: 'teacher/bank/classes' },
-            { label: 'Classes today', value: todayClasses, note: `${upcomingClasses.length} next scheduled shown below`, icon: '📅', iconBg: 'bg-indigo-50', route: 'teacher/timetable' }
+            { label: 'Ungraded submissions', value: pendingSubs.length, note: `${SUBMISSIONS.length} total submissions`, icon: '📝', iconBg: 'bg-amber-50', route: 'teacher/bank/classes' },
+            { label: 'Classes today', value: todayClasses, note: `${upcomingClasses.length} next scheduled shown below`, icon: '📅', iconBg: 'bg-indigo-50', route: 'teacher/timetable' },
+            { label: 'Consultation Leads', value: newLeadsList.length, note: 'New leads in Mini CRM', icon: '📋', iconBg: 'bg-cyan-50', route: 'teacher/students' }
         ];
         stats.innerHTML = statCards.map(card => `
             <button type="button" onclick="window.navigateAppRoute('${card.route}')" class="rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -246,6 +418,8 @@
         const attentionItems = [
             { count: pendingSubs.length, label: 'Submissions need grading', detail: 'Review learner work and send feedback.', icon: '📝', route: 'teacher/bank/classes', iconBg: 'bg-amber-50' },
             { count: pendingStudents.length, label: 'Payment requests to review', detail: 'Confirm payment and update student access.', icon: '💳', route: 'teacher/payments', iconBg: 'bg-rose-50' },
+            { count: newLeadsList.length, label: 'New consultation leads (Mini CRM)', detail: 'Prospective students waiting for consultation.', icon: '📋', route: 'teacher/students', iconBg: 'bg-cyan-50' },
+            { count: unreadQuestionFeedback.length, label: 'Question feedback reports', detail: 'Students flagged a question or typo.', icon: '⚑', route: 'teacher/bank/tests', iconBg: 'bg-amber-50' },
             { count: pendingTests.length, label: 'Tests ready for review', detail: 'Check tests marked ready for review.', icon: '📚', route: 'teacher/bank/tests', iconBg: 'bg-purple-50' },
             { count: SCHEDULES.filter(schedule => schedule.isNewBooking).length, label: 'New class bookings', detail: 'Check new student booking requests.', icon: '🗓️', route: 'teacher/timetable', iconBg: 'bg-indigo-50' },
             { count: SUBMISSIONS.filter(submission => submission.studentReply && !submission.teacherReadReply).length, label: 'Student replies to read', detail: 'Follow up on learner questions.', icon: '💬', route: 'teacher/bank/classes', iconBg: 'bg-emerald-50' }
@@ -273,11 +447,32 @@
             `${signInsThisWeek} student${signInsThisWeek === 1 ? '' : 's'} signed in during the last 7 days`;
         logins.innerHTML = recentSignIns.length
             ? recentSignIns.slice(0, 8).map(({ user, date }) => `<tr>
-                <td class="px-5 py-3"><span class="block font-bold text-slate-800">${escapeText(user.email && !user.email.toLowerCase().endsWith('@khanhlms.com') ? user.email : user.user)}</span><span class="mt-0.5 block text-xs text-slate-500">${escapeText(user.realName || 'No name set')}</span></td>
+                <td class="px-5 py-3"><span class="block font-bold text-slate-800">${escapeText(getStudentDisplayName(user))}</span><span class="mt-0.5 block text-xs text-slate-500">${escapeText(user.realName || (user.email && !user.email.toLowerCase().endsWith('@khanhlms.com') ? user.email : 'Student'))}</span></td>
                 <td class="px-5 py-3"><span class="rounded-full ${hasActiveStudentAccess(user) ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'} px-2.5 py-1 text-[10px] font-black uppercase">${hasActiveStudentAccess(user) ? 'Active' : 'Locked'}</span></td>
                 <td class="px-5 py-3 text-right text-xs font-medium text-slate-500">${escapeText(date.toLocaleString())}</td>
               </tr>`).join('')
             : '<tr><td colspan="3" class="px-5 py-6 text-center text-sm text-slate-500">Sign-in activity will appear here after students next sign in.</td></tr>';
+
+        const recentSubsEl = document.getElementById('teacher-overview-recent-subs');
+        if (recentSubsEl) {
+            const latestSubs = [...(SUBMISSIONS || [])].sort((a, b) => Number(b.id || 0) - Number(a.id || 0)).slice(0, 6);
+            recentSubsEl.innerHTML = latestSubs.length
+                ? latestSubs.map(sub => {
+                    const isPending = sub.score === 'Pending Grade';
+                    const scoreBadge = isPending
+                        ? 'bg-amber-50 text-amber-800 border-amber-200'
+                        : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+                    return `<button type="button" onclick="openGradingView(${sub.id})" class="flex w-full items-center justify-between gap-3 p-4 text-left transition hover:bg-slate-50">
+                        <span class="min-w-0 flex-1">
+                            <span class="block truncate text-sm font-black text-slate-800">👤 ${escapeText(getStudentDisplayName(sub.student))} <span class="text-xs font-semibold text-slate-400">· ${escapeText(sub.className || 'Class')}</span></span>
+                            <span class="mt-0.5 block truncate text-xs font-medium text-slate-500">${escapeText(sub.testName || 'Test')} · ${escapeText(sub.date || '')}</span>
+                        </span>
+                        <span class="shrink-0 rounded-full border px-2.5 py-1 text-xs font-black ${scoreBadge}">${escapeText(sub.score || 'Pending')}</span>
+                        <span class="text-xs font-black text-blue-600 shrink-0">${isPending ? 'Chấm ngay →' : 'Xem →'}</span>
+                    </button>`;
+                }).join('')
+                : '<div class="p-6 text-sm font-medium text-slate-500">Chưa có bài nộp nào từ học viên.</div>';
+        }
     };
     
     // ✨ NEW: Helper to clear booking notifications when clicked
@@ -292,9 +487,24 @@
     };
 
 
+    window.updateTeacherTopNavActive = function(tab) {
+      const dashView = sessionStorage.getItem('lms_dash_view') || 'tests';
+      const activeKey = tab === 'bank' && dashView === 'classes' ? 'classes' : tab;
+      if (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') {
+          document.querySelectorAll('[data-teacher-top-tab]').forEach(btn => {
+              const key = btn.getAttribute('data-teacher-top-tab');
+              const isActive = key === activeKey;
+              btn.className = isActive
+                  ? 'inline-flex items-center gap-1.5 rounded-xl bg-white text-blue-950 px-3 py-1.5 text-xs font-black shadow-sm whitespace-nowrap transition'
+                  : 'inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3 py-1.5 text-xs font-bold whitespace-nowrap transition';
+          });
+      }
+    };
+
     window.toggleDashboardView = function(view) {
       sessionStorage.setItem('lms_dash_view', view);
       setSidebarRoute('teacher', `teacher/bank/${view}`);
+      window.updateTeacherTopNavActive?.('bank');
       const testsView = document.getElementById('dash-view-tests');
       const classesView = document.getElementById('dash-view-classes');
       const btnTests = document.getElementById('dash-btn-tests');
@@ -367,6 +577,7 @@
         const b = document.getElementById(`tab-btn-${t}`);
         if(b) b.className = `app-sidebar-link${t === tab ? ' is-active' : ''}`;
       });
+      window.updateTeacherTopNavActive?.(tab);
 
       if (tab === 'builder') {
         document.getElementById('editor-view-builder').classList.remove('hidden');
@@ -457,23 +668,6 @@
         if (bankView) bankView.scrollTop = scrollTop;
     };
 
-    function matchesTestSearch(test, query, additionalTitle = '') {
-      const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
-      if (!normalizedQuery) return true;
-
-      const searchableTitles = [
-        additionalTitle,
-        test?.title,
-        ...(Array.isArray(test?.parts) ? test.parts.map(part => part?.title) : []),
-        ...(Array.isArray(test?.topics) ? test.topics : [])
-      ];
-      return searchableTitles
-        .filter(value => typeof value === 'string')
-        .join(' ')
-        .toLocaleLowerCase()
-        .includes(normalizedQuery);
-    }
-
     function renderTestBank(resetPage = false) {
       if (resetPage) currentTestBankPage = 1;
       const grid = document.getElementById('test-bank-grid');
@@ -495,9 +689,12 @@
               Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
       }
 
-      let filtered = TEST_BANK.filter(t => {
-          const matchQuery = matchesTestSearch(t, query);
-          const matchMod = mod === 'all' || t.module === mod;
+      let filtered = window.buildTestBankEntries(TEST_BANK).filter(entry => {
+          const t = entry.test;
+          const matchQuery = window.matchesTestBankEntry(entry, query);
+          const matchMod = typeof window.matchesProgramFilter === 'function'
+              ? window.matchesProgramFilter(t, mod)
+              : (mod === 'all' || t.module === mod);
           const matchTag = selectedTag === 'all' || (t.topics && t.topics.includes(selectedTag));
           
           const tStatus = t.status || 'not_started';
@@ -506,8 +703,11 @@
           return matchQuery && matchMod && matchTag && matchStatus;
       });
 
-      if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
-      else if (sort === 'za') filtered.sort((a, b) => b.title.localeCompare(a.title));
+      const getEntryTitle = entry => Number.isInteger(entry.partIndex)
+          ? window.cleanTestBankLabel(entry.test.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`)
+          : window.cleanTestBankLabel(entry.test.title);
+      if (sort === 'az') filtered.sort((a, b) => getEntryTitle(a).localeCompare(getEntryTitle(b)));
+      else if (sort === 'za') filtered.sort((a, b) => getEntryTitle(b).localeCompare(getEntryTitle(a)));
 
       // ✨ NEW: Pagination Math
       const totalPages = Math.ceil(filtered.length / TESTS_PER_PAGE) || 1;
@@ -516,8 +716,14 @@
       const startIndex = (currentTestBankPage - 1) * TESTS_PER_PAGE;
       const paginatedTests = filtered.slice(startIndex, startIndex + TESTS_PER_PAGE);
 
-      grid.innerHTML = paginatedTests.length ? paginatedTests.map(t => {
-        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber', activity:'fuchsia' };
+      grid.innerHTML = paginatedTests.length ? paginatedTests.map(entry => {
+        const t = entry.test;
+        const isPartEntry = Number.isInteger(entry.partIndex);
+        const partTitle = isPartEntry
+            ? window.cleanTestBankLabel(t.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`)
+            : '';
+        const cardTitle = isPartEntry ? partTitle : window.cleanTestBankLabel(t.title);
+        const modColors = { reading:'blue', listening:'cyan', writing:'emerald', speaking:'amber', toeic:'teal', corporate:'violet', activity:'fuchsia' };
         const c = modColors[t.module] || 'slate';
         
         const assignedClasses = CLASSES.filter(cls => cls.assignedTests && cls.assignedTests.includes(t.id)).map(cls => cls.name);
@@ -538,7 +744,8 @@
         const statBadge = `<span class="text-[9px] font-black px-2 py-1 rounded bg-${st.color}-50 text-${st.color}-700 border border-${st.color}-200 uppercase tracking-widest flex items-center gap-1 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-${st.color}-500"></span>${st.label}</span>`;
 
         return `
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
+        <div class="overflow-hidden bg-white border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition p-5 flex flex-col h-full min-h-[160px]">
+          ${t.thumbnail ? `<div class="-mx-5 -mt-5 mb-4"><img src="${escapeHtmlAttributeValue(t.thumbnail)}" alt="${escapeHtmlAttributeValue(t.title)}" class="block aspect-video w-full object-cover"></div>` : ''}
           <div class="flex justify-between items-start mb-3 shrink-0">
              <div class="flex gap-2 flex-wrap">
                  <span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide shadow-sm">${t.module}</span>
@@ -547,15 +754,18 @@
              ${statBadge}
           </div>
           <div class="flex justify-between items-start gap-2 mb-3 flex-1">
-             <h3 class="font-bold text-slate-900 leading-snug break-words">${t.title}</h3>
-             <span class="text-xs text-slate-400 font-bold shrink-0 mt-0.5">${t.parts.length} Part(s)</span>
+             <div class="min-w-0">
+               <h3 class="font-bold text-slate-900 leading-snug break-words">${escapeHtmlAttributeValue(cardTitle)}</h3>
+               ${isPartEntry ? `<p class="mt-1 text-[11px] font-semibold text-slate-500">${escapeHtmlAttributeValue(window.cleanTestBankLabel(t.title))} · Part ${entry.partIndex + 1} only</p>` : ''}
+             </div>
+             <span class="text-xs text-slate-400 font-bold shrink-0 mt-0.5">${isPartEntry ? 'Part only' : `${t.parts.length} Part(s)`}</span>
           </div>
           <div class="shrink-0">${assignedBadge}</div>
           <div class="flex gap-2 mt-auto pt-3 border-t border-slate-100 shrink-0">
-            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Edit Test">✏️</button>
-            ${currentUser.role === 'teacher' ? `<button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Assign to Class">👥</button>` : ''}
-            <button onclick="window.promptMergeTest('${t.id}')" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Merge Test">🔀</button>
-            <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>
+            <button onclick="editTest('${t.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="${isPartEntry ? 'Edit parent test' : 'Edit Test'}">✏️</button>
+            ${currentUser.role === 'teacher' ? `<button onclick="window.promptAssignTest('${t.id}')" class="flex-1 bg-indigo-50 hover:bg-indigo-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="${isPartEntry ? 'Assign full test; students can choose this part separately' : 'Assign to Class'}">👥</button>` : ''}
+            ${isPartEntry ? '' : `<button onclick="window.promptMergeTest('${t.id}')" class="flex-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Merge Test">🔀</button>
+            <button onclick="deleteTest('${t.id}')" class="flex-1 bg-rose-50 hover:bg-rose-100 rounded py-1.5 text-base transition flex items-center justify-center shadow-sm" title="Delete Test">🗑️</button>`}
           </div>
         </div>`;
       }).join('') : '<div class="col-span-full text-center p-10 text-slate-500 italic bg-white rounded-2xl border border-slate-200 shadow-sm">No tests found matching your criteria.</div>';
@@ -843,6 +1053,19 @@
                 { title: "Warm-up Game", text: "", questions: [{ blockId: 'a1_'+Date.now(), type: 'vocab_game', ids: [1], instruction: '' }] },
                 { title: "Main Activity", text: "", questions: [{ blockId: 'a2_'+Date.now(), type: 'pair_roleplay', ids: [2], instruction: 'Find a partner. Decide who is Student A and Student B.', text: 'You are a tourist asking for directions.', hint: 'You are a local giving directions.' }] }
             ];
+        } else if (mod === 'toeic') {
+            return [
+                { title: "Part 1 & 2: Photographs & Question-Response", text: "", audioUrl: "", questions: [] },
+                { title: "Part 3 & 4: Conversations & Short Talks", text: "", audioUrl: "", questions: [] },
+                { title: "Part 5 & 6: Incomplete Sentences & Text Completion", text: "", questions: [] },
+                { title: "Part 7: Business Reading Comprehension", text: "", questions: [] }
+            ];
+        } else if (mod === 'corporate') {
+            return [
+                { title: "Giai đoạn 1 (Buổi 1-6): Sinh tồn trên điện thoại, Đánh vần NATO B/L & Xác nhận Repeat-to-Confirm", text: "Khung câu lắp ghép (Sentence Frames) nhận/chuyển cuộc gọi với sếp & khách Nhật (Mr./Ms. + Họ), đánh vần mã B/L & Container chuẩn NATO, và kỹ thuật câu giờ lịch sự.", questions: [{ blockId: 'c1_'+Date.now(), type: 'fill_blanks', ids: [1], instruction: 'Điền mẫu câu nghe điện thoại & xác nhận mã B/L với khách Nhật.', text: 'Thank you for calling Logistics Department, this is Lan {blank:1}.', correctAnswers: { 1: 'speaking' } }] },
+                { title: "Giai đoạn 2 (Buổi 7-12): Nghiệp vụ Logistics cốt lõi (Career Paths Book 1), Báo cáo Ho-Ren-So & Chứng từ", text: "Từ vựng vận tải (Sea/Air/Trucking, 20ft/40ft/Reefer, FOB/CIF/EXW), báo cáo tiến độ chuẩn Ho-Ren-So (Trạng thái hiện tại -> Bước tiếp theo -> Thời gian dự kiến) và kiểm tra Draft B/L, Invoice, Packing List, C/O.", questions: [{ blockId: 'c2_'+Date.now(), type: 'pair_roleplay', ids: [2], instruction: 'Ngồi quay lưng lại với nhau (Back-to-Back Phone Roleplay) để mô phỏng cuộc gọi thực tế.', text: 'Staff Member (VN): Báo cáo tiến độ thông quan lô hàng đi Yokohama theo chuẩn Ho-Ren-So 3 bước.', hint: 'Japanese Client (Mr. Tanaka): Hỏi mã Container, giờ tàu chạy (ETD) và yêu cầu sửa (amendment) trên Draft B/L.' }] },
+                { title: "Giai đoạn 3 (Buổi 13-16): Báo cáo sự cố Delay 3 bước chuẩn Nhật & Viết Email xác nhận sau cuộc gọi", text: "Công thức 3 bước khi tàu Delay / Kẹt hải quan: (1) Xin lỗi ngay lập tức (I sincerely apologize...) -> (2) Nêu lý do khách quan -> (3) Đưa giải pháp & giờ cập nhật lại, kèm mẫu Email Bullet Points.", questions: [{ blockId: 'c3_'+Date.now(), type: 'essay', ids: [3], instruction: 'Viết email ngắn theo dạng gạch đầu dòng (Bullet Points) xác nhận lại cuộc gọi báo tàu trễ 2 ngày gửi Mr. Sato.', points: 1 }] }
+            ];
         }
         return [{ title: "Part 1", text: "", questions: [] }];
     }
@@ -1053,7 +1276,7 @@
     }
 
     function getClassAnalyticsSnapshot(cls) {
-      const classSubs = SUBMISSIONS.filter(s => s.className === cls.name && Array.isArray(s.questionAnalytics) && s.questionAnalytics.length > 0);
+      const classSubs = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, cls) && Array.isArray(s.questionAnalytics) && s.questionAnalytics.length > 0);
       if (!classSubs.length) return [];
 
       const summaries = [];
@@ -1102,37 +1325,15 @@
         }
     };
 
-    function getStudentDisplayName(student) {
-        const profile = typeof student === 'object'
-            ? student
-            : USERS.find(user => user.user === student || user.username === student || user.uid === student);
-        if (!profile) return 'Học viên không rõ tên';
-
-        const username = String(profile.username || profile.user || '').trim();
-        const isUidUsername = Boolean(username && (
-            (profile.uid && username === String(profile.uid)) ||
-            /^[A-Za-z0-9_-]{20,}$/.test(username)
-        ));
-        const email = String(profile.email || '').trim();
-        const readableEmail = email && !email.toLowerCase().endsWith('@khanhlms.com') ? email : '';
-        return (isUidUsername ? '' : username) ||
-            readableEmail || String(profile.realName || '').trim() || 'Học viên không rõ tên';
+    function getStudentDisplayName(student = currentUser) {
+        if (window.LMSAuthHelpers?.getStudentDisplayName) {
+            return window.LMSAuthHelpers.getStudentDisplayName(student, window.auth?.currentUser, typeof USERS !== 'undefined' ? USERS : []);
+        }
+        return 'Student';
     }
 
     function getStudentUsername(student) {
-        const profile = typeof student === 'object'
-            ? student
-            : USERS.find(user => user.user === student || user.username === student || user.uid === student);
-        const internalEmailUsername = String(profile?.email || '').match(/^([^@]+)@khanhlms\.com$/i)?.[1];
-        const candidates = [
-            profile?.username,
-            internalEmailUsername,
-            profile?.user,
-            typeof student === 'string' ? student : ''
-        ];
-        return candidates
-            .map(value => String(value || '').trim())
-            .find(value => value && value !== String(profile?.uid || '')) || 'Username unavailable';
+        return getStudentDisplayName(student);
     }
 
     function renderClasses() {
@@ -1158,8 +1359,8 @@
           if (sortVal === 'za') return b.name.localeCompare(a.name);
           if (sortVal === 'students_high') return (b.enrolledStudents || []).length - (a.enrolledStudents || []).length;
           if (sortVal === 'subs_high') {
-              const subsA = SUBMISSIONS.filter(s => s.className === a.name).length;
-              const subsB = SUBMISSIONS.filter(s => s.className === b.name).length;
+              const subsA = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, a)).length;
+              const subsB = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, b)).length;
               return subsB - subsA;
           }
           return 0;
@@ -1188,7 +1389,7 @@
       document.getElementById('classes-list').innerHTML = filteredClasses.map(cls => {
         const enrolled = cls.enrolledStudents || [];
         const assigned = getClassAssignedTests(cls);
-        const classSubs = SUBMISSIONS.filter(s => s.className === cls.name);
+        const classSubs = SUBMISSIONS.filter(s => window.classSubmissionMatches(s, cls));
         const isPathEnabled = (getClassParent(cls) || cls).learningPathEnabled !== false;
         
         const isOwner = currentUser.role === 'teacher';
@@ -1199,7 +1400,7 @@
             const miniClassesMap = cls.miniClasses || {};
             
             let studentStats = enrolled.map(student => {
-                const mySubs = SUBMISSIONS.filter(s => s.student === student && s.className === cls.name);
+                const mySubs = SUBMISSIONS.filter(s => s.student === student && window.classSubmissionMatches(s, cls));
                 const completedIds = [...new Set(mySubs.map(s => s.testId))];
                 let completedRequired = 0, pendingDeadlines = 0, totalScoreVal = 0, scoredCount = 0;
 
@@ -1287,8 +1488,22 @@
         const isSmallClass = Boolean(parentClass);
         const hasInvalidHierarchyDepth = Boolean(parentClass?.parentClassId);
         const isMainClass = !isSmallClass;
+        const allowedClassPrograms = typeof window.normalizeProgramList === 'function'
+            ? window.normalizeProgramList(cls.allowedPrograms)
+            : (Array.isArray(cls.allowedPrograms) ? cls.allowedPrograms : []);
+        const programLabels = { ielts: 'IELTS', toeic: 'TOEIC', corporate: 'Corporate', activity: 'Activities' };
+        const programSelectorHtml = `
+                    <div class="flex flex-wrap items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm" title="Restrict visible student modules (leave all unchecked to auto-detect from assigned tests)">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-1">Modules:</span>
+                        ${['ielts', 'toeic', 'corporate', 'activity'].map(prog => {
+                            const active = allowedClassPrograms.includes(prog);
+                            return `<button type="button" onclick="window.toggleClassAllowedProgram('${cls.id}', '${prog}')" class="text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-lg border transition ${active ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}">${programLabels[prog]}</button>`;
+                        }).join('')}
+                        ${allowedClassPrograms.length === 0 ? `<span class="text-[10px] font-semibold text-slate-400 ml-1">Auto</span>` : ''}
+                    </div>`;
         const topActionsHtml = isOwner ? `
                 <div class="flex flex-wrap items-center justify-end w-full gap-3">
+                    ${programSelectorHtml}
                     <button onclick="window.openClassHierarchyEditor('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition shadow-sm">Edit / Assign Parent</button>
                     ${!cls.parentClassId ? `<button onclick="window.promptCreateChildClass('${cls.id}')" class="text-xs font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition shadow-sm">+ Create Small Class</button>` : ''}
                     ${parentClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-indigo-50 text-indigo-700 border border-indigo-100">Small class · ${parentClass.name}</span>` : isMainClass ? `<span class="text-[10px] font-black uppercase tracking-widest rounded-xl px-3 py-2.5 bg-blue-50 text-blue-700 border border-blue-100">Main class · shared materials · ${childClasses.length} small class${childClasses.length === 1 ? '' : 'es'}</span>` : ''}
@@ -1313,7 +1528,10 @@
                 <div class="flex items-center gap-5">
                     <div class="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 text-blue-600 rounded-xl flex items-center justify-center text-2xl font-black shadow-sm shrink-0">🏫</div>
                     <div class="min-w-0">
-                        <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="font-black text-xl text-slate-800">${cls.name}</h3>
+                            ${isSmallClass && isOwner ? `<button type="button" onclick="window.promptRenameSmallClass('${cls.id}', event)" class="text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-2.5 py-1.5 transition" aria-label="Rename small class ${cls.name}">Edit name</button>` : ''}
+                        </div>
                         <div class="text-[10px] font-black uppercase tracking-widest mt-1 ${hasInvalidHierarchyDepth ? 'text-rose-600' : isSmallClass ? 'text-indigo-600' : isMainClass ? 'text-blue-700' : 'text-slate-400'}">
                             ${hasInvalidHierarchyDepth ? `Hierarchy needs review · parent ${parentClass.name} is also a small class` : isSmallClass ? `↳ Small class · ${parentClass.name} · roster & progress` : isMainClass ? 'Main class · shared materials for its small classes' : 'Class'}
                         </div>
@@ -1436,7 +1654,7 @@
                             <div class="text-sm p-3 bg-white rounded-xl shadow-sm border border-slate-200 relative overflow-hidden group">
                                 <div class="absolute left-0 top-0 bottom-0 w-1 ${s.score.includes('Band') || s.score.includes('/') ? 'bg-emerald-400' : 'bg-amber-400'}"></div>
                                 <div class="flex justify-between font-bold mb-1 pl-2">
-                                    <span class="text-slate-800">${s.student}</span>
+                                    <span class="text-slate-800">${lmsEscapeHtml(getStudentDisplayName(s.student))}</span>
                                     <span class="${s.score.includes('Band') || s.score.includes('/') ? 'text-emerald-600' : 'text-amber-500'}">${s.score}</span>
                                 </div>
                                 <div class="flex justify-between items-center pl-2 mt-2 pt-2 border-t border-slate-50">
@@ -1593,6 +1811,22 @@
       renderClasses();
     };
 
+    window.toggleClassAllowedProgram = async function(cid, programId) {
+      const cls = CLASSES.find(c => c.id === cid);
+      if (!cls) return;
+      const current = typeof window.normalizeProgramList === 'function'
+          ? window.normalizeProgramList(cls.allowedPrograms)
+          : (Array.isArray(cls.allowedPrograms) ? [...cls.allowedPrograms] : []);
+      const next = current.includes(programId)
+          ? current.filter(item => item !== programId)
+          : [...current, programId];
+      cls.allowedPrograms = typeof window.normalizeProgramList === 'function'
+          ? window.normalizeProgramList(next)
+          : next;
+      await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
+      renderClasses();
+    };
+
     function promptCreateClass() { 
       showInputPrompt("New Class", "Name:", async (name) => { 
         const newCls = {
@@ -1707,6 +1941,92 @@
           }
         }
       });
+    };
+
+    window.promptRenameSmallClass = function(cid, event) {
+      event?.stopPropagation();
+      if (currentUser?.role !== 'teacher') return;
+      const cls = CLASSES.find(candidate => candidate.id === cid);
+      if (!cls?.parentClassId) return;
+
+      document.getElementById('modal-title').textContent = 'Rename Small Class';
+      document.getElementById('modal-message').textContent = `Enter a new name for "${cls.name}".`;
+      const input = document.getElementById('modal-input');
+      input.value = cls.name;
+      input.maxLength = 80;
+      input.classList.remove('hidden');
+      document.getElementById('modal-cancel').classList.remove('hidden');
+      document.getElementById('custom-modal').classList.remove('hidden');
+      const button = document.getElementById('modal-confirm');
+      button.textContent = 'Save Name';
+      document.getElementById('modal-cancel').onclick = () => {
+        document.getElementById('custom-modal').classList.add('hidden');
+        button.textContent = 'OK';
+      };
+      button.onclick = () => window.saveSmallClassName(cid);
+      input.focus();
+      input.select();
+    };
+
+    window.saveSmallClassName = async function(cid) {
+      if (currentUser?.role !== 'teacher') return;
+      const cls = CLASSES.find(candidate => candidate.id === cid);
+      const input = document.getElementById('modal-input');
+      const button = document.getElementById('modal-confirm');
+      if (!cls?.parentClassId || !input || !button) return;
+
+      const newName = input.value.trim();
+      if (!newName || newName.length > 80) {
+        window.showToast('Invalid class name', 'Enter a name between 1 and 80 characters.', 'error');
+        input.focus();
+        return;
+      }
+      if (CLASSES.some(candidate => candidate.id !== cls.id && [
+        candidate.name,
+        ...(Array.isArray(candidate.nameAliases) ? candidate.nameAliases : [])
+      ].some(name => String(name || '').trim().toLowerCase() === newName.toLowerCase()))) {
+        window.showToast('Duplicate class name', 'Another class already uses this name.', 'error');
+        input.focus();
+        return;
+      }
+      if (newName === cls.name) {
+        document.getElementById('custom-modal').classList.add('hidden');
+        button.textContent = 'OK';
+        return;
+      }
+
+      const previousAliases = Array.isArray(cls.nameAliases) ? cls.nameAliases : [];
+      const updatedClass = {
+        ...cls,
+        name: newName,
+        nameAliases: [...new Set([...previousAliases, cls.name].filter(alias => alias && alias !== newName))]
+      };
+      button.disabled = true;
+      button.textContent = 'Saving...';
+      try {
+        await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), updatedClass);
+        const classIndex = CLASSES.findIndex(candidate => candidate.id === cls.id);
+        if (classIndex >= 0) CLASSES[classIndex] = updatedClass;
+        document.getElementById('custom-modal').classList.add('hidden');
+        renderClasses();
+        if (typeof window.renderTimetable === 'function') window.renderTimetable();
+        if (typeof window.renderCalendar === 'function') window.renderCalendar('teacher');
+        if (typeof window.syncPublicCourseCatalog === 'function') {
+          try {
+            await window.syncPublicCourseCatalog(CLASSES);
+          } catch (error) {
+            console.error('Small class was renamed, but the public course catalog could not be updated:', error);
+            window.showToast('Class renamed', 'The public course listing could not be refreshed yet.', 'error');
+          }
+        }
+        window.showToast('Class name updated', `“${cls.name}” is now “${newName}”.`);
+      } catch (error) {
+        console.error(`Unable to rename small class ${cid}:`, error);
+        window.showToast('Could not rename class', 'Please check your connection and try again.', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = 'OK';
+      }
     };
     
     async function deleteClass(id) {

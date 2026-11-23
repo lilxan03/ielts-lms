@@ -5,6 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 const authHelpers = require('../js/auth-helpers.js');
 const { buildStudentTestAccessEntries } = require('../js/student-test-access.js');
+const { buildTestBankEntries, cleanTestBankLabel, matchesTestBankEntry } = require('../js/test-bank-entries.js');
 
 const readAppScript = fileName => fs.readFileSync(
     path.join(__dirname, '..', 'js', fileName),
@@ -39,13 +40,10 @@ function createAuthContext() {
         ['auth-user', createElement('student_01')],
         ['auth-pass', createElement('password123')],
         ['auth-error', createElement()],
-        ['auth-submit-btn', createElement()],
-        ['auth-subtitle', createElement()],
-        ['auth-toggle-btn', createElement()]
+        ['auth-submit-btn', createElement()]
     ]);
     const storedValues = new Map();
     const profileLookups = [];
-    let studentLanguage = 'en';
     let ownedProfileLookups = 0;
     const context = {
         console,
@@ -72,8 +70,6 @@ function createAuthContext() {
         localStorage: { getItem: () => null }
     };
     context.window = context;
-    context.studentText = (english, vietnamese) => studentLanguage === 'vi' ? vietnamese : english;
-    context.setStudentLanguage = language => { studentLanguage = language; };
     context.LMSAuthHelpers = authHelpers;
     context.auth = { currentUser: null };
     context.db = {};
@@ -130,7 +126,7 @@ function createAuthContext() {
     vm.createContext(context);
     vm.runInContext(readAppScript('auth.js'), context);
     context.bootLMS = async () => { context.booted = true; };
-    vm.runInContext('window.runAuthSubmitForTest = handleAuthSubmit; window.runToggleAuthModeForTest = toggleAuthMode;', context);
+    vm.runInContext('window.runAuthSubmitForTest = handleAuthSubmit;', context);
     return { context, elements, storedValues };
 }
 
@@ -141,7 +137,11 @@ function createTestPlayerContext({ failSubmissionWrite = false } = {}) {
         ['exam-listening-audio', createElement()],
         ['practice-listening-audio', createElement()],
         ['results-score-area', createElement()],
-        ['results-modal', createElement()]
+        ['results-modal', createElement()],
+        ['question-feedback-context', createElement()],
+        ['question-feedback-description', createElement()],
+        ['question-feedback-modal', createElement()],
+        ['question-feedback-submit', createElement()]
     ]);
     const savedDocuments = [];
     const modalMessages = [];
@@ -161,7 +161,7 @@ function createTestPlayerContext({ failSubmissionWrite = false } = {}) {
         Promise,
         clearInterval: () => {},
         timerInterval: null,
-        currentUser: { user: 'student_01', gems: 0 },
+        currentUser: { user: 'student_01', role: 'student', gems: 0 },
         getQuestionAnalyticsForSubmission: (testData, answerMap) => [{
             partIndex: 0,
             blockIndex: 0,
@@ -194,9 +194,14 @@ function createTestPlayerContext({ failSubmissionWrite = false } = {}) {
         window: null
     };
     context.window = context;
+    context.auth = { currentUser: { uid: 'student-uid' } };
     context.db = {};
     context.fPath = collection => collection;
-    context.fsDoc = (database, collection, id) => ({ collection, id });
+    context.fsCollection = (database, collection) => ({ collection });
+    context.fsDoc = (database, collection, id) => collection === undefined
+        ? { collection: database.collection, id: 'generated-feedback' }
+        : { collection, id };
+    context.fsServerTimestamp = () => 'server timestamp';
     context.fsSetDoc = async (reference, value) => {
         if (failSubmissionWrite && reference.collection === 'submissions') {
             throw new Error('Network unavailable');
@@ -235,29 +240,140 @@ test('student sign-in authenticates, loads access, and starts the LMS', async ()
     assert.equal(elements.get('auth-pass').getAttribute('aria-invalid'), 'false');
 });
 
-test('student login and registration labels follow the selected language', () => {
-    const { context, elements } = createAuthContext();
+test('students can submit feedback with test and question metadata', async () => {
+    const { context, elements, savedDocuments } = createTestPlayerContext();
 
-    context.setStudentLanguage('vi');
-    context.runToggleAuthModeForTest();
-    assert.equal(elements.get('auth-subtitle').textContent, 'Tạo tài khoản học viên');
-    assert.equal(elements.get('auth-submit-btn').textContent, 'Đăng ký học viên');
-    assert.equal(elements.get('auth-toggle-btn').textContent, 'Đã có tài khoản? Đăng nhập');
+    context.openQuestionFeedbackForm('reading-1', 0, [1], 'Part One');
+    assert.equal(elements.get('question-feedback-context').textContent, 'Reading Practice · Part One · Q1');
+    elements.get('question-feedback-description').value = 'The answer field is not visible.';
+    await context.submitQuestionFeedback({ preventDefault() {} });
 
-    context.runToggleAuthModeForTest();
-    assert.equal(elements.get('auth-subtitle').textContent, 'Đăng nhập tài khoản');
-    assert.equal(elements.get('auth-submit-btn').textContent, 'Đăng nhập');
+    assert.equal(savedDocuments.length, 1);
+    assert.equal(savedDocuments[0].reference.collection, 'question_feedback');
+    assert.equal(savedDocuments[0].value.uid, 'student-uid');
+    assert.equal(savedDocuments[0].value.student, 'student_01');
+    assert.equal(savedDocuments[0].value.testId, 'reading-1');
+    assert.deepEqual(savedDocuments[0].value.questionIds, [1]);
+    assert.equal(savedDocuments[0].value.description, 'The answer field is not visible.');
+    assert.equal(savedDocuments[0].value.createdAt, 'server timestamp');
 });
 
-test('student sign-in validation messages follow the selected language', async () => {
-    const { context, elements } = createAuthContext();
-    elements.get('auth-user').value = '';
-    elements.get('auth-pass').value = '';
-    context.setStudentLanguage('vi');
+test('question feedback is unavailable in student profile preview mode', async () => {
+    const { context, elements, savedDocuments } = createTestPlayerContext();
+    context.isStudentProfilePreview = true;
 
-    await context.runAuthSubmitForTest();
+    context.openQuestionFeedbackForm('reading-1', 0, [1], 'Part One');
+    elements.get('question-feedback-description').value = 'This should not be submitted.';
+    await context.submitQuestionFeedback({ preventDefault() {} });
 
-    assert.equal(elements.get('auth-error').textContent, 'Vui lòng nhập tên đăng nhập và mật khẩu');
+    assert.equal(savedDocuments.length, 0);
+    assert.equal(elements.get('question-feedback-modal').classList.contains('flex'), false);
+});
+
+test('student preview cannot start a full exam', () => {
+    const { context } = createTestPlayerContext();
+    context.isStudentProfilePreview = true;
+
+    context.startFullExam();
+
+    assert.equal(context.isFullExamMode, false);
+    assert.equal(context.fullExamSequence, undefined);
+});
+
+test('teacher can switch to a read-only student dashboard and return to the saved teacher route', () => {
+    const elements = new Map([
+        ['student-preview-banner', createElement()],
+        ['student-preview-name', createElement()],
+        ['editor-ui', createElement()],
+        ['start-screen', createElement()]
+    ]);
+    const teacher = { user: 'teacher_01', role: 'teacher' };
+    const student = { user: 'alice', role: 'student', realName: 'Alice Student' };
+    const context = {
+        console,
+        window: null,
+        document: { getElementById: id => elements.get(id) || createElement() },
+        USERS: [student],
+        currentUser: teacher,
+        location: { hash: '#/teacher/students' },
+        initCount: 0,
+        routeCalls: []
+    };
+    context.window = context;
+    context.initStudentDashboard = () => { context.initCount += 1; };
+    context.navigateAppRoute = (route, replace) => {
+        context.routeCalls.push({ route, replace });
+        context.location.hash = `#/${route}`;
+    };
+    vm.createContext(context);
+    vm.runInContext(readAppScript('teacher-admin.js'), context);
+
+    context.openStudentProfilePreview('alice');
+
+    assert.equal(context.isStudentProfilePreview, true);
+    assert.equal(context.currentUser.user, 'alice');
+    assert.equal(context.currentUser.role, 'student');
+    assert.equal(context.location.hash, '#/student/dashboard');
+    assert.equal(elements.get('student-preview-name').textContent, 'Alice Student (@alice)');
+    assert.equal(elements.get('student-preview-banner').classList.contains('hidden'), false);
+    assert.equal(context.initCount, 1);
+
+    context.exitStudentProfilePreview();
+
+    assert.equal(context.isStudentProfilePreview, false);
+    assert.equal(context.studentProfilePreviewUser, null);
+    assert.equal(context.currentUser, teacher);
+    assert.equal(context.location.hash, '#/teacher/students');
+    assert.equal(elements.get('student-preview-banner').classList.contains('hidden'), true);
+});
+
+test('test grammar flashcards use the app lexical grammar data', () => {
+    const elements = new Map([
+        ['panel-fc-list-select', {
+            querySelector: () => null,
+            appendChild(option) { this.option = option; },
+            dispatchEvent: () => {}
+        }],
+        ['study-mode-deck-name', createElement()],
+        ['study-mode-modal', { classList: createClassList() }]
+    ]);
+    const context = {
+        console,
+        Event,
+        document: {
+            getElementById: id => elements.get(id) || createElement(),
+            createElement: () => ({ style: {} })
+        },
+        window: null,
+        switchStudyMode: mode => {
+            context.studyMode = mode;
+            context.studyDeckLengthWhenOpened = context.studyDeck.length;
+        }
+    };
+    context.window = context;
+    vm.createContext(context);
+    vm.runInContext(
+        'let APP_DATA = { title: "Preview Test", grammar: [{ term: "Having finished", type: "Participle clause", expl: "Shows a completed action." }] }; let FLASHCARDS = {};',
+        context
+    );
+    vm.runInContext(readAppScript('study-tools.js'), context);
+    context.window.switchStudyMode = mode => {
+        context.studyMode = mode;
+        context.studyDeckLengthWhenOpened = context.studyDeck.length;
+    };
+
+    context.window.startTestGrammarStudy();
+
+    const deck = vm.runInContext('FLASHCARDS.temp_test_deck', context);
+    assert.equal(context.APP_DATA, undefined);
+    assert.equal(deck.length, 1);
+    assert.equal(deck[0].term, 'Having finished');
+    assert.equal(deck[0].def, '[Participle clause] Shows a completed action.');
+    assert.equal(context.studyDeckLengthWhenOpened, 1);
+    assert.equal(context.studyDeck[0].term, 'Having finished');
+    assert.equal(context.studyDeck[0].def, '[Participle clause] Shows a completed action.');
+    assert.equal(context.studyMode, 'flashcards');
+    assert.equal(elements.get('study-mode-deck-name').textContent, 'Preview Test (Grammar Bank)');
 });
 
 test('student access sync writes only the signed-in student assigned test entries', async () => {
@@ -362,8 +478,12 @@ test('Micro-Dictation targets numbers, proper names, and longer words', () => {
     const segments = context.buildMicroDictationSegments({
         text: 'The museum hosted researchers in 2024. Visitors travelled from Australia.'
     }, 17, 5);
-    assert.equal(segments.length, 2);
+    assert.deepEqual(Array.from(segments, segment => segment.text), [
+        'The museum hosted researchers in 2024.',
+        'Visitors travelled from Australia.'
+    ]);
     assert.equal(segments[0].start, 0);
+    assert.equal(segments[1].start, segments[0].end);
     assert.equal(segments[1].end, 17);
     assert.equal(segments.map(segment => segment.text).join(' ').split(/\s+/).length, 10);
     assert.deepEqual(Array.from(context.buildMicroDictationSegments({ text: 'One sentence.' }, Infinity, 8)), []);
@@ -508,7 +628,16 @@ test('dynamic mind map renders safe task vocabulary and grouped discourse marker
     vm.runInContext(readAppScript('dynamic-mindmap.js'), context);
 
     const html = context.renderDynamicMindMap(
-        { title: '<p>Describe a place &amp; explain why you like it</p>' },
+        {
+            title: '<p>Describe a place &amp; explain why you like it</p>',
+            mindMap: {
+                phrases: [
+                    { branch: 'support', term: 'improve public transport', detail: 'More frequent buses and trains' },
+                    { branch: 'example', term: '<img src=x onerror=alert(1)>' }
+                ],
+                topics: [{ label: 'Transport', ideas: ['More people commute by bus', 'Fewer cars in city centres', '<svg onload=alert(1)>'] }]
+            }
+        },
         [
             { term: 'a hidden gem', eng: 'A little-known place' },
             { term: '<img src=x onerror=alert(1)>' }
@@ -529,8 +658,49 @@ test('dynamic mind map renders safe task vocabulary and grouped discourse marker
     assert.match(html, /data-network-add-idea="topic-work"/);
     assert.match(html, /data-network-link-mode/);
     assert.match(html, /not submitted/);
+    assert.match(html, /improve public transport/);
+    assert.match(html, /data-mindmap-default-branch="support"/);
+    assert.match(html, /data-mindmap-draggable="true"/);
+    assert.match(html, /More people commute by bus/);
+    assert.match(html, /Fewer cars in city centres/);
+    assert.match(html, /data-network-topic="topic-transport"/);
+    assert.doesNotMatch(html, /<svg onload=alert/);
     assert.doesNotMatch(html, /<img src=x/);
     assert.doesNotMatch(html, /onerror=alert/);
+
+    const partOneWords = context.filterDynamicMindMapVocabulary(
+        [
+            { term: 'Part one term', part: 'Part 1' },
+            { term: 'Part two term', part: 'Part 2' },
+            { term: 'Legacy unassigned term' }
+        ],
+        { title: '<b>Part 1</b>' },
+        0,
+        2
+    );
+    assert.deepEqual(Array.from(partOneWords, word => word.term), ['Part one term', 'Legacy unassigned term']);
+    assert.equal(context.hasDynamicMindMapContent({ title: 'Writing task' }, []), false);
+    assert.equal(context.hasDynamicMindMapContent({ title: 'Speaking task', mindMap: { topics: [{ label: 'Work', ideas: [] }] } }, []), false);
+    assert.equal(context.hasDynamicMindMapContent(
+        { title: 'Speaking task', mindMap: { phrases: [{ branch: 'main', term: 'develop confidence' }] } },
+        []
+    ), true);
+    assert.equal(context.hasDynamicMindMapContent(
+        { title: 'Writing task', mindMap: { topics: [{ label: 'Education', ideas: ['Online learning'] }] } },
+        []
+    ), true);
+    assert.equal(context.hasDynamicMindMapContent(
+        { title: 'Writing task' },
+        [{ term: 'make a contribution' }]
+    ), true);
+    assert.equal(context.shouldRenderDynamicMindMap('writing', { title: 'Task' }, []), false);
+    assert.equal(context.shouldRenderDynamicMindMap('speaking', { title: 'Task' }, []), false);
+    assert.equal(context.shouldRenderDynamicMindMap(
+        'writing',
+        { title: 'Task', mindMap: { topics: [{ label: 'Education', ideas: ['Online learning'] }] } },
+        []
+    ), true);
+    assert.equal(context.shouldRenderDynamicMindMap('reading', { title: 'Task' }, []), true);
 });
 
 test('scaffolded Writing provides task-specific blocks and combines them into a submission-ready essay', () => {
@@ -743,21 +913,25 @@ test('test mode choices and actions use accessible buttons and delegated listene
     assert.match(modeMarkup, /<button type="button" id="mode-btn-free"[^>]*aria-pressed="false"/);
     assert.match(modeMarkup, /<button type="button" id="mode-btn-restricted"[^>]*aria-pressed="true"/);
     assert.match(modeMarkup, /<label for="custom-time-input"/);
+    assert.match(modeMarkup, /id="student-part-search"/);
+    assert.match(modeMarkup, /data-test-part-action="all"/);
     assert.doesNotMatch(modeMarkup, /onclick=/);
 
-    const listeners = [];
+    const listeners = { click: [], input: [] };
     const calls = [];
     const context = {
         window: {
             selectTestMode: mode => calls.push(['mode', mode]),
             cancelTestRouteStart: () => calls.push('cancel'),
             confirmStartTest: () => calls.push('start'),
-            openTestActivities: () => calls.push('activities')
+            openTestActivities: () => calls.push('activities'),
+            selectStudentTestParts: index => calls.push(['parts', index]),
+            filterStudentTestParts: query => calls.push(['filter-parts', query])
         },
         document: {
             getElementById: () => null,
             addEventListener: (name, callback) => {
-                if (name === 'click') listeners.push(callback);
+                if (listeners[name]) listeners[name].push(callback);
             }
         }
     };
@@ -772,17 +946,32 @@ test('test mode choices and actions use accessible buttons and delegated listene
         { testAction: 'activities' }
     ]) {
         const button = { dataset: action };
-        listeners.forEach(listener => listener({
+        listeners.click.forEach(listener => listener({
             target: { closest: selector => selector === 'button[data-test-action]' ? button : null }
         }));
     }
+    for (const action of [
+        { testPartAction: 'all' },
+        { testPartAction: 'single', partIndex: '2' }
+    ]) {
+        const button = { dataset: action };
+        listeners.click.forEach(listener => listener({
+            target: { closest: selector => selector === 'button[data-test-part-action]' ? button : null }
+        }));
+    }
+    listeners.input.forEach(listener => listener({
+        target: { id: 'student-part-search', value: 'Passage 2' }
+    }));
 
     assert.deepEqual(calls, [
         ['mode', 'free'],
         ['mode', 'restricted'],
         'cancel',
         'start',
-        'activities'
+        'activities',
+        ['parts', undefined],
+        ['parts', 2],
+        ['filter-parts', 'Passage 2']
     ]);
 });
 
@@ -842,4 +1031,151 @@ test('test mode dialog focuses controls, traps Tab, and restores focus on Escape
     });
     assert.equal(escapePrevented, true);
     assert.equal(document.activeElement, opener);
+});
+
+test('test banks create searchable single-part entries alongside the full test', () => {
+    const readingTest = {
+        id: 'cam-07-test-1',
+        title: 'Cam 07 Test 1 Reading',
+        topics: ['Cambridge 07'],
+        parts: [
+            { title: '<b>Let’s Go Bats</b>' },
+            { title: '<h2><b>Making Every Drop Count</b></h2>' },
+            { title: '<h2><b>EDUCATING PSYCHE</b></h2>' }
+        ]
+    };
+    const singlePartTest = {
+        id: 'writing-task-1',
+        title: 'Writing Task 1',
+        parts: [{ title: 'Chart Description' }]
+    };
+    const entries = buildTestBankEntries([readingTest, singlePartTest]);
+
+    assert.deepEqual(entries.map(entry => [entry.test.id, entry.partIndex]), [
+        ['cam-07-test-1', null],
+        ['cam-07-test-1', 0],
+        ['cam-07-test-1', 1],
+        ['cam-07-test-1', 2],
+        ['writing-task-1', null]
+    ]);
+    assert.deepEqual(entries.filter(entry => matchesTestBankEntry(entry, 'bats')).map(entry => [
+        entry.test.id,
+        entry.partIndex
+    ]), [
+        ['cam-07-test-1', null],
+        ['cam-07-test-1', 0]
+    ]);
+    assert.deepEqual(entries.filter(entry => matchesTestBankEntry(entry, 'making every drop')).map(entry => [
+        entry.test.id,
+        entry.partIndex
+    ]), [
+        ['cam-07-test-1', null],
+        ['cam-07-test-1', 1]
+    ]);
+    assert.equal(cleanTestBankLabel('<h2><b>EDUCATING PSYCHE</b></h2>'), 'EDUCATING PSYCHE');
+    assert.equal(cleanTestBankLabel('Transport from Airport to Milton<br>'), 'Transport from Airport to Milton');
+});
+
+test('teacher test bank renders virtual part entries and labels parent-test actions', () => {
+    const source = readAppScript('teacher-dashboard.js');
+
+    assert.match(source, /window\.buildTestBankEntries\(TEST_BANK\)/);
+    assert.match(source, /window\.matchesTestBankEntry\(entry, query\)/);
+    assert.match(source, /const cardTitle = isPartEntry \? partTitle : window\.cleanTestBankLabel\(t\.title\)/);
+    assert.match(source, /Assign full test; students can choose this part separately/);
+});
+
+
+test('Listening matching drag-and-drop updates questions without restarting or clearing Listening audio', () => {
+    const { context } = createTestPlayerContext();
+    let clearMediaCount = 0;
+    context.clearListeningMedia = () => { clearMediaCount++; };
+    context.draggedData = { text: 'A Education', sourceId: null };
+    context.currentPartIdx = 0;
+    context.currentBlockIdx = 0;
+    context.isTimeFree = true;
+    context.reviewStatus = {};
+    context.document.querySelector = () => null;
+    context.document.querySelectorAll = () => [];
+    vm.runInContext(
+        'updateExamUI = () => {}; renderQuestions = () => { window.questionsRendered = (window.questionsRendered || 0) + 1; }; activateQuestionBlock = () => {}; restoreHighlights = () => {}; triggerAutosave = () => {};',
+        context
+    );
+    context.APP_DATA = {
+        id: 'listening-match-1',
+        title: 'Listening Matching Test',
+        module: 'listening',
+        parts: [{
+            title: 'Part 2',
+            audioUrl: 'https://example.com/audio.mp3',
+            text: 'Transcript text without passage drop zones.',
+            questions: [{
+                type: 'dnd_list',
+                ids: [11, 12],
+                text: '11. First topic {drop:11}\n12. Second topic {drop:12}',
+                options: ['A Education', 'B Transport']
+            }]
+        }]
+    };
+
+    context.drop({
+        preventDefault() {},
+        currentTarget: { classList: { remove() {} } },
+        dataTransfer: { getData: () => 'A Education' }
+    }, 11);
+
+    assert.equal(context.answers[11], 'A Education');
+    assert.equal(context.questionsRendered, 1);
+    assert.equal(clearMediaCount, 0);
+});
+
+test('program-modules groups 4 IELTS skills into ielts and scopes student visible programs', () => {
+    const {
+        getTestProgramModule,
+        matchesProgramFilter,
+        getStudentVisiblePrograms,
+        filterTestsByAllowedPrograms
+    } = require('../js/program-modules.js');
+
+    assert.equal(getTestProgramModule('reading'), 'ielts');
+    assert.equal(getTestProgramModule('listening'), 'ielts');
+    assert.equal(getTestProgramModule('writing'), 'ielts');
+    assert.equal(getTestProgramModule('speaking'), 'ielts');
+    assert.equal(getTestProgramModule('toeic'), 'toeic');
+    assert.equal(getTestProgramModule('corporate'), 'corporate');
+    assert.equal(getTestProgramModule('activity'), 'activity');
+
+    assert.equal(matchesProgramFilter({ module: 'reading' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'listening' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'writing' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'speaking' }, 'ielts'), true);
+    assert.equal(matchesProgramFilter({ module: 'corporate' }, 'ielts'), false);
+    assert.equal(matchesProgramFilter({ module: 'corporate' }, 'corporate'), true);
+    assert.equal(matchesProgramFilter({ module: 'reading' }, 'reading'), true);
+
+    const mixedTests = [
+        { id: 't1', module: 'reading' },
+        { id: 't2', module: 'writing' },
+        { id: 't3', module: 'toeic' },
+        { id: 't4', module: 'corporate' }
+    ];
+
+    // 1. Explicit class allowedPrograms restricts visibility to Corporate only
+    const corpCls = { id: 'c1', allowedPrograms: ['corporate'] };
+    const corpPrograms = getStudentVisiblePrograms(corpCls, { user: 'staff_01' }, mixedTests);
+    assert.deepEqual(corpPrograms, ['corporate']);
+    assert.deepEqual(filterTestsByAllowedPrograms(mixedTests, corpPrograms).map(t => t.id), ['t4']);
+
+    // 2. Auto-detect from assigned tests groups IELTS skills into ['ielts']
+    const ieltsOnlyTests = [{ id: 'i1', module: 'reading' }, { id: 'i2', module: 'listening' }, { id: 'i3', module: 'speaking' }];
+    assert.deepEqual(getStudentVisiblePrograms({ id: 'c2' }, { user: 'ielts_01' }, ieltsOnlyTests), ['ielts']);
+
+    // 3. Per-student override on class overrides class default
+    const multiCls = {
+        id: 'c3',
+        allowedPrograms: ['ielts', 'toeic'],
+        studentPrograms: { vip_01: ['toeic'] }
+    };
+    assert.deepEqual(getStudentVisiblePrograms(multiCls, { user: 'vip_01' }, mixedTests), ['toeic']);
+    assert.deepEqual(getStudentVisiblePrograms(multiCls, { user: 'reg_01' }, mixedTests), ['ielts', 'toeic']);
 });

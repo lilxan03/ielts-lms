@@ -1234,14 +1234,24 @@ The speaker says \drop{B}.
         const rapidNewTest = rapidImport && rapidMode === 'new'
             ? {
                 id: 't_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
-                title: document.getElementById('rapid-test-title').value.trim() || 'Untitled Rapid Test',
+                title: document.getElementById('rapid-test-title').value.trim(),
                 module: rapidModule,
-                topics: [],
+                topics: document.getElementById('rapid-test-topics').value
+                    .split(',')
+                    .map(topic => topic.trim())
+                    .filter(Boolean),
                 difficulty: document.getElementById('rapid-test-diff').value.trim(),
-                parts: getSmartIeltsStructure(rapidModule),
-                vocab: []
+                parts: window.buildRapidNewParts(rapidModule),
+                vocab: [],
+                grammar: []
             }
             : null;
+        if (rapidImport && rapidMode === 'new' && !rapidNewTest.title) {
+            const error = document.getElementById('rapid-latex-error');
+            error.textContent = 'Enter a title for the new test.';
+            error.classList.remove('hidden');
+            return;
+        }
         const targetTest = rapidImport ? (rapidTest || rapidNewTest) : null;
         const targetParts = rapidImport ? (Array.isArray(targetTest.parts) ? targetTest.parts : []) : APP_DATA.parts;
         const part = targetParts[rapidPartIndex];
@@ -1266,7 +1276,7 @@ The speaker says \drop{B}.
                 : question.type === 'matching_endings' || question.type === 'matching_statements' ? 'dnd_list' : question.type;
             return !skillTypes.includes(nativeType);
         });
-        if (unsupported || (parsed.writingTask && APP_DATA.module !== 'writing') || (parsed.hasSpeaking && APP_DATA.module !== 'speaking') || (parsed.audioUrl && APP_DATA.module !== 'listening')) {
+        if (unsupported || (parsed.writingTask && rapidModule !== 'writing') || (parsed.hasSpeaking && rapidModule !== 'speaking') || (parsed.audioUrl && rapidModule !== 'listening')) {
             const wrongMacro = parsed.writingTask ? 'writingtask' : parsed.hasSpeaking ? 'speaking' : parsed.audioUrl && rapidModule !== 'listening' ? 'audio' : unsupported?.type.replace(/_/g, ' ') || 'question type';
             const message = `The ${wrongMacro} macro is not available for the ${rapidModule || 'current'} skill.`;
             const error = document.getElementById(rapidImport ? 'rapid-latex-error' : 'ielts-latex-error');

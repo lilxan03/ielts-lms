@@ -102,6 +102,129 @@
       showModalMsg("Success", `Imported ${count} vocabulary words!`);
     };
 
+    const mindMapBranches = [
+      { id: 'main', aliases: ['main', 'main idea', 'ý chính'] },
+      { id: 'support', aliases: ['support', 'supporting idea', 'explanation', 'giải thích'] },
+      { id: 'example', aliases: ['example', 'examples', 'ví dụ'] },
+      { id: 'result', aliases: ['result', 'conclusion', 'outcome', 'kết luận'] }
+    ];
+
+    function currentMindMapPart() {
+      return APP_DATA?.parts?.[currentEditorPartIdx] || null;
+    }
+
+    function updateMindMapImportStatus(message, isError = false) {
+      const status = document.getElementById('mindmap-import-status');
+      if (!status) return;
+      status.textContent = message;
+      status.className = `mt-2 text-xs font-bold ${isError ? 'text-rose-700' : 'text-indigo-800'}`;
+    }
+
+    function getMindMapData(part) {
+      if (!part.mindMap || typeof part.mindMap !== 'object') part.mindMap = {};
+      if (!Array.isArray(part.mindMap.phrases)) part.mindMap.phrases = [];
+      if (!Array.isArray(part.mindMap.topics)) part.mindMap.topics = [];
+      return part.mindMap;
+    }
+
+    function readMindMapImportRows(inputId, expectedColumns) {
+      const input = document.getElementById(inputId);
+      if (!input) return null;
+      const lines = input.value.split(/\r?\n/).map(line => line.split('\t').map(cell => cell.trim()));
+      return lines.filter(parts => parts.length && parts.some(Boolean) && parts.slice(0, expectedColumns).some(Boolean));
+    }
+
+    function finishMindMapImport(inputId, imported, skipped, noun) {
+      if (!imported) {
+        updateMindMapImportStatus(`Nothing imported. Check the required columns. ${skipped ? `${skipped} row(s) need correction.` : ''}`, true);
+        return;
+      }
+      document.getElementById(inputId).value = '';
+      updateMindMapImportStatus(`Imported ${imported} ${noun}${skipped ? `; skipped ${skipped} invalid or duplicate row(s)` : ''}.`);
+      if (typeof window.triggerEditorAutosave === 'function') window.triggerEditorAutosave();
+    }
+
+    window.importMindMapPhrases = function() {
+      const part = currentMindMapPart();
+      const rows = readMindMapImportRows('mindmap-phrase-import', 3);
+      if (!['writing', 'speaking'].includes(APP_DATA?.module)) return;
+      if (!part) {
+        updateMindMapImportStatus('Select a test part before importing content.', true);
+        return;
+      }
+      if (!rows) {
+        updateMindMapImportStatus('The phrase import field is unavailable. Reload the test editor and try again.', true);
+        return;
+      }
+      saveCurrentEditorPart();
+      const data = getMindMapData(part);
+      let imported = 0;
+      let skipped = 0;
+
+      rows.forEach(([rawBranch, rawPhrase, rawDetail]) => {
+        const branchName = String(rawBranch || '').trim().toLowerCase();
+        const branch = mindMapBranches.find(item => item.aliases.includes(branchName));
+        const term = String(rawPhrase || '').trim();
+        const detail = String(rawDetail || '').trim();
+        if (!branch || !term || term.length > 160 || detail.length > 240) {
+          skipped++;
+          return;
+        }
+        const duplicate = data.phrases.some(item =>
+          item.branch === branch.id && String(item.term || '').trim().toLowerCase() === term.toLowerCase()
+        );
+        if (duplicate) {
+          skipped++;
+          return;
+        }
+        data.phrases.push({ branch: branch.id, term, detail });
+        imported++;
+      });
+
+      finishMindMapImport('mindmap-phrase-import', imported, skipped, 'phrase(s)');
+    };
+
+    window.importMindMapIdeas = function() {
+      const part = currentMindMapPart();
+      const rows = readMindMapImportRows('mindmap-idea-import', 2);
+      if (!['writing', 'speaking'].includes(APP_DATA?.module)) return;
+      if (!part) {
+        updateMindMapImportStatus('Select a test part before importing content.', true);
+        return;
+      }
+      if (!rows) {
+        updateMindMapImportStatus('The ideas import field is unavailable. Reload the test editor and try again.', true);
+        return;
+      }
+      saveCurrentEditorPart();
+      const data = getMindMapData(part);
+      let imported = 0;
+      let skipped = 0;
+
+      rows.forEach(([rawTopic, rawIdea]) => {
+        const label = String(rawTopic || '').trim();
+        const idea = String(rawIdea || '').trim();
+        if (!label || !idea || label.length > 80 || idea.length > 160) {
+          skipped++;
+          return;
+        }
+        let topic = data.topics.find(item => String(item.label || '').trim().toLowerCase() === label.toLowerCase());
+        if (!topic) {
+          topic = { label, ideas: [] };
+          data.topics.push(topic);
+        }
+        if (!Array.isArray(topic.ideas)) topic.ideas = [];
+        if (topic.ideas.some(item => String(item).trim().toLowerCase() === idea.toLowerCase())) {
+          skipped++;
+          return;
+        }
+        topic.ideas.push(idea);
+        imported++;
+      });
+
+      finishMindMapImport('mindmap-idea-import', imported, skipped, 'idea(s)');
+    };
+
     window.execCmd = function(command, value = null) {
       document.execCommand(command, false, value);
       window.triggerEditorAutosave();
@@ -1009,6 +1132,9 @@
       if(APP_DATA.module==='writing') qSel.innerHTML = '<option value="essay">Writing Essay Box</option>';
       else if(APP_DATA.module==='speaking') qSel.innerHTML = '<option value="audio_record">Audio Recording Box</option><option value="essay">Notes / Text Box</option>';
       else if(APP_DATA.module==='activity') qSel.innerHTML = '<option value="pair_roleplay">🎭 Pair Roleplay (Cards)</option><option value="group_debate">🗣️ Group Debate (Teams)</option><option value="vocab_game">🎲 Multiplayer Vocab Board</option>';
+      else if(APP_DATA.module==='toeic' || APP_DATA.module==='corporate') {
+        qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option><option value="tfng">True/False/Not Given</option><option value="matching_info">Matching Information</option><option value="essay">Writing / Business Email Box</option><option value="audio_record">Speaking / Audio Recording Box</option><option value="pair_roleplay">🎭 Workplace Pair Roleplay</option><option value="group_debate">🗣️ Team Discussion / Debate</option><option value="vocab_game">🎲 Business Vocab Board</option>`;
+      }
       else {
         qSel.innerHTML = `<option value="multiple_choice">Multiple Choice</option><option value="fill_blanks">Gap Fill</option><option value="dnd_list">Drag/Drop (In-Question)</option>`;
         if(APP_DATA.module==='reading') qSel.innerHTML += `<option value="tfng">True/False/Not Given</option><option value="ynng">Yes/No/Not Given</option><option value="matching_headings">Matching Headings (Passage Drops)</option><option value="matching_info">Matching Information</option><option value="matching_endings">Matching Sentence Endings (Drag &amp; Drop)</option>`;
@@ -1127,15 +1253,18 @@
 
       const backBtn = document.getElementById('exam-back-btn');
       const fcBtn = document.getElementById('exam-flashcard-btn');
+      const grammarBtn = document.getElementById('exam-grammar-btn');
       if (backBtn) {
           if (testMode === 'free' || isPreviewMode) {
               backBtn.classList.remove('hidden');
               backBtn.classList.add('flex');
               if(fcBtn) { fcBtn.classList.remove('hidden'); fcBtn.classList.add('flex'); }
+              if(grammarBtn) { grammarBtn.classList.remove('hidden'); grammarBtn.classList.add('flex'); }
           } else {
               backBtn.classList.add('hidden');
               backBtn.classList.remove('flex');
               if(fcBtn) { fcBtn.classList.add('hidden'); fcBtn.classList.remove('flex'); }
+              if(grammarBtn) { grammarBtn.classList.add('hidden'); grammarBtn.classList.remove('flex'); }
           }
       }
 
@@ -1165,24 +1294,6 @@
 
       initResizer(); renderPart(0);
     }
-
-    window.previewTestFromCalendar = function(testId) {
-      if (!currentUser || currentUser.role !== 'teacher') {
-        if (typeof window.showToast === 'function') window.showToast('Access denied', 'Only teachers can preview tests here.', 'error');
-        return;
-      }
-      if (!TEST_BANK.some(test => test.id === testId)) {
-        if (typeof window.showToast === 'function') window.showToast('Error', 'Test not found or deleted.', 'error');
-        return;
-      }
-      if (typeof window.navigateAppRoute !== 'function') {
-        if (typeof window.showToast === 'function') window.showToast('Error', 'Test preview is not available. Please reload the page.', 'error');
-        return;
-      }
-
-      window.navigateAppRoute(`teacher/builder/${encodeURIComponent(testId)}`);
-      previewActiveTest();
-    };
 
     window.toggleBuilderLeftPanel = function() {
         const leftPane = document.getElementById('builder-left');
@@ -1310,7 +1421,20 @@
 
     function loadEditorPart(idx) {
       currentEditorPartIdx = idx; const p = APP_DATA.parts[idx];
+      window.renderTestThumbnailPreview?.();
       const matchingHeadingDropsChanged = reconcileMatchingHeadingDrops(p);
+      const mindMapStatus = document.getElementById('mindmap-import-status');
+      const phraseImport = document.getElementById('mindmap-phrase-import');
+      const ideaImport = document.getElementById('mindmap-idea-import');
+      if (phraseImport) phraseImport.value = '';
+      if (ideaImport) ideaImport.value = '';
+      if (mindMapStatus) {
+          const phraseCount = Array.isArray(p.mindMap?.phrases) ? p.mindMap.phrases.length : 0;
+          const ideaCount = Array.isArray(p.mindMap?.topics)
+              ? p.mindMap.topics.reduce((total, topic) => total + (Array.isArray(topic.ideas) ? topic.ideas.length : 0), 0)
+              : 0;
+          mindMapStatus.textContent = `This part has ${phraseCount} custom phrase(s) and ${ideaCount} imported network idea(s).`;
+      }
       
       document.getElementById('editor-tabs').innerHTML = APP_DATA.parts.map((_, i) => 
         `<button 
@@ -1523,36 +1647,18 @@
             return { module, parts: usableParts, questionCount, maxQuestionId };
         }
 
-        let pdfJsLoadPromise = null;
-        function loadPdfJs() {
-            if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
-            if (!pdfJsLoadPromise) {
-                pdfJsLoadPromise = new Promise((resolve, reject) => {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-                    script.async = true;
-                    script.onload = () => window.pdfjsLib
-                        ? resolve(window.pdfjsLib)
-                        : reject(new Error('Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại.'));
-                    script.onerror = () => reject(new Error('Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại.'));
-                    document.head.appendChild(script);
-                }).catch(error => {
-                    pdfJsLoadPromise = null;
-                    throw error;
-                });
-            }
-            return pdfJsLoadPromise;
-        }
-
         window.handleTestPdfImport = async function(event) {
             const file = event.target.files && event.target.files[0];
             event.target.value = '';
             if (!file) return;
+            if (!window.pdfjsLib) {
+                setTestPdfImportStatus('Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại.', 'error');
+                return;
+            }
             setTestPdfImportStatus(`Đang đọc ${file.name}...`, 'info');
             try {
-                const pdfjsLib = await loadPdfJs();
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
                 const pageTexts = [];
                 for (let pageNo = 1; pageNo <= pdf.numPages; pageNo++) {
                     const page = await pdf.getPage(pageNo);
@@ -2175,6 +2281,7 @@
             document.getElementById('rapid-mode-existing').classList.remove('hidden');
             window.populateRapidExistingTests();
         }
+        window.setRapidImportSource();
     };
 
     window.populateRapidExistingTests = function() {
@@ -2263,17 +2370,66 @@
         select.value = '';
     };
 
-    window.populateRapidNewParts = function() {
+    window.getRapidNewPartTitles = function() {
+        const module = document.getElementById('rapid-test-mod')?.value || 'reading';
+        const configuredTitles = document.getElementById('rapid-new-parts')?.value
+            .split(/\r?\n/)
+            .map(title => title.trim())
+            .filter(Boolean) || [];
+        return configuredTitles.length
+            ? configuredTitles
+            : getSmartIeltsStructure(module).map(part => part.title || '');
+    };
+
+    window.buildRapidNewParts = function(module) {
+        const titles = window.getRapidNewPartTitles();
+        const parts = getSmartIeltsStructure(module);
+        while (parts.length < titles.length) {
+            parts.push({ title: '', text: '', questions: [] });
+        }
+        return titles.map((title, index) => ({
+            ...(parts[index] || { text: '', questions: [] }),
+            title,
+            text: parts[index]?.text || '',
+            questions: [...(parts[index]?.questions || [])]
+        }));
+    };
+
+    window.populateRapidNewParts = function(resetTitles = true) {
         const module = document.getElementById('rapid-test-mod')?.value || 'reading';
         const select = document.getElementById('rapid-new-part');
         if (!select) return;
-        const parts = getSmartIeltsStructure(module);
-        select.innerHTML = parts.map((part, index) =>
-            `<option value="${index}">${String(part.title || `Part ${index + 1}`).replace(/[&<>"']/g, char => ({
+        const partsInput = document.getElementById('rapid-new-parts');
+        const defaultTitles = getSmartIeltsStructure(module).map(part => part.title || '');
+        if (partsInput && (resetTitles || !partsInput.value.trim())) {
+            partsInput.value = defaultTitles.join('\n');
+        }
+        const titles = window.getRapidNewPartTitles();
+        select.innerHTML = titles.map((title, index) =>
+            `<option value="${index}">${String(title || `Part ${index + 1}`).replace(/[&<>"']/g, char => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             })[char])}</option>`
         ).join('');
         window.populateRapidLatexTemplates();
+    };
+
+    window.setRapidImportSource = function() {
+        const source = document.querySelector('input[name="rapid-source"]:checked')?.value || 'sheet';
+        const useLatex = source === 'latex';
+        const mode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
+        document.getElementById('rapid-sheet-section')?.classList.toggle('hidden', useLatex);
+        document.getElementById('rapid-latex-section')?.classList.toggle('hidden', !useLatex);
+        document.getElementById('rapid-new-part-wrapper')?.classList.toggle('hidden', !useLatex || mode !== 'new');
+        const action = document.getElementById('rapid-import-action');
+        if (action) action.textContent = useLatex ? 'Parse LaTeX & Import' : 'Create Test & Import Questions';
+    };
+
+    window.submitBulkImport = function() {
+        const source = document.querySelector('input[name="rapid-source"]:checked')?.value || 'sheet';
+        if (window.isRapidTestImport && source === 'latex') {
+            return window.compileRapidLatexImport();
+        }
+        return window.processBulkImport();
     };
 
     window.previewRapidLatexImport = function() {
@@ -2329,16 +2485,15 @@
     window.openRapidFullTestImport = function() {
         window.isRapidTestImport = true;
         document.getElementById('csv-meta-section').classList.remove('hidden');
-        document.getElementById('rapid-latex-section').classList.remove('hidden');
-        document.getElementById('rapid-smart-paste-section').classList.add('hidden');
-        document.getElementById('rapid-grid-section').classList.add('hidden');
-        document.getElementById('rapid-add-row').classList.add('hidden');
-        document.getElementById('rapid-import-action').textContent = 'Parse LaTeX & Import';
+        document.getElementById('rapid-sheet-section').classList.remove('hidden');
         
         // Reset to "new" mode by default when opened
         const newRadio = document.querySelector('input[name="rapid-mode"][value="new"]');
         if (newRadio) { newRadio.checked = true; window.toggleRapidMode(); }
+        const sheetRadio = document.querySelector('input[name="rapid-source"][value="sheet"]');
+        if (sheetRadio) sheetRadio.checked = true;
         window.populateRapidNewParts();
+        window.setRapidImportSource();
 
         document.getElementById('csv-import-title').innerHTML = "🚀 Rapid Import";
         
@@ -2346,8 +2501,10 @@
         document.getElementById('rapid-latex-input').value = '';
         window.previewRapidLatexImport();
         document.getElementById('bulk-import-tbody').innerHTML = ''; 
+        for(let i=0; i<3; i++) window.addBulkImportRow();
         document.getElementById('rapid-test-title').value = '';
         document.getElementById('rapid-test-diff').value = '';
+        document.getElementById('rapid-test-topics').value = '';
         const search = document.getElementById('rapid-existing-search');
         const moduleFilter = document.getElementById('rapid-existing-module');
         if (search) search.value = '';
@@ -2361,6 +2518,7 @@
         window.isRapidTestImport = false;
         document.getElementById('csv-meta-section').classList.add('hidden');
         document.getElementById('rapid-latex-section').classList.add('hidden');
+        document.getElementById('rapid-sheet-section').classList.remove('hidden');
         document.getElementById('rapid-smart-paste-section').classList.remove('hidden');
         document.getElementById('rapid-grid-section').classList.remove('hidden');
         document.getElementById('rapid-add-row').classList.remove('hidden');
@@ -2560,10 +2718,17 @@
         const rapidMode = window.isRapidTestImport
             ? (document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new')
             : '';
+        const selectedRapidTest = window.isRapidTestImport && rapidMode === 'existing'
+            ? TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test')?.value)
+            : null;
+        if (window.isRapidTestImport && rapidMode === 'existing' && !selectedRapidTest) {
+            showModalMsg('Select a test', 'Choose an existing test before importing questions.');
+            return;
+        }
         const templateSkill = window.isRapidTestImport
             ? (rapidMode === 'new'
                 ? document.getElementById('rapid-test-mod')?.value
-                : TEST_BANK.find(test => test.id === document.getElementById('rapid-existing-test')?.value)?.module)
+                : selectedRapidTest?.module)
             : APP_DATA.module;
         const matchingTypes = ['matching_info', 'matching_headings', 'matching_endings', 'matching_statements'];
         if (templateSkill === 'listening' && [...rows].some(row =>
@@ -2588,10 +2753,8 @@
         } else {
             const currentRapidMode = document.querySelector('input[name="rapid-mode"]:checked')?.value || 'new';
             if (currentRapidMode === 'existing') {
-                const tid = document.getElementById('rapid-existing-test').value;
-                const test = TEST_BANK.find(t => t.id === tid);
-                if (test) {
-                    test.parts.forEach(p => (p.questions || []).forEach(q => (q.ids||[]).forEach(id => { if (id > currentMaxId) currentMaxId = id; })));
+                if (selectedRapidTest) {
+                    (selectedRapidTest.parts || []).forEach(p => (p.questions || []).forEach(q => (q.ids||[]).forEach(id => { if (id > currentMaxId) currentMaxId = id; })));
                 }
             }
         }
@@ -2730,18 +2893,31 @@
             
             if (currentRapidMode === 'new') {
                 // Create New Test Workflow
-                const title = document.getElementById('rapid-test-title').value.trim() || 'Untitled Rapid Test';
+                const title = document.getElementById('rapid-test-title').value.trim();
+                if (!title) {
+                    showModalMsg('Test title required', 'Enter a title for the new test.');
+                    return;
+                }
                 const mod = document.getElementById('rapid-test-mod').value;
                 const diff = document.getElementById('rapid-test-diff').value.trim();
+                const topics = document.getElementById('rapid-test-topics').value
+                    .split(',')
+                    .map(topic => topic.trim())
+                    .filter(Boolean);
                 
-                let smartParts = getSmartIeltsStructure(mod);
+                const smartParts = window.buildRapidNewParts(mod);
                 let nextUnassignedPart = 0;
                 newQuestionsBySection.forEach(bucket => {
                     if (!bucket.questions.length) return;
                     const sectionNumber = getSectionNumber(bucket.label);
                     const partNumber = sectionNumber?.[1] || sectionNumber?.[2];
-                    let partIndex = partNumber ? Number(partNumber) - 1 : nextUnassignedPart;
-                    if (!sectionNumber && bucket.label) nextUnassignedPart++;
+                    const namedPartIndex = bucket.label
+                        ? smartParts.findIndex(part => String(part.title || '').trim().toLocaleLowerCase() === bucket.label.toLocaleLowerCase())
+                        : -1;
+                    let partIndex = namedPartIndex >= 0
+                        ? namedPartIndex
+                        : partNumber ? Number(partNumber) - 1 : nextUnassignedPart;
+                    if (namedPartIndex < 0 && !sectionNumber && bucket.label) nextUnassignedPart++;
                     partIndex = Math.max(0, partIndex);
                     while (partIndex >= smartParts.length) {
                         smartParts.push({ title: `Part ${smartParts.length + 1}`, text: '', questions: [] });
@@ -2770,10 +2946,11 @@
                     id: 't_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), 
                     title, 
                     module: mod, 
-                    topics: [], 
+                    topics,
                     difficulty: diff, 
                     parts: smartParts, 
-                    vocab: [] 
+                    vocab: [],
+                    grammar: []
                 };
                 
                 TEST_BANK.unshift(newTest);
@@ -2784,23 +2961,29 @@
                 showModalMsg("Success! 🎉", `Created "${title}" and injected ${importedCount} questions successfully!`);
             } else {
                 // Add to Existing Test Workflow
-                const tid = document.getElementById('rapid-existing-test').value;
                 const pIdx = parseInt(document.getElementById('rapid-existing-part').value);
-                const test = TEST_BANK.find(t => t.id === tid);
+                const test = selectedRapidTest;
                 
-                if (test && test.parts[pIdx]) {
+                if (test && Array.isArray(test.parts) && test.parts[pIdx]) {
+                    let nextUnassignedPart = pIdx;
                     newQuestionsBySection.forEach(bucket => {
                         if (!bucket.questions.length) return;
                         const sectionNumber = getSectionNumber(bucket.label);
                         const partNumber = sectionNumber?.[1] || sectionNumber?.[2];
-                        const targetIndex = partNumber ? Number(partNumber) - 1 : pIdx;
+                        const namedPartIndex = bucket.label
+                            ? test.parts.findIndex(part => String(part.title || '').trim().toLocaleLowerCase() === bucket.label.toLocaleLowerCase())
+                            : -1;
+                        const targetIndex = namedPartIndex >= 0
+                            ? namedPartIndex
+                            : partNumber ? Number(partNumber) - 1 : nextUnassignedPart;
                         while (targetIndex >= test.parts.length) {
                             test.parts.push({ title: bucket.label || `Part ${test.parts.length + 1}`, text: '', questions: [] });
                         }
                         const targetPart = test.parts[targetIndex];
-                        if (bucket.label) targetPart.title = bucket.label;
+                        if (bucket.label && namedPartIndex < 0) targetPart.title = bucket.label;
                         if (bucket.passage) targetPart.text = bucket.passage;
                         targetPart.questions.push(...bucket.questions);
+                        nextUnassignedPart = Math.max(nextUnassignedPart, targetIndex + 1);
                     });
                     await window.fsSetDoc(window.fsDoc(window.db, window.fPath('tests'), test.id), test);
                     
@@ -2839,6 +3022,8 @@
             listening: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'map_labelling_hotspots', 'map_labelling_grid'],
             writing: ['essay'],
             speaking: ['audio_record', 'essay'],
+            toeic: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'matching_headings', 'matching_info', 'matching_endings', 'essay', 'audio_record'],
+            corporate: ['multiple_choice', 'fill_blanks', 'dnd_list', 'tfng', 'ynng', 'matching_info', 'essay', 'audio_record', 'pair_roleplay', 'group_debate', 'vocab_game'],
             activity: ['pair_roleplay', 'group_debate', 'vocab_game']
         }[APP_DATA.module] || [];
         if (!choices.includes(requestedType)) {

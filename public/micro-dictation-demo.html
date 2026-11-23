@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Luyện Nghe Chép Chính Tả IELTS Theo Từng Câu (Micro-Dictation) | IELTS W KHANH</title>
+  <meta name="description" content="Trải nghiệm phương pháp Micro-Dictation IELTS Listening: luyện nghe chép theo từng câu trọn vẹn, tự động hiện tên người nói và tập trung bắt số liệu, tên riêng, từ học thuật." />
+  <meta property="og:title" content="Micro-Dictation IELTS Listening Theo Từng Câu | IELTS W KHANH" />
+  <meta property="og:description" content="Nghe từng câu hoàn chỉnh, điền các từ khóa bẫy (số liệu, tên riêng, số nhiều) và nhận chẩn đoán lỗi sai tức thì." />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://ielts-with-khanh.vercel.app/micro-dictation-demo.html" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 28px 18px 64px; }
+    .nav { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 13px; }
+    .nav a { color: #94a3b8; text-decoration: none; font-weight: 600; }
+    .nav a:hover { color: #fff; }
+    .hero { background: linear-gradient(135deg, #312e81, #0f172a); border: 1px solid #334155; border-radius: 18px; padding: 26px; margin-bottom: 22px; }
+    .badge { display: inline-block; background: rgba(129, 140, 248, 0.2); border: 1px solid #818cf8; color: #c7d2fe; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
+    .hero h1 { font-size: 27px; color: #fff; margin-bottom: 10px; line-height: 1.25; }
+    .hero p { font-size: 15px; color: #cbd5e1; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 22px; margin-bottom: 20px; }
+    .card h2 { font-size: 17px; color: #818cf8; margin-bottom: 12px; }
+    .sentence-box { background: #0f172a; border: 1px solid #475569; border-radius: 12px; padding: 18px; font-size: 16px; line-height: 2; margin-bottom: 14px; }
+    .speaker { font-weight: 800; color: #38bdf8; margin-right: 6px; }
+    .blank { width: 135px; padding: 4px 8px; border-radius: 6px; border: 1px solid #6366f1; background: #1e293b; color: #fff; font-size: 15px; font-weight: 600; text-align: center; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn-play { background: #4f46e5; color: #fff; border: none; border-radius: 10px; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+    .btn-check { background: #0ea5e9; color: #082f49; border: none; border-radius: 10px; padding: 10px 18px; font-weight: 800; cursor: pointer; }
+    .btn-next { background: #334155; color: #fff; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+    .feedback { margin-top: 12px; font-size: 14px; font-weight: 600; }
+    .cta-box { background: linear-gradient(135deg, #064e3b, #0f172a); border: 1px solid #10b981; border-radius: 16px; padding: 24px; }
+    .cta-box h2 { font-size: 20px; color: #fff; margin-bottom: 6px; }
+    .cta-box p { font-size: 14px; color: #a7f3d0; margin-bottom: 14px; }
+    .lead-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .lead-form input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; }
+    .btn-submit { background: #10b981; color: #052e16; border: none; border-radius: 10px; padding: 11px 18px; font-size: 14px; font-weight: 800; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <nav class="nav">
+      <a href="/">← Trang chủ IELTS W KHANH</a>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <a href="/placement-test.html">Thi thử đầu vào 5 phút</a>
+        <a href="/writing-3d-demo.html">Writing Task 1 3D</a>
+        <a href="/reading-ai-demo.html">Reading Vocab &amp; Grammar</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">MICRO-DICTATION • NGHE CHÉP NGẮT QUÃNG THEO CÂU</span>
+      <h1>Luyện Nghe Chép Chính Tả IELTS Theo Từng Câu (Không Cắt Ngang Giây)</h1>
+      <p>Hệ thống tự động giữ nguyên tên nhân vật (WOMAN / MAN), tách theo từng câu trọn nghĩa và chỉ đục lỗ các từ dễ mất điểm trong phòng thi như số liệu, tên riêng và từ học thuật.</p>
+    </header>
+
+    <section class="card">
+      <h2 id="demo-progress">Thử ngay: Câu 1 / 2</h2>
+      <div class="sentence-box" id="sentence-box"></div>
+      <div class="controls">
+        <button class="btn-play" type="button" onclick="playSentence()">▶ Nghe câu mẫu</button>
+        <button class="btn-check" type="button" onclick="checkSentence()">Kiểm tra đáp án</button>
+        <button class="btn-next" type="button" onclick="nextSentence()">Câu tiếp theo →</button>
+      </div>
+      <div class="feedback" id="dictation-feedback"></div>
+    </section>
+
+    <section class="cta-box">
+      <h2>Luyện full bộ đề Cambridge Listening + Phân tích bẫy Distractors</h2>
+      <p>Đăng ký tư vấn để được test trình độ Listening &amp; nhận lộ trình tăng 1.0–1.5 Band.</p>
+      <form id="seo-lead-form" class="lead-form">
+        <input type="text" id="lead-name" placeholder="Họ và tên *" required />
+        <input type="tel" id="lead-phone" placeholder="Số điện thoại / Zalo *" required />
+        <input type="text" id="lead-target" placeholder="Band mục tiêu (vd: 7.0)" />
+        <button class="btn-submit" id="lead-btn" type="submit">Đăng ký tư vấn</button>
+      </form>
+      <p id="lead-msg" style="display:none;margin-top:10px;font-size:13px;font-weight:700;"></p>
+    </section>
+  </main>
+
+  <script src="js/lead-capture.js"></script>
+  <script>
+    const ITEMS = [
+      {
+        speaker: 'WOMAN:',
+        spoken: 'The library workshop will move to Room 204 on Thursday morning.',
+        parts: ['The library workshop will move to Room ', { ans: '204', hint: 'số phòng' }, ' on ', { ans: 'Thursday', hint: 'thứ' }, ' morning.']
+      },
+      {
+        speaker: 'MAN:',
+        spoken: 'Please email Professor Henderson before Friday to confirm your registration.',
+        parts: ['Please email Professor ', { ans: 'Henderson', hint: 'tên riêng' }, ' before Friday to confirm your ', { ans: 'registration', hint: 'danh từ' }, '.']
+      }
+    ];
+    let current = 0;
+
+    function renderItem() {
+      const item = ITEMS[current];
+      document.getElementById('demo-progress').textContent = `Thử ngay: Câu ${current + 1} / ${ITEMS.length}`;
+      const box = document.getElementById('sentence-box');
+      let blankIdx = 0;
+      const html = item.parts.map(p => {
+        if (typeof p === 'string') return p;
+        const id = `blank-${blankIdx++}`;
+        return `<input class="blank" id="${id}" data-ans="${p.ans}" placeholder="${p.hint}" autocomplete="off" />`;
+      }).join('');
+      box.innerHTML = `<span class="speaker">${item.speaker}</span>${html}`;
+      document.getElementById('dictation-feedback').textContent = '';
+    }
+
+    function playSentence() {
+      if (!('speechSynthesis' in window)) {
+        document.getElementById('dictation-feedback').textContent = 'Trình duyệt không hỗ trợ đọc giọng mẫu; trong LMS chính thức sẽ phát file audio Cambridge gốc.';
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(ITEMS[current].spoken);
+      u.lang = 'en-GB';
+      u.rate = 0.92;
+      window.speechSynthesis.speak(u);
+    }
+
+    function checkSentence() {
+      const inputs = Array.from(document.querySelectorAll('.blank'));
+      let correct = 0;
+      const answers = [];
+      inputs.forEach(inp => {
+        const expected = inp.dataset.ans;
+        answers.push(expected);
+        if (inp.value.trim().toLowerCase() === expected.toLowerCase()) {
+          inp.style.borderColor = '#10b981';
+          correct++;
+        } else {
+          inp.style.borderColor = '#f43f5e';
+        }
+      });
+      const fb = document.getElementById('dictation-feedback');
+      fb.style.color = correct === inputs.length ? '#34d399' : '#fde047';
+      fb.textContent = correct === inputs.length
+        ? 'Chính xác tuyệt đối!'
+        : `Đúng ${correct}/${inputs.length} chỗ trống. Đáp án chuẩn: ${answers.join(' — ')}`;
+    }
+
+    function nextSentence() {
+      current = (current + 1) % ITEMS.length;
+      renderItem();
+    }
+
+    renderItem();
+
+    document.getElementById('seo-lead-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('lead-btn');
+      const msg = document.getElementById('lead-msg');
+      btn.disabled = true;
+      btn.textContent = 'Đang gửi...';
+      try {
+        await window.submitLeadConsultation({
+          name: document.getElementById('lead-name').value.trim(),
+          phone: document.getElementById('lead-phone').value.trim(),
+          targetBand: document.getElementById('lead-target').value.trim(),
+          source: 'seo-micro-dictation'
+        });
+        msg.style.display = 'block';
+        msg.style.color = '#a7f3d0';
+        msg.textContent = 'Đã gửi thông tin! Thầy/Cô sẽ liên hệ tư vấn cho bạn trong ít phút.';
+        e.target.reset();
+      } catch (err) {
+        msg.style.display = 'block';
+        msg.style.color = '#fca5a5';
+        msg.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Đăng ký tư vấn';
+      }
+    };
+  </script>
+</body>
+</html>

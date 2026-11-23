@@ -1,6 +1,10 @@
     let speakingSimulationSession = null;
 
     window.startFullExam = function() {
+        if (window.isStudentProfilePreview) {
+            window.showToast?.('Read-only preview', 'Test attempts are disabled while previewing a student dashboard.', 'info');
+            return;
+        }
         // Pull directly from the GLOBAL Test Bank
         const allListening = TEST_BANK.filter(t => t.module === 'listening');
         const allReading = TEST_BANK.filter(t => t.module === 'reading');
@@ -289,6 +293,10 @@
     }
 
     function startTest(tid, selectedParts = null, syntheticTestObj = null) {
+      if (window.isStudentProfilePreview) {
+          window.showToast?.('Read-only preview', 'Test attempts are disabled while previewing a student dashboard.', 'info');
+          return;
+      }
       clearSpeakingPartTwoSession();
       if (syntheticTestObj) {
           APP_DATA = syntheticTestObj;
@@ -372,7 +380,7 @@
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('exam-ui').classList.remove('hidden');
       window.refreshStudentLanguageLock?.();
-      document.getElementById('exam-candidate-name').textContent = currentUser.user;
+      document.getElementById('exam-candidate-name').textContent = window.getStudentDisplayName ? window.getStudentDisplayName(currentUser) : currentUser.user;
       document.getElementById('exam-preview-badge').classList.add('hidden');
       document.getElementById('exam-module-title').textContent = APP_DATA.title + (window.isFullExamMode ? ` (Full Exam - Section ${window.fullExamCurrentIndex + 1}/3)` : '');
       document.getElementById('exam-action-btn-text').textContent = window.isFullExamMode ? (window.fullExamCurrentIndex < 2 ? "NEXT SECTION" : "SUBMIT EXAM") : "SUBMIT TEST";
@@ -678,10 +686,134 @@
       handleAns(questionId, textarea.value);
       const count = document.getElementById(`wc-${questionId}`);
       const analysis = document.getElementById(`writing-analysis-${questionId}`);
+      window.analysis = analysis;
       if (count) count.textContent = String(textarea.value.trim().split(/\s+/).filter(Boolean).length);
       if (analysis && window.renderWritingTextAnalyzer) {
           analysis.innerHTML = window.renderWritingTextAnalyzer(textarea.value);
       }
+      const corpCheck = document.getElementById(`corp-email-checklist-${questionId}`);
+      if (corpCheck && window.renderCorporateEmailChecklist) {
+          corpCheck.innerHTML = window.renderCorporateEmailChecklist(textarea.value);
+      }
+    };
+
+    window.playCorporateCallAudio = function(rate = 0.88) {
+      const part = APP_DATA?.parts?.[currentPartIdx];
+      const script = String(part?.callScript || '').replace(/^[A-Z_ ]+:\s*/gm, '');
+      if (!script || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(script);
+      u.lang = 'en-US';
+      u.rate = Number(rate) || 0.88;
+      window.speechSynthesis.speak(u);
+    };
+
+    window.stopCorporateCallAudio = function() {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    };
+
+    window.speakCorporateText = function(text, rate = 0.9) {
+      if (!text || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(text));
+      u.lang = 'en-US';
+      u.rate = Number(rate) || 0.9;
+      window.speechSynthesis.speak(u);
+    };
+
+    window.toggleCorporateCallScript = function() {
+      document.getElementById('corporate-call-script-box')?.classList.toggle('hidden');
+    };
+
+    window.toggleCorporateInlineCheatSheet = function() {
+      document.getElementById('corporate-inline-cheatsheet')?.classList.toggle('hidden');
+    };
+
+    window.renderCorporateEmailChecklist = function(text) {
+      const val = String(text || '');
+      const checks = [
+        { ok: /Dear\s+(Mr\.|Ms\.|Mrs\.)\s+[A-Za-z]+/i.test(val), label: 'Chào hỏi chuẩn Nhật (Dear Mr./Ms. + Họ)' },
+        { ok: /thank you.*(phone|call|time|speaking)/i.test(val), label: 'Cảm ơn sau cuộc gọi (Thank you for your time on the phone)' },
+        { ok: /(B\/L|Bill of Lading|Container|Booking)/i.test(val) && /[-•*]\s+/.test(val), label: 'Trình bày thông số B/L & Container theo gạch đầu dòng (Bullet Points)' },
+        { ok: /(ETD|ETA|status|clearance|delayed)/i.test(val), label: 'Nêu rõ Trạng thái hiện tại & mốc thời gian (ETD / ETA / Next step)' },
+        { ok: /(Best regards|Sincerely|apologize|understanding)/i.test(val), label: 'Lời kết lịch sự / Xin lỗi & Chữ ký (Best regards)' }
+      ];
+      const passed = checks.filter(c => c.ok).length;
+      return `
+        <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5 text-xs">
+          <div class="font-black text-slate-800 mb-2 flex items-center justify-between">
+            <span>📋 Checklist Email Xác Nhận Chuẩn Văn Hóa Nhật:</span>
+            <span class="rounded-full px-2.5 py-0.5 font-black ${passed === checks.length ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${passed}/${checks.length} tiêu chí</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            ${checks.map(c => `<div class="flex items-center gap-1.5 font-semibold ${c.ok ? 'text-emerald-700' : 'text-slate-400'}"><span>${c.ok ? '✓' : '○'}</span><span>${c.label}</span></div>`).join('')}
+          </div>
+        </div>`;
+    };
+
+    window.insertCorporateEmailTemplate = function(questionId) {
+      const part = APP_DATA?.parts?.[currentPartIdx];
+      const q = (part?.questions || []).find(item => item.ids && item.ids[0] === questionId);
+      const tpl = q?.emailTemplate || [
+        'Dear Mr. [Họ khách Nhật],',
+        '',
+        'Thank you very much for your time on the phone today.',
+        'As discussed, I would like to confirm the details of your shipment as follows:',
+        '',
+        '- B/L Number: [Điền mã B/L]',
+        '- Container Number: [Điền số Container]',
+        '- Current Status: [Điền trạng thái hiện tại]',
+        '- ETD / ETA: [Điền ngày tàu chạy / cập cảng]',
+        '- Next Action: [Điền bước tiếp theo & giờ báo lại]',
+        '',
+        'Please let us know if you need any further assistance.',
+        '',
+        'Best regards,',
+        '[Tên của bạn] - Logistics Operations Team'
+      ].join('\n');
+      const textarea = document.getElementById(`writing-textarea-${questionId}`) || document.getElementById('writing-textarea');
+      if (textarea) {
+        textarea.value = tpl;
+        window.updateWritingEssay(questionId, textarea);
+      }
+    };
+
+    window.runCorporateSpeechCheck = function(questionId) {
+      const statusEl = document.getElementById(`corp-speech-status-${questionId}`);
+      const part = APP_DATA?.parts?.[currentPartIdx];
+      const q = (part?.questions || []).find(item => item.ids && item.ids[0] === questionId);
+      const keywords = Array.isArray(q?.expectedKeywords) ? q.expectedKeywords : ['speaking', 'confirm', 'thank you'];
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        if (statusEl) {
+          statusEl.innerHTML = `<span class="text-amber-700">Trình duyệt chưa bật nhận diện giọng nói trực tiếp — hãy bấm nút <b>🎙️ Thu âm</b> màu đỏ bên trái để lưu file ghi âm và đối chiếu với các từ khóa bắt buộc: <b>${keywords.join(', ')}</b>.</span>`;
+        }
+        return;
+      }
+      const rec = new SR();
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+      if (statusEl) statusEl.innerHTML = `<span class="text-blue-700 font-bold animate-pulse">🎙️ Đang lắng nghe bạn nói vào điện thoại... Hãy đọc to câu trả lời bằng tiếng Anh!</span>`;
+      rec.onresult = (event) => {
+        const spoken = String(event.results?.[0]?.[0]?.transcript || '');
+        const lower = spoken.toLowerCase();
+        const hit = keywords.filter(k => lower.includes(k.toLowerCase()));
+        const miss = keywords.filter(k => !lower.includes(k.toLowerCase()));
+        if (statusEl) {
+          statusEl.innerHTML = `
+            <div class="rounded-lg bg-white border border-slate-200 p-3 mt-2">
+              <div class="text-xs font-bold text-slate-700">🗣️ Hệ thống nghe được: <span class="text-indigo-700">"${spoken}"</span></div>
+              <div class="text-xs font-black mt-1 ${miss.length === 0 ? 'text-emerald-700' : 'text-amber-700'}">
+                ✓ Đã nói đúng ${hit.length}/${keywords.length} từ khóa: ${hit.join(', ') || '—'}
+                ${miss.length ? ` · Cần bổ sung: <u>${miss.join(', ')}</u>` : ' — Tuyệt vời! Phản xạ rất chuẩn!'}
+              </div>
+            </div>`;
+        }
+      };
+      rec.onerror = () => {
+        if (statusEl) statusEl.innerHTML = `<span class="text-rose-600">Không nhận diện được mic. Bạn hãy dùng nút 🎙️ Thu âm màu đỏ bên trái nhé.</span>`;
+      };
+      rec.start();
     };
 
 
@@ -735,7 +867,7 @@
       if (isTimeFree) {
           if (APP_DATA.grammar && APP_DATA.grammar.length > 0) {
               APP_DATA.grammar.forEach((g, gIdx) => {
-                  const cleanTerm = g.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                  const cleanTerm = String(g?.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
                   if (!cleanTerm) return;
                   const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
                   htmlText = htmlText.replace(regex, `<span class="grammar-word" onclick="showGrammarPop(event, ${gIdx})">$1</span>`);
@@ -743,7 +875,7 @@
           }
           if (APP_DATA.vocab && APP_DATA.vocab.length > 0) {
               APP_DATA.vocab.forEach((v, vIdx) => {
-                  const cleanTerm = v.term.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
+                  const cleanTerm = String(v?.term || '').replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
                   if (!cleanTerm) return;
                   const regex = new RegExp(`(?![^<]*>)\\b(${cleanTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})\\b`, 'gi');
                   htmlText = htmlText.replace(regex, `<span class="vocab-word" onclick="showVocabPop(event, ${vIdx})">$1</span>`);
@@ -913,12 +1045,25 @@
               passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}${embed3dBlock}`;
           } else {
               let sampleAnswerBlock = '';
-              const mindMapHtml = window.renderDynamicMindMap?.(
-                  p,
+              const partVocabulary = window.filterDynamicMindMapVocabulary?.(
                   APP_DATA.vocab,
-                  `${APP_DATA.id || 'test'}-part-${currentPartIdx}`,
-                  APP_DATA.topics
-              ) || '';
+                  p,
+                  currentPartIdx,
+                  APP_DATA.parts.length
+              ) || [];
+              const shouldRenderMindMap = window.shouldRenderDynamicMindMap?.(
+                  APP_DATA.module,
+                  p,
+                  partVocabulary
+              ) ?? true;
+              const mindMapHtml = !shouldRenderMindMap
+                  ? ''
+                  : window.renderDynamicMindMap?.(
+                      p,
+                      partVocabulary,
+                      `${APP_DATA.id || 'test'}-part-${currentPartIdx}`,
+                      APP_DATA.topics
+                  ) || '';
               if (mindMapHtml) {
                   sampleAnswerBlock = mindMapHtml;
               } else {
@@ -946,6 +1091,48 @@
 
           if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
           if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
+      } else if (APP_DATA.module === 'corporate') {
+          // 🏢 IMMERSIVE CORPORATE LOGISTICS & JAPANESE CLIENT WORKPLACE DESK
+          passageContainer.classList.remove('hidden');
+          resizer.classList.remove('hidden');
+          passageContainer.style.width = '50%';
+          if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
+          if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
+
+          const callerName = p.callerName || 'Mr. Tanaka (Tokyo Logistics HQ)';
+          const callScript = p.callScript || '';
+          const callConsoleHtml = callScript ? `
+            <div class="mb-6 rounded-2xl border-2 border-violet-300 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-5 text-white shadow-lg">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/15 pb-3">
+                <div class="flex items-center gap-3">
+                  <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-2xl animate-pulse">📞</span>
+                  <div>
+                    <div class="text-[10px] font-black uppercase tracking-widest text-emerald-300">INCOMING WORKPLACE CALL • MÔ PHỎNG CUỘC GỌI THỰC TẾ</div>
+                    <div class="text-base font-black text-white">${lmsSanitizeHtml(callerName)}</div>
+                  </div>
+                </div>
+                <a href="/corporate-logistics.html" target="_blank" rel="noopener noreferrer" class="rounded-lg bg-violet-500/30 border border-violet-300/40 px-3 py-1.5 text-xs font-extrabold text-violet-100 hover:bg-violet-500/50 transition">🛟 Mở Tờ Phao Cứu Sinh A4 ↗</a>
+              </div>
+              <p class="mt-3 text-xs text-blue-100/90 leading-relaxed">🎧 Hãy bấm nghe cuộc gọi từ khách Nhật (không nhìn chữ trước) để điền thông số vào Phiếu Ghi Chép bên phải:</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button type="button" onclick="window.playCorporateCallAudio(0.76)" class="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3.5 py-2 text-xs font-black shadow-sm transition">▶ Nghe Chậm (0.75x - Cho người mới)</button>
+                <button type="button" onclick="window.playCorporateCallAudio(0.95)" class="rounded-xl bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 text-xs font-black shadow-sm transition">▶ Nghe Tốc Độ Thực Tế (1.0x)</button>
+                <button type="button" onclick="window.stopCorporateCallAudio()" class="rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3 py-2 text-xs font-bold transition">⏹ Dừng</button>
+                <button type="button" onclick="window.toggleCorporateCallScript()" class="rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-300/40 px-3 py-2 text-xs font-bold transition">👁️ Hiện / Ẩn Script Cuộc Gọi</button>
+                <button type="button" onclick="window.toggleCorporateInlineCheatSheet()" class="rounded-xl bg-violet-400/20 hover:bg-violet-400/30 text-violet-100 border border-violet-300/40 px-3 py-2 text-xs font-bold transition">🛟 Bật Phao Cứu Sinh</button>
+              </div>
+              <div id="corporate-call-script-box" class="hidden mt-4 rounded-xl bg-slate-950/90 border border-slate-700 p-4 text-xs sm:text-sm text-emerald-200 font-mono leading-relaxed whitespace-pre-wrap">${lmsSanitizeHtml(callScript)}</div>
+              <div id="corporate-inline-cheatsheet" class="hidden mt-4 rounded-xl bg-slate-950/95 border border-violet-400/40 p-4 text-xs text-slate-200 space-y-2">
+                <div class="font-black text-violet-300 uppercase tracking-wider">🛟 Phao Cứu Sinh Nhanh Trên Bàn Làm Việc:</div>
+                <div>• <b>Bắt máy:</b> "Thank you for calling [Company], this is [Name] speaking. How may I help you?"</div>
+                <div>• <b>Câu giờ / Xin đánh vần:</b> "I'm sorry, the line is a bit weak. Could you please spell the B/L number more slowly for me?"</div>
+                <div>• <b>Repeat &amp; Confirm:</b> "Let me repeat that to confirm: the container number is [...], and the ETD is [...], correct?"</div>
+                <div>• <b>Ho-Ren-So 3 bước:</b> "Current status: The cargo has completed customs clearance. Next step: Loading onto the vessel by [...]."</div>
+                <div>• <b>Xin lỗi Delay 3 bước:</b> "I sincerely apologize for the inconvenience. Unfortunately, the vessel is delayed by [...] due to [...]. The new ETA is [...]."</div>
+              </div>
+            </div>` : '';
+
+          passageContainer.innerHTML = `${callConsoleHtml}${studyToggles}<div class="passage-text font-bold mb-4 text-lg text-indigo-950">${lmsSanitizeHtml(p.title)}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
       } else {
           // CLEAN STANDARD LAYOUT (Reading)
           passageContainer.classList.remove('hidden');
@@ -1045,17 +1232,8 @@
       arrow.style.left = `${arrowLeft}px`;
     }
 
-    function showVocabPop(e, idx, override) {
-      e.stopPropagation(); const v = override || APP_DATA.vocab[idx]; if(!v) return;
-      const pronEl0 = document.getElementById('vp-pron');
-      let spk = document.getElementById('vp-speak');
-      if (!spk) {
-          spk = document.createElement('button');
-          spk.id = 'vp-speak'; spk.type = 'button'; spk.textContent = '🔊'; spk.title = 'Phát âm';
-          spk.style.cssText = 'margin-left:6px;cursor:pointer;background:none;border:none;font-size:14px;';
-          pronEl0.insertAdjacentElement('afterend', spk);
-      }
-      spk.onclick = ev => { ev.stopPropagation(); if (window.speechSynthesis) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(v.term); u.lang = 'en-GB'; speechSynthesis.speak(u); } };
+    function showVocabPop(e, idx) {
+      e.stopPropagation(); const v = APP_DATA.vocab[idx]; if(!v) return;
       document.getElementById('vp-term').textContent = v.term;
       document.getElementById('vp-pron').textContent = v.pron || ''; document.getElementById('vp-pron').classList.toggle('hidden', !v.pron);
       document.getElementById('vp-eng').innerHTML = v.eng ? `<b>EN:</b> ${v.eng}` : '';
@@ -1083,8 +1261,8 @@
       positionLookupPopover(pop, rect);
     }
 
-    function showGrammarPop(e, idx, override) {
-      e.stopPropagation(); const g = override || APP_DATA.grammar[idx]; if(!g) return;
+    function showGrammarPop(e, idx) {
+      e.stopPropagation(); const g = APP_DATA.grammar[idx]; if(!g) return;
       document.getElementById('gp-term').textContent = g.term;
       document.getElementById('gp-type').textContent = g.type || 'Grammar Point';
       document.getElementById('gp-expl').innerHTML = g.expl || '';
@@ -1097,60 +1275,6 @@
     document.addEventListener('mouseup', e => { 
         if(!e.target.closest('#vocab-popover') && !e.target.classList.contains('vocab-word')) document.getElementById('vocab-popover').classList.add('hidden'); 
         if(!e.target.closest('#grammar-popover') && !e.target.classList.contains('grammar-word')) document.getElementById('grammar-popover').classList.add('hidden'); 
-    });
-
-    // AI lookup: click a word (vocab) or select a phrase (grammar) in the passage — practice mode only
-    let aiLookupSeq = 0;
-    const aiEsc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-    document.addEventListener('mouseup', e => {
-        if (typeof isTimeFree === 'undefined' || !isTimeFree) return;
-        const root = e.target.closest && e.target.closest('#passage-text-content');
-        if (!root || e.target.closest('.vocab-word, .grammar-word')) return;
-        setTimeout(async () => {
-            const sel = window.getSelection();
-            if (!sel || !sel.rangeCount) return;
-            let range = sel.getRangeAt(0);
-            let text = sel.toString().trim();
-            if (sel.isCollapsed) {
-                const node = sel.anchorNode;
-                if (!node || node.nodeType !== 3 || !root.contains(node)) return;
-                const str = node.textContent; let s = sel.anchorOffset, en = s;
-                const isW = ch => /[A-Za-z'’-]/.test(ch || '');
-                while (s > 0 && isW(str[s - 1])) s--;
-                while (en < str.length && isW(str[en])) en++;
-                text = str.slice(s, en).replace(/^[-'’]+|[-'’]+$/g, '');
-                if (!text) return;
-                range = document.createRange(); range.setStart(node, s); range.setEnd(node, en);
-            } else if (!root.contains(range.commonAncestorContainer) || text.length > 400) return;
-            const isPhrase = /\s/.test(text);
-            const rect = range.getBoundingClientRect();
-            const fake = { stopPropagation() {}, target: { getBoundingClientRect: () => rect } };
-            const block = (range.startContainer.parentElement && range.startContainer.parentElement.closest('p')) || root;
-            const sentences = (block.textContent || '').split(/(?<=[.!?])\s+/);
-            const context = sentences.find(x => x.toLowerCase().includes(text.toLowerCase())) || text;
-            const seq = ++aiLookupSeq;
-            const show = isPhrase
-                ? d => showGrammarPop(fake, 0, { term: d.term, type: d.type || 'Grammar (AI)', expl: d.expl })
-                : d => showVocabPop(fake, 0, d);
-            show(isPhrase ? { term: text, type: 'AI', expl: 'Đang phân tích...' } : { term: text, eng: 'Đang tra...' });
-            try {
-                const token = await window.auth.currentUser.getIdToken();
-                const r = await fetch('https://us-central1-khanh-ielts-v2.cloudfunctions.net/lookupStudyItem', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                    body: JSON.stringify({ kind: isPhrase ? 'grammar' : 'vocab', term: text, context })
-                });
-                const d = await r.json();
-                if (!r.ok) throw new Error(d.error || 'AI lookup failed');
-                if (seq !== aiLookupSeq) return;
-                if (isPhrase) show({ term: d.term, type: d.type, expl: aiEsc(d.expl).replace(/\n/g, '<br>') });
-                else show({ term: d.term, pron: d.pron, lvl: [d.pos, d.lvl].filter(Boolean).join(' · '), eng: aiEsc(d.eng), vi: aiEsc(d.vi), pref: aiEsc(d.pref), suf: aiEsc(d.suf), syn: aiEsc(d.syn), ant: aiEsc(d.ant) });
-            } catch (err) {
-                if (seq !== aiLookupSeq) return;
-                const m = 'Không tra được: ' + aiEsc(err.message);
-                show(isPhrase ? { term: text, type: 'AI', expl: m } : { term: text, eng: m });
-            }
-        }, 0);
     });
 
     window.locateQuestion = function(questionIndex, event) {
@@ -1324,6 +1448,78 @@
                 ? `Đã đến vị trí đã gán (đoạn ${bestIndex + 1}).`
                 : `Đã tìm thấy ở đoạn ${bestIndex + 1}.`;
         }
+    };
+
+    let pendingQuestionFeedback = null;
+
+    function canSubmitQuestionFeedback() {
+      return currentUser?.role === 'student'
+        && !currentUser.isDemo
+        && !window.isStudentProfilePreview
+        && !window.isPreviewMode
+        && !window.isFullExamMode
+        && Boolean(APP_DATA?.id);
+    }
+
+    window.openQuestionFeedbackForm = function(testId, partIndex, questionIds, partTitle) {
+      if (!canSubmitQuestionFeedback() || String(testId) !== String(APP_DATA.id)) return;
+      const ids = Array.isArray(questionIds)
+        ? questionIds.map(Number).filter(Number.isSafeInteger)
+        : [];
+      if (!ids.length) return;
+
+      pendingQuestionFeedback = {
+        testId: String(APP_DATA.id),
+        testTitle: String(APP_DATA.title || 'Untitled test').slice(0, 300),
+        partIndex: Number(partIndex),
+        partTitle: String(partTitle || '').slice(0, 300),
+        questionIds: ids.slice(0, 30)
+      };
+      document.getElementById('question-feedback-context').textContent =
+        `${pendingQuestionFeedback.testTitle} · ${pendingQuestionFeedback.partTitle || `Part ${partIndex + 1}`} · Q${ids.join(', ')}`;
+      document.getElementById('question-feedback-description').value = '';
+      const modal = document.getElementById('question-feedback-modal');
+      modal?.classList.remove('hidden');
+      modal?.classList.add('flex');
+      document.getElementById('question-feedback-description')?.focus();
+    };
+
+    window.closeQuestionFeedbackForm = function() {
+      const modal = document.getElementById('question-feedback-modal');
+      modal?.classList.add('hidden');
+      modal?.classList.remove('flex');
+      pendingQuestionFeedback = null;
+    };
+
+    window.submitQuestionFeedback = async function(event) {
+      event?.preventDefault();
+      if (!canSubmitQuestionFeedback() || !pendingQuestionFeedback || !window.auth?.currentUser) return;
+
+      const description = String(document.getElementById('question-feedback-description')?.value || '').trim();
+      if (!description || description.length > 1200) {
+        window.showToast?.('Feedback not sent', 'Describe the issue in 1–1,200 characters.', 'error');
+        return;
+      }
+
+      const submitButton = document.getElementById('question-feedback-submit');
+      if (submitButton) submitButton.disabled = true;
+      try {
+        const reportRef = window.fsDoc(window.fsCollection(window.db, window.fPath('question_feedback')));
+        await window.fsSetDoc(reportRef, {
+          uid: window.auth.currentUser.uid,
+          student: currentUser.user,
+          ...pendingQuestionFeedback,
+          description,
+          createdAt: window.fsServerTimestamp()
+        });
+        window.closeQuestionFeedbackForm();
+        window.showToast?.('Feedback sent', 'Your teacher has been notified.');
+      } catch (error) {
+        console.error('Unable to send question feedback:', error);
+        window.showToast?.('Feedback could not be sent', error.message || 'Please try again.', 'error');
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
     };
 
     function renderQuestions() {
@@ -1537,7 +1733,7 @@
                opts.forEach(c => {
                    const isSelected = answers[id] === c;
                    const bgClass = isSelected ? 'bg-[#d0e3f5]' : 'bg-white hover:bg-slate-100';
-                   table += `<td class="border border-slate-300 p-0 text-center cursor-pointer transition-colors ${bgClass}" onclick="handleAns(${id}, this.dataset.val); renderPart(currentPartIdx);" data-val="${q.latexSource ? escapeLatexOption(c) : c.replace(/"/g,"&quot;")}">
+                   table += `<td class="border border-slate-300 p-0 text-center cursor-pointer transition-colors ${bgClass}" onclick="handleAns(${id}, this.dataset.val); window.refreshAnswerZonesUI();" data-val="${q.latexSource ? escapeLatexOption(c) : c.replace(/"/g,"&quot;")}">
                        <div class="w-full h-full flex items-center justify-center min-h-[44px]">
                            ${isSelected ? `<svg class="w-6 h-6 text-[#5cb85c] font-black drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>` : ''}
                        </div>
@@ -1590,6 +1786,31 @@
                    `).join('')}
                    <div data-writing-analysis>${window.renderWritingTextAnalyzer?.(answers[q.ids[0]] || '') || ''}</div>
                  </section>`;
+           } else if (APP_DATA.module === 'corporate') {
+               const essayAnswer = answers[q.ids[0]] || '';
+               const escapeDraft = value => String(value || '').replace(/[&<>"']/g, character => ({
+                   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+               })[character]);
+               const emailTo = escapeDraft(q.emailTo || 'tanaka@tokyo-logistics.co.jp');
+               const emailSubject = escapeDraft(q.emailSubject || '[Confirmation] Shipment Status & Schedule Update');
+               content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `
+                 <div class="rounded-2xl border-2 border-indigo-200 bg-white overflow-hidden shadow-sm">
+                   <div class="bg-slate-900 text-white px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                     <div class="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-indigo-200">
+                       <span>✉️</span><span>WORKPLACE EMAIL / MEMO COMPOSER • SOẠN EMAIL XÁC NHẬN SAU CUỘC GỌI</span>
+                     </div>
+                     <button type="button" onclick="window.insertCorporateEmailTemplate(${q.ids[0]})" class="rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-3 py-1.5 text-xs font-black transition shadow-sm">📋 Chèn Khung Template Mẫu (Bullet Points)</button>
+                   </div>
+                   <div class="bg-slate-50 border-b border-slate-200 px-4 py-2.5 text-xs space-y-1 text-slate-600">
+                     <div><strong class="text-slate-800">To:</strong> <span class="font-mono text-indigo-700">${emailTo}</span></div>
+                     <div><strong class="text-slate-800">Subject:</strong> <span class="font-semibold text-slate-900">${emailSubject}</span></div>
+                   </div>
+                   <textarea id="writing-textarea-${q.ids[0]}" oninput="window.updateWritingEssay(${q.ids[0]}, this)" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-72 p-4 outline-none focus:ring-2 focus:ring-indigo-500 resize-y font-sans text-base leading-relaxed" placeholder="Bấm nút '📋 Chèn Khung Template Mẫu' ở góc phải rồi điền thông số B/L, Container, ETD/ETA vào chỗ trống...">${escapeDraft(essayAnswer)}</textarea>
+                   <div class="px-4 pb-4 bg-white">
+                     <div class="text-right text-xs text-slate-500 font-bold">Số từ: <span id="wc-${q.ids[0]}">${essayAnswer.trim().split(/\\s+/).filter(Boolean).length}</span></div>
+                     <div id="corp-email-checklist-${q.ids[0]}">${window.renderCorporateEmailChecklist?.(essayAnswer) || ''}</div>
+                   </div>
+                 </div>`;
            } else {
                const essayAnswer = answers[q.ids[0]] || '';
                const escapeDraft = value => String(value || '').replace(/[&<>"']/g, character => ({
@@ -1610,7 +1831,17 @@
                speakingSimulationSession?.phase === 'complete' &&
                speakingSimulationSession.questionId === q.ids[0] &&
                Boolean(answers[q.ids[0]]);
-           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') +
+           const corpSpeakingHelper = APP_DATA.module === 'corporate' ? `
+               <div class="mb-3 rounded-xl border border-violet-200 bg-violet-50/70 p-4 text-xs sm:text-sm space-y-2">
+                 ${q.callerLine ? `<div class="flex flex-wrap items-center justify-between gap-2"><span class="font-bold text-slate-800">📞 Khách Nhật nói: <em class="text-indigo-900">"${lmsSanitizeHtml(q.callerLine)}"</em></span><button type="button" onclick="window.speakCorporateText('${String(q.callerLine).replace(/'/g, "\\'")}', 0.88)" class="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 py-1 text-xs font-bold">🔊 Nghe khách nói</button></div>` : ''}
+                 ${q.sentenceFrame ? `<div class="rounded-lg bg-white border border-violet-200 p-2.5 text-slate-700">🛟 <b>Khung câu lắp ghép gợi ý:</b> <span class="font-mono font-bold text-violet-900">${lmsSanitizeHtml(q.sentenceFrame)}</span></div>` : ''}
+                 <div class="flex flex-wrap items-center gap-2 pt-1">
+                   <button type="button" onclick="window.runCorporateSpeechCheck(${q.ids[0]})" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-black shadow-sm transition">🗣️ Bấm Nói Thử &amp; Chấm Từ Khóa Tức Thì</button>
+                   ${q.modelAnswer ? `<button type="button" onclick="window.speakCorporateText('${String(q.modelAnswer).replace(/'/g, "\\'")}', 0.88)" class="rounded-lg bg-white border border-slate-300 hover:bg-slate-100 text-slate-800 px-3 py-1.5 text-xs font-bold transition">🔊 Nghe câu trả lời mẫu chuẩn</button>` : ''}
+                 </div>
+                 <div id="corp-speech-status-${q.ids[0]}" class="text-xs"></div>
+               </div>` : '';
+           content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + corpSpeakingHelper +
                (simulatedCueCard
                    ? `<section class="speaking-simulation-panel mt-4 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 sm:p-7 text-center shadow-inner" aria-live="polite">
                         <p id="speaking-simulation-status" class="font-bold text-amber-950">${simulationComplete ? 'Recording saved. You can now submit your test.' : 'Preparing your timed attempt…'}</p>
@@ -1751,6 +1982,11 @@
             </div>`;
         }
 
+        const feedbackButtons = canSubmitQuestionFeedback()
+          ? q.ids.map(Number).filter(Number.isSafeInteger).slice(0, 30)
+              .map(id => `<button type="button" data-question-feedback="${id}" class="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100">Give feedback · Q${id}</button>`)
+              .join('')
+          : '';
         div.innerHTML = `
           <div class="flex flex-col ${instructionHtml ? 'gap-3' : 'gap-0'}">
             ${instructionHtml}
@@ -1759,8 +1995,20 @@
               ${content}
               ${chkBtn}
             </div>
+            ${feedbackButtons ? `<div class="mt-4 flex flex-wrap gap-2">${feedbackButtons}</div>` : ''}
           </div>
         `;
+        div.querySelectorAll('[data-question-feedback]').forEach(button => {
+          button.addEventListener('click', event => {
+            event.stopPropagation();
+            window.openQuestionFeedbackForm(
+              APP_DATA.id,
+              currentPartIdx,
+              [Number(button.dataset.questionFeedback)],
+              APP_DATA.parts[currentPartIdx]?.title || ''
+            );
+          });
+        });
         qListContainer.appendChild(div);
       });
     }
@@ -2191,6 +2439,24 @@
     }
     function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
     
+    window.refreshAnswerZonesUI = function() {
+        const part = APP_DATA?.parts?.[currentPartIdx];
+        const hasPassageDropZones = Boolean(
+            APP_DATA?.module !== 'listening' &&
+            part &&
+            /\{drop:\d+\}/.test(part.text || '')
+        );
+        if (!hasPassageDropZones) {
+            const savedBlockIdx = currentBlockIdx;
+            renderQuestions();
+            activateQuestionBlock(currentPartIdx, savedBlockIdx);
+            updateExamUI();
+            restoreHighlights();
+            return;
+        }
+        renderPart(currentPartIdx);
+    };
+
     function drop(e, id) { 
         e.preventDefault(); e.currentTarget.classList.remove('drag-over'); 
         
@@ -2203,11 +2469,11 @@
             }
             handleAns(id, droppedText); 
             draggedData=null; 
-            renderPart(currentPartIdx);
+            window.refreshAnswerZonesUI();
         } 
     }
     
-    function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; renderPart(currentPartIdx); triggerAutosave(); updateExamUI(); } }
+    function clearDrop(id, e) { e.stopPropagation(); if(answers[id]) { answers[id]=''; window.refreshAnswerZonesUI(); triggerAutosave(); updateExamUI(); } }
     
     function optionsDragOver(e) { 
         e.preventDefault(); 
@@ -2220,7 +2486,7 @@
         if(draggedData && draggedData.sourceId) {
             answers[draggedData.sourceId] = '';
             draggedData = null;
-            renderPart(currentPartIdx);
+            window.refreshAnswerZonesUI();
             triggerAutosave(); updateExamUI();
         }
     }
@@ -2262,7 +2528,7 @@
             // Overwrite the gap with the new text
             handleAns(id, data.text);
             window.mobileSelectedData = null;
-            renderPart(currentPartIdx);
+            window.refreshAnswerZonesUI();
         } else {
             // They were holding nothing, so they want to clear the gap (return to bank)
             clearDrop(id, e);
@@ -2273,7 +2539,7 @@
         if (window.mobileSelectedData) {
             if (window.mobileSelectedData.sourceId) {
                 answers[window.mobileSelectedData.sourceId] = '';
-                renderPart(currentPartIdx);
+                window.refreshAnswerZonesUI();
                 triggerAutosave(); updateExamUI();
             }
             window.mobileSelectedData.el.classList.remove('mobile-selected');

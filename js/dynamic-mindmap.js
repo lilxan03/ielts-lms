@@ -37,20 +37,61 @@
             .trim();
     }
 
+    window.filterDynamicMindMapVocabulary = function(vocabulary, part, partIndex, partCount) {
+        const title = plainText(part?.title || `Part ${partIndex + 1}`).toLowerCase();
+        return (Array.isArray(vocabulary) ? vocabulary : []).filter(item => {
+            const assignedPart = plainText(item?.part).toLowerCase();
+            if (assignedPart) return assignedPart === title;
+            return partCount === 1 || partIndex === 0;
+        });
+    };
+
+    window.hasDynamicMindMapContent = function(part, vocabulary) {
+        const mindMap = part?.mindMap && typeof part.mindMap === 'object' ? part.mindMap : {};
+        const hasPhrase = Array.isArray(mindMap.phrases) &&
+            mindMap.phrases.some(item => plainText(item?.term));
+        const hasIdea = Array.isArray(mindMap.topics) &&
+            mindMap.topics.some(topic =>
+                plainText(topic?.label) &&
+                Array.isArray(topic.ideas) &&
+                topic.ideas.some(idea => plainText(idea))
+            );
+        const hasVocabulary = Array.isArray(vocabulary) &&
+            vocabulary.some(item => plainText(item?.term));
+        return hasPhrase || hasIdea || hasVocabulary;
+    };
+
+    window.shouldRenderDynamicMindMap = function(module, part, vocabulary) {
+        return !['writing', 'speaking'].includes(module) ||
+            window.hasDynamicMindMapContent(part, vocabulary);
+    };
+
     function topicId(label) {
         return `topic-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'general'}`;
     }
 
-    function getOutlineState(key, topicLabels) {
+    function getOutlineState(key, topicLabels, mindMapTopics) {
         const state = savedOutlines.get(key) || { activeBranch: 'main', phrases: {}, network: null };
         if (!state.network) {
             state.network = { topics: [], ideas: [], links: [] };
         }
-        topicLabels.forEach(label => {
+        const allTopics = [
+            ...topicLabels.map(label => ({ label, ideas: [] })),
+            ...(Array.isArray(mindMapTopics) ? mindMapTopics : [])
+        ];
+        allTopics.forEach(item => {
+            const label = plainText(item?.label);
+            if (!label) return;
             const id = topicId(label);
             if (!state.network.topics.some(topic => topic.id === id)) {
                 state.network.topics.push({ id, label });
             }
+            (Array.isArray(item.ideas) ? item.ideas : []).forEach((rawIdea, ideaIndex) => {
+                const text = plainText(rawIdea);
+                const ideaId = `teacher-idea-${ideaIndex}-${id}`;
+                if (!text || state.network.ideas.some(idea => idea.id === ideaId)) return;
+                state.network.ideas.push({ id: ideaId, text, topicId: id });
+            });
         });
         savedOutlines.set(key, state);
         return state;
@@ -112,11 +153,12 @@
         </section>`;
     }
 
-    function renderPhraseButton(id, label, detail, kind, isSelected) {
+    function renderPhraseButton(id, label, detail, kind, isSelected, defaultBranch = '') {
         const safeLabel = escapeHtml(label);
         const safeDetail = plainText(detail);
         const title = safeDetail ? ` title="${escapeHtml(safeDetail)}"` : '';
-        return `<button type="button" class="dynamic-mindmap__phrase" data-mindmap-phrase="${escapeHtml(id)}" data-mindmap-kind="${kind}" aria-pressed="${isSelected}"${title}>
+        const branchAttribute = defaultBranch ? ` data-mindmap-default-branch="${escapeHtml(defaultBranch)}"` : '';
+        return `<button type="button" class="dynamic-mindmap__phrase" data-mindmap-phrase="${escapeHtml(id)}" data-mindmap-kind="${kind}" data-mindmap-draggable="true" draggable="true" aria-pressed="${isSelected}"${branchAttribute}${title}>
             <span>${safeLabel}</span><span class="dynamic-mindmap__phrase-state" aria-hidden="true">${isSelected ? '✓' : '＋'}</span>
         </button>`;
     }
@@ -129,21 +171,38 @@
             ? [...new Set(topics.map(plainText).filter(Boolean))]
             : [];
         if (!topicLabels.length) topicLabels.push(topic);
-        const state = getOutlineState(key, topicLabels);
+        const mindMap = part?.mindMap && typeof part.mindMap === 'object' ? part.mindMap : {};
+        const state = getOutlineState(key, topicLabels, mindMap.topics);
         const vocabTerms = source
-            .map((item, index) => ({ item, index, term: plainText(item?.term) }))
+            .map((item, index) => ({ item, id: `vocab-${index}`, term: plainText(item?.term) }))
+            .filter(entry => entry.term);
+        const customTerms = (Array.isArray(mindMap.phrases) ? mindMap.phrases : [])
+            .map((item, index) => ({
+                item,
+                id: `custom-${index}`,
+                term: plainText(item?.term),
+                branch: branches.some(branch => branch.id === item?.branch) ? item.branch : ''
+            }))
             .filter(entry => entry.term);
         const phraseLabels = new Map();
-        vocabTerms.forEach(({ item, index, term }) => {
-            phraseLabels.set(`vocab-${index}`, term);
+        vocabTerms.forEach(({ id, term }) => {
+            phraseLabels.set(id, term);
+        });
+        customTerms.forEach(({ id, term }) => {
+            phraseLabels.set(id, term);
         });
         markerGroups.forEach(group => group.phrases.forEach((phrase, index) => {
             phraseLabels.set(`marker-${group.id}-${index}`, phrase);
         }));
-        const vocabularyHtml = vocabTerms.length
-            ? vocabTerms.map(({ item, index, term }) =>
-                renderPhraseButton(`vocab-${index}`, term, item.eng || item.vi || item.example, 'collocation', Boolean(state.phrases[`vocab-${index}`]))
-            ).join('')
+        const vocabularyHtml = vocabTerms.length || customTerms.length
+            ? [
+                ...customTerms.map(({ item, id, term, branch }) =>
+                    renderPhraseButton(id, term, item.detail, 'collocation', Boolean(state.phrases[id]), branch)
+                ),
+                ...vocabTerms.map(({ item, id, term }) =>
+                    renderPhraseButton(id, term, item.eng || item.vi || item.example, 'collocation', Boolean(state.phrases[id]))
+                )
+            ].join('')
             : '<p class="dynamic-mindmap__empty">No task vocabulary has been added yet. Choose a discourse marker below to start your outline.</p>';
         const markersHtml = markerGroups.map(group => `
             <section class="dynamic-mindmap__marker-group">
@@ -166,7 +225,7 @@
                         <span>${escapeHtml(phrase)}</span><span aria-hidden="true">×</span>
                     </button>` : '';
                 }).join('');
-            return `<section class="dynamic-mindmap__branch${active ? ' is-active' : ''}" data-mindmap-branch="${branch.id}">
+            return `<section class="dynamic-mindmap__branch${active ? ' is-active' : ''}" data-mindmap-branch="${branch.id}" data-mindmap-drop-branch="${branch.id}">
                 <button type="button" class="dynamic-mindmap__branch-select" data-mindmap-select-branch="${branch.id}" aria-pressed="${active}">
                     <span class="dynamic-mindmap__branch-number">${index + 1}</span>
                     <span><strong>${escapeHtml(branch.label)}</strong><small>${escapeHtml(branch.prompt)}</small></span>
@@ -179,7 +238,7 @@
             <header class="dynamic-mindmap__header">
                 <span class="dynamic-mindmap__eyebrow">Build your response / Tự xây dựng câu trả lời</span>
                 <h2 id="dynamic-mindmap-title">Dynamic Mind Map / Sơ đồ tư duy</h2>
-                <p>Choose an outline branch, then add useful phrases. Make your own ideas; this is a scaffold, not a model answer.</p>
+                <p>Choose a branch, then click or drag phrases into your outline. Make your own ideas; this is a scaffold, not a model answer.</p>
             </header>
             <div class="dynamic-mindmap__topic"><span>YOUR TASK / ĐỀ BÀI</span><strong>${escapeHtml(topic)}</strong></div>
             <div class="dynamic-mindmap__layout">
@@ -189,7 +248,7 @@
                 <aside class="dynamic-mindmap__bank" aria-label="Phrase bank">
                     <section>
                         <h4>Task collocations / Cụm từ theo đề</h4>
-                        <p>From the teacher's Test Vocabulary Bank</p>
+                        <p>Teacher-provided phrases and the Test Vocabulary Bank</p>
                         <div class="dynamic-mindmap__phrases">${vocabularyHtml}</div>
                     </section>
                     <section>
@@ -213,6 +272,39 @@
         map.dataset.activeBranch = state.activeBranch;
         const status = map.querySelector('[data-mindmap-status]');
         const branchLabels = new Map(branches.map(branch => [branch.id, branch.label]));
+        const removePhraseFromOutline = phraseId => {
+            map.querySelector(`[data-mindmap-remove="${phraseId}"]`)?.remove();
+            delete state.phrases[phraseId];
+            const button = map.querySelector(`[data-mindmap-phrase="${phraseId}"]`);
+            button?.setAttribute('aria-pressed', 'false');
+            const phraseState = button?.querySelector('.dynamic-mindmap__phrase-state');
+            if (phraseState) phraseState.textContent = '＋';
+        };
+        const placePhraseInBranch = (phraseId, branchId) => {
+            const button = map.querySelector(`[data-mindmap-phrase="${phraseId}"]`);
+            const destination = map.querySelector(`[data-mindmap-items="${branchId}"]`);
+            if (!button || !destination || !branchLabels.has(branchId)) return false;
+            if (state.phrases[phraseId] === branchId) return false;
+            removePhraseFromOutline(phraseId);
+
+            const phrase = button.querySelector('span')?.textContent || '';
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'dynamic-mindmap__outline-item';
+            item.dataset.mindmapRemove = phraseId;
+            item.setAttribute('aria-label', `Remove ${phrase} from ${branchLabels.get(branchId)}`);
+            item.innerHTML = `<span>${escapeHtml(phrase)}</span><span aria-hidden="true">×</span>`;
+            item.addEventListener('click', () => {
+                removePhraseFromOutline(phraseId);
+                if (status) status.textContent = 'Phrase removed from your outline.';
+            });
+            destination.appendChild(item);
+            state.phrases[phraseId] = branchId;
+            button.setAttribute('aria-pressed', 'true');
+            const phraseState = button.querySelector('.dynamic-mindmap__phrase-state');
+            if (phraseState) phraseState.textContent = '✓';
+            return true;
+        };
 
         map.querySelectorAll('[data-mindmap-select-branch]').forEach(button => {
             button.addEventListener('click', () => {
@@ -233,46 +325,46 @@
                 const phraseId = button.dataset.mindmapPhrase;
                 const previousBranch = state.phrases[phraseId];
                 if (previousBranch) {
-                    map.querySelector(`[data-mindmap-remove="${phraseId}"]`)?.remove();
-                    delete state.phrases[phraseId];
-                    button.setAttribute('aria-pressed', 'false');
-                    button.querySelector('.dynamic-mindmap__phrase-state').textContent = '＋';
+                    removePhraseFromOutline(phraseId);
                     if (status) status.textContent = 'Phrase removed from your outline.';
                     return;
                 }
 
-                const branchId = map.dataset.activeBranch || 'main';
+                const branchId = button.dataset.mindmapDefaultBranch || map.dataset.activeBranch || 'main';
                 const phrase = button.querySelector('span')?.textContent || '';
-                const item = document.createElement('button');
-                item.type = 'button';
-                item.className = 'dynamic-mindmap__outline-item';
-                item.dataset.mindmapRemove = phraseId;
-                item.setAttribute('aria-label', `Remove ${phrase} from ${branchLabels.get(branchId)}`);
-                item.innerHTML = `<span>${escapeHtml(phrase)}</span><span aria-hidden="true">×</span>`;
-                item.addEventListener('click', () => {
-                    delete state.phrases[phraseId];
-                    button.setAttribute('aria-pressed', 'false');
-                    button.querySelector('.dynamic-mindmap__phrase-state').textContent = '＋';
-                    item.remove();
-                    if (status) status.textContent = 'Phrase removed from your outline.';
-                });
-                map.querySelector(`[data-mindmap-items="${branchId}"]`)?.appendChild(item);
-                state.phrases[phraseId] = branchId;
-                button.setAttribute('aria-pressed', 'true');
-                button.querySelector('.dynamic-mindmap__phrase-state').textContent = '✓';
-                if (status) status.textContent = `${phrase} added to ${branchLabels.get(branchId)}.`;
+                if (placePhraseInBranch(phraseId, branchId) && status) {
+                    status.textContent = `${phrase} added to ${branchLabels.get(branchId)}.`;
+                }
+            });
+            button.addEventListener('dragstart', event => {
+                event.dataTransfer?.setData('text/plain', button.dataset.mindmapPhrase);
+                if (event.dataTransfer) event.dataTransfer.effectAllowed = 'copy';
+            });
+        });
+
+        map.querySelectorAll('[data-mindmap-drop-branch]').forEach(branch => {
+            branch.addEventListener('dragover', event => {
+                event.preventDefault();
+                branch.classList.add('is-drop-target');
+            });
+            branch.addEventListener('dragleave', event => {
+                if (!branch.contains(event.relatedTarget)) branch.classList.remove('is-drop-target');
+            });
+            branch.addEventListener('drop', event => {
+                event.preventDefault();
+                branch.classList.remove('is-drop-target');
+                const phraseId = event.dataTransfer?.getData('text/plain');
+                const branchId = branch.dataset.mindmapDropBranch;
+                if (placePhraseInBranch(phraseId, branchId) && status) {
+                    status.textContent = `Phrase added to ${branchLabels.get(branchId)}.`;
+                }
             });
         });
 
         map.querySelectorAll('[data-mindmap-remove]').forEach(item => {
             item.addEventListener('click', () => {
                 const phraseId = item.dataset.mindmapRemove;
-                delete state.phrases[phraseId];
-                const phraseButton = map.querySelector(`[data-mindmap-phrase="${phraseId}"]`);
-                phraseButton?.setAttribute('aria-pressed', 'false');
-                const phraseState = phraseButton?.querySelector('.dynamic-mindmap__phrase-state');
-                if (phraseState) phraseState.textContent = '＋';
-                item.remove();
+                removePhraseFromOutline(phraseId);
                 if (status) status.textContent = 'Phrase removed from your outline.';
             });
         });

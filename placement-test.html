@@ -66,41 +66,62 @@
         <input type="text" id="lead-name" placeholder="Họ và tên của bạn" required />
         <input type="tel" id="lead-phone" placeholder="Số điện thoại / Zalo" required />
         <input type="text" id="lead-target" placeholder="Band mục tiêu (ví dụ: 6.5 hoặc 7.5)" />
-        <button class="btn" type="submit" style="background:#10b981;color:#052e16;">Gửi thông tin tư vấn</button>
+        <button class="btn" id="lead-submit-btn" type="submit" style="background:#10b981;color:#052e16;">Gửi thông tin tư vấn</button>
         <p id="lead-msg" style="font-size:13px;color:#a7f3d0;display:none;"></p>
       </form>
     </section>
   </main>
 
+  <script src="js/lead-capture.js"></script>
   <script>
     const QS = [
-      { sec: 'reading-qs', q: '1. Vertical farms grow crops indoors throughout the entire year.', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 'TRUE' },
-      { sec: 'reading-qs', q: '2. Vertical farms use more water than traditional outdoor farming.', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 'FALSE' },
-      { sec: 'reading-qs', q: '3. Most vertical farms are located in European cities.', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 'NOT GIVEN' },
-      { sec: 'reading-qs', q: '4. High electricity costs make it difficult to grow ____ indoors.', opts: ['leafy greens', 'staple crops', 'hydroponic systems'], ans: 'staple crops' },
-      { sec: 'reading-qs', q: '5. The word "consume" in the passage is closest in meaning to:', opts: ['use', 'waste', 'produce'], ans: 'use' },
-      { sec: 'gv-qs', q: '6. ____ the high initial cost, renewable energy is expanding rapidly.', opts: ['Although', 'Despite', 'However'], ans: 'Despite' },
-      { sec: 'gv-qs', q: '7. The report ____ by the research team last month.', opts: ['published', 'was published', 'has publishing'], ans: 'was published' },
-      { sec: 'gv-qs', q: '8. A sharp ____ in global temperatures was recorded.', opts: ['increase', 'increasing', 'increased'], ans: 'increase' },
-      { sec: 'gv-qs', q: '9. Students ____ attend classes regularly tend to achieve higher scores.', opts: ['which', 'who', 'whom'], ans: 'who' },
-      { sec: 'gv-qs', q: '10. Choose the best academic synonym for "important":', opts: ['crucial', 'tiny', 'temporary'], ans: 'crucial' },
+      { sec: 'reading-qs', q: '1. Vertical farms grow crops indoors throughout the entire year.', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 'TRUE', exp: 'Đoạn văn nêu rõ "grow leafy greens year-round" (trồng quanh năm).' },
+      { sec: 'reading-qs', q: '2. Vertical farms use more water than traditional outdoor farming.', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 'FALSE', exp: 'Đoạn văn nêu "consume up to 90% less water than conventional open-field agriculture" (tiêu thụ ít hơn tới 90% nước).' },
+      { sec: 'reading-qs', q: '3. Most vertical farms are located in European cities.', opts: ['TRUE', 'FALSE', 'NOT GIVEN'], ans: 'NOT GIVEN', exp: 'Bài đọc hoàn toàn không nhắc tới khu vực châu Âu.' },
+      { sec: 'reading-qs', q: '4. High electricity costs make it difficult to grow ____ indoors.', opts: ['leafy greens', 'staple crops', 'hydroponic systems'], ans: 'staple crops', exp: 'Đoạn văn nêu "high electricity costs... remain a major barrier for growing staple crops".' },
+      { sec: 'reading-qs', q: '5. The word "consume" in the passage is closest in meaning to:', opts: ['use', 'waste', 'produce'], ans: 'use', exp: '"Consume" = tiêu thụ / sử dụng (use).' },
+      { sec: 'gv-qs', q: '6. ____ the high initial cost, renewable energy is expanding rapidly.', opts: ['Although', 'Despite', 'However'], ans: 'Despite', exp: 'Sau chỗ trống là cụm danh từ "the high initial cost" nên dùng giới từ "Despite".' },
+      { sec: 'gv-qs', q: '7. The report ____ by the research team last month.', opts: ['published', 'was published', 'has publishing'], ans: 'was published', exp: 'Câu bị động ở thì quá khứ đơn ("last month" + "by the research team").' },
+      { sec: 'gv-qs', q: '8. A sharp ____ in global temperatures was recorded.', opts: ['increase', 'increasing', 'increased'], ans: 'increase', exp: 'Sau mạo từ "A" và tính từ "sharp" cần một danh từ ("increase").' },
+      { sec: 'gv-qs', q: '9. Students ____ attend classes regularly tend to achieve higher scores.', opts: ['which', 'who', 'whom'], ans: 'who', exp: 'Đại từ quan hệ làm chủ ngữ chỉ người ("Students") cho động từ "attend" là "who".' },
+      { sec: 'gv-qs', q: '10. Choose the best academic synonym for "important":', opts: ['crucial', 'tiny', 'temporary'], ans: 'crucial', exp: '"Crucial" = thiết yếu, cực kỳ quan trọng (từ vựng học thuật Band 7.0+).' },
     ];
 
     QS.forEach((item, idx) => {
       const el = document.createElement('div');
       el.className = 'q-item';
-      el.innerHTML = `<div class="q-title">${item.q}</div><div class="opts">${item.opts.map(o => `<label class="opt"><input type="radio" name="q${idx}" value="${o}"> ${o}</label>`).join('')}</div>`;
+      el.id = `q-card-${idx}`;
+      el.innerHTML = `<div class="q-title">${item.q}</div><div class="opts">${item.opts.map(o => `<label class="opt"><input type="radio" name="q${idx}" value="${o}"> ${o}</label>`).join('')}</div><div id="q-exp-${idx}" style="display:none;margin-top:8px;padding:8px 10px;border-radius:8px;font-size:13px;"></div>`;
       document.getElementById(item.sec).appendChild(el);
     });
+
+    let lastPlacementResult = null;
 
     document.getElementById('submit-btn').onclick = () => {
       let score = 0;
       QS.forEach((item, idx) => {
         const sel = document.querySelector(`input[name="q${idx}"]:checked`);
-        if (sel && sel.value === item.ans) score++;
+        const isCorrect = Boolean(sel && sel.value === item.ans);
+        if (isCorrect) score++;
+        const expEl = document.getElementById(`q-exp-${idx}`);
+        if (expEl) {
+          expEl.style.display = 'block';
+          expEl.style.background = isCorrect ? 'rgba(16, 185, 129, 0.14)' : 'rgba(244, 63, 94, 0.14)';
+          expEl.style.border = isCorrect ? '1px solid #10b981' : '1px solid #f43f5e';
+          expEl.style.color = isCorrect ? '#a7f3d0' : '#fecdd3';
+          const userChoice = sel ? sel.value : 'Chưa chọn';
+          expEl.innerHTML = isCorrect
+            ? `<strong>✓ Chính xác (${item.ans}):</strong> ${item.exp}`
+            : `<strong>✗ Bạn chọn: ${userChoice} • Đáp án đúng: ${item.ans}.</strong> ${item.exp}`;
+        }
       });
       const band = score <= 3 ? '4.0 – 4.5' : score <= 5 ? '5.0 – 5.5' : score <= 7 ? '6.0 – 6.5' : score <= 9 ? '7.0' : '7.5+';
       const rec = score <= 4 ? 'Gợi ý lớp: Bands 4 - 5 (B1)' : score <= 7 ? 'Gợi ý lớp: Bands 5 - 6.5 (B2)' : 'Gợi ý lớp: Bands 6.5 - 7.5 (C1)';
+      lastPlacementResult = {
+        placementScore: `${score}/${QS.length}`,
+        placementBand: `Band ${band}`,
+        recommendedClass: rec.replace('Gợi ý lớp: ', '')
+      };
       document.getElementById('band-text').textContent = `Band ${band}`;
       document.getElementById('score-detail').textContent = `Bạn trả lời đúng ${score} / ${QS.length} câu.`;
       document.getElementById('class-rec').textContent = rec;
@@ -109,11 +130,38 @@
       box.scrollIntoView({ behavior: 'smooth' });
     };
 
-    document.getElementById('lead-form').onsubmit = (e) => {
+    document.getElementById('lead-form').onsubmit = async (e) => {
       e.preventDefault();
+      const btn = document.getElementById('lead-submit-btn');
       const msg = document.getElementById('lead-msg');
-      msg.style.display = 'block';
-      msg.textContent = 'Đã ghi nhận thông tin! Thầy/Cô sẽ liên hệ tư vấn lộ trình cho bạn trong thời gian sớm nhất.';
+      const name = document.getElementById('lead-name').value.trim();
+      const phone = document.getElementById('lead-phone').value.trim();
+      const targetBand = document.getElementById('lead-target').value.trim();
+
+      btn.disabled = true;
+      btn.textContent = 'Đang gửi thông tin...';
+      msg.style.display = 'none';
+
+      try {
+        await window.submitLeadConsultation({
+          name,
+          phone,
+          targetBand,
+          source: 'placement-test',
+          ...(lastPlacementResult || {})
+        });
+        msg.style.display = 'block';
+        msg.style.color = '#a7f3d0';
+        msg.textContent = 'Đã gửi thông tin thành công! Thầy/Cô sẽ liên hệ tư vấn lộ trình cho bạn trong ít phút.';
+        e.target.reset();
+      } catch (err) {
+        msg.style.display = 'block';
+        msg.style.color = '#fca5a5';
+        msg.textContent = err.message || 'Gửi thất bại. Bạn vui lòng nhắn Zalo 0913 980 712 để được hỗ trợ ngay.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Gửi thông tin tư vấn';
+      }
     };
   </script>
 </body>

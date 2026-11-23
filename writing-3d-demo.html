@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Học IELTS Writing Task 1 Với Mô Hình 3D Tương Tác (Map & Process) | IELTS W KHANH</title>
+  <meta name="description" content="Trải nghiệm miễn phí công nghệ học IELTS Writing Task 1 qua mô hình 3D xoay 360 độ cho dạng Map (Before/After) và Process (Biofuel, Recycling). Hiểu sâu quy trình trước khi viết." />
+  <meta property="og:title" content="IELTS Writing Task 1 3D Tương Tác | IELTS W KHANH" />
+  <meta property="og:description" content="Xoay 360 độ các mô hình Map & Process chuẩn bộ đề Cambridge để không bao giờ bỏ sót chi tiết khi viết IELTS Writing Task 1." />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://ielts-with-khanh.vercel.app/writing-3d-demo.html" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 18px 64px; }
+    .nav { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 18px; font-size: 13px; }
+    .nav a { color: #94a3b8; text-decoration: none; font-weight: 600; }
+    .nav a:hover { color: #fff; }
+    .hero { background: linear-gradient(135deg, #1e3a8a, #0f172a); border: 1px solid #334155; border-radius: 18px; padding: 28px; margin-bottom: 22px; }
+    .badge { display: inline-block; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #7dd3fc; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
+    .hero h1 { font-size: 28px; color: #fff; margin-bottom: 10px; line-height: 1.25; }
+    .hero p { font-size: 15px; color: #cbd5e1; max-width: 740px; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 12px; }
+    .tab-btn { background: #1e293b; color: #cbd5e1; border: 1px solid #475569; border-radius: 10px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .tab-btn.active { background: #2563eb; color: #fff; border-color: #3b82f6; }
+    .viewer-box { background: #020617; border: 1px solid #334155; border-radius: 16px; overflow: hidden; margin-bottom: 22px; }
+    .viewer-box iframe { width: 100%; height: 470px; border: none; display: block; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 14px; padding: 18px; }
+    .card h2 { font-size: 16px; color: #38bdf8; margin-bottom: 8px; }
+    .card p, .card li { font-size: 14px; color: #cbd5e1; }
+    .card ul { padding-left: 18px; display: grid; gap: 6px; }
+    .cta-box { background: linear-gradient(135deg, #064e3b, #0f172a); border: 1px solid #10b981; border-radius: 16px; padding: 24px; }
+    .cta-box h2 { font-size: 20px; color: #fff; margin-bottom: 6px; }
+    .cta-box p { font-size: 14px; color: #a7f3d0; margin-bottom: 14px; }
+    .lead-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px; }
+    .btn { background: #10b981; color: #052e16; border: none; border-radius: 10px; padding: 11px 18px; font-size: 14px; font-weight: 800; cursor: pointer; }
+    .btn:hover { background: #34d399; }
+    .sub-links { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; }
+    .sub-links a { color: #7dd3fc; font-weight: 700; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <nav class="nav">
+      <a href="/">← Trang chủ IELTS W KHANH</a>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;">
+        <a href="/placement-test.html">Thi thử đầu vào 5 phút</a>
+        <a href="/micro-dictation-demo.html">Nghe chép Micro-Dictation</a>
+        <a href="/reading-ai-demo.html">Reading Vocab &amp; Grammar</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <span class="badge">TÍNH NĂNG ĐỘC QUYỀN • 3D INTERACTIVE WRITING TASK 1</span>
+      <h1>Trải Nghiệm Học IELTS Writing Task 1 Qua Mô Hình 3D Xoay 360°</h1>
+      <p>Thay vì nhìn hình 2D phẳng khó hình dung không gian, học viên tại IELTS W KHANH được trực tiếp xoay, phóng to từng công đoạn Process và đối chiếu Map Before/After chuẩn bộ đề Cambridge trước khi viết.</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switch3D('/biofuel-3d.html', this)">1. Quy trình sản xuất Biofuel (3D)</button>
+      <button class="tab-btn" onclick="switch3D('/map-3d.html', this)">2. Mô hình Map Before / After (3D)</button>
+      <button class="tab-btn" onclick="switch3D('/process-3d.html', this)">3. Các quy trình Cambridge Process (3D)</button>
+    </div>
+
+    <div class="viewer-box">
+      <iframe id="demo-3d-frame" src="/biofuel-3d.html" title="Mô hình 3D IELTS Writing Task 1" loading="lazy"></iframe>
+    </div>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Không bỏ sót chi tiết Overview</h2>
+        <p>Quan sát toàn cảnh giúp bạn nhận ra ngay số bước chính (stages), điểm đầu/điểm cuối của Process hoặc sự thay đổi hướng Đông-Tây-Nam-Bắc của Map.</p>
+      </article>
+      <article class="card">
+        <h2>Từ vựng &amp; Động từ bị động chuẩn xác</h2>
+        <ul>
+          <li><strong>Map:</strong> <em>demolished, replaced by, converted into, extended northward</em></li>
+          <li><strong>Process:</strong> <em>undergoes fermentation, is transported via, is separated into</em></li>
+        </ul>
+      </article>
+      <article class="card">
+        <h2>Kết hợp Scaffolded Writing &amp; AI</h2>
+        <p>Trong hệ thống LMS chính thức, học viên có sẵn khung dàn ý từng đoạn, Mindmap từ vựng và AI chấm điểm theo 4 tiêu chí Task 1.</p>
+      </article>
+    </section>
+
+    <section class="cta-box">
+      <h2>Đăng ký trải nghiệm lộ trình Writing + Chấm chữa AI 1-1</h2>
+      <p>Để lại thông tin để nhận tư vấn lớp phù hợp và tài khoản học thử nền tảng IELTS W KHANH.</p>
+      <form id="seo-lead-form" class="lead-form">
+        <input type="text" id="lead-name" placeholder="Họ và tên *" required />
+        <input type="tel" id="lead-phone" placeholder="Số điện thoại / Zalo *" required />
+        <input type="text" id="lead-target" placeholder="Band mục tiêu (vd: 6.5 hoặc 7.5)" />
+        <button class="btn" id="lead-btn" type="submit">Nhận tư vấn ngay</button>
+      </form>
+      <p id="lead-msg" style="display:none;margin-top:10px;font-size:13px;font-weight:700;"></p>
+      <div class="sub-links">
+        <a href="/placement-test.html">→ Hoặc làm Mini Placement Test miễn phí (5 phút)</a>
+        <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer">→ Nhắn Zalo trực tiếp 0913 980 712</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/lead-capture.js"></script>
+  <script>
+    function switch3D(url, btn) {
+      document.getElementById('demo-3d-frame').src = url;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    document.getElementById('seo-lead-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('lead-btn');
+      const msg = document.getElementById('lead-msg');
+      btn.disabled = true;
+      btn.textContent = 'Đang gửi...';
+      try {
+        await window.submitLeadConsultation({
+          name: document.getElementById('lead-name').value.trim(),
+          phone: document.getElementById('lead-phone').value.trim(),
+          targetBand: document.getElementById('lead-target').value.trim(),
+          source: 'seo-writing-3d'
+        });
+        msg.style.display = 'block';
+        msg.style.color = '#a7f3d0';
+        msg.textContent = 'Đã gửi thông tin! Bộ phận tư vấn sẽ liên hệ bạn qua Zalo/SĐT trong ít phút.';
+        e.target.reset();
+      } catch (err) {
+        msg.style.display = 'block';
+        msg.style.color = '#fca5a5';
+        msg.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Nhận tư vấn ngay';
+      }
+    };
+  </script>
+</body>
+</html>

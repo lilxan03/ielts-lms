@@ -3,7 +3,7 @@
       document.getElementById('submissions-list').innerHTML = SUBMISSIONS.length ? SUBMISSIONS.map(s => `
         <div class="bg-white border border-blue-50 rounded-2xl p-5 mb-4 shadow-sm hover:shadow-md transition flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h3 class="font-black text-lg text-slate-800 flex items-center gap-2">👤 ${s.student} <span class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-md border border-blue-100">${s.className}</span></h3>
+            <h3 class="font-black text-lg text-slate-800 flex items-center gap-2">👤 ${window.getStudentDisplayName ? window.getStudentDisplayName(s.student) : s.student} <span class="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded-md border border-blue-100">${s.className}</span></h3>
             <p class="text-sm font-medium text-slate-600 mt-1 flex items-center gap-2">📝 ${s.testName} <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase bg-slate-100 px-2 py-0.5 rounded">${s.date}</span>
                 ${s.secureInfractions > 0 ? `<span class="bg-rose-100 text-rose-700 border border-rose-300 text-[9px] font-bold px-1.5 py-0.5 rounded" title="${s.secureInfractions} Tab Switches Detected">⚠️ ${s.secureInfractions} Warnings</span>` : ''}
             </p>
@@ -32,7 +32,8 @@
         }
         let csv = "ID,Date,Student,Class,Test Name,Score\n";
         SUBMISSIONS.forEach(s => {
-            csv += `"${s.id}","${s.date}","${s.student}","${s.className}","${s.testName}","${s.score}"\n`;
+            const studentName = window.getStudentDisplayName ? window.getStudentDisplayName(s.student) : s.student;
+            csv += `"${s.id}","${s.date}","${studentName}","${s.className}","${s.testName}","${s.score}"\n`;
         });
         // Uint8Array applies the UTF-8 BOM to ensure Excel reads accents correctly
         const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' }); 
@@ -95,7 +96,7 @@
       
       document.getElementById('editor-ui').classList.add('hidden');
       document.getElementById('review-ui').classList.remove('hidden');
-      document.getElementById('review-module-badge').textContent = `${APP_DATA.module} - GRADING: ${sub.student}`;
+      document.getElementById('review-module-badge').textContent = `${APP_DATA.module} - GRADING: ${window.getStudentDisplayName ? window.getStudentDisplayName(sub.student) : sub.student}`;
       
       initResizer();
       buildSplitReviewUI(true, subId, sub.teacherFeedback || {});

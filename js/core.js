@@ -28,14 +28,13 @@
     let FLASHCARDS = {};
     let ALL_NOTES = {};
     let SUBMISSIONS = [];
+    let QUESTION_FEEDBACK = [];
     window.aiDraftOverallByQuestion = {};
     let SCHEDULES = [];
     let ATTENDANCE = [];
     let PACKAGES = []; 
     let paymentCatalogUnsubscribe = null;
     let paymentPackagesUnsubscribe = null;
-    let paymentCatalogStatus = 'loading';
-    let paymentPackagesStatus = 'loading';
     let TEACHER_TEMPLATES = [];
     let TEACHER_TEMPLATE_ASSIGNMENTS = {};
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
@@ -44,43 +43,33 @@
     let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
-    let chartJsLoadPromise = null;
-    window.ensureChartJsLoaded = function() {
-      if (window.Chart) return Promise.resolve(window.Chart);
-      if (!chartJsLoadPromise) {
-        chartJsLoadPromise = new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-          script.async = true;
-          script.onload = () => window.Chart
-            ? resolve(window.Chart)
-            : reject(new Error('Chart.js loaded without exposing its API.'));
-          script.onerror = () => reject(new Error('Unable to load Chart.js.'));
-          document.head.appendChild(script);
-        }).catch(error => {
-          chartJsLoadPromise = null;
-          throw error;
-        });
-      }
-      return chartJsLoadPromise;
+    window.classMatchesName = function(name, cls) {
+      if (!name || !cls) return false;
+      const normalizedName = String(name).trim().toLowerCase();
+      const matches = CLASSES.filter(candidate => [
+        candidate.name,
+        ...(Array.isArray(candidate.nameAliases) ? candidate.nameAliases : [])
+      ].some(candidateName => String(candidateName || '').trim().toLowerCase() === normalizedName));
+      return matches.length === 1 && matches[0].id === cls.id;
+    };
+    window.classSubmissionMatches = function(submission, cls) {
+      if (!submission || !cls) return false;
+      if (submission.classId) return submission.classId === cls.id;
+      return window.classMatchesName(submission.className, cls);
     };
     const STUDENT_LANGUAGE_KEY = 'ielts_student_language';
-    let studentLanguage = localStorage.getItem(STUDENT_LANGUAGE_KEY) === 'en' ? 'en' : 'vi';
+    let studentLanguage = localStorage.getItem(STUDENT_LANGUAGE_KEY) === 'vi' ? 'vi' : 'en';
     window.studentText = function(english, vietnamese) {
       return studentLanguage === 'vi' ? vietnamese : english;
     };
     window.refreshStudentLanguageLock = function() {
       const exam = document.getElementById('exam-ui');
-      const languageButtons = document.querySelectorAll('#student-language-toggle, #auth-language-toggle');
-      const isLocked = Boolean(exam && !exam.classList.contains('hidden'));
-      languageButtons.forEach(languageButton => {
-        languageButton.disabled = isLocked;
-        languageButton.textContent = studentLanguage === 'vi' ? 'Tiếng Việt' : 'English';
-        languageButton.setAttribute('aria-label', studentLanguage === 'vi' ? 'Ngôn ngữ hiện tại: Tiếng Việt' : 'Current language: English');
-        languageButton.title = isLocked
+      const languageButton = document.getElementById('student-language-toggle');
+      if (!languageButton) return;
+      languageButton.disabled = Boolean(exam && !exam.classList.contains('hidden'));
+      languageButton.title = languageButton.disabled
         ? (studentLanguage === 'vi' ? 'Không thể đổi ngôn ngữ khi đang làm bài' : 'Language cannot be changed while taking a test')
         : '';
-      });
     };
     window.translateStudentStatic = function() {
       document.querySelectorAll('[data-student-en][data-student-vi]').forEach(element => {
@@ -89,32 +78,22 @@
       document.querySelectorAll('[data-student-placeholder-en][data-student-placeholder-vi]').forEach(element => {
         element.placeholder = element.dataset[studentLanguage === 'vi' ? 'studentPlaceholderVi' : 'studentPlaceholderEn'];
       });
-      document.querySelectorAll('[data-student-aria-en][data-student-aria-vi]').forEach(element => {
-        const languageSuffix = studentLanguage === 'vi' ? 'Vi' : 'En';
-        const key = element.getAttribute('aria-pressed') === 'true' && element.dataset[`studentAriaHide${languageSuffix}`]
-          ? `studentAriaHide${languageSuffix}`
-          : `studentAria${languageSuffix}`;
-        element.setAttribute('aria-label', element.dataset[key]);
-      });
-      if (typeof window.refreshAuthLanguage === 'function') window.refreshAuthLanguage();
     };
     window.applyStudentLanguage = function(language = studentLanguage, rerender = true) {
       if (!['en', 'vi'].includes(language)) return;
       const exam = document.getElementById('exam-ui');
       if (exam && !exam.classList.contains('hidden') && language !== studentLanguage) {
-        if (typeof window.showToast === 'function') {
-          window.showToast(
-            window.studentText('Language locked', 'Đã khóa ngôn ngữ'),
-            window.studentText('Language cannot be changed while taking a test.', 'Không thể đổi ngôn ngữ khi đang làm bài.'),
-            'info'
-          );
-        }
+        if (typeof window.showToast === 'function') window.showToast('Language locked', 'Language cannot be changed while taking a test.', 'info');
         return;
       }
       studentLanguage = language;
       localStorage.setItem(STUDENT_LANGUAGE_KEY, studentLanguage);
       document.documentElement.lang = studentLanguage === 'vi' ? 'vi' : 'en';
       window.translateStudentStatic();
+      const languageButton = document.getElementById('student-language-toggle');
+      if (languageButton) {
+        languageButton.textContent = studentLanguage === 'vi' ? 'Tiếng Việt' : 'English';
+      }
       window.refreshStudentLanguageLock();
       if (rerender && currentUser?.role === 'student' && typeof window.renderStudentDashboard === 'function') {
         window.renderStudentDashboard();
@@ -162,6 +141,9 @@
     };
 
     window.canAccessLMS = function(profile, firebaseUser = window.auth?.currentUser) {
+      if (window.isStudentProfilePreview) {
+        return profile?.role === 'student' && profile.user === window.studentProfilePreviewUser;
+      }
       const access = window.trustedAccountAccess;
       if (firebaseUser?.email?.trim().toLowerCase() === window.ADMIN_EMAIL) return true;
       if (access?.uid !== firebaseUser?.uid) return false;
@@ -182,7 +164,7 @@
         if (window.auth?.currentUser?.uid !== uid) return;
         const data = snapshot.exists() ? snapshot.data() : { uid, role: 'student', paid: false };
         window.trustedAccountAccess = { ...data, uid };
-        if (currentUser) currentUser.role = data.role || 'student';
+        if (currentUser && !window.isStudentProfilePreview) currentUser.role = data.role || 'student';
         if (window.canAccessLMS(currentUser, window.auth.currentUser)) {
           if (window.lmsBootedUid !== uid) {
             window.lmsBootedUid = uid;
@@ -240,37 +222,28 @@
     window.bootPaymentPortal = async function() {
       paymentCatalogUnsubscribe?.();
       paymentPackagesUnsubscribe?.();
-      paymentCatalogStatus = 'loading';
-      paymentPackagesStatus = 'loading';
-      if (document.getElementById('checkout-course')) window.renderStudentCheckout();
       const billingSnapshot = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'));
       if (billingSnapshot.exists()) BILLING_SETTINGS = billingSnapshot.data();
       paymentCatalogUnsubscribe = window.fsOnSnapshot(
         window.fsCollection(window.db, window.fPath('course_catalog')),
         snapshot => {
           CLASSES = snapshot.docs.map(doc => doc.data());
-          paymentCatalogStatus = 'loaded';
           if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         },
         error => {
-          paymentCatalogStatus = 'error';
           console.error('Unable to load the public course catalog:', error);
           window.showToast?.('Could not load courses', 'Refresh the page or contact your teacher.', 'error');
-          if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         }
       );
       paymentPackagesUnsubscribe = window.fsOnSnapshot(
         window.fsCollection(window.db, window.fPath('packages')),
         snapshot => {
           PACKAGES = snapshot.docs.map(doc => doc.data());
-          paymentPackagesStatus = 'loaded';
           if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         },
         error => {
-          paymentPackagesStatus = 'error';
           console.error('Unable to load public course packages:', error);
           window.showToast?.('Could not load bundles', 'Refresh the page or contact your teacher.', 'error');
-          if (document.getElementById('checkout-course')) window.renderStudentCheckout();
         }
       );
       window.renderAccountGate();
@@ -336,6 +309,10 @@
     };
 
     window.signOutAwaitingApproval = async function() {
+      if (window.isStudentProfilePreview) {
+        window.exitStudentProfilePreview?.();
+        return;
+      }
       try {
         await window.fsAuthSignOut(window.auth);
         sessionStorage.removeItem('ielts_session');
@@ -397,12 +374,15 @@
         const chartsWrapper = document.getElementById('interactive-charts-wrapper');
         const imageField = document.getElementById('image-field-container');
         const speakingQuestionsField = document.getElementById('speaking-questions-field');
+        const mindMapEditor = document.getElementById('mindmap-content-editor');
+        const showMindMapEditor = ['writing', 'speaking'].includes(APP_DATA.module);
 
         if (mediaFields) mediaFields.classList.toggle('hidden', !(isListening || showCharts || showImages));
         if (audioField) audioField.classList.toggle('hidden', !isListening);
         if (chartsWrapper) chartsWrapper.classList.toggle('hidden', !showCharts);
         if (imageField) imageField.classList.toggle('hidden', !showImages);
         if (speakingQuestionsField) speakingQuestionsField.classList.toggle('hidden', APP_DATA.module !== 'speaking');
+        if (mindMapEditor) mindMapEditor.classList.toggle('hidden', !showMindMapEditor);
     };
     const listeningYoutubePlayers = new Map();
     let listeningYoutubeApiPromise = null;

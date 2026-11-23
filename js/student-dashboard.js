@@ -144,12 +144,13 @@
             else if (i === 1) rankStyles = "text-slate-500 bg-slate-100 border-slate-300";
             else if (i === 2) rankStyles = "text-amber-800 bg-orange-50 border-orange-200";
             const isMe = u.user === currentUser.user;
+            const uLabel = window.getStudentDisplayName ? window.getStudentDisplayName(u) : u.user;
             html += `
             <div class="flex items-center justify-between p-2.5 rounded-xl border ${isMe ? 'bg-blue-50/50 border-blue-200 shadow-sm' : 'border-slate-100 bg-slate-50'} transition">
                 <div class="flex items-center gap-3 min-w-0 flex-1">
                     <div class="w-7 h-7 flex items-center justify-center font-black text-xs rounded-lg border ${rankStyles} shrink-0">${i+1}</div>
-                    <img src="${u.avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(u.user) + '&background=random')}" class="w-8 h-8 rounded-full border border-slate-200 shrink-0 object-cover shadow-sm">
-                    <span class="font-bold text-sm truncate ${isMe ? 'text-blue-800' : 'text-slate-700'}">${u.user} ${isMe ? '<span class="text-[9px] uppercase tracking-widest opacity-50 ml-1">(You)</span>' : ''}</span>
+                    <img src="${u.avatar || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(uLabel) + '&background=random')}" class="w-8 h-8 rounded-full border border-slate-200 shrink-0 object-cover shadow-sm">
+                    <span class="font-bold text-sm truncate ${isMe ? 'text-blue-800' : 'text-slate-700'}">${escapeForumHtml(uLabel)} ${isMe ? '<span class="text-[9px] uppercase tracking-widest opacity-50 ml-1">(You)</span>' : ''}</span>
                 </div>
                 <div class="font-black text-amber-500 text-xs bg-white border border-slate-100 shadow-sm px-2.5 py-1.5 rounded-lg shrink-0 ml-3 flex items-center gap-1">${(u.gems||0).toLocaleString()} <span class="text-[10px]">💎</span></div>
             </div>`;
@@ -511,6 +512,20 @@
       const isClassRoute = routeSection === 'class' || routeSection === 'timetable';
       const isTestBankRoute = routeSection === 'test-bank';
       const isStudyToolsRoute = routeSection === 'study-tools' || routeSection === 'flashcards';
+      const activeTopTab = isTestBankRoute ? 'test-bank' : isClassRoute ? 'class' : isStudyToolsRoute ? 'study-tools' : 'dashboard';
+      if (typeof document !== 'undefined' && typeof document.querySelectorAll === 'function') {
+          document.querySelectorAll('[data-student-top-tab]').forEach(tabBtn => {
+              const isActive = tabBtn.getAttribute('data-student-top-tab') === activeTopTab;
+              tabBtn.className = isActive
+                  ? 'inline-flex items-center gap-2 rounded-xl bg-white text-blue-950 px-3.5 py-2 text-xs sm:text-sm font-black shadow-sm transition'
+                  : 'inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 px-3.5 py-2 text-xs sm:text-sm font-bold transition';
+          });
+      }
+      window.openStudentSkillBank = function(modValue) {
+          const modSelect = document.getElementById('student-test-filter-mod');
+          if (modSelect && modValue) modSelect.value = modValue;
+          window.navigateAppRoute('student/test-bank');
+      };
       const studyToolsSection = document.getElementById('student-study-tools-section');
       overviewSection?.classList.toggle('hidden', isClassRoute || isTestBankRoute || isStudyToolsRoute);
       classOverviewSection?.classList.toggle('hidden', !isClassRoute);
@@ -560,41 +575,55 @@
       if(quickActions) { quickActions.classList.add('hidden'); quickActions.classList.remove('flex'); }
       if(prog) { prog.classList.remove('hidden'); prog.classList.add('flex'); }
 
-      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
-      const assignedTestItems = getClassAssignedTests(cls)
-          .filter(testId => TEST_BANK.some(test => test.id === testId))
-          .map(testId => ({ testId }));
+      const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && window.classSubmissionMatches(s, cls));
+      const rawAssignedTests = getClassAssignedTests(cls)
+          .map(testId => TEST_BANK.find(test => test.id === testId))
+          .filter(Boolean);
+      const visiblePrograms = typeof window.getStudentVisiblePrograms === 'function'
+          ? window.getStudentVisiblePrograms(cls, currentUser, rawAssignedTests)
+          : ['ielts', 'toeic', 'corporate', 'activity'];
+      const assignedTests = typeof window.filterTestsByAllowedPrograms === 'function'
+          ? window.filterTestsByAllowedPrograms(rawAssignedTests, visiblePrograms)
+          : rawAssignedTests;
+      const assignedTestItems = assignedTests.map(test => ({ testId: test.id }));
       const totalTests = assignedTestItems.length;
       const completedTestIds = [...new Set(mySubs.map(s => s.testId).filter(Boolean))]; 
       const completedCount = assignedTestItems.filter(item => completedTestIds.includes(item.testId)).length;
       const progressPct = totalTests === 0 ? 0 : Math.min(100, Math.round((completedCount / totalTests) * 100));
-      const renderTestBankCard = test => {
+      const renderTestBankCard = entry => {
+        const test = entry.test;
+        const part = Number.isInteger(entry.partIndex) ? test.parts?.[entry.partIndex] : null;
+        const partTitle = window.cleanTestBankLabel(part?.title || st(`Part ${entry.partIndex + 1}`, `Phần ${entry.partIndex + 1}`));
+        const cardTitle = window.cleanTestBankLabel(part ? partTitle : test.title);
         const price = Number(test.price) || 0;
         const isLocked = price > 0 && !(currentUser.unlockedTests || []).includes(test.id);
         const isCompleted = completedTestIds.includes(test.id);
-        const moduleColors = { reading: 'blue', listening: 'cyan', writing: 'emerald', speaking: 'amber', activity: 'fuchsia' };
-        const moduleNames = { reading: st('Reading', 'Đọc'), listening: st('Listening', 'Nghe'), writing: st('Writing', 'Viết'), speaking: st('Speaking', 'Nói'), activity: st('Activities', 'Hoạt động') };
+        const moduleColors = { reading: 'blue', listening: 'cyan', writing: 'emerald', speaking: 'amber', toeic: 'teal', corporate: 'violet', activity: 'fuchsia' };
+        const moduleIcons = { reading: '📘', listening: '🎧', writing: '✍️', speaking: '🎙️', toeic: '💼', corporate: '🏢', activity: '⚡' };
+        const moduleNames = { reading: st('Reading', 'Đọc'), listening: st('Listening', 'Nghe'), writing: st('Writing', 'Viết'), speaking: st('Speaking', 'Nói'), toeic: st('TOEIC', 'Chứng chỉ TOEIC'), corporate: st('Corporate / Staff', 'Tiếng Anh Doanh nghiệp'), activity: st('Activities', 'Hoạt động') };
         const color = moduleColors[test.module] || 'slate';
+        const icon = moduleIcons[test.module] || '📝';
         const settings = getClassTestSettings(cls, test.id);
         const dueDate = settings?.dueDate && !isCompleted
-          ? `<span class="text-[10px] font-bold text-rose-600">Due ${settings.dueDate}${settings.dueTime ? ` ${settings.dueTime}` : ''}</span>`
+          ? `<span class="inline-flex items-center gap-1 rounded-md bg-rose-50 border border-rose-200 px-2 py-0.5 text-[10px] font-bold text-rose-600">⏰ Due ${settings.dueDate}${settings.dueTime ? ` ${settings.dueTime}` : ''}</span>`
           : '';
         const status = isCompleted
-          ? `<span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">${st('Completed', 'Đã hoàn thành')}</span>`
+          ? `<span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">✓ ${st('Completed', 'Đã hoàn thành')}</span>`
           : `<span class="text-[10px] font-black uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-1">${st('Ready', 'Sẵn sàng')}</span>`;
 
         return `
-          <article class="bg-white border border-slate-200 rounded-xl shadow-sm hover:shadow-md transition p-4 flex flex-col gap-3">
+          <article class="overflow-hidden bg-white border border-slate-200 hover:border-blue-300 rounded-2xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-0.5 p-4 flex flex-col gap-3">
+            ${test.thumbnail ? `<div class="-mx-4 -mt-4 mb-1"><img src="${escapeForumHtml(test.thumbnail)}" alt="${escapeForumHtml(test.title)}" class="block aspect-video w-full object-cover"></div>` : ''}
             <div class="flex items-start justify-between gap-2">
-              <span class="text-[10px] font-bold px-2 py-1 rounded bg-${color}-100 text-${color}-800 uppercase tracking-wide">${moduleNames[test.module] || test.module || st('Test', 'Bài thi')}</span>
+              <span class="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-lg bg-${color}-100 text-${color}-800 uppercase tracking-wide"><span>${icon}</span><span>${moduleNames[test.module] || test.module || st('Test', 'Bài thi')}</span></span>
               ${status}
             </div>
             <div class="flex-1">
-              <h3 class="font-bold text-slate-900 leading-snug">${escapeForumHtml(test.title)}</h3>
-              <p class="text-xs text-slate-500 mt-2">${test.parts?.length || 0} part(s)${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
+              <h3 class="font-black text-slate-900 leading-snug text-base">${escapeForumHtml(cardTitle)}</h3>
+              <p class="text-xs font-medium text-slate-500 mt-1.5">${part ? `${escapeForumHtml(window.cleanTestBankLabel(test.title))} · ${st(`Part ${entry.partIndex + 1} only`, `Chỉ phần ${entry.partIndex + 1}`)}` : `${test.parts?.length || 0} ${st('part(s)', 'phần')}`}${test.difficulty ? ` · Band ${parseFloat(test.difficulty).toFixed(1)}` : ''}</p>
               ${dueDate ? `<div class="mt-2">${dueDate}</div>` : ''}
             </div>
-            <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'} rounded-lg py-2.5 text-sm font-black transition">
+            <button ${isLocked ? 'disabled' : `data-student-bank-test="${escapeForumHtml(test.id)}"${part ? ` data-student-bank-part="${entry.partIndex}"` : ''}`} class="w-full ${isLocked ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : isCompleted ? 'bg-slate-900 hover:bg-black text-white' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm'} rounded-xl py-2.5 text-sm font-black transition">
               ${isLocked ? `🔒 ${st('Unlock', 'Mở khóa')} ${price} 💎` : isCompleted ? st('Take Again →', 'Làm lại →') : st('Take Test →', 'Làm bài →')}
             </button>
           </article>`;
@@ -628,13 +657,41 @@
       }
       
       const query = (document.getElementById('student-test-search')?.value || '').toLowerCase();
-      const mod = document.getElementById('student-test-filter-mod')?.value || 'all';
+      const modSelect = document.getElementById('student-test-filter-mod');
+      if (modSelect) {
+          const prevMod = modSelect.value || 'all';
+          const metaMap = window.PROGRAM_MODULE_META || {};
+          const optionRows = [];
+          if (visiblePrograms.length > 1) {
+              optionRows.push(`<option value="all">${st('All Modules', 'Tất cả chương trình')}</option>`);
+          }
+          visiblePrograms.forEach(prog => {
+              const meta = metaMap[prog];
+              const label = meta ? st(meta.filterEn, meta.filterVi) : prog.toUpperCase();
+              optionRows.push(`<option value="${prog}">${label}</option>`);
+          });
+          modSelect.innerHTML = optionRows.join('');
+          const validValues = new Set(visiblePrograms.length > 1 ? ['all', ...visiblePrograms] : visiblePrograms);
+          if (validValues.has(prevMod)) {
+              modSelect.value = prevMod;
+          } else {
+              modSelect.value = visiblePrograms.length > 1 ? 'all' : (visiblePrograms[0] || 'all');
+          }
+      }
+      const mockExamBtn = document.getElementById('student-mock-exam-btn');
+      if (mockExamBtn) {
+          const showIeltsMock = visiblePrograms.includes('ielts');
+          mockExamBtn.classList.toggle('hidden', !showIeltsMock);
+          if (testBankPracticeActions) {
+              testBankPracticeActions.classList.toggle('sm:grid-cols-2', showIeltsMock);
+              testBankPracticeActions.classList.toggle('sm:grid-cols-1', !showIeltsMock);
+          }
+      }
+      const mod = modSelect?.value || (visiblePrograms.length === 1 ? visiblePrograms[0] : 'all');
       const sort = document.getElementById('student-test-sort')?.value || 'default';
       const tagSelect = document.getElementById('student-test-filter-tag');
       const selectedTag = tagSelect ? tagSelect.value : 'all';
-      const assignedTests = assignedTestItems
-          .map(item => TEST_BANK.find(test => test.id === item.testId))
-          .filter(Boolean);
+      const studentTestBankEntries = window.buildTestBankEntries(assignedTests);
       const allTags = new Set(assignedTests.flatMap(test => test.topics || []));
 
       if (tagSelect) {
@@ -642,18 +699,26 @@
               Array.from(allTags).sort().map(tag => `<option value="${tag}" ${selectedTag === tag ? 'selected' : ''}>${tag}</option>`).join('');
       }
 
-      const filteredTests = assignedTests.filter(test =>
-          matchesTestSearch(test, query) &&
-          (mod === 'all' || test.module === mod) &&
-          (selectedTag === 'all' || (test.topics || []).includes(selectedTag))
+      const filteredTests = studentTestBankEntries.filter(entry =>
+          window.matchesTestBankEntry(entry, query) &&
+          (typeof window.matchesProgramFilter === 'function'
+              ? window.matchesProgramFilter(entry.test, mod)
+              : (mod === 'all' || entry.test.module === mod)) &&
+          (selectedTag === 'all' || (entry.test.topics || []).includes(selectedTag))
       );
-      if (sort === 'az') filteredTests.sort((a, b) => a.title.localeCompare(b.title));
-      else if (sort === 'za') filteredTests.sort((a, b) => b.title.localeCompare(a.title));
+      const getEntryTitle = entry => Number.isInteger(entry.partIndex)
+          ? entry.test.parts[entry.partIndex]?.title || `Part ${entry.partIndex + 1}`
+          : entry.test.title;
+      if (sort === 'az') filteredTests.sort((a, b) => getEntryTitle(a).localeCompare(getEntryTitle(b)));
+      else if (sort === 'za') filteredTests.sort((a, b) => getEntryTitle(b).localeCompare(getEntryTitle(a)));
       list.innerHTML = filteredTests.length
           ? `<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">${filteredTests.map(renderTestBankCard).join('')}</div>`
           : `<div class="text-sm text-slate-500 italic py-8 text-center">${assignedTests.length ? st('No tests match your search or filters.', 'Không có bài thi phù hợp với nội dung tìm kiếm hoặc bộ lọc.') : st('No tests have been assigned to this class yet.', 'Lớp chưa được giao bài thi nào.')}</div>`;
       list.querySelectorAll('[data-student-bank-test]').forEach(button => {
-          button.addEventListener('click', () => openModeSelection(button.dataset.studentBankTest));
+          button.addEventListener('click', () => openModeSelection(
+              button.dataset.studentBankTest,
+              button.dataset.studentBankPart === undefined ? null : Number(button.dataset.studentBankPart)
+          ));
       });
 
       // Update Peer Review App Badge
@@ -763,6 +828,61 @@
           </article>`;
       if (overviewContent) {
           overviewContent.innerHTML = `
+            <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-blue-600">${st('Course Progress', 'Tiến độ khóa học')}</div>
+                <div class="mt-1 text-2xl font-black text-blue-950">${progressPct}%</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${completedCount}/${totalTests} ${st('assigned tests', 'bài được giao')}</div>
+              </div>
+              <div class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-emerald-700">${st('Submissions', 'Lượt nộp bài')}</div>
+                <div class="mt-1 text-2xl font-black text-emerald-950">${mySubs.length}</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${st('Saved attempts', 'Bài làm đã lưu')}</div>
+              </div>
+              <div class="rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-amber-700">${st('Urgent Homework', 'Bài tập đến hạn')}</div>
+                <div class="mt-1 text-2xl font-black text-amber-950">${pendingDeadlines.length}</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${pendingDeadlines.length ? st('Needs attention', 'Cần hoàn thành') : st('All caught up', 'Đã hoàn tất')}</div>
+              </div>
+              <div class="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50/70 to-white p-4 shadow-sm">
+                <div class="text-[10px] font-black uppercase tracking-widest text-indigo-700">${st('Active Class', 'Lớp đang học')}</div>
+                <div class="mt-1 text-base font-black text-indigo-950 truncate" title="${escapeForumHtml(displayClassName)}">${escapeForumHtml(displayClassName)}</div>
+                <div class="mt-0.5 text-xs font-semibold text-slate-500">${peers.length + 1} ${st('students', 'học viên')}</div>
+              </div>
+            </div>
+            <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                <div>
+                  <h3 class="text-sm font-black text-slate-900">${st('Quick Practice by Program', 'Luyện tập nhanh theo chương trình')}</h3>
+                  <p class="text-xs text-slate-500">${st('Jump straight into an assigned program module.', 'Chọn nhanh chương trình bạn đang theo học để bắt đầu luyện tập.')}</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+                ${visiblePrograms.map(prog => {
+                    const meta = (window.PROGRAM_MODULE_META || {})[prog] || {
+                        id: prog,
+                        icon: '📚',
+                        labelEn: prog.toUpperCase(),
+                        labelVi: prog.toUpperCase(),
+                        subEn: 'Practice',
+                        subVi: 'Luyện tập',
+                        borderClass: 'border-slate-200',
+                        hoverBgClass: 'hover:bg-slate-50',
+                        subTextClass: 'text-slate-600'
+                    };
+                    return `
+                <button type="button" onclick="window.openStudentSkillBank('${prog}')" class="flex items-center gap-2.5 rounded-xl border ${meta.borderClass} bg-white ${meta.hoverBgClass} p-3 text-left transition shadow-sm">
+                  <span class="text-xl">${meta.icon}</span>
+                  <span><span class="block text-xs font-black text-slate-900">${st(meta.labelEn, meta.labelVi)}</span><span class="block text-[10px] font-semibold ${meta.subTextClass}">${st(meta.subEn, meta.subVi)}</span></span>
+                </button>`;
+                }).join('')}
+                ${visiblePrograms.includes('ielts') ? `
+                <button type="button" onclick="window.startFullExam()" class="flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 p-3 text-left text-white transition shadow-sm">
+                  <span class="text-xl">🎓</span>
+                  <span><span class="block text-xs font-black">${st('Mock Exam', 'Thi thử Full')}</span><span class="block text-[10px] text-blue-100">3 Skills</span></span>
+                </button>` : ''}
+              </div>
+            </div>
             ${deadlineOverviewHtml}
             ${nextLessonHtml}
             <article class="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm transition hover:shadow-md">
@@ -800,15 +920,18 @@
             </div>
             <h4 class="text-[10px] font-black uppercase text-emerald-600 mb-3 tracking-widest flex items-center gap-1.5"><span>👥</span> ${st('Classmates', 'Bạn cùng lớp')} (${classmates.length})</h4>
             <div class="space-y-2">
-              ${classmates.map(({ student, online, activityLabel }) => `
+              ${classmates.map(({ student, online, activityLabel }) => {
+                const mateLabel = window.getStudentDisplayName ? window.getStudentDisplayName(student) : student;
+                return `
                 <div class="flex items-center gap-3 p-3 rounded-xl ${student === currentUser.user ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'bg-slate-50 border border-slate-100'}">
-                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(student)}&background=random" class="w-8 h-8 rounded-full shadow-sm border border-white">
+                  <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(mateLabel)}&background=random" class="w-8 h-8 rounded-full shadow-sm border border-white">
                   <div class="min-w-0">
-                    <span class="text-xs font-bold ${student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${escapeForumHtml(student)}${student === currentUser.user ? `<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(${st('You', 'Bạn')})</span>` : ''}</span>
+                    <span class="text-xs font-bold ${student === currentUser.user ? 'text-indigo-800' : 'text-slate-700'}">${escapeForumHtml(mateLabel)}${student === currentUser.user ? `<span class="text-[9px] opacity-60 uppercase tracking-widest ml-1">(${st('You', 'Bạn')})</span>` : ''}</span>
                     <span class="flex items-center gap-1.5 mt-1 text-[10px] font-bold ${online ? 'text-emerald-600' : 'text-slate-400'}"><span class="w-2 h-2 rounded-full ${online ? 'bg-emerald-500' : 'bg-slate-300'}"></span>${escapeForumHtml(activityLabel)}</span>
                   </div>
                 </div>
-              `).join('') || `<p class="text-xs text-slate-400 italic">${st('No other students in this class yet.', 'Chưa có học viên nào khác trong lớp.')}</p>`}
+              `;
+              }).join('') || `<p class="text-xs text-slate-400 italic">${st('No other students in this class yet.', 'Chưa có học viên nào khác trong lớp.')}</p>`}
             </div>`;
       }
       prog.innerHTML = `
@@ -887,6 +1010,21 @@
       window.selectTestMode('restricted');
     };
 
+    window.filterStudentTestParts = function(query) {
+      const normalizedQuery = String(query || '').trim().toLocaleLowerCase();
+      document.querySelectorAll('#part-checkboxes .part-select-option').forEach(option => {
+        const title = option.querySelector('.part-select-title')?.textContent || '';
+        option.classList.toggle('hidden', !title.toLocaleLowerCase().includes(normalizedQuery));
+      });
+    };
+
+    window.selectStudentTestParts = function(partIndex = null) {
+      document.querySelectorAll('.part-select-cb').forEach(checkbox => {
+        checkbox.checked = partIndex === null || Number(checkbox.value) === partIndex;
+      });
+      window.updateSpeakingSimulationAvailability();
+    };
+
     function getCurrentStudentAssignedTest(testId) {
       if (!testId || !currentUser || currentUser.role !== 'student') return null;
       const cid = document.getElementById('student-class-select')?.value;
@@ -901,7 +1039,7 @@
       return assigned || scheduled ? { testId } : null;
     }
 
-    function openModeSelection(tid) {
+    function openModeSelection(tid, selectedPartIndex = null) {
       if (currentUser?.role === 'student' && !getCurrentStudentAssignedTest(tid)) {
           showModalMsg('Unavailable', 'This test is not assigned to your current class.');
           return;
@@ -915,20 +1053,27 @@
       if (speakingSimulationCheckbox) speakingSimulationCheckbox.checked = false;
       const partContainer = document.getElementById('part-selection-container');
       const partCheckboxes = document.getElementById('part-checkboxes');
+      const partSearch = document.getElementById('student-part-search');
+      if (partSearch) partSearch.value = '';
       
       // Auto-generate checkboxes for however many parts the test has
       if (t && t.parts && t.parts.length > 0) {
           partContainer.classList.remove('hidden');
           partCheckboxes.innerHTML = t.parts.map((p, idx) => `
-              <label class="flex items-center space-x-2 cursor-pointer bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition shadow-sm">
-                  <input type="checkbox" class="part-select-cb w-4 h-4 text-blue-600 rounded focus:ring-blue-500" value="${idx}" checked onchange="window.updateSpeakingSimulationAvailability()">
-                  <span class="font-bold text-slate-700 text-sm">${p.title || 'Part ' + (idx + 1)}</span>
-              </label>
+              <div class="part-select-option flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-sm transition hover:bg-slate-100">
+                  <label class="flex min-w-0 items-center gap-2 cursor-pointer">
+                      <input type="checkbox" class="part-select-cb h-4 w-4 shrink-0 rounded text-blue-600 focus:ring-blue-500" value="${idx}" ${selectedPartIndex === null || selectedPartIndex === idx ? 'checked' : ''} onchange="window.updateSpeakingSimulationAvailability()">
+                      <span class="part-select-title truncate font-bold text-slate-700 text-sm">${escapeForumHtml(p.title || window.studentText('Part ' + (idx + 1), 'Phần ' + (idx + 1)))}</span>
+                  </label>
+                  <button type="button" data-test-part-action="single" data-part-index="${idx}" class="shrink-0 rounded-md px-2 py-1 text-[11px] font-black text-blue-700 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500" aria-label="${escapeForumHtml(window.studentText(`Practice ${p.title || 'Part ' + (idx + 1)} only`, `Chỉ luyện ${p.title || 'Phần ' + (idx + 1)}`))}" data-student-en="Only this part" data-student-vi="Chỉ phần này">Only this part</button>
+              </div>
           `).join('');
+          window.filterStudentTestParts('');
       } else {
           partContainer.classList.add('hidden');
       }
       
+      window.translateStudentStatic();
       window.updateSpeakingSimulationAvailability();
       document.getElementById('test-mode-modal').classList.remove('hidden');
       window.focusTestModeDialog(document.activeElement);
@@ -1315,6 +1460,7 @@
     };
 
     function studentCanOpenTestRoute(testId) {
+      if (window.isStudentProfilePreview) return false;
       if (!hasActiveStudentAccess(currentUser)) return false;
       const cid = document.getElementById('student-class-select')?.value;
       const cls = CLASSES.find(item => item.id === cid);
@@ -1336,6 +1482,11 @@
       if (!route || !currentUser || handlingTestRoute || activeTestRoute) return;
       handlingTestRoute = true;
       try {
+        if (window.isStudentProfilePreview) {
+          replaceWithDashboardRoute();
+          if (typeof window.showToast === 'function') window.showToast('Read-only preview', 'Test attempts are disabled while previewing a student dashboard.', 'info');
+          return;
+        }
         if (currentUser.role !== 'student') {
           replaceWithDashboardRoute();
           if (typeof window.showToast === 'function') window.showToast('Notice', 'Test links are available to students only.', 'info');
@@ -1495,16 +1646,15 @@
     window.availableSpinTests = [];
 
     window.openRandomSpinner = function() {
-        const st = window.studentText || ((english) => english);
         const cid = document.getElementById('student-class-select')?.value;
         const cls = CLASSES.find(c => c.id === cid);
         if (!cls) {
-            showModalMsg(st("Notice", "Thông báo"), st("Please select an active class first.", "Vui lòng chọn lớp đang học trước."));
+            showModalMsg("Notice", "Please select an active class first.");
             return;
         }
 
         // Gather all tests assigned to this student's class
-        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && window.classSubmissionMatches(s, cls));
         const assignedTests = getClassAssignedTests(cls);
         
         // Keep random practice aligned with the student's assigned Test Bank.
@@ -1518,15 +1668,12 @@
         }).filter(Boolean);
 
         if (window.availableSpinTests.length === 0) {
-            window.showToast(
-              st("All Caught Up!", "Bạn đã hoàn thành tất cả!"),
-              st("You have completed all available tests. Ask your teacher for more!", "Bạn đã hoàn thành tất cả bài thi hiện có. Hãy hỏi giáo viên để được giao thêm bài nhé!")
-            );
+            window.showToast("All Caught Up!", "You have completed all available tests. Ask your teacher for more!");
             return;
         }
 
         // Reset UI State
-        document.getElementById('spin-result-text').textContent = st('Ready to roll?', 'Sẵn sàng quay chưa?');
+        document.getElementById('spin-result-text').textContent = "Ready to roll?";
         document.getElementById('spin-result-text').className = "text-xl font-black text-slate-400 leading-snug w-full text-center";
         document.getElementById('btn-start-spin').classList.remove('hidden');
         document.getElementById('btn-start-spin').disabled = false;
@@ -1542,7 +1689,6 @@
 
     window.startRandomSpin = function() {
         if (window.availableSpinTests.length === 0) return;
-        const st = window.studentText || ((english) => english);
         
         const btnSpin = document.getElementById('btn-start-spin');
         const resultText = document.getElementById('spin-result-text');
@@ -1574,13 +1720,7 @@
                 const finalT = TEST_BANK.find(x => x.id === finalItem.testId);
                 
                 // Pop the final result into view safely centered!
-                const moduleName = {
-                    reading: st('Reading', 'Đọc'),
-                    listening: st('Listening', 'Nghe'),
-                    writing: st('Writing', 'Viết'),
-                    speaking: st('Speaking', 'Nói')
-                }[finalT.module] || finalT.module;
-                resultText.innerHTML = `<span class="text-[10px] bg-pink-100 text-pink-700 px-3 py-1 rounded-full uppercase tracking-widest font-black inline-block mb-3 border border-pink-200 shadow-sm">${moduleName}</span><br>${finalT.title}`;
+                resultText.innerHTML = `<span class="text-[10px] bg-pink-100 text-pink-700 px-3 py-1 rounded-full uppercase tracking-widest font-black inline-block mb-3 border border-pink-200 shadow-sm">${finalT.module}</span><br>${finalT.title}`;
                 resultText.className = "text-xl sm:text-2xl font-black text-pink-600 leading-snug animate-scale-up w-full text-center";
                 
                 icon.classList.remove('animate-spin');

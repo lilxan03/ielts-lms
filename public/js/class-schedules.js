@@ -27,14 +27,18 @@
 
     window.scheduleBelongsToClass = function(schedule, cls) {
         if (!schedule || !cls) return false;
-        return schedule.classId ? schedule.classId === cls.id : schedule.className === cls.name;
+        return schedule.classId ? schedule.classId === cls.id : window.classMatchesName(schedule.className, cls);
     };
 
     window.getScheduleClassLabel = function(schedule) {
         if (!schedule) return '';
+        const cls = schedule.classId
+            ? CLASSES.find(candidate => candidate.id === schedule.classId)
+            : CLASSES.find(candidate => window.classMatchesName(schedule.className, candidate));
+        const className = cls?.name || schedule.className || '';
         return schedule.miniClassParentId && schedule.miniClassName
-            ? `${schedule.className} · ${schedule.miniClassName}`
-            : schedule.className || '';
+            ? `${className} · ${schedule.miniClassName}`
+            : className;
     };
 
     window.checkUpcomingClasses = function() {
@@ -54,7 +58,7 @@
                     if (s.attendingStudents.includes(currentUser.user)) isMe = true;
                 } else {
                     // Check if they are enrolled in the overarching class (Legacy fallback)
-                    const cls = CLASSES.find(c => s.classId ? c.id === s.classId : c.name === s.className);
+                    const cls = CLASSES.find(c => s.classId ? c.id === s.classId : window.classMatchesName(s.className, c));
                     if (cls && cls.enrolledStudents && cls.enrolledStudents.includes(currentUser.user)) {
                         isMe = true;
                     }
@@ -76,7 +80,7 @@
                     
                     if (typeof window.showToast === 'function') {
                         window.showToast(
-                            `Upcoming Class: ${s.className}`, 
+                            `Upcoming Class: ${window.getScheduleClassLabel(s)}`,
                             `Starts in ${diffMins} minute(s) at ${s.time}.`, 
                             'info' // Forces the blue styling
                         );
@@ -100,7 +104,7 @@
         const cls = CLASSES.find(c => c.id === cid);
         if(!cls || window.isTemplateClass(cls) || !(cls.enrolledStudents || []).includes(currentUser.user)) return;
 
-        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && s.className === cls.name);
+        const mySubs = SUBMISSIONS.filter(s => s.student === currentUser.user && window.classSubmissionMatches(s, cls));
         const completedTestIds = mySubs.map(s => s.testId);
         const classSchedules = SCHEDULES.filter(schedule => window.scheduleBelongsToClass(schedule, cls) && (!schedule.attendingStudents || schedule.attendingStudents.includes(currentUser.user)));
         const deadlineTestIds = [...new Set([
