@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "IELTS W KHANH",
+  "short_name": "IELTS W KHANH",
+  "description": "Ứng dụng học IELTS của IELTS W KHANH.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "/assets/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
