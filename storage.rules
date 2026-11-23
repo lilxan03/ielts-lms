@@ -1,0 +1,72 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'lyquockhanh03@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    function hasAccessRecord() {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/account_access/$(request.auth.uid));
+    }
+
+    function accountAccess() {
+      return firestore.get(/databases/(default)/documents/account_access/$(request.auth.uid)).data;
+    }
+
+    function isTeacher() {
+      return isAdmin()
+        || (hasAccessRecord() && accountAccess().role == 'teacher');
+    }
+
+    function isAvatarOwner(fileName) {
+      return hasAccessRecord()
+        && accountAccess().username is string
+        && fileName.matches('^' + accountAccess().username + '_.*');
+    }
+
+    match /avatars/{fileName} {
+      allow read: if signedIn();
+      allow create, update: if isTeacher()
+        || (isAvatarOwner(fileName)
+          && request.resource != null
+          && request.resource.size < 2 * 1024 * 1024
+          && request.resource.contentType.matches('image/.*'));
+      allow delete: if isTeacher();
+    }
+
+    match /images/{fileName} {
+      allow read: if signedIn();
+      allow write: if isTeacher()
+        && (request.resource == null
+          || (request.resource.size < 10 * 1024 * 1024
+            && request.resource.contentType.matches('image/.*')));
+    }
+
+    match /videos/{fileName} {
+      allow read: if signedIn();
+      allow write: if isTeacher()
+        && (request.resource == null
+          || (request.resource.size < 55 * 1024 * 1024
+            && request.resource.contentType.matches('video/.*')));
+    }
+
+    match /pdfs/{fileName} {
+      allow read: if true;
+      allow write: if isTeacher()
+        && (request.resource == null
+          || (request.resource.size < 10 * 1024 * 1024
+            && request.resource.contentType == 'application/pdf'));
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -372,6 +372,21 @@ exports.streamDriveAudio = onRequest({
   }
 });
 
+function isAllowedSpeakingAudioUrl(rawUrl) {
+  const value = String(rawUrl || '').trim();
+  if (/^data:audio\/[a-z0-9.+-]+;base64,/i.test(value)) return true;
+  try {
+    const parsed = new URL(value);
+    if (parsed.protocol !== 'https:') return false;
+    if (parsed.hostname === 'firebasestorage.googleapis.com') {
+      return /^\/v0\/b\/khanh-ielts-v2\.(firebasestorage\.app|appspot\.com)\/o\//.test(parsed.pathname);
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
+}
+
 exports.gradeIELTSSubmission = onRequest({
   secrets: [openaiApiKey],
   timeoutSeconds: 120,
@@ -395,7 +410,10 @@ exports.gradeIELTSSubmission = onRequest({
 
     if (module === 'speaking') {
       if (!body.audioUrl) return sendJson(res, 400, { error: 'Speaking audio URL is required' });
-      const audioResponse = await fetch(body.audioUrl);
+      if (!isAllowedSpeakingAudioUrl(body.audioUrl)) {
+        return sendJson(res, 400, { error: 'Invalid speaking audio URL' });
+      }
+      const audioResponse = await fetch(body.audioUrl, { redirect: 'error' });
       if (!audioResponse.ok) return sendJson(res, 400, { error: 'Could not download speaking audio' });
       const audioBuffer = Buffer.from(await audioResponse.arrayBuffer());
       if (audioBuffer.length > 25 * 1024 * 1024) return sendJson(res, 413, { error: 'Audio file is larger than 25 MB' });
