@@ -1,6 +1,19 @@
 # Thư mục hoặc file khóa Firebase Admin
 firebaseadmin/
 *serviceAccount*.json
+*firebase-adminsdk*.json
 
 # Thư viện
 node_modules/
+.firebase/
+
+# Android TWA local build output and signing material
+android-twa/app/build/
+android-twa/.gradle/
+android-twa/build/
+android-twa/app-release-*.apk
+android-twa/app-release*.aab
+android-twa/app-release-*.apk.idsig
+android-twa/local.properties
+*.jks
+*.keystore

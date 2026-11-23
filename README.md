@@ -6,6 +6,28 @@ This function grades Writing responses and transcribes/grades Speaking recording
 
 The browser app is served from `index.html`. Shared styles are in `css/app.css`, Firebase initialization is in `js/firebase.js`, and the classic scripts in `js/` are loaded in order from `index.html`. These scripts share the existing global LMS state, so keep their references and load order in sync when adding or moving code. There is no frontend build step.
 
+## Install on mobile
+
+The site is installable as a Progressive Web App (PWA) from a supported mobile browser. Android users can open the HTTPS site in Chrome or Edge and tap **Cài ứng dụng** when it appears, or choose **Install app / Add to Home screen** from the browser menu. On iPhone or iPad, open the site in Safari, tap **Share**, then **Add to Home Screen**. The installed app still needs an internet connection to use Firebase-backed LMS features; offline study is not currently supported.
+
+Android users can download the signed APK using **Tải APK Android** on an Android device, then open the downloaded file and approve installation if prompted. The APK is published at `/downloads/ielts-w-khanh.apk`. The app supports Android 7.0 and newer and is a Trusted Web Activity for `https://ielts-with-khanh.vercel.app/`; the deployed site must include `/.well-known/assetlinks.json` matching the release signing certificate for the app to open without browser controls. The release keystore is kept locally in `%LOCALAPPDATA%\\IELTS-W-KHANH\\release.keystore`; back it up securely along with its password because the same key is required to sign future app updates. This machine protects the build password with Windows DPAPI. To build on this Windows machine, run `.\android-twa\build.ps1` after the PWA manifest and asset links are deployed. `.\android-twa\build.ps1 -SkipPwaValidation` is only for a temporary build before the production PWA is deployed.
+
+Reading and Listening submissions record correct/total answers by question type. Students see a weakest-type chart after each submitted section and an accumulated chart in the class Test Bank progress panel; older submissions are included when their saved test data can be matched to question types. Listening fill-in answers also report likely spelling typos, singular/plural mismatches, unanswered items, or fully incorrect answers after submission. These hints do not change the score.
+
+The Reading passage has a Syntax Chunking tool in both practice and timed modes. Select a phrase in the passage, then label it Subject, Verb, or Object; the selection is retained while activating a label, and existing labels can be cleared before relabeling.
+
+Free-practice Listening tests with an accessible direct audio URL and transcript include Micro-Dictation. Audio is divided into selectable 5-, 8-, or 10-second clips; blanks target numbers, likely proper names, and longer words. Existing transcript timings are used when available; otherwise sentence timing is estimated from transcript length. Embedded YouTube/SoundCloud tracks are not segmented.
+
+After a Listening multiple-choice submission, transcript review highlights phrases matching correct options and signposting words in green, and phrases matching incorrect options in red as possible distractors. These lexical matches are automated study hints and should be checked in context.
+
+Speaking Part 2 tests can be started in Virtual Exam mode from the test mode dialog. The cue card is shown during an unpausable 60-second preparation countdown, followed by an automatic two-minute microphone recording; the submission control stays locked until the recording has been saved. Microphone permission is required before the countdown begins.
+
+Writing and Speaking practice sessions show an interactive mind map instead of the long sample answer. Students choose an outline branch and add task collocations from the teacher's Test Vocabulary Bank plus built-in discourse markers; the map is a scaffold and does not generate a model response. It also includes a session-only cross-topic idea network based on the test's topics: students can add topics and ideas, move ideas between topics by dragging or using the move menu, and explicitly connect related ideas.
+
+Writing time-free practice uses a scaffolded editor instead of a single large essay field. Task 2 is split into paraphrase, thesis, two body paragraphs, and conclusion; Task 1 uses introduction, overview, and two detail blocks. The editor combines the blocks into the existing essay answer format for saving and teacher review; timed tests keep the standard writing field.
+
+Writing editors also show a live text analyzer in both practice and timed tests. It highlights selected subject–verb/article patterns as grammar hints, discourse markers, and repeated words or phrases. These rule-based suggestions are not a complete grammar checker and do not affect scoring or submitted answers.
+
 Run the frontend helper and student-flow tests with `npm test`. The flow tests load the real sign-in and submission scripts with local Firebase fakes, so they do not access production accounts or data. They also check sign-in and test-mode accessibility, including keyboard focus and Escape handling.
 
 Firestore access rules have separate emulator tests: install Java 21 or newer, then run `npm run test:rules`. The first run downloads the Firestore emulator. These tests use a demo project and local fixtures only; they do not connect to production.
@@ -34,7 +56,7 @@ Speaking recordings must be downloadable by the function. Firebase Storage downl
 
 Admin-created student, teacher, and collaborator accounts are created in Firebase Authentication through a secondary Firebase app so creating an account does not sign out the administrator. Firestore user profiles contain the Authentication UID and LMS profile data, never passwords. Student bulk import uses the same flow. An existing student profile without a UID can be provisioned from **Create Student** by entering the same username and setting a new Firebase password.
 
-Username logins map to `<normalized-username>@khanhlms.com`. Existing Firestore-only accounts can be provisioned from **Create Student** when no Authentication account already exists for that mapped email. If it already exists, resolve the account in Firebase Console under Authentication > Users. Legacy `pass` fields are not used for login and are removed from Firestore when a teacher loads the user list. Reset passwords for these internal usernames in Firebase Console under Authentication > Users.
+The login form accepts either a username or an email address. Username logins map to `<normalized-username>@khanhlms.com`; accounts created with Google should use **Sign in with Google**. Existing Firestore-only accounts can be provisioned from **Create Student** when no Authentication account already exists for that mapped email. If it already exists, resolve the account in Firebase Console under Authentication > Users. Legacy `pass` fields are not used for login and are removed from Firestore when a teacher loads the user list. Reset passwords for these internal usernames in Firebase Console under Authentication > Users.
 
 Firestore Rules allow an authenticated user to read only their own profile and only when its `uid` matches the Firebase Authentication UID. Do not make the `users` collection publicly readable.
 
@@ -42,18 +64,12 @@ Firestore Rules allow an authenticated user to read only their own profile and o
 
 The checkout reads public course names and lesson fees from `course_catalog`; a staff LMS session synchronizes this limited catalog from the private `classes` collection. Packages are loaded from the public-readable `packages` collection. The `account_access/{uid}` document is the only source of truth for staff role and student access. Students can create only an unpaid student access record for themselves; only the administrator account below can grant or revoke paid access. New usernames are normalized to lowercase and must contain 1-40 ASCII letters, numbers, underscores, or hyphens.
 
-Students receive tests through a server-maintained `student_test_access/{uid}/tests/{testId}` index. Class and schedule changes keep this index current, and test reads also re-check current enrollment and assignment. Global forum posts are stored in `public_messages`; class posts are stored under `classes/{classId}/messages`. Personal notes and flashcards carry an owner field and are queried only by that owner. The staff-only `rebuildStudentTestAccess` endpoint builds the initial index and migrates legacy messages, schedules, notes, and flashcards.
+Students receive tests through their `student_test_access/{uid}/tests/{testId}` index. The frontend builds and refreshes the signed-in student's index from enrolled class and schedule assignments; Firestore Rules validate every index entry against current enrollment and assignment before allowing test reads. This student access flow does not require Cloud Functions. Schedule-based assignments require a `classId`; class-level assignments work directly from `assignedTests` and `testSettings`. Global forum posts are stored in `public_messages`; class posts are stored under `classes/{classId}/messages`. Personal notes and flashcards carry an owner field and are queried only by that owner.
 
-The Firestore rules use the administrator email already configured in the application (`lyquockhanh03@gmail.com`) and the Firebase project ID in the web app configuration (`khanh-ielts-v2`). Review both values before deployment. Deploy the index and migration functions first, then deploy the updated frontend and sign in as staff once so it can initialize existing data. Verify the setup toast is not shown before deploying the rules:
+The Firestore rules use the administrator email already configured in the application (`lyquockhanh03@gmail.com`) and the Firebase project ID in the web app configuration (`khanh-ielts-v2`). Review both values before deployment. Deploy the rules and publish the updated frontend. A staff member should sign in once to mirror parent-class assignments onto enrolled child-class records; then students should sign out and back in once so their assigned-test indexes are rebuilt.
 
 ```powershell
 firebase login
-firebase deploy --only functions:syncStudentTestAccessOnClassWrite,functions:syncStudentTestAccessOnScheduleWrite,functions:syncStudentTestAccessOnAccountWrite,functions:rebuildStudentTestAccess
-```
-
-After staff initialization succeeds, deploy the rules:
-
-```powershell
 firebase deploy --only firestore:rules
 ```
 

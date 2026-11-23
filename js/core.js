@@ -156,7 +156,7 @@
         }
       }
       const data = accessSnapshot.exists() ? accessSnapshot.data() : {};
-      const role = ['teacher', 'collaborator', 'student'].includes(data.role) ? data.role : 'student';
+      const role = ['teacher', 'student'].includes(data.role) ? data.role : 'student';
       window.trustedAccountAccess = { ...data, uid, role, paid: data.paid === true };
       return window.trustedAccountAccess;
     };
@@ -165,7 +165,7 @@
       const access = window.trustedAccountAccess;
       if (firebaseUser?.email?.trim().toLowerCase() === window.ADMIN_EMAIL) return true;
       if (access?.uid !== firebaseUser?.uid) return false;
-      if (['teacher', 'collaborator'].includes(access.role)) return true;
+      if (access.role === 'teacher') return true;
       if (access.role !== 'student' || access.paid !== true) return false;
       const expiry = access.billingExpiresAt;
       if (!expiry) return true;
@@ -280,7 +280,7 @@
     };
 
     window.syncPublicCourseCatalog = async function(classes) {
-      if (!['teacher', 'collaborator'].includes(currentUser?.role)) return;
+      if (currentUser?.role !== 'teacher') return;
       const entries = classes.map(cls => ({
         id: cls.id,
         name: cls.name || '',

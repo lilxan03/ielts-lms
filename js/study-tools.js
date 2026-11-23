@@ -365,13 +365,27 @@
     };
 
     window.startTestVocabStudy = function() {
-        if (!APP_DATA || !APP_DATA.vocab || APP_DATA.vocab.length === 0) {
+        if (!APP_DATA || !Array.isArray(APP_DATA.vocab) || APP_DATA.vocab.length === 0) {
             if (typeof window.showToast === 'function') window.showToast("Notice", "No vocabulary provided by the teacher for this test.", "info");
             return;
         }
+
+        const partIndex = Number.isInteger(window.currentTestPartIndex) ? window.currentTestPartIndex : 0;
+        const part = APP_DATA.parts?.[partIndex];
+        const partName = String(part?.title || `Part ${partIndex + 1}`).trim();
+        const normalizePartName = value => String(value || '').trim().toLocaleLowerCase();
+        const partVocab = APP_DATA.vocab.filter(word =>
+            word && word.term && normalizePartName(word.part) === normalizePartName(partName)
+        );
+        if (partVocab.length === 0) {
+            if (typeof window.showToast === 'function') {
+                window.showToast("Notice", `No vocabulary assigned to ${partName}.`, "info");
+            }
+            return;
+        }
         
-        // Map APP_DATA.vocab to a temporary flashcard deck
-        const tempDeck = APP_DATA.vocab.map((v, i) => ({
+        // Only include words explicitly assigned to the part currently being studied.
+        const tempDeck = partVocab.map((v, i) => ({
             id: 'temp_test_' + i,
             term: v.term || 'Word',
             def: (v.eng ? v.eng + (v.vi ? ' / ' + v.vi : '') : v.vi) || 'Definition',
@@ -408,16 +422,17 @@
             selectEl.dispatchEvent(new Event('change'));
         }
         
-        const deckNameEl = document.getElementById('study-mode-deck-name');
-        if (deckNameEl) deckNameEl.textContent = (APP_DATA.title || 'Test') + " (Vocab Bank)";
-        
         // If there's an explicit openStudyMode function natively tied to the engine, use it
         if (typeof window.openStudyMode === 'function') {
             window.openStudyMode('temp_test_deck');
+            const deckNameEl = document.getElementById('study-mode-deck-name');
+            if (deckNameEl) deckNameEl.textContent = `${APP_DATA.title || 'Test'} · ${partName} (Vocab Bank)`;
             return;
         }
         
         document.getElementById('study-mode-modal').classList.remove('hidden');
+        const deckNameEl = document.getElementById('study-mode-deck-name');
+        if (deckNameEl) deckNameEl.textContent = `${APP_DATA.title || 'Test'} · ${partName} (Vocab Bank)`;
         
         if (typeof window.switchStudyMode === 'function') {
             window.switchStudyMode('flashcards');

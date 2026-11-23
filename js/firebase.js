@@ -225,7 +225,7 @@
                         document.getElementById('auth-ui')?.classList.add('hidden');
                         document.getElementById('public-landing-ui')?.classList.add('hidden');
 
-                        if (role === 'teacher' || role === 'collaborator' || user.email === 'lyquockhanh03@gmail.com') {
+                        if (role === 'teacher' || user.email === 'lyquockhanh03@gmail.com') {
                             document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
                             document.getElementById('student-payment-warning')?.classList.add('hidden');
                             document.getElementById('start-screen')?.classList.remove('hidden');

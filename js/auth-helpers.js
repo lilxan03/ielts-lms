@@ -12,5 +12,29 @@
         return `${safeEmailPrefix}@khanhlms.com`;
     }
 
-    return Object.freeze({ isValidUsername, usernameToAuthEmail });
+    function loginIdentifierToAuthEmail(identifier) {
+        const value = String(identifier || '').trim();
+        return value.includes('@') ? value.toLowerCase() : usernameToAuthEmail(value);
+    }
+
+    function getStudentDisplayName(profile, authUser) {
+        const uid = String(profile?.uid || authUser?.uid || '');
+        const profileName = [
+            profile?.displayName,
+            profile?.fullName,
+            profile?.realName,
+            authUser?.displayName
+        ].find(value => typeof value === 'string' && value.trim() && value.trim() !== uid);
+        if (profileName) return profileName.trim();
+
+        const email = String(profile?.email || authUser?.email || '').trim();
+        if (email.includes('@') && !email.toLowerCase().endsWith('@khanhlms.com')) {
+            return email.slice(0, email.indexOf('@'));
+        }
+
+        const username = String(profile?.user || '').trim();
+        return username && username !== uid ? username : 'Student';
+    }
+
+    return Object.freeze({ isValidUsername, usernameToAuthEmail, loginIdentifierToAuthEmail, getStudentDisplayName });
 });

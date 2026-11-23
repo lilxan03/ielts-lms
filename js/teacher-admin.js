@@ -386,7 +386,7 @@
         document.getElementById('bill-fee').value = BILLING_SETTINGS.feePerLesson || 100000;
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
-        document.getElementById('bill-disc-course').value = BILLING_SETTINGS.discCourse || 20;
+        document.getElementById('bill-disc-course').value = 20;
 
         if (BILLING_SETTINGS.customQR) {
             tempCustomQRBase64 = BILLING_SETTINGS.customQR;
@@ -555,8 +555,8 @@
 
     window.removeUserFromSystem = function(username) {
         const account = USERS.find(user => user.user === username);
-        if (!account || !['student', 'collaborator'].includes(account.role)) {
-            showModalMsg("Cannot Remove Account", "Only student and collaborator accounts can be removed here.");
+        if (!account || account.role !== 'student') {
+            showModalMsg("Cannot Remove Account", "Only student accounts can be removed here.");
             return;
         }
         if (account.user === currentUser?.user) {
@@ -596,15 +596,11 @@
 
                     const updatedClasses = CLASSES.filter(cls =>
                         (cls.enrolledStudents || []).includes(username) ||
-                        (cls.collaborators || []).includes(username) ||
                         Object.prototype.hasOwnProperty.call(cls.miniClasses || {}, username)
                     ).map(cls => {
                         const updated = { ...cls };
                         if (Array.isArray(updated.enrolledStudents)) {
                             updated.enrolledStudents = updated.enrolledStudents.filter(student => student !== username);
-                        }
-                        if (Array.isArray(updated.collaborators)) {
-                            updated.collaborators = updated.collaborators.filter(collaborator => collaborator !== username);
                         }
                         if (updated.miniClasses) {
                             updated.miniClasses = { ...updated.miniClasses };
@@ -802,56 +798,25 @@
             enableStudentRegistryColumnResizing(container.querySelector('.student-registry-table'));
 
         } else {
-            const staff = USERS.filter(u => u.role === 'collaborator' || u.role === 'teacher');
+            const staff = USERS.filter(u => u.role === 'teacher');
             if (countBadge) countBadge.textContent = staff.length;
 
-            const formatVND = (amt) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amt);
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-
-            let html = `<table class="w-full text-left border-collapse whitespace-nowrap min-w-[900px]">
+            let html = `<table class="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
                 <thead>
                     <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <th class="p-4">Staff Account</th>
+                        <th class="p-4">Teacher Account</th>
                         <th class="p-4">Role</th>
-                        <th class="p-4 text-center">Approved Tasks</th>
-                        <th class="p-4 text-right">Earned (This Month)</th>
-                        <th class="p-4 text-right">Earned (Total)</th>
                         <th class="p-4 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-sm">`;
 
             if (staff.length === 0) {
-                html += '<tr><td colspan="6" class="p-8 text-center text-slate-500 italic text-sm">No staff found.</td></tr>';
+                html += '<tr><td colspan="3" class="p-8 text-center text-slate-500 italic text-sm">No teachers found.</td></tr>';
             } else {
                 html += staff.map(s => {
                     const isMe = s.user === currentUser.user;
-                    let actions = `<button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold" title="Reset Password">🔑 Reset Pass</button>`;
-                    
-                    if (s.role !== 'teacher' && !isMe) {
-                        actions += `<button onclick="window.deleteStaff('${s.user}')" class="bg-rose-50 border border-rose-200 hover:bg-rose-500 hover:text-white text-rose-600 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold ml-2">🗑️ Disable</button>`;
-                    }
-
-                    // ✨ Calculate Earnings for Collaborators
-                    let tasksDone = 0;
-                    let earnedMonth = 0;
-                    let earnedTotal = 0;
-                    
-                    if (s.role === 'collaborator') {
-                        TEST_BANK.forEach(t => {
-                            if (t.assignee === s.user && t.status === 'approved') {
-                                tasksDone++;
-                                const inc = Number(t.incentive) || 0;
-                                earnedTotal += inc;
-                                
-                                const appAt = new Date(t.approvedAt || 0);
-                                if (appAt.getMonth() === currentMonth && appAt.getFullYear() === currentYear) {
-                                    earnedMonth += inc;
-                                }
-                            }
-                        });
-                    }
+                    const actions = `<button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold" title="Reset Password">🔑 Reset Pass</button>`;
 
                     return `
                     <tr class="hover:bg-slate-50 transition-colors">
@@ -865,11 +830,8 @@
                             </div>
                         </td>
                         <td class="p-4">
-                            <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm ${s.role === 'teacher' ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' : 'bg-purple-100 text-purple-700 border border-purple-200'}">${s.role}</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm bg-indigo-100 text-indigo-700 border border-indigo-200">${s.role}</span>
                         </td>
-                        <td class="p-4 text-center font-bold text-slate-700">${s.role === 'collaborator' ? tasksDone : '—'}</td>
-                        <td class="p-4 text-right font-black text-emerald-600">${s.role === 'collaborator' ? formatVND(earnedMonth) : '—'}</td>
-                        <td class="p-4 text-right font-black text-blue-600">${s.role === 'collaborator' ? formatVND(earnedTotal) : '—'}</td>
                         <td class="p-4 text-right">${actions}</td>
                     </tr>
                     `;
@@ -932,6 +894,44 @@
         };
     };
 
+    function renderPackagePublicDetailsFields(pkg = {}) {
+        const fields = [
+            ['targetAudience', 'Học viên phù hợp', 'Ví dụ: band đầu vào hoặc mục tiêu học viên đã xác nhận'],
+            ['goal', 'Mục tiêu khóa học', 'Mục tiêu cụ thể đã được xác nhận'],
+            ['curriculum', 'Nội dung / kỹ năng học', 'Các nội dung và kỹ năng thực tế của khóa học'],
+            ['duration', 'Thời lượng khóa học', 'Ví dụ: số tuần hoặc số tháng'],
+            ['lessonCount', 'Số buổi học', 'Tổng số buổi của khóa'],
+            ['format', 'Hình thức học', 'Ví dụ: trực tuyến, trực tiếp hoặc kết hợp'],
+            ['schedule', 'Lịch học dự kiến', 'Ngày, giờ hoặc cách xếp lịch đã thống nhất'],
+            ['classSize', 'Sĩ số lớp', 'Số lượng học viên nếu đã xác định']
+        ];
+        return `
+            <div class="mt-4 max-h-[50vh] space-y-3 overflow-y-auto pr-1">
+                <p class="text-xs leading-relaxed text-slate-500">Thông tin bên dưới sẽ hiển thị công khai. Chỉ điền nội dung đã được xác nhận; trường để trống sẽ không xuất hiện trên trang chủ.</p>
+                ${fields.map(([key, label, placeholder]) => {
+                    const value = lmsEscapeHtml(pkg[key] || '');
+                    const isLongText = key === 'curriculum';
+                    return `
+                        <label class="block text-xs font-bold text-slate-600">
+                            ${label}
+                            ${isLongText
+                                ? `<textarea id="pkg-detail-${key}" rows="3" placeholder="${placeholder}" class="mt-1 w-full resize-y rounded border border-slate-200 p-2 text-sm font-normal text-slate-800 focus:border-purple-500 focus:outline-none">${value}</textarea>`
+                                : `<input type="text" id="pkg-detail-${key}" value="${value}" placeholder="${placeholder}" class="mt-1 w-full rounded border border-slate-200 p-2 text-sm font-normal text-slate-800 focus:border-purple-500 focus:outline-none">`}
+                        </label>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+
+    function readPackagePublicDetailsFromForm() {
+        return ['targetAudience', 'goal', 'curriculum', 'duration', 'lessonCount', 'format', 'schedule', 'classSize']
+            .reduce((details, key) => {
+                details[key] = document.getElementById(`pkg-detail-${key}`).value.trim();
+                return details;
+            }, {});
+    }
+
     // Modal to create packages
     window.promptCreatePackage = function() {
         if(CLASSES.length === 0) { showModalMsg("Error", "Create some classes first before grouping them into a package."); return; }
@@ -957,6 +957,7 @@
                 <label class="block text-xs font-bold text-slate-500 mb-2">Select Courses to Include:</label>
                 <div class="max-h-40 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-200 shadow-inner">${classChecks}</div>
             </div>
+            ${renderPackagePublicDetailsFields()}
         `;
         document.getElementById('modal-input').classList.add('hidden');
         document.getElementById('modal-cancel').classList.remove('hidden');
@@ -969,7 +970,13 @@
             const selectedClasses = Array.from(document.querySelectorAll('.pkg-class-cb:checked')).map(cb => cb.value);
 
             if(name && fee > 0 && selectedClasses.length > 0) {
-                const newPkg = { id: 'pkg_' + Date.now(), name, feePerLesson: fee, classes: selectedClasses };
+                const newPkg = {
+                    id: 'pkg_' + Date.now(),
+                    name,
+                    feePerLesson: fee,
+                    classes: selectedClasses,
+                    ...readPackagePublicDetailsFromForm()
+                };
                 PACKAGES.push(newPkg);
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('packages'), newPkg.id), newPkg);
                 document.getElementById('custom-modal').classList.add('hidden');
@@ -1001,6 +1008,7 @@
                 <label class="block text-xs font-bold text-slate-500 mb-2">Select Courses to Include:</label>
                 <div class="max-h-40 overflow-y-auto bg-slate-50 p-2 rounded border border-slate-200 shadow-inner">${classChecks}</div>
             </div>
+            ${renderPackagePublicDetailsFields(pkg)}
             <p class="text-[10px] text-slate-400 mt-2 italic">Note: You can change the Fee/Lesson directly on the package card.</p>
         `;
         document.getElementById('modal-input').classList.add('hidden');
@@ -1015,6 +1023,7 @@
             if(name && selectedClasses.length > 0) {
                 pkg.name = name;
                 pkg.classes = selectedClasses;
+                Object.assign(pkg, readPackagePublicDetailsFromForm());
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('packages'), pkg.id), pkg);
                 document.getElementById('custom-modal').classList.add('hidden');
                 if (typeof window.renderPaymentsView === 'function') window.renderPaymentsView();
@@ -1043,7 +1052,7 @@
             feePerLesson: Number(document.getElementById('bill-fee').value) || 100000,
             lessonsPerMonth: Number(document.getElementById('bill-lpm').value) || 12,
             discCombo: Number(document.getElementById('bill-disc-combo').value) || 0,
-            discCourse: Number(document.getElementById('bill-disc-course').value) || 0,
+            discCourse: 20,
             customQR: tempCustomQRBase64
         };
 
@@ -1071,26 +1080,6 @@
                 } catch (error) {
                     console.error('Unable to create teacher account:', error);
                     showModalMsg("Error", `Could not create teacher account: ${error.message}`);
-                }
-            });
-        });
-    };
-
-    window.promptCreateCollaborator = function() {
-        showInputPrompt("Add Collaborator", "Enter new collaborator username:", async (username) => {
-            if(USERS.find(u => String(u.user).toLowerCase() === username.trim().toLowerCase())) { showModalMsg("Error", "Username taken."); return; }
-            showInputPrompt("Password", `Enter password for collaborator ${username}:`, async (password) => {
-                try {
-                    const newCollab = await createAuthBackedProfile(username, password, {
-                        user: username,
-                        role: 'collaborator',
-                        createdAt: new Date().toLocaleDateString()
-                    });
-                    USERS.push(newCollab);
-                    showModalMsg("Success", `Collaborator account '${username}' created successfully. They can login to create and modify tests.`);
-                } catch (error) {
-                    console.error('Unable to create collaborator account:', error);
-                    showModalMsg("Error", `Could not create collaborator account: ${error.message}`);
                 }
             });
         });

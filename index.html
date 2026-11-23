@@ -1,15 +1,123 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1e293b">
-  <title>Khanh LMS - Cloud Connected</title>
+  <link rel="apple-touch-icon" href="/assets/pwa-icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/pwa-icon-192.png">
+  <meta name="description" content="Khám phá các khóa học IELTS, lộ trình học và phương pháp giảng dạy tại IELTS W KHANH. Xem thông tin khóa học hoặc liên hệ để được tư vấn.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://ielts-with-khanh.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ielts-with-khanh.vercel.app/">
+  <meta property="og:locale" content="vi_VN">
+  <meta property="og:site_name" content="IELTS W KHANH">
+  <meta property="og:title" content="IELTS W KHANH | Khóa học IELTS">
+  <meta property="og:description" content="Khám phá các khóa học IELTS, lộ trình học và phương pháp giảng dạy tại IELTS W KHANH.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="IELTS W KHANH | Khóa học IELTS">
+  <meta name="twitter:description" content="Khám phá các khóa học IELTS, lộ trình học và phương pháp giảng dạy tại IELTS W KHANH.">
+  <title>IELTS W KHANH | Khóa học IELTS</title>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "EducationalOrganization",
+          "name": "IELTS W KHANH",
+          "url": "https://ielts-with-khanh.vercel.app/",
+          "@id": "https://ielts-with-khanh.vercel.app/#organization",
+          "description": "Các khóa học IELTS, lộ trình học và phương pháp giảng dạy tiếng Anh.",
+          "email": "lyquockhanh03@gmail.com",
+          "telephone": "+84913980712",
+          "sameAs": [
+            "https://web.facebook.com/lilqkhanh/",
+            "https://zalo.me/0913980712"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "name": "IELTS W KHANH",
+          "url": "https://ielts-with-khanh.vercel.app/",
+          "inLanguage": "vi"
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Làm thế nào để đăng ký khóa học?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Tạo tài khoản hoặc đăng nhập, chọn lớp học và gói thanh toán, chuyển khoản theo mã QR trong trang thanh toán rồi nhấn nút thông báo đã chuyển khoản. Quyền truy cập khóa học được mở sau khi giáo viên xác nhận thanh toán."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Tôi có thể đăng nhập bằng cách nào?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Bạn có thể đăng nhập bằng username và mật khẩu, email và mật khẩu, hoặc Google nếu tài khoản đã liên kết."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Tôi cần tư vấn khóa học hoặc hỗ trợ tài khoản thì làm sao?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Liên hệ trực tiếp qua Zalo, điện thoại, email hoặc Facebook ở mục liên hệ bên cạnh để được hỗ trợ."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Lớp học diễn ra online hay trực tiếp?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Phần lớn lớp học diễn ra online. Một số lớp học trực tiếp tại Quận 7; địa điểm cụ thể sẽ được xác nhận khi tư vấn."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Lịch học được sắp xếp như thế nào?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Lịch học cố định theo từng khóa/lớp và sẽ được thông báo khi bạn đăng ký."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Học phí và thanh toán như thế nào?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Bạn có thể thanh toán theo tháng theo số buổi đã chọn. Gói thanh toán trọn 4 tháng được giảm 20% tổng học phí. Bạn có thể xem ước tính theo số buổi mỗi tháng tại phần Khóa học & học phí; số tiền cuối cùng được hiển thị trước khi thanh toán."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Có cần đánh giá trình độ trước khi đăng ký không?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Bạn sẽ được tư vấn hoặc đánh giá trình độ để xếp lớp phù hợp."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Nếu cần nghỉ buổi, tôi có thể học bù hoặc đổi lịch không?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Buổi đã nghỉ không được học bù hoặc đổi lịch."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  </script>
   
-  <!-- PWA App Manifest Injection -->
-  <link rel="manifest" id="pwa-manifest">
+  <link rel="manifest" href="/manifest.webmanifest">
   <script src="js/startup.js"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,6 +125,21 @@
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body class="font-sans bg-slate-100 overflow-hidden h-screen text-slate-800 transition-colors duration-300">
+  <div id="pwa-install-banner" class="hidden fixed bottom-4 right-4 z-[55]">
+    <button id="pwa-install-button" type="button" class="rounded-full bg-blue-700 px-5 py-3 text-sm font-black text-white shadow-xl hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">
+      Cài ứng dụng
+    </button>
+  </div>
+  <a id="android-apk-download" class="hidden fixed bottom-4 left-4 z-[55] rounded-full bg-emerald-700 px-5 py-3 text-sm font-black text-white shadow-xl hover:bg-emerald-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700" href="/downloads/ielts-w-khanh.apk" download>
+    Tải APK Android
+  </a>
+  <noscript>
+    <main>
+      <h1>IELTS W KHANH | Khóa học IELTS</h1>
+      <p>Khám phá các khóa học IELTS, lộ trình học và phương pháp giảng dạy. Liên hệ để được tư vấn qua Zalo hoặc điện thoại 0913 980 712, email lyquockhanh03@gmail.com, hoặc Facebook.</p>
+      <p><a href="https://zalo.me/0913980712">Liên hệ qua Zalo</a> · <a href="https://web.facebook.com/lilqkhanh/">Facebook</a></p>
+    </main>
+  </noscript>
 
   <div id="cloud-loader" class="h-screen w-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 absolute z-[999]">
     <div class="relative flex justify-center items-center mb-8 animate-float">
@@ -32,37 +155,160 @@
 
   <!-- NEW: PUBLIC STOREFRONT (LANDING PAGE) -->
   <div id="public-landing-ui" class="hidden h-screen w-full bg-[#f4f7fb] overflow-y-auto font-sans relative z-[150] animate-fade-in">
-      <div id="public-data-error" class="hidden p-3 text-center text-sm font-bold text-rose-800 bg-rose-100 border-b border-rose-200" role="alert"></div>
-      
       <!-- Hero Section -->
-      <div class="bg-blue-900 pt-20 pb-32 px-6 lg:px-8 shadow-inner relative overflow-hidden text-center">
+      <div class="bg-gradient-to-br from-slate-950 via-blue-950 to-blue-900 py-14 sm:py-20 px-5 sm:px-8 lg:px-12 relative overflow-hidden">
           <div class="absolute top-[-20%] right-[-10%] w-96 h-96 bg-blue-600 rounded-full mix-blend-screen filter blur-[80px] opacity-40 animate-float"></div>
           <div class="absolute bottom-[-20%] left-[-10%] w-72 h-72 bg-sky-500 rounded-full mix-blend-screen filter blur-[80px] opacity-20 animate-float" style="animation-delay: 2s;"></div>
           
-          <div class="max-w-4xl mx-auto relative z-10 animate-fade-in-up" id="public-profile-content">
+          <div class="max-w-screen-2xl w-full mx-auto relative z-10 animate-fade-in-up" id="public-profile-content">
               <!-- Content injected via JS -->
           </div>
       </div>
 
       <!-- Packages Section -->
-      <div class="max-w-6xl mx-auto -mt-20 relative z-20 px-4 pb-20">
-          <div class="bg-white rounded-2xl shadow-xl p-8 border border-blue-50">
-              <h2 class="text-3xl font-black text-center text-blue-950 mb-2">Premium Study Packages</h2>
-              <p class="text-center text-slate-500 mb-10 font-medium">Select a bundle to start your journey today.</p>
+      <div id="public-packages-section" class="max-w-screen-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 scroll-mt-8">
+          <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-blue-50">
+              <h2 class="text-2xl sm:text-3xl font-black text-center text-blue-950 mb-2">Khóa học &amp; học phí</h2>
+              <p class="text-center text-slate-500 mb-10 font-medium">Tham khảo các gói học, lớp học đi kèm và học phí được công bố.</p>
+              <div class="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6">
+                  <label for="public-lessons-per-month" class="block text-sm font-black text-slate-900">Ước tính học phí theo số buổi học mỗi tháng</label>
+                  <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <div class="flex items-center gap-3">
+                          <input id="public-lessons-per-month" type="number" min="1" max="100" step="1" inputmode="numeric" placeholder="Nhập số buổi" aria-describedby="public-pricing-estimate-note" oninput="window.updatePublicPackagePricing()" class="w-36 rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-bold text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100">
+                          <span class="text-sm font-semibold text-slate-600">buổi / tháng</span>
+                      </div>
+                      <p id="public-pricing-estimate-note" class="text-sm leading-relaxed text-slate-500">Ước tính dựa trên đơn giá mỗi buổi của từng gói. Gói 4 tháng giảm 20%; chưa tính ưu đãi giới thiệu (nếu có). Số tiền cuối cùng sẽ được xác nhận ở bước thanh toán.</p>
+                  </div>
+              </div>
+              <div class="mb-8 flex flex-col gap-4 rounded-2xl border border-cyan-100 bg-gradient-to-r from-cyan-50 to-blue-50 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+                  <div>
+                      <h3 class="text-lg font-black text-slate-900">Chưa chắc khóa học nào phù hợp?</h3>
+                      <p class="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">Nhắn Zalo để trao đổi về mục tiêu và trình độ hiện tại. Bạn sẽ được tư vấn, đánh giá trình độ và gợi ý lớp phù hợp.</p>
+                  </div>
+                  <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 shrink-0 items-center justify-center rounded-xl bg-blue-700 px-5 py-3 font-black text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">Tư vấn &amp; xếp lớp qua Zalo</a>
+              </div>
+              <section class="mb-8 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6" aria-labelledby="course-operations-heading">
+                  <h3 id="course-operations-heading" class="text-lg font-black text-slate-900">Hình thức học &amp; quy trình đăng ký</h3>
+                  <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                      <div class="rounded-xl bg-blue-50 p-4">
+                          <h4 class="font-bold text-blue-950">Hình thức &amp; địa điểm</h4>
+                          <p class="mt-1 text-sm leading-relaxed text-slate-700">Phần lớn lớp học diễn ra online. Một số lớp học trực tiếp tại Quận 7; địa điểm cụ thể sẽ được xác nhận khi tư vấn.</p>
+                      </div>
+                      <div class="rounded-xl bg-indigo-50 p-4">
+                          <h4 class="font-bold text-indigo-950">Lịch học</h4>
+                          <p class="mt-1 text-sm leading-relaxed text-slate-700">Lịch cố định theo từng khóa/lớp và được thông báo khi đăng ký.</p>
+                      </div>
+                      <div class="rounded-xl bg-emerald-50 p-4">
+                          <h4 class="font-bold text-emerald-950">Các bước đăng ký</h4>
+                          <ol class="mt-1 list-inside list-decimal space-y-1 text-sm leading-relaxed text-slate-700">
+                              <li>Tạo tài khoản hoặc đăng nhập.</li>
+                              <li>Chọn lớp học và gói thanh toán.</li>
+                              <li>Chuyển khoản theo mã QR, sau đó thông báo đã chuyển khoản.</li>
+                              <li>Giáo viên xác nhận thanh toán để mở quyền truy cập khóa học.</li>
+                          </ol>
+                      </div>
+                      <div class="rounded-xl bg-amber-50 p-4">
+                          <h4 class="font-bold text-amber-950">Thanh toán &amp; nghỉ buổi</h4>
+                          <p class="mt-1 text-sm leading-relaxed text-slate-700">Có thể thanh toán theo tháng; gói trọn 4 tháng giảm 20%. Buổi đã nghỉ không được học bù hoặc đổi lịch.</p>
+                      </div>
+                  </div>
+                  <p class="mt-4 text-sm text-slate-600">Cần hỏi thêm? <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-700 underline underline-offset-2 hover:text-blue-900">Nhắn Zalo 0913 980 712</a> hoặc xem các kênh liên hệ bên dưới.</p>
+              </section>
               <div id="public-packages-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <!-- Packages injected via JS -->
               </div>
           </div>
 
-          
-          <div class="mt-12 text-center flex flex-col items-center gap-4">
-              <button onclick="window.showAuthFromLanding()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xl px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
-                  Create Free Account to Start &rarr;
+          <div id="public-profile-details" class="mt-12 space-y-8"></div>
+
+          <section class="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.8fr)]" aria-label="Câu hỏi thường gặp và liên hệ">
+              <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                  <p class="text-sm font-black uppercase tracking-[0.16em] text-blue-700">Hỗ trợ học viên</p>
+                  <h2 class="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Câu hỏi thường gặp</h2>
+                  <div class="mt-6 divide-y divide-slate-200">
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Làm thế nào để đăng ký khóa học?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Tạo tài khoản hoặc đăng nhập, chọn lớp học và gói thanh toán, chuyển khoản theo mã QR trong trang thanh toán rồi nhấn nút thông báo đã chuyển khoản. Quyền truy cập khóa học được mở sau khi giáo viên xác nhận thanh toán.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Tôi có thể đăng nhập bằng cách nào?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Bạn có thể đăng nhập bằng username và mật khẩu, email và mật khẩu, hoặc Google nếu tài khoản đã liên kết.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Tôi cần tư vấn khóa học hoặc hỗ trợ tài khoản thì làm sao?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Liên hệ trực tiếp qua Zalo, điện thoại, email hoặc Facebook ở mục liên hệ bên cạnh để được hỗ trợ.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Lớp học diễn ra online hay trực tiếp?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Phần lớn lớp học diễn ra online. Một số lớp học trực tiếp tại Quận 7; địa điểm cụ thể sẽ được xác nhận khi tư vấn.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Lịch học được sắp xếp như thế nào?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Lịch học cố định theo từng khóa/lớp và sẽ được thông báo khi bạn đăng ký.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Học phí và thanh toán như thế nào?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Bạn có thể thanh toán theo tháng theo số buổi đã chọn. Gói thanh toán trọn 4 tháng được giảm 20% tổng học phí. Bạn có thể xem ước tính theo số buổi mỗi tháng tại phần Khóa học &amp; học phí; số tiền cuối cùng được hiển thị trước khi thanh toán.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Có cần đánh giá trình độ trước khi đăng ký không?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Bạn sẽ được tư vấn hoặc đánh giá trình độ để xếp lớp phù hợp.</p>
+                      </details>
+                      <details class="group py-4">
+                          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-bold text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                              Nếu cần nghỉ buổi, tôi có thể học bù hoặc đổi lịch không?
+                              <span class="text-xl text-blue-700 transition group-open:rotate-45" aria-hidden="true">+</span>
+                          </summary>
+                          <p class="mt-3 pr-8 leading-relaxed text-slate-600">Buổi đã nghỉ không được học bù hoặc đổi lịch.</p>
+                      </details>
+                  </div>
+              </div>
+
+              <aside class="rounded-2xl bg-gradient-to-br from-blue-950 to-indigo-900 p-6 text-white shadow-sm sm:p-8" aria-labelledby="public-contact-heading">
+                  <p class="text-sm font-black uppercase tracking-[0.16em] text-blue-200">Luôn sẵn sàng hỗ trợ</p>
+                  <h2 id="public-contact-heading" class="mt-2 text-2xl font-black sm:text-3xl">Liên hệ</h2>
+                  <p class="mt-3 leading-relaxed text-blue-100">Bạn cần tư vấn lộ trình hoặc hỗ trợ? Hãy chọn kênh liên hệ thuận tiện.</p>
+                  <div class="mt-6 grid gap-3">
+                      <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-white px-4 py-2.5 font-bold text-blue-950 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Nhắn Zalo · 0913 980 712</a>
+                      <a href="tel:+84913980712" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 font-bold text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Gọi điện · 0913 980 712</a>
+                      <a href="mailto:lyquockhanh03@gmail.com" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 font-bold text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Email</a>
+                      <a href="https://web.facebook.com/lilqkhanh/" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-4 py-2.5 font-bold text-white transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Facebook</a>
+                  </div>
+              </aside>
+          </section>
+
+          <div class="mt-12 flex flex-col items-center justify-center gap-4 text-center sm:flex-row">
+              <button onclick="window.showAuthFromLanding()" class="min-h-12 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 font-black text-white shadow-lg transition-all hover:-translate-y-0.5 hover:from-blue-700 hover:to-indigo-700 hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">
+                  Tạo tài khoản miễn phí &rarr;
               </button>
+              <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-blue-200 bg-white px-8 py-3 font-bold text-blue-900 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-200">
+                  Tư vấn qua Zalo
+              </a>
               <button data-auth-action="demo-login" class="hidden text-indigo-600 hover:text-indigo-800 font-black text-sm bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-6 py-2.5 rounded-full shadow-sm transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5" aria-disabled="true" title="Anonymous/demo login is disabled for security reasons.">
                   🕹️ Try Demo Student Account
               </button>
-              <p class="text-sm text-slate-500 font-bold">🎁 Sign up today and get 50 Free Gems!</p>
+              <p class="text-sm text-slate-500 font-medium">Tạo tài khoản để bắt đầu học và theo dõi lộ trình của bạn.</p>
           </div>
       </div>
   </div>
@@ -70,13 +316,13 @@
   <!-- ✨ NEW: HOF FULL SCREEN MODAL -->
   <div id="hof-full-screen" class="hidden fixed inset-0 bg-slate-50 z-[250] overflow-y-auto animate-fade-in">
       <div class="bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 p-4 sm:p-6 flex justify-between items-center shadow-md sticky top-0 z-30 border-b border-amber-300">
-          <h1 class="text-xl sm:text-2xl font-black drop-shadow-sm flex items-center gap-2">🏆 Student Hall of Fame</h1>
-          <button onclick="window.closeHOFScreen()" class="bg-white/20 hover:bg-white/40 border border-white/40 text-amber-950 px-4 py-2 rounded-xl font-black transition text-sm shadow-sm">&larr; Back to Home</button>
+          <h1 class="text-xl sm:text-2xl font-black drop-shadow-sm flex items-center gap-2">🏆 Kết quả học viên</h1>
+          <button onclick="window.closeHOFScreen()" class="bg-white/20 hover:bg-white/40 border border-white/40 text-amber-950 px-4 py-2 rounded-xl font-black transition text-sm shadow-sm">&larr; Về trang chủ</button>
       </div>
       <div class="max-w-7xl mx-auto px-4 py-12">
           <div class="text-center mb-16">
-              <h2 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight mb-4">Our Success Stories</h2>
-              <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Real students. Real results. Verified by official TRF certificates.</p>
+              <h2 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight mb-4">Hành trình chinh phục IELTS</h2>
+              <p class="text-lg text-slate-500 font-medium max-w-2xl mx-auto">Một số kết quả và chia sẻ của học viên.</p>
           </div>
           <div id="hof-full-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
       </div>
@@ -167,7 +413,7 @@
   <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center">
     <div class="bg-white rounded-lg p-6 w-96 shadow-2xl animate-scale-up">
       <h2 id="modal-title" class="text-xl font-bold mb-4 text-slate-900"></h2>
-      <p id="modal-message" class="mb-4 text-slate-700"></p>
+      <div id="modal-message" class="mb-4 text-slate-700"></div>
       <input type="text" id="modal-input" class="hidden w-full border border-slate-300 rounded px-3 py-2 mb-4 focus:ring-blue-600 outline-none" />
       <div class="flex justify-end gap-3">
         <button id="modal-cancel" class="hidden px-4 py-2 text-slate-600 hover:bg-slate-100 rounded font-medium">Cancel</button>
@@ -217,15 +463,6 @@
       <div class="mb-4">
       <label class="block text-sm font-black text-amber-600 mb-1 flex items-center gap-1">💎 Premium Unlock Price (Gems)</label>
       <input type="number" id="meta-price-input" placeholder="0 for Free" class="w-full border-2 border-amber-200 bg-amber-50 rounded px-3 py-2 focus:border-amber-500 outline-none text-sm font-black text-amber-700 shadow-inner" />
-      </div>
-      <div class="mb-4">
-          <label class="block text-sm font-bold text-slate-700 mb-1">Assign to (Collaborator)</label>
-          <select id="meta-assignee-input" class="w-full border border-slate-300 rounded px-3 py-2 focus:ring-blue-600 outline-none text-sm font-medium bg-white cursor-pointer"></select>
-      </div>
-      <div class="md:col-span-2 mb-4">
-          <label class="block text-sm font-black text-emerald-600 mb-1 flex items-center gap-1">💰 Incentive / Bounty (VND)</label>
-          <input type="number" id="meta-incentive-input" placeholder="e.g. 20000" class="w-full border-2 border-emerald-200 bg-emerald-50 rounded px-3 py-2 mb-2 focus:border-emerald-500 outline-none text-sm font-black text-emerald-700 shadow-inner" />
-          <p class="text-[10px] text-slate-500">Earnings are credited when status is changed to "Approved".</p>
       </div>
 
       <div class="md:col-span-2 flex justify-end gap-3 border-t border-slate-200 pt-4 mt-2">
@@ -375,6 +612,17 @@
          <input type="number" id="custom-time-input" min="1" max="180" placeholder="Default" aria-label="Custom time limit in minutes" class="w-24 border-2 border-slate-200 shadow-sm rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm font-black text-blue-700 bg-white text-center">
          <span class="text-xs font-bold text-slate-500" aria-hidden="true">minutes</span>
       </div>
+
+      <label id="speaking-simulation-option" class="hidden mb-4 rounded-xl border-2 border-amber-200 bg-amber-50 p-4 text-slate-800">
+        <span class="flex items-start gap-3">
+          <input type="checkbox" id="speaking-simulation-checkbox" class="mt-1 h-4 w-4 accent-amber-600" onchange="window.handleSpeakingSimulationToggle(this.checked)">
+          <span>
+            <span class="block font-black">🎙️ Virtual Speaking Part 2 exam</span>
+            <span class="mt-1 block text-xs font-medium leading-relaxed text-slate-600">Runs the Part 2 cue card only: 60 seconds to prepare, then an automatic 2-minute recording. The microphone cannot be paused or restarted during the attempt.</span>
+            <span class="mt-1 block text-xs font-medium leading-relaxed text-slate-600">Chỉ thi Cue Card Part 2: chuẩn bị 60 giây, sau đó tự động ghi âm 2 phút. Không thể tạm dừng hay ghi lại trong lượt thi.</span>
+          </span>
+        </span>
+      </label>
 
       <!-- ✨ NEW: Dynamic Activities Button -->
       <button type="button" data-test-action="activities" class="w-full border-2 border-fuchsia-200 bg-fuchsia-50 rounded-xl p-5 text-left transition hover:border-fuchsia-400 hover:bg-fuchsia-100 cursor-pointer mb-6 group flex items-center justify-between shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
@@ -1047,41 +1295,6 @@
       </div>
   </div>
 
-  <!-- CLASS COLLABORATORS MODAL -->
-  <div id="class-collaborators-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[400] flex items-center justify-center backdrop-blur-sm md:p-6">
-      <div class="bg-white md:rounded-[2rem] shadow-2xl flex flex-col w-full max-w-4xl h-full md:h-[90vh] animate-scale-up overflow-hidden font-sans border border-slate-200">
-          <div class="px-6 pt-6 pb-4 bg-white shrink-0 flex justify-between items-center">
-              <h2 class="text-2xl font-bold text-slate-800">Share and permissions</h2>
-              <button onclick="document.getElementById('class-collaborators-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl border border-slate-200 rounded-lg w-8 h-8 flex items-center justify-center transition">&times;</button>
-          </div>
-          
-          <div class="px-6 pb-8 overflow-y-auto flex-1 bg-white space-y-6">
-              <p id="collab-modal-subtitle" class="text-slate-700 text-sm font-medium">Manage who can access and edit "Class Name".</p>
-
-              <!-- Collaborators Setup -->
-              <div>
-                  <h3 class="font-bold text-slate-800 text-sm mb-3">Collaborators</h3>
-                  <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-white">
-                      <select id="collab-input" class="flex-1 bg-slate-100 border border-transparent focus:bg-white rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 font-medium text-slate-700 transition-colors appearance-none cursor-pointer">
-                          <option value="">-- Select a collaborator --</option>
-                      </select>
-                      <div class="flex gap-2">
-                          <select class="bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-500 font-bold text-slate-600 shadow-sm cursor-pointer w-32 shrink-0">
-                              <option>Edit & assign</option>
-                          </select>
-                          <button id="btn-add-collab" onclick="window.addClassCollaborator()" class="bg-slate-200 text-slate-600 hover:bg-blue-600 hover:text-white px-4 py-2.5 rounded-lg text-sm font-bold transition whitespace-nowrap shrink-0">Add collaborator</button>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- List -->
-              <div id="collab-list" class="space-y-1">
-                  <!-- JS INJECTED -->
-              </div>
-          </div>
-      </div>
-  </div>
-
   <!-- TEMPLATE MANAGER MODAL -->
   <div id="template-manager-modal" class="hidden fixed inset-0 bg-slate-900/60 z-[300] flex items-center justify-center backdrop-blur-sm">
       <div class="template-manager-window bg-white shadow-2xl flex flex-col animate-scale-up overflow-hidden border border-slate-200">
@@ -1315,7 +1528,7 @@
             <button type="button" onclick="window.toggleAppSidebar('student')" class="app-sidebar-toggle w-10 h-10 items-center justify-center rounded-xl bg-white/10 text-white border border-white/20 text-xl" aria-label="Open navigation menu" aria-expanded="false" aria-controls="student-sidebar">☰</button>
             <button type="button" onclick="window.goToAppHome('student')" class="text-left text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3 drop-shadow-sm" title="Go to Home">
                <div id="app-logo-student" class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm overflow-hidden shrink-0">🎓</div>
-               Student Portal
+               <span data-student-en="Student Portal" data-student-vi="Cổng học viên">Student Portal</span>
             </button>
             
             <!-- Streak is now here on the left -->
@@ -1340,13 +1553,13 @@
             <img id="header-student-avatar" src="https://ui-avatars.com/api/?name=Student&background=random" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg object-cover bg-white shadow-sm border border-white/30">
             <div class="flex flex-col hidden sm:flex">
               <span class="text-white font-bold text-sm leading-none mb-1" id="student-name-display">Welcome</span>
-              <span class="text-blue-300 text-[9px] font-black uppercase tracking-widest leading-none">⚙️ Profile</span>
+              <span class="text-blue-300 text-[9px] font-black uppercase tracking-widest leading-none" data-student-en="⚙️ Profile" data-student-vi="⚙️ Hồ sơ">⚙️ Profile</span>
             </div>
           </div>
           
           <!-- Refresh Button -->
           <button onclick="window.location.reload()" class="p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0 flex items-center justify-center gap-2" title="Refresh Page">
-              <span class="text-lg leading-none">🔄</span> <span class="hidden md:inline font-bold text-sm">Refresh</span>
+              <span class="text-lg leading-none">🔄</span> <span class="hidden md:inline font-bold text-sm" data-student-en="Refresh" data-student-vi="Tải lại">Refresh</span>
           </button>
 
           <button onclick="window.toggleTheme()" class="theme-toggle-btn p-2 sm:p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-bold transition backdrop-blur-sm border border-transparent hover:shadow-md shrink-0 text-lg leading-none flex items-center justify-center" title="Toggle Theme">
@@ -1364,7 +1577,7 @@
     <div id="student-sidebar-backdrop" class="app-sidebar-backdrop" onclick="window.closeAppSidebar('student')"></div>
     <aside id="student-sidebar" class="app-sidebar" aria-label="Student navigation">
       <div class="flex items-center justify-between gap-2 p-4 border-b border-slate-100">
-        <span class="sidebar-label text-xs font-black uppercase tracking-widest text-slate-400">Student Menu</span>
+        <span class="sidebar-label text-xs font-black uppercase tracking-widest text-slate-400" data-student-en="Student Menu" data-student-vi="Menu học viên">Student Menu</span>
         <button type="button" class="app-sidebar-collapse text-slate-500 hover:text-blue-700 px-2 py-1 rounded-lg hover:bg-slate-100" onclick="window.toggleAppSidebar('student')" title="Collapse sidebar" aria-label="Collapse sidebar">⇤</button>
         <button type="button" class="app-sidebar-toggle w-9 h-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100" onclick="window.closeAppSidebar('student')" aria-label="Close navigation menu">✕</button>
       </div>
@@ -1373,7 +1586,7 @@
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-test-bank" onclick="window.navigateFromSidebar('student','student/test-bank')"><span>📚</span><span class="sidebar-label" data-student-en="Test Bank" data-student-vi="Ngân hàng đề">Test Bank</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-class" onclick="window.navigateFromSidebar('student','student/class')"><span>🏫</span><span class="sidebar-label" data-student-en="Class" data-student-vi="Lớp học">Class</span></button>
         <button type="button" class="app-sidebar-link" data-sidebar-item="student-study-tools" onclick="window.navigateFromSidebar('student','student/study-tools')"><span>🧠</span><span class="sidebar-label" data-student-en="Study Tools" data-student-vi="Công cụ học tập">Study Tools</span></button>
-        <button type="button" class="app-sidebar-link" onclick="window.closeAppSidebar('student'); window.openStudentProfile()"><span>⚙️</span><span class="sidebar-label">Profile & Goals</span></button>
+        <button type="button" class="app-sidebar-link" onclick="window.closeAppSidebar('student'); window.openStudentProfile()"><span>⚙️</span><span class="sidebar-label" data-student-en="Profile & Goals" data-student-vi="Hồ sơ & mục tiêu">Profile & Goals</span></button>
       </nav>
     </aside>
 
@@ -1873,10 +2086,6 @@
                 <option value="review_ready">🟣 Ready for Review</option>
                 <option value="approved">🟢 Approved</option>
               </select>
-              <select id="bank-filter-assignee" onchange="renderTestBank(true)" class="border-2 border-slate-100 rounded-xl px-4 py-2.5 text-sm focus:border-blue-500 outline-none font-bold text-slate-600 bg-slate-50 hover:bg-white transition-colors cursor-pointer min-w-[140px]">
-                <option value="all">All Authors</option>
-                <option value="me">Assigned to Me</option>
-              </select>
             </div>
             
             <!-- Bảng điều khiển Bulk Actions (Mặc định ẩn, sẽ hiện khi có test được chọn) -->
@@ -1974,7 +2183,7 @@
                   </h2>
                   <p class="text-sm text-slate-500 font-medium mt-1">Add accounts and manage platform access</p>
               </div>
-              <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+              <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
                 <button onclick="promptCreateStudent()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition border border-blue-100 shadow-sm active:scale-95">
                     <span class="text-2xl drop-shadow-sm">🎓</span>
                     <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Student</span>
@@ -1982,10 +2191,6 @@
                 <button onclick="window.promptCreateTeacher()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-100 shadow-sm active:scale-95">
                     <span class="text-2xl drop-shadow-sm">👨‍🏫</span>
                     <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Teacher</span>
-                </button>
-                <button onclick="window.promptCreateCollaborator()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-amber-50 text-amber-700 hover:bg-amber-100 transition border border-amber-100 shadow-sm active:scale-95">
-                    <span class="text-2xl drop-shadow-sm">🤝</span>
-                    <span class="text-[10px] font-black uppercase tracking-wide text-center leading-tight">Add<br>Collab</span>
                 </button>
                 <button onclick="window.openBulkStudentImport()" class="flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-100 shadow-sm active:scale-95">
                     <span class="text-2xl drop-shadow-sm">📥</span>
@@ -1998,7 +2203,7 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 border-b border-slate-100 bg-slate-50/50 gap-4">
                     <div class="flex gap-2 bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200">
                         <button onclick="window.switchRegistryView('students')" id="reg-tab-students" class="px-5 py-2 rounded-lg text-sm font-bold bg-white text-blue-700 shadow-sm transition">🎓 Students</button>
-                        <button onclick="window.switchRegistryView('staff')" id="reg-tab-staff" class="px-5 py-2 rounded-lg text-sm font-bold bg-transparent text-slate-500 hover:text-slate-700 transition">🤝 Staff / Collabs</button>
+                        <button onclick="window.switchRegistryView('staff')" id="reg-tab-staff" class="px-5 py-2 rounded-lg text-sm font-bold bg-transparent text-slate-500 hover:text-slate-700 transition">👨‍🏫 Teachers</button>
                     </div>
                     <div class="text-xs font-bold text-slate-400 px-2">Total: <span id="student-count-badge" class="text-blue-600 text-base font-black">0</span></div>
                 </div>
@@ -2057,7 +2262,7 @@
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block" title="Used as base fee for new classes">Default Fee/Lesson</label><input type="number" id="bill-fee" class="w-full border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-xl font-black text-emerald-900 outline-none focus:border-emerald-500 transition"></div>
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Lessons / Month</label><input type="number" id="bill-lpm" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-black text-slate-800 outline-none focus:border-blue-500 transition"></div>
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Combo Disc (%)</label><input type="number" id="bill-disc-combo" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 10"></div>
-                  <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Disc (%)</label><input type="number" id="bill-disc-course" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 20"></div>
+                  <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Discount (4 months)</label><input type="number" id="bill-disc-course" value="20" readonly aria-label="Full course discount fixed at 20 percent" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none"></div>
                </div>
                
                <div class="mb-8 border-t border-slate-100 pt-6">
@@ -2226,28 +2431,28 @@
                 </div>
 
                 <div class="pt-4 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Teacher Bio / CV Intro</label>
-                    <textarea id="pp-bio" oninput="window.tempPPBio = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-28 resize-none" placeholder="Write a short professional bio that sells your teaching background, experience, and student outcomes."></textarea>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Giới thiệu giáo viên</label>
+                    <textarea id="pp-bio" oninput="window.tempPPBio = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-40 resize-y" placeholder="Giới thiệu nền tảng, kinh nghiệm và cách bạn đồng hành cùng học viên."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
-                            Specialties <button type="button" onclick="window.addPPList('specialties')" class="text-blue-600 hover:underline">+ Add</button>
+                            Chuyên môn <button type="button" onclick="window.addPPList('specialties')" class="text-blue-600 hover:underline">+ Thêm</button>
                         </label>
                         <div id="pp-specialties-list" class="space-y-2"></div>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex justify-between">
-                            Credentials <button type="button" onclick="window.addPPList('credentials')" class="text-blue-600 hover:underline">+ Add</button>
+                            Bằng cấp &amp; chứng chỉ <button type="button" onclick="window.addPPList('credentials')" class="text-blue-600 hover:underline">+ Thêm</button>
                         </label>
                         <div id="pp-credentials-list" class="space-y-2"></div>
                     </div>
                 </div>
 
                 <div class="pt-4 border-t border-slate-100">
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Teaching Philosophy</label>
-                    <textarea id="pp-philosophy" oninput="window.tempPPPhilosophy = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-24 resize-none" placeholder="Explain how you teach, what makes your method effective, and why students trust you."></textarea>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Phương pháp giảng dạy</label>
+                    <textarea id="pp-philosophy" oninput="window.tempPPPhilosophy = this.value" class="w-full border-2 border-slate-200 p-3 rounded-xl font-medium text-slate-600 outline-none focus:border-blue-500 transition h-40 resize-y" placeholder="Mô tả cách bạn cá nhân hóa lộ trình, dạy tư duy làm bài và ứng dụng công nghệ."></textarea>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
@@ -2515,7 +2720,7 @@
             
             <button onclick="window.toggleTheme()" class="theme-toggle-btn w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:shadow-sm transition-all text-lg" title="Toggle Theme">🌙</button>
 
-            <button onclick="exitTest()" class="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-black text-xs transition-colors shadow-sm flex items-center border border-rose-200 hover:border-rose-600 tracking-wide uppercase">
+            <button id="exam-submit-btn" onclick="exitTest()" class="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-black text-xs transition-colors shadow-sm flex items-center border border-rose-200 hover:border-rose-600 tracking-wide uppercase">
               <span id="exam-action-btn-text">Submit Test</span>
             </button>
          </div>
@@ -2566,7 +2771,10 @@
           <span class="font-bold text-sm">Review</span>
         </label>
       </div>
-      <div class="flex-1 flex items-center justify-center gap-4 overflow-x-auto px-4 scrollbar-hide" id="palette-container"></div>
+      <div class="flex-1 flex min-w-0 items-center justify-center gap-3 px-4" id="exam-navigation">
+        <div class="flex shrink-0 items-center gap-1" id="part-tabs-container" aria-label="Test parts"></div>
+        <div class="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-x-auto px-1 scrollbar-hide" id="palette-container" aria-label="Questions in current part"></div>
+      </div>
       <div class="flex space-x-2 w-32 justify-end">
         <button onclick="handlePrev()" class="w-10 h-10 rounded border border-slate-300 hover:bg-slate-50 font-bold text-slate-600"><</button>
         <button onclick="handleNext()" class="w-10 h-10 rounded border border-blue-600 text-blue-700 hover:bg-blue-50 font-bold">></button>
@@ -2616,17 +2824,24 @@
   <!-- LMS CORE LOGIC -->
   <script src="js/core.js"></script>
   <script src="js/listening.js"></script>
+  <script src="js/listening-distractors.js"></script>
+  <script src="js/micro-dictation.js"></script>
   <script src="js/study-tools.js"></script>
   <script src="js/teacher-tools.js"></script>
   <script src="js/scheduling.js"></script>
   <script src="js/auth-helpers.js"></script>
+  <script src="js/student-test-access.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/teacher-dashboard.js"></script>
   <script src="js/teacher-builder.js"></script>
   <script src="js/billing.js"></script>
   <script src="js/landing.js"></script>
+  <script src="js/dynamic-mindmap.js"></script>
+  <script src="js/scaffolded-writing.js"></script>
   <script src="js/student-dashboard.js"></script>
+  <script src="js/reading-player.js"></script>
   <script src="js/test-player.js"></script>
+  <script src="js/grading-review.js"></script>
   <script src="js/student-study.js"></script>
   <script src="js/teacher-admin.js"></script>
   <script src="js/calendar.js"></script>

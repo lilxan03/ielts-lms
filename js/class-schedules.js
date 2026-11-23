@@ -181,7 +181,7 @@
                 showModalMsg("Access denied", "This class is not assigned to your account.");
                 return;
             }
-        } else if (!['teacher', 'collaborator'].includes(currentUser?.role)) {
+        } else if (currentUser?.role !== 'teacher') {
             showModalMsg("Access denied", "Please sign in with an authorized account to join this class.");
             return;
         }

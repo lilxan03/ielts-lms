@@ -52,6 +52,11 @@
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     }
 
+    function getStudentDisplayName(user = currentUser) {
+      return window.LMSAuthHelpers.getStudentDisplayName(user, window.auth?.currentUser);
+    }
+    window.getStudentDisplayName = getStudentDisplayName;
+
     function parseBillingDeadlineDate(value) {
       const match = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
       if (!match) return null;
@@ -99,10 +104,11 @@
     window.getStudentBillingStatus = getStudentBillingStatus;
 
     window.initStudentDashboard = function initStudentDashboard(preserveCid = null) {
-      document.getElementById('student-name-display').textContent = currentUser.user;
+      document.getElementById('student-name-display').textContent = getStudentDisplayName();
       
       scheduleStudentBillingExpiry();
       const isPaid = hasActiveStudentAccess(currentUser);
+      document.getElementById('start-screen')?.classList.toggle('checkout-mode', !isPaid);
       const mainContent = document.getElementById('student-main-content');
       if (mainContent) mainContent.classList.toggle('hidden', !isPaid);
       
@@ -262,6 +268,7 @@
                 : !hasAvailableCourse
                     ? `<p class="mt-2 text-sm text-slate-600" role="status">${st('No courses are open for enrollment yet. Contact your teacher for guidance.', 'Hiện chưa có khóa học mở đăng ký. Vui lòng liên hệ giáo viên để được tư vấn.')}</p>`
                     : '';
+        const canStartCheckout = catalogReady && hasAvailableCourse;
 
         const lpmDefault = BILLING_SETTINGS.lessonsPerMonth || 12;
         const billingExpiry = getBillingExpiryMillis(currentUser);
@@ -286,7 +293,7 @@
                 <div class="flex flex-col sm:flex-row gap-4 mb-5">
                     <div class="flex-1">
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5" data-student-en="Course or bundle" data-student-vi="Khóa học hoặc gói học">Course or bundle</label>
-                        <select id="checkout-course" class="w-full bg-white border border-slate-300 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold transition-colors shadow-sm" onchange="window.updateCheckoutMath()">
+                        <select id="checkout-course" ${canStartCheckout ? '' : 'disabled'} class="w-full bg-white border border-slate-300 text-slate-800 p-3 rounded-xl outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 font-bold transition-colors shadow-sm" onchange="window.updateCheckoutMath()">
                             ${classOpts}
                         </select>
                         ${catalogStatusMarkup}
@@ -330,7 +337,7 @@
                     </div>
                 </div>
 
-                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-base disabled:cursor-not-allowed disabled:opacity-50">
+                <button id="btn-verify-pay" onclick="notifyTeacherPayment()" ${canStartCheckout ? '' : 'disabled'} class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2 text-base disabled:cursor-not-allowed disabled:opacity-50">
                     <span data-student-en="I have completed the transfer" data-student-vi="Tôi đã chuyển khoản">I have completed the transfer</span>
                 </button>
                 <p class="text-xs text-slate-500 text-center mt-3 leading-relaxed" data-student-en="After transferring, select this button to notify your teacher. Your course unlocks after payment verification." data-student-vi="Sau khi chuyển khoản, nhấn nút này để báo giáo viên. Khóa học sẽ được mở sau khi thanh toán được xác nhận.">After transferring, select this button to notify your teacher. Your course unlocks after payment verification.</p>
@@ -367,7 +374,7 @@
             const amount = document.getElementById('vietqr-amount');
             const description = document.getElementById('vietqr-desc');
             const qrImage = document.getElementById('vietqr-image');
-            if (amount) amount.textContent = '-';
+            if (amount) amount.textContent = '—';
             if (description) description.textContent = '';
             if (qrImage) qrImage.removeAttribute('src');
             return;
@@ -437,9 +444,8 @@
             return discounted;
         };
         const configuredComboRate = Number(BILLING_SETTINGS.discCombo);
-        const configuredCourseRate = Number(BILLING_SETTINGS.discCourse);
         const comboRate = Number.isFinite(configuredComboRate) ? configuredComboRate : 10;
-        const courseRate = Number.isFinite(configuredCourseRate) ? configuredCourseRate : 10;
+        const courseRate = 20;
         const p1Raw = fpl * lpm;
         const p2Raw = fpl * lpm * 2;
         const p2Disc = p2Raw * (1 - (comboRate / 100));
@@ -447,9 +453,9 @@
         const p4Disc = p4Raw * (1 - (courseRate / 100));
 
         window.checkoutPlans = [
-            { id: 1, title: '1 Month Standard', months: 1, lessons: lpm, raw: p1Raw, final: applyReferralDiscounts(p1Raw), label: 'Pay as you go' },
-            { id: 2, title: '2 Month Combo', months: 2, lessons: lpm*2, raw: p2Raw, final: applyReferralDiscounts(p2Disc), label: `Save ${comboRate}%`, pop: true },
-            { id: 4, title: 'Full Course (4M)', months: 4, lessons: lpm*4, raw: p4Raw, final: applyReferralDiscounts(p4Disc), label: `Save ${courseRate}%` }
+            { id: 1, title: '1 Month Standard', months: 1, lessons: lpm, raw: p1Raw, final: applyReferralDiscounts(p1Raw), label: st('Pay as you go', 'Thanh toán theo tháng') },
+            { id: 2, title: '2 Month Combo', months: 2, lessons: lpm*2, raw: p2Raw, final: applyReferralDiscounts(p2Disc), label: st(`Save ${comboRate}%`, `Tiết kiệm ${comboRate}%`), pop: true },
+            { id: 4, title: 'Full Course (4M)', months: 4, lessons: lpm*4, raw: p4Raw, final: applyReferralDiscounts(p4Disc), label: st(`Save ${courseRate}%`, `Tiết kiệm ${courseRate}%`) }
         ];
         window.checkoutPlans.forEach(plan => {
             plan.referralCreditsApplied = referralDiscountCount;
@@ -526,11 +532,12 @@
         if (courseSel && courseSel.options[courseSel.selectedIndex]) {
             courseName = courseSel.options[courseSel.selectedIndex].text.replace('📦 ', '');
         }
-        const msg = `${currentUser.user} - ${courseName}`;
+        const studentName = getStudentDisplayName();
+        const msg = `${studentName} - ${courseName}`;
         
         if (BILLING_SETTINGS.customQR) {
             document.getElementById('vietqr-image').src = BILLING_SETTINGS.customQR;
-            document.getElementById('vietqr-desc').textContent = "Use Custom QR above & ref: " + currentUser.user;
+            document.getElementById('vietqr-desc').textContent = "Use Custom QR above & ref: " + studentName;
         } else {
             const qrUrl = `https://img.vietqr.io/image/${BILLING_SETTINGS.bankId}-${BILLING_SETTINGS.bankAcc}-compact2.png?amount=${pkg.final}&addInfo=${encodeURIComponent(msg)}&accountName=${encodeURIComponent(BILLING_SETTINGS.bankName)}`;
             document.getElementById('vietqr-image').src = qrUrl;
@@ -659,6 +666,7 @@
     window.closeStudentRenewal = function() {
         const warning = document.getElementById('student-payment-warning');
         warning.classList.add('hidden');
+        document.getElementById('start-screen')?.classList.remove('checkout-mode');
         window.renderStudentDashboard();
     };
 

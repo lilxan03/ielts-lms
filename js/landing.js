@@ -1,3 +1,20 @@
+const DEFAULT_PUBLIC_TEACHER_COPY = {
+    bio: 'Là giáo viên tiếng Anh và luyện thi IELTS với nền tảng học thuật bài bản theo định hướng sư phạm, đồng thời có kinh nghiệm thực tế trong giảng dạy. Phong cách làm việc tập trung vào sự rõ ràng, hiệu quả và đồng hành sát sao để người học đạt mục tiêu điểm số cũng như sử dụng tiếng Anh tự nhiên hơn.\n\nĐã trực tiếp giảng dạy và đồng hành cùng hơn 100 học viên qua các lớp 1:1 và nhóm nhỏ. Giáo viên tự xây dựng và vận hành hệ thống LMS riêng để số hóa tài liệu, bài tập tương tác, flashcard lặp lại ngắt quãng và theo dõi tiến độ học tập.',
+    specialties: [
+        'IELTS toàn diện 4 kỹ năng',
+        'Tư duy xử lý đề Listening và Reading',
+        'Phát triển ý tưởng cho Speaking và Writing',
+        'Cá nhân hóa lộ trình học'
+    ],
+    credentials: [
+        'Cử nhân Ngôn ngữ Anh (Định hướng Sư phạm), loại Giỏi – Trường Đại học Tôn Đức Thắng',
+        'IELTS Overall 8.0 (đạt 3 lần); điểm thành phần cao nhất: Reading 9.0, Listening 8.5, Speaking 8.0, Writing 7.0',
+        'Điểm 10 môn Tiếng Anh kỳ thi Tốt nghiệp THPT Quốc gia',
+        'Top 3 cuộc thi Tranh biện Tiếng Anh cấp Khoa Ngoại ngữ, Đại học Tôn Đức Thắng'
+    ],
+    philosophy: 'Cá nhân hóa lộ trình: Tập trung vào điểm cần cải thiện của từng học viên thay vì áp dụng một giáo trình rập khuôn.\n\nTư duy logic và bản chất ngôn ngữ: Giúp người học hiểu cách paraphrase, nhận diện bẫy thông tin và lý do đằng sau mỗi dạng bài thay vì chỉ học mẹo.\n\nỨng dụng công nghệ: Kết hợp sửa bài chi tiết, tương tác qua bảng số và lưu trữ dữ liệu học tập để học viên chủ động ôn tập.'
+};
+
     window.populateLandingPageEditor = function() {
         document.getElementById('pp-app-name').value = PUBLIC_PROFILE.appName || '';
         document.getElementById('pp-opening-title').value = PUBLIC_PROFILE.openingTitle || '';
@@ -7,12 +24,13 @@
         
         // Handle Hero Image
         window.tempPPHero = PUBLIC_PROFILE.heroImage || null;
-        if(window.tempPPHero) {
-            document.getElementById('pp-hero-preview').src = window.tempPPHero;
-            document.getElementById('pp-hero-preview').classList.remove('hidden');
-        } else {
-            document.getElementById('pp-hero-preview').src = '';
-            document.getElementById('pp-hero-preview').classList.add('hidden');
+        window.tempPPHeroRevision = Number(PUBLIC_PROFILE.heroImageRevision) || 0;
+        const heroPreview = document.getElementById('pp-hero-preview');
+        if (heroPreview) {
+            heroPreview.src = window.tempPPHeroRevision >= 2 && window.tempPPHero
+                ? window.tempPPHero
+                : 'assets/teacher-graduation.png';
+            heroPreview.classList.remove('hidden');
         }
 
         // Handle TRF Image
@@ -32,10 +50,10 @@
         window.tempPPFeatures = [...(PUBLIC_PROFILE.features || [])];
         window.tempPPAchievements = [...(PUBLIC_PROFILE.achievements || [])];
         window.tempPPPdfs = [...(PUBLIC_PROFILE.pdfs || [])];
-        window.tempPPBio = PUBLIC_PROFILE.bio || '';
-        window.tempPPSpecialties = [...(PUBLIC_PROFILE.specialties || [])];
-        window.tempPPCredentials = [...(PUBLIC_PROFILE.credentials || [])];
-        window.tempPPPhilosophy = PUBLIC_PROFILE.philosophy || '';
+        window.tempPPBio = PUBLIC_PROFILE.bio || DEFAULT_PUBLIC_TEACHER_COPY.bio;
+        window.tempPPSpecialties = PUBLIC_PROFILE.specialties?.length ? [...PUBLIC_PROFILE.specialties] : [...DEFAULT_PUBLIC_TEACHER_COPY.specialties];
+        window.tempPPCredentials = PUBLIC_PROFILE.credentials?.length ? [...PUBLIC_PROFILE.credentials] : [...DEFAULT_PUBLIC_TEACHER_COPY.credentials];
+        window.tempPPPhilosophy = PUBLIC_PROFILE.philosophy || DEFAULT_PUBLIC_TEACHER_COPY.philosophy;
         window.tempPPClasses = [...(PUBLIC_PROFILE.classes || [])];
         window.tempPPServices = [...(PUBLIC_PROFILE.services || [])];
         window.tempPPHighlights = [...(PUBLIC_PROFILE.highlights || [])];
@@ -74,8 +92,9 @@
     window.handlePPHero = function(e) {
         const file = e.target.files[0];
         if (!file) return;
-        window.compressProfileImage(file, 800, 0.5, (base64) => {
+        window.compressProfileImage(file, 1200, 0.82, (base64) => {
             window.tempPPHero = base64;
+            window.tempPPHeroRevision = 2;
             document.getElementById('pp-hero-preview').src = base64;
             document.getElementById('pp-hero-preview').classList.remove('hidden');
         });
@@ -270,6 +289,7 @@
             missionTitle: document.getElementById('pp-title').value.trim(),
             missionText: document.getElementById('pp-mission').value.trim(),
             heroImage: window.tempPPHero,
+            heroImageRevision: Number(window.tempPPHeroRevision) || 0,
             trfImage: window.tempPPTrf,
             bio: window.tempPPBio.trim(),
             specialties: window.tempPPSpecialties.filter(s => s.trim()),
@@ -335,7 +355,7 @@
     window.closeHOFScreen = function() {
         document.getElementById('hof-full-screen').classList.add('hidden');
         const homeRoute = currentUser
-            ? (['teacher', 'collaborator'].includes(currentUser.role) ? 'teacher/bank/tests' : 'student/dashboard')
+            ? (currentUser.role === 'teacher' ? 'teacher/bank/tests' : 'student/dashboard')
             : 'landing';
         window.navigateAppRoute(homeRoute, true);
     };
@@ -1268,26 +1288,28 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
     window.publicPackagesStatus = 'loading';
     window.getPublicPackagesStatusMarkup = function() {
         if (window.publicPackagesStatus === 'loading') {
-            return `<div class="col-span-full rounded-2xl border border-blue-100 bg-blue-50 p-8 text-center text-slate-700" role="status">?ang t?i th?ng tin kh?a h?c?</div>`;
+            return `<div class="col-span-full rounded-2xl border border-blue-100 bg-blue-50 p-8 text-center text-slate-700" role="status">Đang tải thông tin khóa học…</div>`;
         }
         if (window.publicPackagesStatus === 'error') {
             return `<div class="col-span-full rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center" role="alert">
-                <h3 class="text-xl font-black text-slate-900">Ch?a t?i ???c th?ng tin kh?a h?c</h3>
-                <p class="mx-auto mt-2 max-w-xl text-slate-600">Vui l?ng th? t?i l?i. N?u v?n ?? ti?p t?c, h?y li?n h? ?? ???c t? v?n.</p>
-                <button type="button" onclick="window.loadPublicLandingData()" class="mt-5 rounded-xl bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800">Th? t?i l?i</button>
+                <h3 class="text-xl font-black text-slate-900">Chưa tải được thông tin khóa học</h3>
+                <p class="mx-auto mt-2 max-w-xl text-slate-600">Vui lòng thử tải lại. Nếu vấn đề tiếp tục, hãy liên hệ để được tư vấn.</p>
+                <button type="button" onclick="window.loadPublicLandingData()" class="mt-5 rounded-xl bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800">Thử tải lại</button>
             </div>`;
         }
         return '';
     };
+
     window.loadPublicLandingData = function() {
         if (window.publicLandingDataPromise) return window.publicLandingDataPromise;
 
         window.publicPackagesStatus = 'loading';
         window.renderPublicProfile();
         window.publicLandingDataPromise = (async () => {
-            const [profileResult, packagesResult, hallOfFameResult] = await Promise.allSettled([
+            const [profileResult, packagesResult, courseCatalogResult, hallOfFameResult] = await Promise.allSettled([
                 window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'public_profile')),
                 window.fsGetDocs(window.fsCollection(window.db, window.fPath('packages'))),
+                window.fsGetDocs(window.fsCollection(window.db, window.fPath('course_catalog'))),
                 window.fsGetDocs(window.fsCollection(window.db, window.fPath('hall_of_fame')))
             ]);
             const failures = [];
@@ -1305,6 +1327,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
             } else {
                 failures.push(['packages', packagesResult.reason]);
             }
+
+            if (courseCatalogResult.status === 'fulfilled') {
+                CLASSES = courseCatalogResult.value.docs.map(doc => doc.data());
+            } else {
+                failures.push(['course_catalog', courseCatalogResult.reason]);
+            }
             window.publicPackagesStatus = packagesResult.status === 'fulfilled' ? 'loaded' : 'error';
 
             if (hallOfFameResult.status === 'fulfilled') {
@@ -1313,17 +1341,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
                 failures.push(['hall_of_fame', hallOfFameResult.reason]);
             }
 
-            const errorBanner = document.getElementById('public-data-error');
             if (failures.length) {
                 failures.forEach(([path, error]) => console.error(`Unable to load public landing data (${path}):`, error));
-                if (errorBanner) {
-                    errorBanner.textContent = 'Some public page information could not be loaded. Check the Firestore public read rules and refresh the page.';
-                    errorBanner.classList.remove('hidden');
-                }
                 window.publicLandingDataPromise = null;
-            } else if (errorBanner) {
-                errorBanner.classList.add('hidden');
-                errorBanner.textContent = '';
             }
 
             window.renderPublicProfile();
@@ -1333,115 +1353,263 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
         return window.publicLandingDataPromise;
     };
 
+    window.scrollToPublicPackages = function() {
+        document.getElementById('public-packages-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    window.updatePublicPackagePricing = function() {
+        const lessonsInput = document.getElementById('public-lessons-per-month');
+        const lessonsPerMonth = Number(lessonsInput?.value);
+        const hasValidLessonCount = Number.isInteger(lessonsPerMonth) && lessonsPerMonth >= 1 && lessonsPerMonth <= 100;
+
+        document.querySelectorAll('.public-package-pricing-summary').forEach(summary => {
+            const feePerLesson = Number(summary.dataset.feePerLesson);
+            const prompt = summary.querySelector('[data-estimate-prompt]');
+            const results = summary.querySelector('[data-estimate-results]');
+
+            if (!Number.isFinite(feePerLesson) || feePerLesson <= 0) {
+                prompt.textContent = 'Liên hệ để được tư vấn mức học phí và dự toán.';
+                results.classList.add('hidden');
+                return;
+            }
+
+            if (!hasValidLessonCount) {
+                prompt.textContent = 'Nhập số buổi học dự kiến mỗi tháng để xem dự toán.';
+                results.classList.add('hidden');
+                return;
+            }
+
+            const monthlyTotal = feePerLesson * lessonsPerMonth;
+            const fourMonthTotal = monthlyTotal * 4;
+            const fullCourseSavings = Math.round(fourMonthTotal * 0.2);
+            prompt.textContent = '';
+            summary.querySelector('[data-monthly-total]').textContent = formatVND(monthlyTotal);
+            summary.querySelector('[data-full-course-before]').textContent = formatVND(fourMonthTotal);
+            summary.querySelector('[data-full-course-savings]').textContent = `−${formatVND(fullCourseSavings)}`;
+            summary.querySelector('[data-full-course-total]').textContent = formatVND(fourMonthTotal - fullCourseSavings);
+            results.classList.remove('hidden');
+        });
+    };
+
     window.renderPublicProfile = function() {
         const c = document.getElementById('public-profile-content');
         if(!c) return;
-        
-        const imgHtml = PUBLIC_PROFILE.heroImage ? `<img src="${PUBLIC_PROFILE.heroImage}" class="w-32 h-32 object-cover mx-auto rounded-full border-4 border-white/20 shadow-xl mb-6 pointer-events-none select-none">` : '';
+
+        const teacherImageUrl = Number(PUBLIC_PROFILE.heroImageRevision) >= 2 && PUBLIC_PROFILE.heroImage
+            ? PUBLIC_PROFILE.heroImage
+            : 'assets/teacher-graduation.png';
+        const teacherImageHtml = teacherImageUrl
+            ? `<img src="${lmsEscapeHtml(teacherImageUrl)}" alt="${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Giáo viên IELTS')}" class="w-full aspect-[4/5] max-h-[34rem] object-cover rounded-[2rem] shadow-2xl border border-white/15">`
+            : `<div class="aspect-[4/5] max-h-[34rem] rounded-[2rem] border border-white/15 bg-gradient-to-br from-blue-500/30 via-indigo-500/20 to-cyan-400/20 shadow-2xl flex flex-col items-center justify-center p-8 text-center">
+                   <div class="text-7xl sm:text-8xl font-black tracking-tighter text-white/90">IELTS</div>
+                   <div class="mt-6 flex flex-wrap justify-center gap-2">${['Reading', 'Listening', 'Writing', 'Speaking'].map(skill => `<span class="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-blue-50">${skill}</span>`).join('')}</div>
+               </div>`;
+        const certificateCardHtml = PUBLIC_PROFILE.trfImage
+            ? `<button type="button" class="absolute -bottom-5 left-3 right-3 sm:left-6 sm:right-6 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 text-left shadow-xl transition hover:-translate-y-1" onclick="window.openLightbox('${PUBLIC_PROFILE.trfImage}', event)">
+                   <img src="${PUBLIC_PROFILE.trfImage}" alt="IELTS certificate" class="h-14 w-14 shrink-0 rounded-lg border border-slate-200 bg-slate-50 object-cover">
+                   <span class="min-w-0"><span class="block text-xs font-black uppercase tracking-wider text-emerald-700">Chứng chỉ IELTS</span><span class="mt-1 block text-sm font-semibold text-slate-600">Nhấn để xem ảnh</span></span>
+                   <span class="ml-auto text-lg text-slate-400" aria-hidden="true">↗</span>
+               </button>`
+            : '';
         
         let resourcesHtml = '';
         if (PUBLIC_PROFILE.pdfs && PUBLIC_PROFILE.pdfs.length > 0) {
             resourcesHtml = `
-                <div class="mt-12 pt-8 border-t border-white/10 text-left">
-                    <h3 class="text-xl font-bold text-white mb-4">🎁 Free Resources</h3>
+                <section class="rounded-2xl border border-slate-200 bg-white p-6 text-left shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-900 mb-4">🎁 Tài liệu miễn phí</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         ${PUBLIC_PROFILE.pdfs.map(f => `
-                            <div class="bg-white/10 border border-white/20 rounded-xl p-4 flex items-center justify-between shadow-sm">
-                                <div class="truncate text-blue-50 font-bold text-sm">${f.name}</div>
-                                <a href="${f.data}" download="${f.name}" class="shrink-0 bg-white text-blue-900 hover:bg-blue-50 px-3 py-1.5 rounded font-black text-xs transition">Download</a>
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between shadow-sm">
+                                <div class="truncate text-slate-700 font-bold text-sm">${f.name}</div>
+                                <a href="${f.data}" download="${f.name}" class="shrink-0 bg-blue-700 text-white hover:bg-blue-800 px-3 py-1.5 rounded-lg font-black text-xs transition">Tải về</a>
                             </div>
                         `).join('')}
                     </div>
-                </div>
+                </section>
             `;
         }
 
-        let trfHtml = '';
-        if (PUBLIC_PROFILE.trfImage) {
-            trfHtml = `
-                <div class="mt-10 mb-8 flex flex-col items-center justify-center">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-900/60 px-3 py-1 rounded-full mb-3 border border-emerald-400/30 flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Verified Certificate</span>
-                    <img src="${PUBLIC_PROFILE.trfImage}" class="w-full max-w-sm rounded-xl shadow-2xl border-4 border-white/20 hover:scale-[1.02] transition duration-300 cursor-zoom-in bg-white pointer-events-auto" onclick="window.openLightbox(this.src, event)" title="Click to enlarge" style="-webkit-user-drag: none;">
+        const sortedHofStudents = [...(HOF_STUDENTS || [])].sort((a, b) => {
+            const scoreA = Number.parseFloat(String(a.score || '').replace(/[^\d.]/g, '')) || 0;
+            const scoreB = Number.parseFloat(String(b.score || '').replace(/[^\d.]/g, '')) || 0;
+            return scoreB - scoreA;
+        });
+        const studentResultsHtml = sortedHofStudents.length
+            ? `<section class="rounded-3xl border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-6 shadow-sm sm:p-8" aria-labelledby="public-student-results-heading">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                        <p class="text-sm font-black uppercase tracking-[0.16em] text-amber-700">Hành trình học tập</p>
+                        <h2 id="public-student-results-heading" class="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">Kết quả học viên</h2>
+                        <p class="mt-2 text-slate-600">Một số học viên được giới thiệu.</p>
+                    </div>
+                    <button type="button" onclick="window.openHOFScreen()" class="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl border border-amber-300 bg-white px-5 py-2.5 font-bold text-amber-900 transition hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-200">Xem tất cả kết quả <span class="ml-2" aria-hidden="true">→</span></button>
                 </div>
-            `;
-        }
+                <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    ${sortedHofStudents.slice(0, 3).map(student => {
+                        const name = lmsEscapeHtml(student.name || 'Học viên');
+                        const score = lmsEscapeHtml(String(student.score || '').trim());
+                        const avatar = typeof student.avatar === 'string' ? student.avatar.trim() : '';
+                        const quote = typeof student.quote === 'string' ? student.quote.trim() : '';
+                        const trf = typeof student.trf === 'string' ? student.trf.trim() : '';
+                        return `<article class="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                            <div class="flex items-center gap-4">
+                                ${avatar
+                                    ? `<img src="${lmsEscapeHtml(avatar)}" alt="" class="h-14 w-14 shrink-0 rounded-full border border-slate-200 object-cover">`
+                                    : `<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xl font-black text-amber-800" aria-hidden="true">${name.charAt(0)}</div>`}
+                                <div class="min-w-0">
+                                    <h3 class="truncate font-black text-slate-900">${name}</h3>
+                                    ${score ? `<p class="mt-1 inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-sm font-black text-amber-900">IELTS ${score}</p>` : ''}
+                                </div>
+                            </div>
+                            ${quote ? `<blockquote class="mt-4 flex-1 whitespace-pre-line text-sm leading-relaxed text-slate-600">“${lmsEscapeHtml(quote)}”</blockquote>` : ''}
+                            ${trf ? `<button type="button" data-image-src="${lmsEscapeHtml(trf)}" onclick="window.openLightbox(this.dataset.imageSrc, event)" class="mt-4 inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-blue-800 transition hover:bg-blue-50">Xem chứng chỉ</button>` : ''}
+                        </article>`;
+                    }).join('')}
+                </div>
+            </section>`
+            : '';
 
-        // ✨ NEW: HOF Button now opens the massive separate UI
-        let hofButtonHtml = '';
-        if (HOF_STUDENTS && HOF_STUDENTS.length > 0) {
-            hofButtonHtml = `<button onclick="window.openHOFScreen()" class="mt-10 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-amber-950 font-black px-8 py-3.5 rounded-full shadow-[0_10px_25px_-5px_rgba(245,158,11,0.5)] transition hover:-translate-y-1 flex items-center justify-center gap-3 mx-auto border-2 border-amber-300"><span class="text-2xl drop-shadow-md">🏆</span> View Student Hall of Fame (${HOF_STUDENTS.length})</button>`;
-        }
+        const bio = PUBLIC_PROFILE.bio || DEFAULT_PUBLIC_TEACHER_COPY.bio;
+        const specialties = PUBLIC_PROFILE.specialties?.length ? PUBLIC_PROFILE.specialties : DEFAULT_PUBLIC_TEACHER_COPY.specialties;
+        const credentials = PUBLIC_PROFILE.credentials?.length ? PUBLIC_PROFILE.credentials : DEFAULT_PUBLIC_TEACHER_COPY.credentials;
+        const philosophy = PUBLIC_PROFILE.philosophy || DEFAULT_PUBLIC_TEACHER_COPY.philosophy;
+        const savedMissionTitle = String(PUBLIC_PROFILE.missionTitle || '').trim();
+        const missionTitle = savedMissionTitle === 'Master IELTS with Mr. Khanh'
+            ? 'Chinh phục IELTS cùng thầy Khanh'
+            : savedMissionTitle || 'Học IELTS bài bản, tiến bộ từng bước';
+        const savedMissionText = String(PUBLIC_PROFILE.missionText || '').trim();
+        const missionText = savedMissionText === 'Your result, our journey.'
+            ? 'Đồng hành cùng bạn trên hành trình chinh phục IELTS.'
+            : savedMissionText || 'Tìm khóa học và lộ trình phù hợp với mục tiêu IELTS của bạn.';
+        const teacherProfileImageHtml = `<img src="${lmsEscapeHtml(teacherImageUrl)}" alt="${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Giáo viên IELTS')}" class="h-full min-h-[18rem] w-full object-cover">`;
+        const teacherDetailsHtml = `<section class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm" aria-labelledby="public-teacher-method-heading">
+                <div class="grid ${teacherProfileImageHtml ? 'md:grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.5fr)]' : ''}">
+                    ${teacherProfileImageHtml ? `<div class="max-h-[34rem] overflow-hidden bg-slate-100">${teacherProfileImageHtml}</div>` : ''}
+                    <div class="p-6 sm:p-9">
+                        <p class="text-sm font-black uppercase tracking-[0.16em] text-blue-700">Đội ngũ giảng dạy</p>
+                        <h2 id="public-teacher-method-heading" class="mt-2 text-2xl sm:text-3xl font-black text-slate-900">Giới thiệu giáo viên &amp; phương pháp</h2>
+                        <p class="mt-2 text-slate-500">Tìm hiểu chuyên môn và định hướng giảng dạy.</p>
+                        ${bio ? `<p class="mt-6 whitespace-pre-line text-base leading-relaxed text-slate-700">${lmsEscapeHtml(bio)}</p>` : ''}
+                        ${specialties.length ? `<div class="mt-6"><h3 class="text-sm font-bold uppercase tracking-wider text-slate-500">Chuyên môn</h3><div class="mt-3 flex flex-wrap gap-2">${specialties.map(s => `<span class="rounded-full border border-cyan-100 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-900">${lmsEscapeHtml(s)}</span>`).join('')}</div></div>` : ''}
+                        ${philosophy ? `<div class="mt-6 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 p-5"><h3 class="font-bold text-emerald-900">Phương pháp giảng dạy</h3><p class="mt-2 whitespace-pre-line leading-relaxed text-slate-700">${lmsEscapeHtml(philosophy)}</p></div>` : ''}
+                        ${credentials.length ? `<div class="mt-6"><h3 class="text-sm font-bold uppercase tracking-wider text-slate-500">Chứng chỉ &amp; bằng cấp</h3><ul class="mt-3 space-y-2">${credentials.map(credential => `<li class="flex items-start gap-2 text-slate-700"><span class="mt-1 text-amber-600" aria-hidden="true">●</span><span>${lmsEscapeHtml(credential)}</span></li>`).join('')}</ul></div>` : ''}
+                    </div>
+                </div>
+            </section>`;
 
         const cvSections = [];
-        if (PUBLIC_PROFILE.bio) cvSections.push(`<div class="bg-white/10 rounded-2xl p-6 border border-white/15 backdrop-blur-sm"><p class="text-lg leading-relaxed text-blue-50">${PUBLIC_PROFILE.bio}</p></div>`);
-        if ((PUBLIC_PROFILE.specialties || []).length) cvSections.push(`<div class="bg-white/10 rounded-2xl p-6 border border-white/15 backdrop-blur-sm"><h3 class="text-xl font-bold text-cyan-300 mb-4">🎯 Specialties</h3><div class="flex flex-wrap gap-2">${(PUBLIC_PROFILE.specialties || []).map(s => `<span class="px-3 py-1.5 rounded-full bg-white/15 text-sm font-semibold text-blue-50 border border-white/20">${s}</span>`).join('')}</div></div>`);
-        if ((PUBLIC_PROFILE.credentials || []).length) cvSections.push(`<div class="bg-white/10 rounded-2xl p-6 border border-white/15 backdrop-blur-sm"><h3 class="text-xl font-bold text-amber-300 mb-4">🏅 Credentials</h3><ul class="space-y-2">${(PUBLIC_PROFILE.credentials || []).map(c => `<li class="text-blue-50 flex items-start gap-2"><span class="mt-1 text-amber-300">●</span><span>${c}</span></li>`).join('')}</ul></div>`);
-        if (PUBLIC_PROFILE.philosophy) cvSections.push(`<div class="bg-white/10 rounded-2xl p-6 border border-white/15 backdrop-blur-sm"><h3 class="text-xl font-bold text-emerald-300 mb-4">💬 Teaching Philosophy</h3><p class="text-blue-50 leading-relaxed">${PUBLIC_PROFILE.philosophy}</p></div>`);
-        if ((PUBLIC_PROFILE.classes || []).length) cvSections.push(`<div class="bg-white/10 rounded-2xl p-6 border border-white/15 backdrop-blur-sm"><h3 class="text-xl font-bold text-violet-300 mb-4">📚 Featured Classes</h3><ul class="space-y-2">${(PUBLIC_PROFILE.classes || []).map(cls => `<li class="text-blue-50 flex items-start gap-2"><span class="mt-1 text-violet-300">→</span><span>${cls}</span></li>`).join('')}</ul></div>`);
-        if ((PUBLIC_PROFILE.services || []).length) cvSections.push(`<div class="bg-white/10 rounded-2xl p-6 border border-white/15 backdrop-blur-sm"><h3 class="text-xl font-bold text-sky-300 mb-4">✨ Services</h3><ul class="space-y-2">${(PUBLIC_PROFILE.services || []).map(service => `<li class="text-blue-50 flex items-start gap-2"><span class="mt-1 text-sky-300">✦</span><span>${service}</span></li>`).join('')}</ul></div>`);
-        if ((PUBLIC_PROFILE.highlights || []).length) cvSections.push(`<div class="bg-white/10 rounded-2xl p-6 border border-white/15 backdrop-blur-sm"><h3 class="text-xl font-bold text-rose-300 mb-4">⭐ Highlights</h3><ul class="space-y-2">${(PUBLIC_PROFILE.highlights || []).map(h => `<li class="text-blue-50 flex items-start gap-2"><span class="mt-1 text-rose-300">★</span><span>${h}</span></li>`).join('')}</ul></div>`);
+        if ((PUBLIC_PROFILE.classes || []).length) cvSections.push(`<div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"><h3 class="text-xl font-bold text-violet-800 mb-4">📚 Lớp học tiêu biểu</h3><ul class="space-y-2">${(PUBLIC_PROFILE.classes || []).map(cls => `<li class="text-slate-700 flex items-start gap-2"><span class="mt-1 text-violet-600">→</span><span>${cls}</span></li>`).join('')}</ul></div>`);
+        if ((PUBLIC_PROFILE.services || []).length) cvSections.push(`<div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"><h3 class="text-xl font-bold text-sky-800 mb-4">✨ Dịch vụ</h3><ul class="space-y-2">${(PUBLIC_PROFILE.services || []).map(service => `<li class="text-slate-700 flex items-start gap-2"><span class="mt-1 text-sky-600">✦</span><span>${service}</span></li>`).join('')}</ul></div>`);
+        if ((PUBLIC_PROFILE.highlights || []).length) cvSections.push(`<div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"><h3 class="text-xl font-bold text-rose-800 mb-4">⭐ Điểm nổi bật</h3><ul class="space-y-2">${(PUBLIC_PROFILE.highlights || []).map(h => `<li class="text-slate-700 flex items-start gap-2"><span class="mt-1 text-rose-600">★</span><span>${h}</span></li>`).join('')}</ul></div>`);
+
+        const detailSections = [];
+        if (teacherDetailsHtml) detailSections.push(teacherDetailsHtml);
+        if (studentResultsHtml) detailSections.push(studentResultsHtml);
+        if (cvSections.length) detailSections.push(`<div class="grid grid-cols-1 lg:grid-cols-2 gap-5">${cvSections.join('')}</div>`);
+        if ((PUBLIC_PROFILE.achievements || []).length || (PUBLIC_PROFILE.features || []).length) {
+            detailSections.push(`<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                ${(PUBLIC_PROFILE.achievements || []).length ? `<section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="text-xl font-bold text-amber-700 mb-4">🏆 Thành tích</h3><ul class="space-y-3">${PUBLIC_PROFILE.achievements.map(item => `<li class="flex items-start gap-3 text-slate-700"><span class="mt-1 text-amber-600">★</span><span class="leading-snug">${item}</span></li>`).join('')}</ul></section>` : ''}
+                ${(PUBLIC_PROFILE.features || []).length ? `<section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><h3 class="text-xl font-bold text-emerald-800 mb-4">🚀 Nền tảng học tập</h3><ul class="space-y-3">${PUBLIC_PROFILE.features.map(item => `<li class="flex items-start gap-3 text-slate-700"><span class="mt-1 text-emerald-600">✓</span><span class="leading-snug">${item}</span></li>`).join('')}</ul></section>` : ''}
+            </div>`);
+        }
+        if (resourcesHtml) detailSections.push(resourcesHtml);
 
         c.innerHTML = `
-            ${imgHtml}
-            <h1 class="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-md">${PUBLIC_PROFILE.missionTitle || 'Master IELTS'}</h1>
-            <p class="text-xl text-blue-100 mb-8 max-w-2xl mx-auto leading-relaxed">${PUBLIC_PROFILE.missionText || ''}</p>
-            
-            ${trfHtml}
-            ${hofButtonHtml}
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 text-left max-w-6xl mx-auto mt-10">
-                ${cvSections.join('')}
+            <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-10 lg:gap-16 text-left">
+                <div class="max-w-2xl">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-blue-300/25 bg-white/10 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-blue-100">
+                        <span class="h-2 w-2 rounded-full bg-cyan-300"></span>${lmsEscapeHtml(PUBLIC_PROFILE.appName || 'Lộ trình học IELTS')}
+                    </div>
+                    <h1 class="mt-6 text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.08] tracking-tight text-white drop-shadow-sm">${lmsEscapeHtml(missionTitle)}</h1>
+                    <p class="mt-5 max-w-xl text-lg sm:text-xl leading-relaxed text-blue-100">${lmsEscapeHtml(missionText)}</p>
+                    <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                        <button type="button" onclick="window.scrollToPublicPackages()" class="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 py-3 text-base font-black text-blue-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-blue-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Xem khóa học <span class="ml-2" aria-hidden="true">↓</span></button>
+                        <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/30 bg-white/10 px-6 py-3 text-base font-bold text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-white/40">Tư vấn qua Zalo</a>
+                    </div>
+                    <p class="mt-4 text-sm text-blue-200">Bạn đã có tài khoản? <button type="button" onclick="window.showAuthFromLanding()" class="font-bold text-white underline decoration-white/50 underline-offset-4 hover:decoration-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white">Đăng nhập / đăng ký</button></p>
+                </div>
+                <div class="relative mx-auto w-full max-w-md pb-8 md:pb-10">
+                    ${teacherImageHtml}
+                    ${certificateCardHtml}
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto mt-10">
-                <div class="bg-black/20 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
-                    <h3 class="text-xl font-bold text-amber-400 mb-4 flex items-center gap-2">🏆 Achievements</h3>
-                    <ul class="space-y-3">
-                        ${(PUBLIC_PROFILE.achievements || []).map(a => `<li class="flex items-start gap-3 text-blue-50"><span class="mt-1 text-amber-400">★</span> <span class="leading-snug">${a}</span></li>`).join('')}
-                    </ul>
-                </div>
-                <div class="bg-black/20 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
-                    <h3 class="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">🚀 Platform Features</h3>
-                    <ul class="space-y-3">
-                        ${(PUBLIC_PROFILE.features || []).map(f => `<li class="flex items-start gap-3 text-blue-50"><span class="mt-1 text-emerald-400">✓</span> <span class="leading-snug">${f}</span></li>`).join('')}
-                    </ul>
-                </div>
-            </div>
-            ${resourcesHtml}
         `;
+
+        const detailsContainer = document.getElementById('public-profile-details');
+        if (detailsContainer) detailsContainer.innerHTML = detailSections.join('');
 
         // Render Public Packages
         const pgrid = document.getElementById('public-packages-grid');
         if (pgrid) {
             const packageStatusMarkup = window.getPublicPackagesStatusMarkup();
-            if (packageStatusMarkup) pgrid.innerHTML = packageStatusMarkup;
-            else if (PACKAGES.length === 0) {
-                pgrid.innerHTML = `<div class="col-span-full text-center text-slate-500 italic bg-white p-10 rounded-2xl border border-slate-200">Course bundles opening soon. Check back later!</div>`;
+            if (packageStatusMarkup) {
+                pgrid.innerHTML = packageStatusMarkup;
+            } else if (PACKAGES.length === 0) {
+                pgrid.innerHTML = `<div class="col-span-full rounded-2xl border border-blue-100 bg-blue-50 p-8 text-center sm:p-10">
+                    <h3 class="text-xl font-black text-slate-900">Chưa có gói học được đăng công khai</h3>
+                    <p class="mx-auto mt-2 max-w-xl text-slate-600">Liên hệ để được tư vấn về lớp học và học phí phù hợp với mục tiêu của bạn.</p>
+                    <div class="mt-5 flex flex-wrap justify-center gap-3">
+                        <a href="https://zalo.me/0913980712" target="_blank" rel="noopener noreferrer" class="rounded-xl bg-blue-700 px-5 py-3 font-bold text-white transition hover:bg-blue-800">Tư vấn qua Zalo</a>
+                        <a href="tel:+84913980712" class="rounded-xl border border-blue-200 bg-white px-5 py-3 font-bold text-blue-900 transition hover:bg-blue-50">Gọi 0913 980 712</a>
+                    </div>
+                </div>`;
             } else {
                 pgrid.innerHTML = PACKAGES.map(p => {
                     const classNames = (p.classes || []).map(cid => {
                         const found = CLASSES.find(c => c.id === cid);
                         return found && !window.isTemplateClass(found) ? found.name : '';
                     }).filter(Boolean);
+                    const feePerLesson = Number(p.feePerLesson);
+                    const hasPackageFee = Number.isFinite(feePerLesson) && feePerLesson > 0;
+                    const packageDetails = [
+                        ['Học viên phù hợp', p.targetAudience],
+                        ['Mục tiêu khóa học', p.goal],
+                        ['Nội dung / kỹ năng học', p.curriculum],
+                        ['Thời lượng', p.duration],
+                        ['Số buổi', p.lessonCount],
+                        ['Hình thức học', p.format],
+                        ['Lịch học dự kiến', p.schedule],
+                        ['Sĩ số lớp', p.classSize]
+                    ].filter(([, value]) => String(value || '').trim());
                     
                     return `
                     <div class="bg-white border-2 border-blue-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:border-blue-400 transition-all flex flex-col transform hover:-translate-y-1 relative overflow-hidden group">
                         <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                         <div class="relative z-10 flex flex-col h-full">
-                            <h3 class="text-xl font-black text-blue-950 mb-2">${p.name}</h3>
-                            <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-1 rounded inline-block w-max mb-4 border border-emerald-200">${classNames.length} Courses Included</p>
-                            <ul class="space-y-2 mb-6 flex-1">
-                                ${classNames.map(n => `<li class="text-sm font-medium text-slate-600 flex items-start gap-2"><span class="text-blue-500 mt-0.5 font-bold">✓</span> ${n}</li>`).join('')}
-                            </ul>
-                            <div class="mt-auto border-t border-slate-100 pt-4 flex items-center justify-between mb-4">
-                                <span class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Base Tuition</span>
-                                <span class="text-lg font-black text-emerald-600">${formatVND(p.feePerLesson || BILLING_SETTINGS.feePerLesson || 100000)}<span class="text-xs text-slate-400 font-bold">/lesson</span></span>
+                            <h3 class="text-xl font-black text-blue-950 mb-3">${lmsEscapeHtml(p.name || 'Gói học IELTS')}</h3>
+                            <div class="mb-6 flex-1">
+                                ${classNames.length
+                                    ? `<p class="mb-3 text-sm font-bold text-slate-700">${classNames.length} lớp học trong gói</p><ul class="space-y-2">${classNames.map(name => `<li class="text-sm font-medium text-slate-600 flex items-start gap-2"><span class="text-blue-500 mt-0.5 font-bold" aria-hidden="true">✓</span><span>${lmsEscapeHtml(name)}</span></li>`).join('')}</ul>`
+                                    : `<p class="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Thông tin lớp học trong gói chưa được cập nhật.</p>`}
+                                ${packageDetails.length ? `
+                                    <details class="mt-4 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                                        <summary class="cursor-pointer font-bold text-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Chi tiết khóa học</summary>
+                                        <dl class="mt-3 space-y-3">
+                                            ${packageDetails.map(([label, value]) => `<div><dt class="text-xs font-bold uppercase tracking-wide text-slate-500">${label}</dt><dd class="mt-1 whitespace-pre-line text-sm leading-relaxed text-slate-700">${lmsEscapeHtml(value)}</dd></div>`).join('')}
+                                        </dl>
+                                    </details>
+                                ` : ''}
                             </div>
-                            <button onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Unlock Access</button>
+                            <div class="mt-auto border-t border-slate-100 pt-4 mb-4">
+                                <span class="block text-xs font-bold uppercase tracking-wider text-slate-500">Học phí mỗi buổi</span>
+                                <span class="mt-1 block text-xl font-black text-emerald-700">${hasPackageFee ? `${formatVND(feePerLesson)}<span class="text-sm font-bold text-slate-500"> / buổi</span>` : '<span class="text-base text-slate-600">Liên hệ để được tư vấn</span>'}</span>
+                            </div>
+                            <div class="public-package-pricing-summary mb-4 rounded-xl border border-emerald-100 bg-emerald-50/70 p-4 text-sm" data-fee-per-lesson="${hasPackageFee ? feePerLesson : ''}">
+                                <p data-estimate-prompt class="text-slate-600"></p>
+                                <dl data-estimate-results class="hidden space-y-2">
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Thanh toán theo tháng</dt><dd data-monthly-total class="text-right font-bold text-slate-900"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="text-slate-600">Trọn 4 tháng, trước ưu đãi</dt><dd data-full-course-before class="text-right font-semibold text-slate-700"></dd></div>
+                                    <div class="flex justify-between gap-3"><dt class="font-bold text-emerald-800">Tiết kiệm 20%</dt><dd data-full-course-savings class="text-right font-black text-emerald-800"></dd></div>
+                                    <div class="flex justify-between gap-3 border-t border-emerald-200 pt-2"><dt class="font-bold text-slate-800">Trọn 4 tháng, sau ưu đãi</dt><dd data-full-course-total class="text-right font-black text-emerald-800"></dd></div>
+                                </dl>
+                            </div>
+                            <button type="button" onclick="window.showAuthFromLanding()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded-xl shadow-md transition">Đăng ký khóa học</button>
                         </div>
                     </div>`;
                 }).join('');
             }
+            window.updatePublicPackagePricing();
         }
     };
 
@@ -1497,8 +1665,12 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     function getClassAssignedTests(cls) {
       if (!cls) return [];
-      const source = getClassParent(cls) || cls;
-      return [...new Set(Array.isArray(source.assignedTests) ? source.assignedTests : [])];
+      const parent = getClassParent(cls);
+      return [...new Set([
+        ...(Array.isArray(cls.assignedTests) ? cls.assignedTests : []),
+        ...(Array.isArray(parent?.assignedTests) ? parent.assignedTests : []),
+        ...(Array.isArray(cls.inheritedAssignedTests) ? cls.inheritedAssignedTests : [])
+      ])];
     }
 
     function getClassBaseFee(cls) {
@@ -1508,7 +1680,9 @@ window.renderCanvasChart = function(canvasId, config, pointColorMap, selectionCo
 
     function getClassTestSettings(cls, testId) {
       if (!cls) return {};
-      const parentSettings = getClassParent(cls)?.testSettings?.[testId] || {};
+      const parentSettings = getClassParent(cls)?.testSettings?.[testId]
+        || cls.inheritedTestSettings?.[testId]
+        || {};
       const inheritedSettings = { ...parentSettings };
       if (getClassParent(cls)) {
         delete inheritedSettings.dueDate;

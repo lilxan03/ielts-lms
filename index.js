@@ -134,7 +134,7 @@ async function authorizeStaffRequest(req) {
     const identity = await admin.auth().verifyIdToken(authHeader.slice(7));
     if (identity.email === 'lyquockhanh03@gmail.com') return true;
     const access = (await admin.firestore().collection('account_access').doc(identity.uid).get()).data();
-    return Boolean(access && ['teacher', 'collaborator'].includes(access.role));
+    return Boolean(access && access.role === 'teacher');
   } catch (error) {
     console.error('Unable to verify test-access maintenance request:', error);
     return false;
@@ -189,7 +189,7 @@ async function authorizeLearningRequest(req) {
 
   const accessSnapshot = await admin.firestore().collection('account_access').doc(identity.uid).get();
   const access = accessSnapshot.data();
-  const staff = access && ['teacher', 'collaborator'].includes(access.role);
+  const staff = access && access.role === 'teacher';
   const expiry = access?.billingExpiresAt;
   const active = !expiry || (typeof expiry.toDate === 'function' && expiry.toDate() > new Date());
   const paidStudent = access?.role === 'student' && access.paid === true && active;
@@ -428,5 +428,56 @@ exports.gradeIELTSSubmission = onRequest({
   } catch (error) {
     console.error('IELTS grading error:', error);
     return sendJson(res, 500, { error: 'AI grading failed' });
+  }
+});
+
+exports.lookupStudyItem = onRequest({
+  secrets: [openaiApiKey],
+  timeoutSeconds: 60,
+  memory: '256MiB',
+  cors: true
+}, async (req, res) => {
+  if (req.method === 'OPTIONS') return sendJson(res, 204, {});
+  if (req.method !== 'POST') return sendJson(res, 405, { error: 'POST required' });
+
+  try {
+    const authorization = await authorizeLearningRequest(req);
+    if (!authorization.allowed) return sendJson(res, authorization.status, { error: authorization.error });
+
+    const body = req.body || {};
+    const kind = body.kind === 'grammar' ? 'grammar' : 'vocab';
+    const term = cleanHtml(body.term).slice(0, kind === 'grammar' ? 400 : 60);
+    const context = cleanHtml(body.context).slice(0, 600);
+    if (!term) return sendJson(res, 400, { error: 'Term is required' });
+
+    const crypto = require('crypto');
+    const key = crypto.createHash('sha1').update(`${kind}|${term.toLowerCase()}|${kind === 'vocab' ? context.toLowerCase() : ''}`).digest('hex');
+    const cacheRef = admin.firestore().collection('ai_lookup_cache').doc(key);
+    const cached = await cacheRef.get();
+    if (cached.exists && cached.data().result) return sendJson(res, 200, { ...cached.data().result, cached: true });
+
+    const shape = kind === 'vocab'
+      ? '{"term": string (base form shown to learner), "pron": string (IPA like /ˈwɔːtə/), "pos": string (part of speech), "eng": string (short English definition fitting the context), "vi": string (Vietnamese meaning fitting the context), "lvl": string (CEFR A1-C2), "pref": string or "", "suf": string or "", "syn": string (comma separated, max 4), "ant": string (comma separated, max 3, may be empty)}'
+      : '{"term": string (the phrase), "type": string (grammar structure name, e.g. "Passive voice"), "expl": string (explanation in Vietnamese with short English structure/example, 2-5 sentences, plain text)}';
+    const client = new OpenAI({ apiKey: openaiApiKey.value() });
+    const completion = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: 'You are an IELTS tutor for Vietnamese learners. Return valid JSON only.' },
+        { role: 'user', content: `Analyse this ${kind === 'vocab' ? 'word' : 'phrase/sentence'} as used in the reading passage. Return JSON with exactly this shape: ${shape}.\n\nTarget: ${term}\nSentence context: ${context || '(none)'}` }
+      ]
+    });
+    const raw = JSON.parse(completion.choices[0]?.message?.content || '{}');
+    const s = value => String(value == null ? '' : value).slice(0, 800);
+    const result = kind === 'vocab'
+      ? { term: s(raw.term) || term, pron: s(raw.pron), pos: s(raw.pos), eng: s(raw.eng), vi: s(raw.vi), lvl: s(raw.lvl), pref: s(raw.pref), suf: s(raw.suf), syn: s(raw.syn), ant: s(raw.ant) }
+      : { term: s(raw.term) || term, type: s(raw.type), expl: s(raw.expl) };
+    await cacheRef.set({ kind, term, result, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    return sendJson(res, 200, result);
+  } catch (error) {
+    console.error('Study lookup error:', error);
+    return sendJson(res, 500, { error: 'AI lookup failed' });
   }
 });

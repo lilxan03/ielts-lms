@@ -9,49 +9,49 @@
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #0b1220; color: #e2e8f0; overflow: hidden; }
     #canvas-wrap { position: fixed; inset: 0; }
     .hud-top {
-      position: fixed; top: 14px; left: 16px; right: 16px;
-      display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 10;
+      position: fixed; top: 10px; left: 12px; right: 12px;
+      display: flex; justify-content: space-between; align-items: center; pointer-events: none; z-index: 10; gap: 8px;
     }
     .title-card {
       pointer-events: auto; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
-      border: 1px solid #334155; border-radius: 12px; padding: 10px 16px;
+      border: 1px solid #334155; border-radius: 10px; padding: 8px 12px;
     }
-    .title-card h1 { font-size: 15px; font-weight: 700; color: #f8fafc; }
-    .title-card p { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    .title-card h1 { font-size: 13px; font-weight: 700; color: #f8fafc; }
+    .title-card p { font-size: 11px; color: #94a3b8; margin-top: 2px; }
     .controls {
-      pointer-events: auto; display: flex; gap: 8px; align-items: center;
+      pointer-events: auto; display: flex; gap: 6px; align-items: center;
       background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
-      border: 1px solid #334155; border-radius: 12px; padding: 8px 12px;
+      border: 1px solid #334155; border-radius: 10px; padding: 6px 10px;
     }
     button {
-      background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 8px;
-      padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.15s;
+      background: #1e293b; color: #e2e8f0; border: 1px solid #475569; border-radius: 7px;
+      padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.15s;
     }
     button:hover { background: #334155; }
     button.primary { background: #2563eb; border-color: #3b82f6; color: #fff; }
     button.primary:hover { background: #1d4ed8; }
     .info-panel {
-      position: fixed; bottom: 16px; left: 16px; width: 380px; max-width: calc(100vw - 32px);
+      position: fixed; bottom: 12px; left: 12px; width: 320px; max-width: calc(100vw - 24px);
       background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(12px);
-      border: 1px solid #334155; border-radius: 14px; padding: 14px 16px; z-index: 10;
+      border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; z-index: 10;
     }
     .step-badge {
-      display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase;
-      padding: 2px 8px; border-radius: 999px; background: #1d4ed8; color: #fff; margin-bottom: 6px;
+      display: inline-block; font-size: 10px; font-weight: 700; text-transform: uppercase;
+      padding: 2px 7px; border-radius: 999px; background: #1d4ed8; color: #fff; margin-bottom: 4px;
     }
-    .info-panel h2 { font-size: 16px; color: #f8fafc; margin-bottom: 6px; }
-    .info-panel .desc { font-size: 13px; color: #cbd5e1; line-height: 1.45; margin-bottom: 10px; }
+    .info-panel h2 { font-size: 14px; color: #f8fafc; margin-bottom: 4px; }
+    .info-panel .desc { font-size: 12px; color: #cbd5e1; line-height: 1.4; margin-bottom: 8px; }
     .vocab-box {
-      background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 8px 10px;
-      font-size: 12px; line-height: 1.5;
+      background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 7px 9px;
+      font-size: 11px; line-height: 1.45;
     }
     .vocab-box b { color: #38bdf8; }
     .steps-bar {
-      position: fixed; bottom: 16px; right: 16px; display: flex; flex-wrap: wrap; gap: 6px;
-      max-width: 340px; justify-content: flex-end; z-index: 10;
+      position: fixed; bottom: 12px; right: 12px; display: flex; flex-wrap: wrap; gap: 5px;
+      max-width: 260px; justify-content: flex-end; z-index: 10;
     }
     .step-pill {
-      padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+      padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 600;
       background: rgba(30, 41, 59, 0.85); border: 1px solid #334155; color: #94a3b8; cursor: pointer;
     }
     .step-pill.active { background: #10b981; border-color: #34d399; color: #052e16; }
@@ -62,8 +62,8 @@
 
   <div class="hud-top">
     <div class="title-card">
-      <h1>Cam 19 Test 3 — Biofuel Production: How Ethanol Is Made</h1>
-      <p>Drag to rotate 360° • Scroll to zoom • Click any stage or use Play</p>
+      <h1>Biofuel production: how ethanol is made</h1>
+      <p>Drag to rotate • Scroll to zoom • Click any stage or press Play</p>
     </div>
     <div class="controls">
       <button id="btn-prev">← Prev</button>
@@ -96,77 +96,85 @@
 
     const STEPS = [
       {
+        label: '1. Plants & trees grow',
         title: '1. Energy & Plant Growth',
-        desc: 'Plants and trees absorb sunlight and carbon dioxide (CO₂) from the atmosphere to grow.',
-        vocab: '<b>Verbs:</b> absorb, photosynthesize, grow<br><b>Sample:</b> <i>Initially, plants and trees grow by absorbing energy from sunlight and carbon dioxide.</i>',
+        desc: 'Plants and trees absorb energy (sunlight + carbon dioxide) to grow.',
+        vocab: '<b>Verbs:</b> absorb, photosynthesize, grow<br><b>Sample:</b> <i>Initially, plants and trees grow by absorbing sunlight and carbon dioxide.</i>',
         color: 0x22c55e,
-        angle: 0,
+        pos: [-3.2, 0, -6.2],
       },
       {
+        label: '2. Harvesting',
         title: '2. Harvesting',
-        desc: 'Once mature, the plants and crops are harvested using agricultural machinery.',
-        vocab: '<b>Verbs:</b> are harvested, are gathered, are collected<br><b>Sample:</b> <i>Once fully grown, the vegetation is harvested by farm machinery.</i>',
-        color: 0x84cc16,
-        angle: (Math.PI * 2 * 1) / 9,
-      },
-      {
-        title: '3. Pre-processing',
-        desc: 'The harvested plant material is fed into a pre-processing machine to be shredded into smaller pieces.',
-        vocab: '<b>Verbs:</b> are pre-processed, are shredded, are broken down<br><b>Sample:</b> <i>Subsequently, the harvested crops undergo pre-processing, where they are shredded.</i>',
-        color: 0xeab308,
-        angle: (Math.PI * 2 * 2) / 9,
-      },
-      {
-        title: '4. Cellulose Extraction',
-        desc: 'Pre-processing yields cellulose fibers from the broken-down plant matter.',
-        vocab: '<b>Verbs:</b> is extracted, is obtained, is separated<br><b>Sample:</b> <i>This stage produces cellulose, which is then transferred for chemical treatment.</i>',
-        color: 0x10b981,
-        angle: (Math.PI * 2 * 3) / 9,
-      },
-      {
-        title: '5. Chemical Processing',
-        desc: 'The cellulose is processed in a laboratory/factory using chemicals to break it down.',
-        vocab: '<b>Verbs:</b> is processed, is treated chemically, is converted<br><b>Sample:</b> <i>Next, the cellulose is chemically processed in order to extract sugars.</i>',
-        color: 0x06b6d4,
-        angle: (Math.PI * 2 * 4) / 9,
-      },
-      {
-        title: '6. Sugars Formation',
-        desc: 'Chemical processing converts the cellulose into simple sugar molecules.',
-        vocab: '<b>Verbs:</b> is converted into, yields, forms<br><b>Sample:</b> <i>As a result of processing, sugars are formed.</i>',
-        color: 0x3b82f6,
-        angle: (Math.PI * 2 * 5) / 9,
-      },
-      {
-        title: '7. Microbes Added (Fermentation)',
-        desc: 'Microbes are added to the sugars to ferment them into ethanol.',
-        vocab: '<b>Verbs:</b> are added to, ferment, react with<br><b>Sample:</b> <i>Microbes are then added to the sugars to trigger fermentation.</i>',
-        color: 0x8b5cf6,
-        angle: (Math.PI * 2 * 6) / 9,
-      },
-      {
-        title: '8. Ethanol Production',
-        desc: 'Pure ethanol biofuel is produced and stored for distribution.',
-        vocab: '<b>Verbs:</b> is produced, is generated, is refined<br><b>Sample:</b> <i>Following fermentation, ethanol fuel is produced.</i>',
-        color: 0xf59e0b,
-        angle: (Math.PI * 2 * 7) / 9,
-      },
-      {
-        title: '9. Fuel Usage & CO₂ Cycle',
-        desc: 'Ethanol powers cars, trucks, and planes, releasing CO₂ back into the air for plants to reuse.',
-        vocab: '<b>Verbs:</b> powers, is consumed by, is released, cycles back<br><b>Sample:</b> <i>Finally, ethanol powers vehicles, releasing CO₂ that is reabsorbed by plants, completing the cycle.</i>',
+        desc: 'Once grown, crops and vegetation are harvested using a tractor.',
+        vocab: '<b>Verbs:</b> are harvested, are gathered, are collected<br><b>Sample:</b> <i>Once mature, the crops are harvested by agricultural machinery.</i>',
         color: 0xef4444,
-        angle: (Math.PI * 2 * 8) / 9,
+        pos: [1.5, 0, -5.8],
+      },
+      {
+        label: '3. Pre-processing',
+        title: '3. Pre-processing',
+        desc: 'The harvested plants are fed into a pre-processing shredder.',
+        vocab: '<b>Verbs:</b> are pre-processed, are shredded, are broken down<br><b>Sample:</b> <i>Subsequently, the harvested material undergoes pre-processing.</i>',
+        color: 0xeab308,
+        pos: [5.2, 0, -3.4],
+      },
+      {
+        label: '4. Cellulose',
+        title: '4. Cellulose',
+        desc: 'Pre-processing produces cellulose fibers from the shredded plants.',
+        vocab: '<b>Verbs:</b> is extracted, is obtained, yields<br><b>Sample:</b> <i>This stage yields cellulose, which is then sent for processing.</i>',
+        color: 0x10b981,
+        pos: [0.6, 0, -1.6],
+      },
+      {
+        label: '5. Processing',
+        title: '5. Processing',
+        desc: 'Cellulose undergoes chemical processing in a factory/lab.',
+        vocab: '<b>Verbs:</b> is processed, is treated chemically<br><b>Sample:</b> <i>Next, the cellulose is chemically processed to produce sugars.</i>',
+        color: 0x06b6d4,
+        pos: [-5.2, 0, -1.6],
+      },
+      {
+        label: '6. Sugars',
+        title: '6. Sugars',
+        desc: 'Chemical processing breaks cellulose down into sugar molecules.',
+        vocab: '<b>Verbs:</b> is converted into, forms<br><b>Sample:</b> <i>As a result of processing, sugars are formed.</i>',
+        color: 0x3b82f6,
+        pos: [-5.0, 0, 2.5],
+      },
+      {
+        label: '7. Microbes added',
+        title: '7. Microbes added',
+        desc: 'Microbes are added to the sugars for fermentation.',
+        vocab: '<b>Verbs:</b> are added to, ferment<br><b>Sample:</b> <i>Microbes are then added to the sugars to trigger fermentation.</i>',
+        color: 0x4ade80,
+        pos: [-1.8, 0, 5.6],
+      },
+      {
+        label: '8. Ethanol',
+        title: '8. Ethanol',
+        desc: 'Fermentation produces ethanol biofuel.',
+        vocab: '<b>Verbs:</b> is produced, is generated<br><b>Sample:</b> <i>Following fermentation, ethanol biofuel is produced.</i>',
+        color: 0xf59e0b,
+        pos: [1.6, 0, 3.0],
+      },
+      {
+        label: '9. Vehicles & CO₂',
+        title: '9. Fuel Usage & Carbon Dioxide Cycle',
+        desc: 'Ethanol powers cars, trucks & planes, releasing CO₂ back to plants.',
+        vocab: '<b>Verbs:</b> powers, is released, cycles back<br><b>Sample:</b> <i>Finally, ethanol powers vehicles, releasing CO₂ that is reabsorbed by plants.</i>',
+        color: 0xf97316,
+        pos: [5.4, 0, 3.6],
       },
     ];
 
     const wrap = document.getElementById('canvas-wrap');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x0b1220);
-    scene.fog = new THREE.FogExp2(0x0b1220, 0.022);
 
-    const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 12, 17);
+    const camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 14, 15);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -175,80 +183,208 @@
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.dampingFactor = 0.06;
+    controls.dampingFactor = 0.07;
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.75));
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.3);
-    dirLight.position.set(8, 16, 10);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    dirLight.position.set(8, 18, 10);
     scene.add(dirLight);
 
-    // Base ring
-    const R = 7.2;
-    const ringGeo = new THREE.TorusGeometry(R, 0.12, 16, 100);
-    const ringMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.4, roughness: 0.5 });
-    const ring = new THREE.Mesh(ringGeo, ringMat);
-    ring.rotation.x = Math.PI / 2;
-    scene.add(ring);
+    // Subtle circular platform matching the diagram ring
+    const baseRing = new THREE.Mesh(
+      new THREE.RingGeometry(7.2, 7.6, 72),
+      new THREE.MeshBasicMaterial({ color: 0x334155, side: THREE.DoubleSide })
+    );
+    baseRing.rotation.x = -Math.PI / 2;
+    baseRing.position.y = -0.35;
+    scene.add(baseRing);
 
-    // Grid floor
-    const grid = new THREE.GridHelper(28, 28, 0x1e293b, 0x111827);
-    grid.position.y = -0.8;
-    scene.add(grid);
+    // Big red CO2 return arc from Vehicles (Step 9) back to Sunlight + Plants (Step 1)
+    const co2Curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(6.2, 0.35, 3.6),
+      new THREE.Vector3(8.4, 0.7, 0.0),
+      new THREE.Vector3(6.8, 0.9, -5.0),
+      new THREE.Vector3(1.5, 1.1, -7.2),
+      new THREE.Vector3(-2.6, 1.3, -6.4),
+    ]);
+    const co2Tube = new THREE.Mesh(
+      new THREE.TubeGeometry(co2Curve, 56, 0.24, 10, false),
+      new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x7f1d1d, emissiveIntensity: 0.45 })
+    );
+    scene.add(co2Tube);
+    const arrowCone = new THREE.Mesh(
+      new THREE.ConeGeometry(0.55, 1.1, 12),
+      new THREE.MeshStandardMaterial({ color: 0xef4444 })
+    );
+    arrowCone.position.set(-2.6, 1.3, -6.4);
+    arrowCone.rotation.z = Math.PI / 2;
+    arrowCone.rotation.y = -0.25;
+    scene.add(arrowCone);
 
-    // Build 9 stage nodes
-    const stageMeshes = [];
+    function makeLabel(text, bg = '#0f172a', border = '#475569') {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 96;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(8, 8, 496, 80, 20);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 30px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 256, 48);
+      const tex = new THREE.CanvasTexture(c);
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }));
+      sp.scale.set(3.4, 0.64, 1);
+      return sp;
+    }
+
+    function buildStageModel(idx) {
+      const g = new THREE.Group();
+      const mat = (col) => new THREE.MeshStandardMaterial({ color: col, roughness: 0.4, metalness: 0.15 });
+
+      if (idx === 0) {
+        // Sun + Trees + Crops
+        const sun = new THREE.Mesh(new THREE.SphereGeometry(0.45, 16, 16), new THREE.MeshBasicMaterial({ color: 0xfacc15 }));
+        sun.position.set(-0.6, 2.5, -0.4);
+        g.add(sun);
+        [[-0.5, 0], [0.3, 0.3], [0.7, -0.3]].forEach(([tx, tz], k) => {
+          const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.6, 8), mat(0x78350f));
+          trunk.position.set(tx, 0.3, tz);
+          const crown = new THREE.Mesh(new THREE.ConeGeometry(0.45, 1.3 + k * 0.2, 8), mat(0x22c55e));
+          crown.position.set(tx, 1.1, tz);
+          g.add(trunk, crown);
+        });
+      } else if (idx === 1) {
+        // Red Tractor
+        const body = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.55, 0.75), mat(0xdc2626));
+        body.position.y = 0.5;
+        const cab = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.55, 0.65), mat(0x94a3b8));
+        cab.position.set(-0.25, 0.95, 0);
+        g.add(body, cab);
+        [[-0.45, 0.42, 0.32], [-0.45, -0.42, 0.32], [0.45, 0.4, 0.2], [0.45, -0.4, 0.2]].forEach(([wx, wz, r]) => {
+          const w = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.18, 14), mat(0x1e293b));
+          w.rotation.x = Math.PI / 2;
+          w.position.set(wx, r, wz);
+          g.add(w);
+        });
+      } else if (idx === 2) {
+        // Pre-processing shredder
+        const base = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.9, 0.9), mat(0xd4d4d8));
+        base.position.y = 0.45;
+        const hopper = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.3, 0.6, 8), mat(0xca8a04));
+        hopper.position.y = 1.15;
+        g.add(base, hopper);
+      } else if (idx === 3) {
+        // Cellulose strands
+        for (let k = 0; k < 4; k++) {
+          const strand = new THREE.Mesh(new THREE.TorusKnotGeometry(0.38, 0.07, 32, 6), mat(0x16a34a));
+          strand.position.set((k - 1.5) * 0.22, 0.45, (k % 2 - 0.5) * 0.2);
+          g.add(strand);
+        }
+      } else if (idx === 4) {
+        // Processing factory + chemical flasks
+        const f1 = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.1, 0.7), mat(0x94a3b8));
+        f1.position.set(-0.35, 0.55, 0);
+        const flask1 = new THREE.Mesh(new THREE.ConeGeometry(0.35, 0.85, 12), mat(0x06b6d4));
+        flask1.position.set(0.45, 0.42, 0.2);
+        const flask2 = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.75, 12), mat(0xef4444));
+        flask2.position.set(0.55, 0.38, -0.25);
+        g.add(f1, flask1, flask2);
+      } else if (idx === 5) {
+        // Sugars molecular ring
+        for (let k = 0; k < 6; k++) {
+          const a = (k / 6) * Math.PI * 2;
+          const atom = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), mat(k % 2 ? 0xef4444 : 0xe2e8f0));
+          atom.position.set(Math.cos(a) * 0.55, 0.65, Math.sin(a) * 0.55);
+          g.add(atom);
+        }
+      } else if (idx === 6) {
+        // Microbes added (glowing green sphere)
+        const dish = new THREE.Mesh(new THREE.SphereGeometry(0.65, 20, 20), new THREE.MeshStandardMaterial({ color: 0x4ade80, transparent: true, opacity: 0.75, emissive: 0x16a34a, emissiveIntensity: 0.4 }));
+        dish.position.y = 0.7;
+        g.add(dish);
+      } else if (idx === 7) {
+        // Ethanol fuel tank
+        const tank = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 1.2, 20), mat(0xf59e0b));
+        tank.position.y = 0.6;
+        g.add(tank);
+      } else {
+        // Car, Truck, Plane
+        const car = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.35, 0.45), mat(0xfacc15));
+        car.position.set(-0.3, 0.25, -0.5);
+        const truck = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 0.55), mat(0xdc2626));
+        truck.position.set(0.1, 0.35, 0.15);
+        const plane = new THREE.Mesh(new THREE.ConeGeometry(0.22, 1.1, 8), mat(0xe2e8f0));
+        plane.rotation.z = -Math.PI / 2;
+        plane.position.set(0.2, 0.95, 0.65);
+        g.add(car, truck, plane);
+      }
+      return g;
+    }
+
+    // Build all 9 stages + connecting arrows + labels
+    const stageNodes = [];
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
 
     STEPS.forEach((s, idx) => {
-      const group = new THREE.Group();
-      const x = Math.sin(s.angle) * R;
-      const z = -Math.cos(s.angle) * R;
-      group.position.set(x, 0, z);
+      const container = new THREE.Group();
+      container.position.set(...s.pos);
 
-      // Pedestal
       const ped = new THREE.Mesh(
-        new THREE.CylinderGeometry(1.05, 1.2, 0.4, 24),
-        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 })
+        new THREE.CylinderGeometry(1.15, 1.25, 0.25, 24),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b })
       );
-      ped.position.y = -0.2;
-      group.add(ped);
+      ped.position.y = -0.15;
+      container.add(ped);
 
-      // Distinct 3D icon per stage
-      const mat = new THREE.MeshStandardMaterial({ color: s.color, roughness: 0.35, metalness: 0.2 });
-      let icon;
-      if (idx === 0) {
-        icon = new THREE.Mesh(new THREE.ConeGeometry(0.65, 1.5, 12), mat);
-        icon.position.y = 0.85;
-      } else if (idx === 1 || idx === 8) {
-        icon = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.7, 0.8), mat);
-        icon.position.y = 0.5;
-      } else if (idx === 2 || idx === 4) {
-        icon = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 1.2, 16), mat);
-        icon.position.y = 0.7;
-      } else if (idx === 3 || idx === 5) {
-        icon = new THREE.Mesh(new THREE.TorusKnotGeometry(0.45, 0.14, 48, 8), mat);
-        icon.position.y = 0.85;
-      } else {
-        icon = new THREE.Mesh(new THREE.IcosahedronGeometry(0.62, 1), mat);
-        icon.position.y = 0.8;
-      }
-      icon.userData = { stepIdx: idx };
-      group.add(icon);
-      stageMeshes.push({ group, icon, ped, color: s.color });
-      scene.add(group);
+      const model = buildStageModel(idx);
+      model.traverse(ch => { if (ch.isMesh) ch.userData = { stepIdx: idx }; });
+      container.add(model);
+
+      const label = makeLabel(s.label);
+      label.position.set(0, 2.25, 0);
+      container.add(label);
+
+      scene.add(container);
+      stageNodes.push({ container, model, ped, color: s.color, pos: new THREE.Vector3(...s.pos) });
     });
 
-    // Moving particle along the cycle
+    // Connect stages 1->9 with yellow flow tubes
+    for (let i = 0; i < STEPS.length - 1; i++) {
+      const a = new THREE.Vector3(...STEPS[i].pos).add(new THREE.Vector3(0, 0.3, 0));
+      const b = new THREE.Vector3(...STEPS[i + 1].pos).add(new THREE.Vector3(0, 0.3, 0));
+      const lineCurve = new THREE.LineCurve3(a, b);
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(lineCurve, 4, 0.08, 8, false),
+        new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+      );
+      scene.add(tube);
+    }
+
+    // Moving glowing orb
     const orb = new THREE.Mesh(
-      new THREE.SphereGeometry(0.28, 16, 16),
-      new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 1.5 })
+      new THREE.SphereGeometry(0.25, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
     );
     scene.add(orb);
 
+    const co2Label = makeLabel('Carbon Dioxide (CO₂)', '#7f1d1d', '#ef4444');
+    co2Label.position.set(8.2, 1.9, -0.5);
+    scene.add(co2Label);
+
+    const sunLabel = makeLabel('Energy (Sunlight + CO₂)', '#713f12', '#facc15');
+    sunLabel.position.set(-3.2, 3.6, -6.4);
+    scene.add(sunLabel);
+
     let currentStep = 0;
     let playing = false;
-    let orbAngle = 0;
+    let tProgress = 0;
 
     const stepsBar = document.getElementById('steps-bar');
     STEPS.forEach((s, i) => {
@@ -262,16 +398,16 @@
 
     function selectStep(idx) {
       currentStep = (idx + STEPS.length) % STEPS.length;
+      tProgress = currentStep;
       const s = STEPS[currentStep];
-      orbAngle = s.angle;
       document.getElementById('step-badge').textContent = `Step ${currentStep + 1} / ${STEPS.length}`;
       document.getElementById('step-title').textContent = s.title;
       document.getElementById('step-desc').textContent = s.desc;
       document.getElementById('step-vocab').innerHTML = s.vocab;
       [...stepsBar.children].forEach((el, i) => el.classList.toggle('active', i === currentStep));
-      stageMeshes.forEach((m, i) => {
-        m.ped.material.emissive.setHex(i === currentStep ? m.color : 0x000000);
-        m.ped.material.emissiveIntensity = i === currentStep ? 0.45 : 0;
+      stageNodes.forEach((n, i) => {
+        n.ped.material.emissive.setHex(i === currentStep ? n.color : 0x000000);
+        n.ped.material.emissiveIntensity = i === currentStep ? 0.6 : 0;
       });
     }
 
@@ -288,7 +424,7 @@
       pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(stageMeshes.map(m => m.icon));
+      const hits = raycaster.intersectObjects(stageNodes.map(n => n.model), true);
       if (hits.length) {
         playing = false;
         updatePlayBtn();
@@ -307,15 +443,24 @@
     function animate() {
       requestAnimationFrame(animate);
       if (playing) {
-        orbAngle += 0.006;
-        if (orbAngle >= Math.PI * 2) orbAngle -= Math.PI * 2;
-        const nearest = Math.floor((orbAngle / (Math.PI * 2)) * STEPS.length) % STEPS.length;
-        if (nearest !== currentStep) selectStep(nearest);
+        tProgress += 0.012;
+        if (tProgress >= STEPS.length) tProgress = 0;
+        const idx = Math.floor(tProgress);
+        if (idx !== currentStep) {
+          const prev = tProgress;
+          selectStep(idx);
+          tProgress = prev;
+        }
       }
-      orb.position.set(Math.sin(orbAngle) * R, 0.55, -Math.cos(orbAngle) * R);
-      stageMeshes.forEach((m, i) => {
-        m.icon.rotation.y += i === currentStep ? 0.025 : 0.006;
-      });
+      const i0 = Math.floor(tProgress) % STEPS.length;
+      const frac = tProgress - Math.floor(tProgress);
+      if (i0 === STEPS.length - 1) {
+        orb.position.copy(co2Curve.getPoint(frac));
+      } else {
+        const i1 = i0 + 1;
+        orb.position.lerpVectors(stageNodes[i0].pos, stageNodes[i1].pos, frac);
+        orb.position.y = 0.35;
+      }
       controls.update();
       renderer.render(scene, camera);
     }

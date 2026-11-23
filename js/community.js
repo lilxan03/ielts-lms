@@ -2,7 +2,7 @@
         if (routerReady && !appRouterApplying && currentUser) {
             const panel = document.getElementById('chat-panel');
             const isOpen = panel && !panel.classList.contains('hidden');
-            const rolePath = ['teacher', 'collaborator'].includes(currentUser.role) ? 'teacher/forum' : 'student/forum';
+            const rolePath = currentUser.role === 'teacher' ? 'teacher/forum' : 'student/forum';
             window.navigateAppRoute(forceOpen || !isOpen ? rolePath : (rolePath.startsWith('teacher') ? 'teacher/bank/tests' : 'student/dashboard'));
             return;
         }
@@ -67,7 +67,17 @@
                     if (document.getElementById('chat-panel') && !document.getElementById('chat-panel').classList.contains('hidden')) {
                         window.renderForumThreads();
                     }
-                }, error => console.error('Unable to load forum messages:', error));
+                }, error => {
+                    console.error('Unable to load forum messages:', error);
+                    if (error.code === 'permission-denied' && !window._forumPermissionWarningShown) {
+                        window._forumPermissionWarningShown = true;
+                        window.showToast?.(
+                            'Forum access denied',
+                            'This account may not have forum access yet. If it is approved, ask the administrator to deploy the latest Firestore rules.',
+                            'error'
+                        );
+                    }
+                });
             });
             window._forumListenerAttached = true;
         }

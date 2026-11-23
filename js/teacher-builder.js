@@ -954,7 +954,7 @@
 
     function editTest(id) {
       sessionStorage.setItem('lms_editing_test', id);
-      if (routerReady && !appRouterApplying && currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
+      if (routerReady && !appRouterApplying && currentUser && currentUser.role === 'teacher') {
           window.navigateAppRoute(`teacher/builder/${encodeURIComponent(id)}`);
           return;
       }
@@ -1165,6 +1165,24 @@
 
       initResizer(); renderPart(0);
     }
+
+    window.previewTestFromCalendar = function(testId) {
+      if (!currentUser || currentUser.role !== 'teacher') {
+        if (typeof window.showToast === 'function') window.showToast('Access denied', 'Only teachers can preview tests here.', 'error');
+        return;
+      }
+      if (!TEST_BANK.some(test => test.id === testId)) {
+        if (typeof window.showToast === 'function') window.showToast('Error', 'Test not found or deleted.', 'error');
+        return;
+      }
+      if (typeof window.navigateAppRoute !== 'function') {
+        if (typeof window.showToast === 'function') window.showToast('Error', 'Test preview is not available. Please reload the page.', 'error');
+        return;
+      }
+
+      window.navigateAppRoute(`teacher/builder/${encodeURIComponent(testId)}`);
+      previewActiveTest();
+    };
 
     window.toggleBuilderLeftPanel = function() {
         const leftPane = document.getElementById('builder-left');
@@ -1515,8 +1533,8 @@
                     script.async = true;
                     script.onload = () => window.pdfjsLib
                         ? resolve(window.pdfjsLib)
-                        : reject(new Error("Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại."));
-                    script.onerror = () => reject(new Error("Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại."));
+                        : reject(new Error('Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại.'));
+                    script.onerror = () => reject(new Error('Không tải được PDF.js. Hãy kiểm tra kết nối mạng rồi thử lại.'));
                     document.head.appendChild(script);
                 }).catch(error => {
                     pdfJsLoadPromise = null;

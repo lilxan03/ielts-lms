@@ -350,12 +350,6 @@
                 if (!document.getElementById('editor-view-subs').classList.contains('hidden')) {
                     if(typeof renderSubmissions === 'function') renderSubmissions();
                 }
-            } else if (currentUser.role === 'collaborator') {
-                const editorUI = document.getElementById('editor-ui');
-                if (!editorUI.classList.contains('hidden')) {
-                    if(typeof renderTestBank === 'function') renderTestBank();
-                    if(typeof renderClasses === 'function') renderClasses();
-                }
             } else {
                 const startScreen = document.getElementById('start-screen');
                 if (!startScreen.classList.contains('hidden')) {

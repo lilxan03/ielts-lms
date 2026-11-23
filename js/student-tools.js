@@ -693,7 +693,9 @@
     window.updateDashboardHeader = function() {
         if(!currentUser || currentUser.role !== 'student') return;
         
-        document.getElementById('student-name-display').textContent = currentUser.user;
+        document.getElementById('student-name-display').textContent = window.getStudentDisplayName
+            ? window.getStudentDisplayName(currentUser)
+            : window.LMSAuthHelpers.getStudentDisplayName(currentUser, window.auth?.currentUser);
         
         const avt = document.getElementById('header-student-avatar');
         if(avt && avt.tagName === 'IMG') {

@@ -286,37 +286,13 @@
         APP_DATA.topics = topics;
         APP_DATA.difficulty = diff;
         APP_DATA.status = status;
-        APP_DATA.price = Number(document.getElementById('meta-price-input').value) || 0;
-        document.getElementById('builder-test-name').textContent = title;
-        triggerEditorAutosave();
-      });
-      // Populate the price field when opening
-      document.getElementById('meta-price-input').value = APP_DATA.price || 0;
-    };// Replace editCurrentTestMeta to include the Price and Bounties!
-    window.editCurrentTestMeta = function() {
-      showTestMetaModal("Edit Test Settings", APP_DATA.title, (APP_DATA.topics || []).join(", "), APP_DATA.difficulty, APP_DATA.status, (title, topics, diff, status) => {
-        APP_DATA.title = title;
-        APP_DATA.topics = topics;
-        APP_DATA.difficulty = diff;
-        APP_DATA.status = status;
-        APP_DATA.price = Number(document.getElementById('meta-price-input').value) || 0;
-        
-        APP_DATA.assignee = document.getElementById('meta-assignee-input').value;
-        APP_DATA.incentive = Number(document.getElementById('meta-incentive-input').value) || 0;
-        
+        APP_DATA.price = Number(document.getElementById('meta-price-input')?.value) || 0;
         if (status === 'approved' && !APP_DATA.approvedAt) APP_DATA.approvedAt = Date.now();
-
         document.getElementById('builder-test-name').textContent = title;
         triggerEditorAutosave();
       });
-      
-      // Populate the fields when opening
-      document.getElementById('meta-price-input').value = APP_DATA.price || 0;
-      
-      const collabOpts = '<option value="">-- Unassigned --</option>' + USERS.filter(u => u.role === 'collaborator').map(u => `<option value="${u.user}">${u.user}</option>`).join('');
-      document.getElementById('meta-assignee-input').innerHTML = collabOpts;
-      document.getElementById('meta-assignee-input').value = APP_DATA.assignee || '';
-      document.getElementById('meta-incentive-input').value = APP_DATA.incentive || '';
+      const priceInput = document.getElementById('meta-price-input');
+      if (priceInput) priceInput.value = APP_DATA.price || 0;
     };
 
     // ==========================================

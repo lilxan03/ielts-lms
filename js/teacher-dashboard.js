@@ -98,12 +98,12 @@
       };
     }
     
-    window.applyTheme = function(t) { 
-        document.body.className = `font-sans overflow-hidden h-screen transition-colors duration-300 ${t!=='standard'?'theme-'+t:''} text-slate-800 bg-slate-100`; 
+    window.applyTheme = function(t) {
+        const isDark = t === 'dark';
+        document.body.classList.toggle('theme-dark', isDark);
         localStorage.setItem('ielts_theme', t);
         
         // Update all toggle buttons dynamically!
-        const isDark = t === 'dark';
         document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
             btn.innerHTML = isDark ? '☀️' : '🌙';
             btn.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
@@ -176,7 +176,7 @@
             if (testsPendingReview > 0) {
                 html += `<button onclick="toggleEditorTab('bank'); document.getElementById('bank-filter-status').value = 'review_ready'; renderTestBank(true); window.toggleTeacherNotifications();" class="text-left px-4 py-3 hover:bg-purple-50 border-b border-slate-100 transition flex flex-col gap-1 w-full">
                     <span class="text-[10px] font-black text-purple-600 uppercase tracking-widest">🟣 Tests to Review</span>
-                    <span class="text-sm font-medium text-slate-700">Collaborators marked <b>${testsPendingReview}</b> test(s) ready for review.</span>
+                    <span class="text-sm font-medium text-slate-700"><b>${testsPendingReview}</b> test(s) marked ready for review.</span>
                 </button>`;
             }
             if (html === '') html = `<div class="p-4 text-center text-sm text-slate-500 italic">You're all caught up!</div>`;
@@ -246,7 +246,7 @@
         const attentionItems = [
             { count: pendingSubs.length, label: 'Submissions need grading', detail: 'Review learner work and send feedback.', icon: '📝', route: 'teacher/bank/classes', iconBg: 'bg-amber-50' },
             { count: pendingStudents.length, label: 'Payment requests to review', detail: 'Confirm payment and update student access.', icon: '💳', route: 'teacher/payments', iconBg: 'bg-rose-50' },
-            { count: pendingTests.length, label: 'Tests ready for review', detail: 'Check tests submitted by collaborators.', icon: '📚', route: 'teacher/bank/tests', iconBg: 'bg-purple-50' },
+            { count: pendingTests.length, label: 'Tests ready for review', detail: 'Check tests marked ready for review.', icon: '📚', route: 'teacher/bank/tests', iconBg: 'bg-purple-50' },
             { count: SCHEDULES.filter(schedule => schedule.isNewBooking).length, label: 'New class bookings', detail: 'Check new student booking requests.', icon: '🗓️', route: 'teacher/timetable', iconBg: 'bg-indigo-50' },
             { count: SUBMISSIONS.filter(submission => submission.studentReply && !submission.teacherReadReply).length, label: 'Student replies to read', detail: 'Follow up on learner questions.', icon: '💬', route: 'teacher/bank/classes', iconBg: 'bg-emerald-50' }
         ].filter(item => item.count > 0);
@@ -311,7 +311,7 @@
           if(btnClasses) btnClasses.className = "px-8 py-2.5 bg-blue-50 text-blue-700 font-bold rounded-xl shadow-sm transition duration-200 flex items-center gap-2";
           if(btnTests) btnTests.className = "px-8 py-2.5 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition duration-200 flex items-center gap-2";
       }
-      if (routerReady && !appRouterApplying && currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
+      if (routerReady && !appRouterApplying && currentUser && currentUser.role === 'teacher') {
           window.navigateAppRoute(`teacher/bank/${view}`);
           return;
       }
@@ -319,42 +319,11 @@
 
     function openEditor() {
       document.getElementById('editor-ui').classList.remove('hidden');
-
-      // ✨ ROLE RESTRICTIONS FOR COLLABORATORS
-      if (currentUser.role === 'collaborator') {
-        document.getElementById('tab-btn-overview')?.classList.add('hidden');
-        document.getElementById('tab-btn-students')?.classList.add('hidden');
-          document.getElementById('tab-btn-timetable')?.classList.add('hidden');
-          document.getElementById('tab-btn-landing')?.classList.add('hidden');
-          
-          // NOTE: We allow dash-btn-classes to remain visible so they can manage the classes they are collaborating on!
-          
-          document.getElementById('editor-inbox-btn')?.classList.add('hidden');
-          document.getElementById('editor-notifications-menu')?.classList.add('hidden');
-          document.getElementById('btn-assign-builder')?.classList.add('hidden');
-          
-          const editorBrand = document.querySelector('#editor-default-header > button:first-child');
-          if (editorBrand) editorBrand.innerHTML = `
-              <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-sm">🤝</div>
-              LMS <span class="font-light text-blue-200 text-lg">| Collab</span>
-          `;
-          
-          const pIcon = document.getElementById('profile-drop-icon');
-          if (pIcon) pIcon.textContent = 'C';
-          const pRole = document.getElementById('profile-drop-role');
-          if (pRole) pRole.textContent = 'Collaborator';
-      }
       
       // ✨ SMART RESTORE: Read memory to see where the teacher was before refreshing
       const savedSub = sessionStorage.getItem('lms_grading_sub');
       const savedTest = sessionStorage.getItem('lms_editing_test');
       let savedTab = sessionStorage.getItem('lms_teacher_tab') || 'overview';
-
-      // Secure route override for collaborators
-      if (currentUser.role === 'collaborator') {
-          if (['students', 'timetable', 'landing'].includes(savedTab)) savedTab = 'bank';
-          sessionStorage.setItem('lms_dash_view', 'tests');
-      }
 
       if (savedSub && currentUser.role === 'teacher') {
           const subId = Number(savedSub);
@@ -385,7 +354,7 @@
       sessionStorage.setItem('lms_teacher_tab', tab);
       const editorRoot = document.getElementById('editor-ui');
       if (editorRoot) editorRoot.classList.toggle('sidebar-focus', tab === 'builder');
-      if (routerReady && !appRouterApplying && currentUser && ['teacher', 'collaborator'].includes(currentUser.role)) {
+      if (routerReady && !appRouterApplying && currentUser && currentUser.role === 'teacher') {
           const view = tab === 'bank' ? (sessionStorage.getItem('lms_dash_view') || 'tests') : '';
           window.navigateAppRoute(`teacher/${tab}${view ? `/${view}` : ''}`);
           return;
@@ -396,10 +365,6 @@
       });
       ['overview', 'bank', 'classes', 'students', 'payments', 'timetable', 'landing'].forEach(t => {
         const b = document.getElementById(`tab-btn-${t}`);
-        if (t === 'overview' && currentUser?.role === 'collaborator') {
-          b?.classList.add('hidden');
-          return;
-        }
         if(b) b.className = `app-sidebar-link${t === tab ? ' is-active' : ''}`;
       });
 
@@ -515,7 +480,6 @@
       const query = (document.getElementById('bank-search')?.value || '').toLowerCase();
       const mod = document.getElementById('bank-filter-mod')?.value || 'all';
       const statusFilter = document.getElementById('bank-filter-status')?.value || 'all';
-      const assigneeFilter = document.getElementById('bank-filter-assignee')?.value || 'all';
       const sort = document.getElementById('bank-sort')?.value || 'newest';
       
       const tagSelect = document.getElementById('bank-filter-tag');
@@ -538,9 +502,8 @@
           
           const tStatus = t.status || 'not_started';
           const matchStatus = statusFilter === 'all' || tStatus === statusFilter;
-          const matchAssignee = assigneeFilter === 'all' || (assigneeFilter === 'me' && t.assignee === currentUser.user);
           
-          return matchQuery && matchMod && matchTag && matchStatus && matchAssignee;
+          return matchQuery && matchMod && matchTag && matchStatus;
       });
 
       if (sort === 'az') filtered.sort((a, b) => a.title.localeCompare(b.title));
@@ -563,10 +526,6 @@
             : `<div class="mt-1 mb-2 text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-2 py-1 rounded">Unassigned</div>`;
 
         const testDiff = t.difficulty ? `<span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 text-slate-600 border border-slate-200 shadow-sm">Band ${parseFloat(t.difficulty).toFixed(1)}</span>` : '';
-        
-        let bountyBadge = '';
-        if (t.assignee) bountyBadge += `<span class="text-[10px] font-bold px-2 py-1 rounded bg-purple-50 text-purple-700 border border-purple-200 shadow-sm flex items-center gap-1"><span class="text-xs">🧑‍💻</span> ${t.assignee}</span>`;
-        if (t.incentive > 0) bountyBadge += `<span class="text-[10px] font-black px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm flex items-center gap-1"><span class="text-xs">💰</span> ${(t.incentive/1000)}k</span>`;
 
         const statusMap = {
             'not_started': { label: 'Not Started', color: 'rose' },
@@ -584,7 +543,6 @@
              <div class="flex gap-2 flex-wrap">
                  <span class="text-[10px] font-bold px-2 py-1 rounded bg-${c}-100 text-${c}-800 uppercase tracking-wide shadow-sm">${t.module}</span>
                  ${testDiff}
-                 ${bountyBadge}
              </div>
              ${statBadge}
           </div>
@@ -1056,15 +1014,37 @@
             return val !== undefined && val !== null && String(val).trim() !== '';
           });
           const correctness = evaluateQuestionBlock(question, answerMap);
+          let correctCount = 0;
+          if (question.multi) {
+            const given = ids.map(id => (answerMap[id] || '').toString().toLowerCase()).filter(Boolean);
+            ids.forEach(id => {
+              const expected = (question.correctAnswers?.[id] || '').toString().toLowerCase();
+              if (!expected) return;
+              const matchIdx = given.indexOf(expected);
+              if (matchIdx !== -1) {
+                correctCount++;
+                given.splice(matchIdx, 1);
+              }
+            });
+          } else {
+            ids.forEach(id => {
+              const expected = (question.correctAnswers?.[id] || '').toString().toLowerCase();
+              const given = (answerMap[id] || '').toString().toLowerCase().trim();
+              if (expected && expected.split(/[/|]/).map(value => value.trim()).includes(given) && given) correctCount++;
+            });
+          }
           analytics.push({
             partIndex: partIdx,
             blockIndex: blockIdx,
             questionNumber: analytics.length + 1,
+            questionType: question.type || 'unknown',
             blockId: question.blockId || '',
             title: stripHtmlTags(question.instruction || question.text || '').slice(0, 90),
             timeSpentSec: elapsedSec,
             answered,
             correct: correctness,
+            correctCount,
+            totalCount: ids.length,
             scoreable: ['reading', 'listening'].includes(testData.module)
           });
         });
@@ -1139,14 +1119,27 @@
             readableEmail || String(profile.realName || '').trim() || 'Học viên không rõ tên';
     }
 
+    function getStudentUsername(student) {
+        const profile = typeof student === 'object'
+            ? student
+            : USERS.find(user => user.user === student || user.username === student || user.uid === student);
+        const internalEmailUsername = String(profile?.email || '').match(/^([^@]+)@khanhlms\.com$/i)?.[1];
+        const candidates = [
+            profile?.username,
+            internalEmailUsername,
+            profile?.user,
+            typeof student === 'string' ? student : ''
+        ];
+        return candidates
+            .map(value => String(value || '').trim())
+            .find(value => value && value !== String(profile?.uid || '')) || 'Username unavailable';
+    }
+
     function renderClasses() {
       const query = (document.getElementById('classes-search')?.value || '').toLowerCase();
       const sortVal = document.getElementById('classes-sort')?.value || 'default';
       
-      let viewableClasses = CLASSES;
-      if (currentUser && currentUser.role === 'collaborator') {
-          viewableClasses = CLASSES.filter(c => (c.collaborators || []).includes(currentUser.user));
-      }
+      const viewableClasses = CLASSES;
 
       let filteredClasses = viewableClasses.filter(c => c.name.toLowerCase().includes(query));
       if (query) {
@@ -1269,7 +1262,7 @@
                                 ${mStats.map((stat, idx) => `
                                     <tr class="hover:bg-blue-50/50 transition-colors">
                                         <td class="p-3 text-center border-r border-slate-100">${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `<span class="font-black text-slate-500">${idx + 1}</span>`}</td>
-                                        <td class="p-3 font-bold text-slate-800 flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(getStudentDisplayName(stat.student))}&background=random" class="w-6 h-6 rounded-full shadow-sm"> ${escapeHtmlAttributeValue(getStudentDisplayName(stat.student))}</td>
+                                        <td class="p-3 font-bold text-slate-800 flex items-center gap-2"><img src="https://ui-avatars.com/api/?name=${encodeURIComponent(getStudentUsername(stat.student))}&background=random" class="w-6 h-6 rounded-full shadow-sm"> ${escapeHtmlAttributeValue(getStudentUsername(stat.student))}</td>
                                         <td class="p-3">
                                             <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
                                                 <span>Đã làm: ${stat.completedRequired}/${stat.totalRequired} bài</span><span class="text-blue-600">${stat.progressPct}%</span>
@@ -1332,7 +1325,6 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-4 w-full md:w-auto justify-end">
-                    ${!isOwner ? `<div class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 shadow-sm uppercase tracking-widest">Collaborator</div>` : ''}
                     <div id="chevron-${cls.id}" class="w-8 h-8 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 transition-transform duration-300 shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
@@ -1364,7 +1356,7 @@
                             <div class="flex justify-between items-center text-sm p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition">
                                 <div class="flex items-center gap-2">
                                     <span class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500">👤</span>
-                                    <span class="font-bold text-slate-800">${escapeHtmlAttributeValue(getStudentDisplayName(student))}</span>
+                                    <span class="font-bold text-slate-800">${escapeHtmlAttributeValue(getStudentUsername(student))}</span>
                                 </div>
                                 ${isOwner ? `
                                 <div class="flex items-center gap-2">
@@ -1379,39 +1371,6 @@
                             </div>`;
                         }).join('') : '<div class="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center"><p class="text-xs font-bold text-slate-500">No students enrolled</p></div>'}
                     </div>
-
-
-                    ${isOwner ? `
-                    <!-- NEW COLLABORATORS SECTION -->
-                    <div class="border-t border-slate-100 pt-6">
-                        <h4 class="font-bold text-slate-800 text-lg flex justify-between items-center mb-4">
-                            Collaborators 
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 cursor-pointer hover:text-slate-700 transition transform rotate-180"><polyline points="18 15 12 9 6 15"></polyline></svg>
-                        </h4>
-                        <div class="space-y-4">
-                            <div>
-                                <div class="text-[11px] font-bold text-slate-500 mb-2">Owner</div>
-                                <div class="flex items-center gap-3">
-                                    <div class="relative">
-                                        <img src="https://ui-avatars.com/api/?name=${cls.owner || 'Teacher'}&background=0f766e&color=fff&bold=true" class="w-8 h-8 rounded-full shadow-sm">
-                                        <div class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-[#22c55e] border-2 border-white rounded-full"></div>
-                                    </div>
-                                    <span class="text-sm text-slate-800">${cls.owner || 'Teacher'}</span>
-                                </div>
-                            </div>
-                            
-                            ${(cls.collaborators && cls.collaborators.length > 0) ? `
-                            <div>
-                                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-2">Shared With</div>
-                                <div class="flex items-center gap-[-8px]">
-                                    ${cls.collaborators.slice(0,3).map(collab => `<img src="https://ui-avatars.com/api/?name=${collab}&background=0ea5e9&color=fff&bold=true" class="w-8 h-8 rounded-full border-2 border-white shadow-sm -ml-2 first:ml-0" title="${collab}">`).join('')}
-                                    ${cls.collaborators.length > 3 ? `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm -ml-2 bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">+${cls.collaborators.length - 3}</div>` : ''}
-                                </div>
-                            </div>` : ''}
-
-                            <button onclick="window.openClassCollaborators('${cls.id}')" class="mt-2 text-[#2563eb] border border-[#2563eb] hover:bg-blue-50 px-4 py-2 rounded-lg text-sm font-bold transition bg-white w-max">Add Collaborators</button>
-                        </div>
-                    </div>` : ''}
                 </div>
                 
                 <div class="p-6 bg-white">
@@ -1645,8 +1604,7 @@
           meetLink: '',
           learningPathEnabled: false,
           allowBooking: false,
-          owner: currentUser.user,
-          collaborators: []
+          owner: currentUser.user
         };
         CLASSES.push(newCls); 
         await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), newCls.id), newCls);
@@ -1681,8 +1639,7 @@
           meetLink: parent.meetLink || '',
           learningPathEnabled: parent.learningPathEnabled !== false,
           allowBooking: false,
-          owner: parent.owner || currentUser.user,
-          collaborators: [...(parent.collaborators || [])]
+          owner: parent.owner || currentUser.user
         };
 
         const schedulesToMove = isFirstChild ? SCHEDULES.filter(schedule => window.scheduleBelongsToClass(schedule, parent)) : [];
@@ -1750,121 +1707,6 @@
           }
         }
       });
-    };
-
-    // ✨ COLLABORATORS MODAL LOGIC
-    window.currentCollabClassId = null;
-
-    window.openClassCollaborators = function(cid) {
-        window.currentCollabClassId = cid;
-        const cls = CLASSES.find(c => c.id === cid);
-        if (!cls) return;
-
-        document.getElementById('collab-modal-subtitle').textContent = `Manage who can access and edit "${cls.name}".`;
-        
-        // Auto-populate the select dropdown with valid users
-        const selectEl = document.getElementById('collab-input');
-        const availableCollabs = USERS.filter(u => 
-            (u.role === 'collaborator' || u.role === 'teacher') && 
-            u.user !== cls.owner && 
-            !(cls.collaborators || []).includes(u.user)
-        );
-        
-        if (availableCollabs.length > 0) {
-            selectEl.innerHTML = '<option value="">-- Select a collaborator --</option>' + availableCollabs.map(u => `<option value="${u.user}">${u.user} (${u.role})</option>`).join('');
-            document.getElementById('btn-add-collab').disabled = false;
-            document.getElementById('btn-add-collab').classList.remove('opacity-50', 'cursor-not-allowed');
-        } else {
-            selectEl.innerHTML = '<option value="">No available collaborators</option>';
-            document.getElementById('btn-add-collab').disabled = true;
-            document.getElementById('btn-add-collab').classList.add('opacity-50', 'cursor-not-allowed');
-        }
-        
-        window.renderCollabModalList();
-        document.getElementById('class-collaborators-modal').classList.remove('hidden');
-    };
-
-    window.renderCollabModalList = function() {
-        const cls = CLASSES.find(c => c.id === window.currentCollabClassId);
-        if (!cls) return;
-
-        const listEl = document.getElementById('collab-list');
-        const getSafeEmail = (u) => `${encodeURIComponent(u).replace(/%/g, '').toLowerCase()}@khanhlms.com`;
-        
-        let html = (cls.collaborators || []).map(collab => `
-            <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
-                <div class="flex items-center gap-3">
-                    <img src="https://ui-avatars.com/api/?name=${collab}&background=0ea5e9&color=fff&bold=true" class="w-10 h-10 rounded-full border border-slate-200">
-                    <div class="flex flex-col">
-                        <span class="font-bold text-sm text-slate-800">${collab}</span>
-                        <span class="text-[11px] text-slate-500">${getSafeEmail(collab)}</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="text-sm font-bold text-slate-600">Editor</span>
-                    <button onclick="window.removeClassCollaborator('${collab}')" class="text-slate-400 hover:text-rose-500 transition font-bold text-xl">&times;</button>
-                </div>
-            </div>
-        `).join('');
-
-        // Render Owner at the bottom
-        html += `
-            <div class="flex justify-between items-center py-3 border-b border-slate-100 last:border-0 ${cls.collaborators?.length ? 'mt-2' : ''}">
-                <div class="flex items-center gap-3">
-                    <img src="https://ui-avatars.com/api/?name=${cls.owner || 'Teacher'}&background=0f766e&color=fff&bold=true" class="w-10 h-10 rounded-full border border-slate-200">
-                    <div class="flex flex-col">
-                        <span class="font-bold text-sm text-slate-800">${cls.owner || 'Teacher'}</span>
-                        <span class="text-[11px] text-slate-500">${getSafeEmail(cls.owner || 'Teacher')}</span>
-                    </div>
-                </div>
-                <span class="text-sm font-bold text-slate-500 px-3 py-1">Owner</span>
-            </div>
-        `;
-        
-        listEl.innerHTML = `<div class="mt-4 border-t border-slate-100 pt-2">${html}</div>`;
-    };
-
-    window.addClassCollaborator = async function() {
-        const input = document.getElementById('collab-input').value.trim();
-        if (!input) return;
-
-        const cls = CLASSES.find(c => c.id === window.currentCollabClassId);
-        if (!cls) return;
-
-        if (!cls.collaborators) cls.collaborators = [];
-        if (cls.collaborators.includes(input)) return;
-
-        const btn = document.getElementById('btn-add-collab');
-        btn.textContent = 'Adding...'; btn.disabled = true;
-
-        cls.collaborators.push(input);
-        try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), cls);
-            window.openClassCollaborators(cls.id); // Refresh dropdown and list instantly
-            renderClasses(); 
-        } catch(e) {
-            console.error(e);
-            showModalMsg("Error", "Could not save collaborator to cloud.");
-            cls.collaborators.pop();
-        }
-        btn.textContent = 'Add collaborator'; btn.disabled = false;
-    };
-
-    window.removeClassCollaborator = async function(username) {
-        const cls = CLASSES.find(c => c.id === window.currentCollabClassId);
-        if (!cls) return;
-
-        const updatedClass = { ...cls, collaborators: (cls.collaborators || []).filter(c => c !== username) };
-        try {
-            await window.fsSetDoc(window.fsDoc(window.db, window.fPath('classes'), cls.id), updatedClass);
-            const classIndex = CLASSES.findIndex(item => item.id === cls.id);
-            if (classIndex >= 0) CLASSES[classIndex] = updatedClass;
-            window.openClassCollaborators(cls.id); // Refresh dropdown and list instantly
-            renderClasses();
-        } catch(e) {
-            console.error(e);
-            showModalMsg("Error", "Could not remove collaborator.");
-        }
     };
     
     async function deleteClass(id) {
