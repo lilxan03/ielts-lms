@@ -422,6 +422,37 @@ test('student sign-in accepts an email address directly', async () => {
     assert.equal(context.ownedProfileLookups, 1);
 });
 
+test('student sign-up accepts a Gmail address and stores the profile under the auth UID', async () => {
+    const { context, elements } = createAuthContext();
+    const writes = [];
+    let createdAuthEmail = null;
+    context.fsAuthCreate = async (auth, email) => {
+        createdAuthEmail = email;
+        auth.currentUser = { uid: 'gmail-student-uid', email };
+        return { user: auth.currentUser };
+    };
+    context.fsWriteBatch = () => ({
+        set: (reference, value) => writes.push({ reference, value }),
+        commit: async () => {}
+    });
+    context.bootPaymentPortal = async () => {};
+    context.renderAccountGate = () => {};
+    context.canAccessLMS = () => false;
+
+    context.toggleAuthMode();
+    elements.get('auth-user').value = 'Student@Gmail.com';
+
+    await context.runAuthSubmitForTest();
+
+    assert.equal(createdAuthEmail, 'student@gmail.com');
+    assert.equal(writes.length, 2);
+    assert.deepEqual(writes[0].reference, { collection: 'users', id: 'gmail-student-uid' });
+    assert.equal(writes[0].value.email, 'student@gmail.com');
+    assert.equal(writes[0].value.role, 'student');
+    assert.deepEqual(writes[1].reference, { collection: 'account_access', id: 'gmail-student-uid' });
+    assert.equal(writes[1].value.username, 'gmail-student-uid');
+});
+
 test('sign-in validation marks missing fields for assistive technology', async () => {
     const { context, elements } = createAuthContext();
     elements.get('auth-user').value = '';

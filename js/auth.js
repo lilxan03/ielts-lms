@@ -1045,12 +1045,23 @@
         }
         return;
       }
-      if (authMode === 'register' && !window.LMSAuthHelpers.isValidUsername(u)) {
-        err.textContent = 'Username must use 1-40 letters, numbers, underscores, or hyphens.';
-        err.classList.remove('hidden');
-        usernameInput.setAttribute('aria-invalid', 'true');
-        usernameInput.focus();
-        return;
+      const isEmailRegistration = authMode === 'register' && u.includes('@');
+      if (authMode === 'register') {
+        if (isEmailRegistration) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(u) || u.length > 254) {
+            err.textContent = 'Please enter a valid email address.';
+            err.classList.remove('hidden');
+            usernameInput.setAttribute('aria-invalid', 'true');
+            usernameInput.focus();
+            return;
+          }
+        } else if (!window.LMSAuthHelpers.isValidUsername(u)) {
+          err.textContent = 'Username must use 1-40 letters, numbers, underscores, or hyphens.';
+          err.classList.remove('hidden');
+          usernameInput.setAttribute('aria-invalid', 'true');
+          usernameInput.focus();
+          return;
+        }
       }
       if (p.length < 6) {
         err.textContent = 'Password must be at least 6 characters';
@@ -1065,7 +1076,7 @@
       btn.textContent = "Connecting..."; btn.disabled = true;
 
       // ✨ FIX: 100% safe email generation even for names with spaces and accents (e.g. "Khanh Lý")
-      const mappedEmail = authMode === 'login'
+      const mappedEmail = (authMode === 'login' || isEmailRegistration)
           ? window.LMSAuthHelpers.loginIdentifierToAuthEmail(u)
           : window.LMSAuthHelpers.usernameToAuthEmail(u);
 
@@ -1073,9 +1084,11 @@
       try {
           if (authMode === 'register') {
             const credential = await window.fsAuthCreate(window.auth, mappedEmail, p);
+            const profileUsername = isEmailRegistration ? credential.user.uid : u;
             currentUser = {
-                user: u,
+                user: profileUsername,
                 uid: credential.user.uid,
+                ...(isEmailRegistration ? { email: mappedEmail } : {}),
                 role: 'student',
                 status: 'unpaid',
                 isPaid: false,
@@ -1083,11 +1096,11 @@
                 createdAt: new Date().toLocaleDateString()
             };
             try {
-                const profileRef = window.fsDoc(window.db, window.fPath('users'), u);
+                const profileRef = window.fsDoc(window.db, window.fPath('users'), profileUsername);
                 const accessRef = window.fsDoc(window.db, window.fPath('account_access'), credential.user.uid);
                 const batch = window.fsWriteBatch(window.db);
                 batch.set(profileRef, currentUser);
-                batch.set(accessRef, { uid: credential.user.uid, username: u, role: 'student', paid: false });
+                batch.set(accessRef, { uid: credential.user.uid, username: profileUsername, role: 'student', paid: false });
                 await batch.commit();
             } catch (profileError) {
                 try {
@@ -1136,10 +1149,32 @@
                 throw profileError;
             }
 
-            if (!userDoc.exists()) {
-                throw new Error('The password was accepted, but the student profile is missing in Firestore. Ask the teacher to restore this account profile.');
+            if (!userDoc?.exists()) {
+                if (u.includes('@')) {
+                    const profileId = credential.user.uid;
+                    const newProfile = {
+                        user: profileId,
+                        uid: credential.user.uid,
+                        email: credential.user.email || mappedEmail,
+                        role: 'student',
+                        status: 'unpaid',
+                        isPaid: false,
+                        paymentStatus: 'unpaid',
+                        createdAt: new Date().toLocaleDateString()
+                    };
+                    const profileRef = window.fsDoc(window.db, window.fPath('users'), profileId);
+                    const accessRef = window.fsDoc(window.db, window.fPath('account_access'), credential.user.uid);
+                    const batch = window.fsWriteBatch(window.db);
+                    batch.set(profileRef, newProfile);
+                    batch.set(accessRef, { uid: credential.user.uid, username: profileId, role: 'student', paid: false });
+                    await batch.commit();
+                    currentUser = newProfile;
+                } else {
+                    throw new Error('The password was accepted, but the student profile is missing in Firestore. Ask the teacher to restore this account profile.');
+                }
+            } else {
+                currentUser = sanitizeUserProfile(userDoc.data());
             }
-            currentUser = sanitizeUserProfile(userDoc.data());
             if (currentUser.uid && currentUser.uid !== credential.user.uid) {
                 throw new Error('This account profile is linked to a different Firebase Authentication user. Ask the administrator to correct the account link.');
             }
@@ -1148,7 +1183,7 @@
                 currentUser.uid = credential.user.uid;
                 profileUpdates.uid = credential.user.uid;
             }
-            if (Object.prototype.hasOwnProperty.call(userDoc.data(), 'pass')) {
+            if (Object.prototype.hasOwnProperty.call(userDoc?.data?.() || {}, 'pass')) {
                 profileUpdates.pass = window.fsDeleteField();
             }
             if (Object.keys(profileUpdates).length) {
