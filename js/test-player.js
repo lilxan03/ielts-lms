@@ -1064,26 +1064,24 @@
                       `${APP_DATA.id || 'test'}-part-${currentPartIdx}`,
                       APP_DATA.topics
                   ) || '';
-              if (mindMapHtml) {
-                  sampleAnswerBlock = mindMapHtml;
-              } else {
-                  const sampleText = (p.text || '').trim();
-                  if (sampleText && sampleText !== '<br>' && sampleText !== '<p><br></p>') {
-                      const speechButton = APP_DATA.module === 'speaking' ? `
-                          <button type="button" id="sample-answer-speech-button" onclick="window.toggleSampleAnswerSpeech()" class="text-xs font-bold bg-amber-500 text-white border border-amber-600 px-4 py-2.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-2" aria-label="Listen to sample answer">
-                              🔊 Listen to Sample Answer
-                          </button>` : '';
-                      sampleAnswerBlock = `
-                      <div class="mt-8 pt-6 border-t border-slate-200 w-full">
-                          <div class="flex flex-wrap items-center gap-2">
-                            <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
-                              👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
-                            </button>${speechButton}
-                          </div>
-                          <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
-                      </div>`;
-                  }
+              const sampleText = (p.text || '').trim();
+              let toggleSampleHtml = '';
+              if (sampleText && sampleText !== '<br>' && sampleText !== '<p><br></p>') {
+                  const speechButton = APP_DATA.module === 'speaking' ? `
+                      <button type="button" id="sample-answer-speech-button" onclick="window.toggleSampleAnswerSpeech()" class="text-xs font-bold bg-amber-500 text-white border border-amber-600 px-4 py-2.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-2" aria-label="Listen to sample answer">
+                          🔊 Listen to Sample Answer
+                      </button>` : '';
+                  toggleSampleHtml = `
+                  <div class="mt-8 pt-6 border-t border-slate-200 w-full">
+                      <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
+                          👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
+                        </button>${speechButton}
+                      </div>
+                      <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
+                  </div>`;
               }
+              sampleAnswerBlock = `${mindMapHtml}${toggleSampleHtml}`;
               // ✨ FIX: Inject the titleHtml here as well!
               passageContainer.innerHTML = `${titleHtml}${speakingQuestionsHtml}${examPromptHtml}${media}${embed3dBlock}${sampleAnswerBlock}`;
               if (mindMapHtml) window.initDynamicMindMap?.(passageContainer);
