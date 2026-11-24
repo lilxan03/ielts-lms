@@ -323,15 +323,17 @@
 
                     } catch (error) {
                         console.error("Lỗi xác thực:", error);
-                        if (loaderText) loaderText.textContent = `Không thể kết nối dữ liệu LMS: ${error.message || error}`;
+                        const errMessage = `Không thể đăng nhập / tải dữ liệu LMS: ${error?.message || error}`;
+                        if (loaderText) loaderText.textContent = errMessage;
                         document.getElementById('cloud-loader')?.classList.add('hidden');
-                        document.getElementById('auth-ui')?.classList.add('hidden');
-                        document.getElementById('public-landing-ui')?.classList.remove('hidden');
-                        const publicDataError = document.getElementById('public-data-error');
-                        if (publicDataError) {
-                            publicDataError.textContent = `Không thể tải dữ liệu LMS: ${error.message || error}`;
-                            publicDataError.classList.remove('hidden');
+                        document.getElementById('public-landing-ui')?.classList.add('hidden');
+                        document.getElementById('auth-ui')?.classList.remove('hidden');
+                        const authError = document.getElementById('auth-error');
+                        if (authError) {
+                            authError.textContent = errMessage;
+                            authError.classList.remove('hidden');
                         }
+                        window.showToast?.('Đăng nhập thất bại', error?.message || String(error), 'error');
                     } finally {
                         document.getElementById('cloud-loader')?.classList.add('hidden');
                     }
