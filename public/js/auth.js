@@ -1270,12 +1270,6 @@
         try {
             window.authFlowInProgress = false;
             await window.fsSignInWithPopup(window.auth, window.fsGoogleProvider);
-            if (window.auth?.currentUser && window.authenticatedUserHandled !== window.auth.currentUser.uid) {
-                const loader = document.getElementById('cloud-loader');
-                const loaderText = document.getElementById('cloud-loader-text');
-                if (loaderText) loaderText.textContent = "Verifying account status...";
-                loader?.classList.remove('hidden');
-            }
             
         } catch (error) {
             console.error("Lỗi đăng nhập Google:", error);

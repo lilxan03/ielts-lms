@@ -193,14 +193,23 @@
                 if (user) {
                     if (window.authenticatedUserHandled === user.uid) return;
                     
+                    const loader = document.getElementById('cloud-loader');
                     const loaderText = document.getElementById('cloud-loader-text');
-                    if (loaderText) loaderText.innerHTML = "Verifying account status...";
+                    loader?.classList.remove('hidden');
+                    if (loaderText) loaderText.textContent = "Verifying account status...";
                     
                     try {
-                        if (typeof window.loadPublicLandingData === 'function' &&
-                            !(await window.loadPublicLandingData())) {
-                            await window.loadPublicLandingData();
+                        if (typeof window.loadPublicLandingData === 'function') {
+                            try {
+                                if (!(await window.loadPublicLandingData())) {
+                                    await window.loadPublicLandingData();
+                                }
+                            } catch (landingError) {
+                                console.warn('Public landing data preload failed during auth:', landingError);
+                            }
                         }
+
+                        if (loaderText) loaderText.textContent = "Loading account profile...";
 
                         const cachedUsername = currentUser?.uid === user.uid ? currentUser.user : null;
                         const accessRef = window.fsDoc(window.db, window.fPath('account_access'), user.uid);
@@ -323,6 +332,8 @@
                             publicDataError.textContent = `Không thể tải dữ liệu LMS: ${error.message || error}`;
                             publicDataError.classList.remove('hidden');
                         }
+                    } finally {
+                        document.getElementById('cloud-loader')?.classList.add('hidden');
                     }
                 } else {
                     window.authenticatedUserHandled = null;
