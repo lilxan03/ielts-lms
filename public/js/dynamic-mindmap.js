@@ -1,12 +1,51 @@
 (function() {
     const savedOutlines = new Map();
     let nextIdeaId = 0;
-    const branches = [
+    const defaultBranches = [
         { id: 'main', label: 'Main idea / Ý chính', prompt: 'What is your central point?' },
         { id: 'support', label: 'Support / Giải thích', prompt: 'Why or how does it happen?' },
         { id: 'example', label: 'Example / Ví dụ', prompt: 'What example makes it clear?' },
         { id: 'result', label: 'Result / Kết luận', prompt: 'What is the outcome or takeaway?' }
     ];
+    function getOutlineBranches(part) {
+        const task = String(part?.writingTask || '').toLowerCase();
+        const title = plainText(part?.title || '').toLowerCase();
+        if (task === 'task1') {
+            return [
+                { id: 'main', label: 'Main Details (Overview) / Xu hướng chính', prompt: 'What are the key overall trends or main features for the overview?' },
+                { id: 'support', label: 'Minor Details (Body) / Số liệu chi tiết', prompt: 'Which specific figures, comparisons, or stages go into the body paragraphs?' }
+            ];
+        }
+        if (task === 'task2') {
+            return [
+                { id: 'main', label: 'Position (Thesis Statement) / Quan điểm', prompt: 'What is your clear stance or thesis statement?' },
+                { id: 'support', label: 'Main Point / Luận điểm chính', prompt: 'What is the core topic sentence for each body paragraph?' },
+                { id: 'example', label: 'Explanation / Giải thích & Triển khai', prompt: 'Why is this true, and what reasoning or example supports it?' }
+            ];
+        }
+        if (/\bpart\s*1\b/i.test(title)) {
+            return [
+                { id: 'main', label: 'Direct Answer / Trả lời trực tiếp', prompt: 'What is your immediate, natural answer to the question?' },
+                { id: 'support', label: 'Further Details / Chi tiết mở rộng', prompt: 'What specific reason, habit, or brief detail expands your answer?' }
+            ];
+        }
+        if (/\bpart\s*2\b/i.test(title)) {
+            return [
+                { id: 'main', label: 'Topic Sentence / Câu mở đầu', prompt: 'How will you introduce the person, place, object, or experience?' },
+                { id: 'support', label: 'Background Info / Bối cảnh', prompt: 'When, where, or how did this happen (context & setup)?' },
+                { id: 'example', label: 'Main Point / Nội dung chính', prompt: 'What are the key details, events, or qualities to describe?' },
+                { id: 'result', label: 'Feelings & Future Plans / Cảm xúc & Dự định', prompt: 'How did you feel about it and what are your future plans or takeaways?' }
+            ];
+        }
+        if (/\bpart\s*3\b/i.test(title)) {
+            return [
+                { id: 'main', label: 'Point / Luận điểm', prompt: 'What is your direct analytical point in response to the question?' },
+                { id: 'support', label: 'Explanation / Giải thích', prompt: 'Why does this happen or what mechanism/cause explains it?' },
+                { id: 'example', label: 'Example & Link Back / Ví dụ & Liên kết lại', prompt: 'What concrete example illustrates this, and how does it tie back to the question?' }
+            ];
+        }
+        return defaultBranches;
+    }
     const markerGroups = [
         { id: 'sequence', label: 'Add a point / Thêm ý', phrases: ['To begin with', 'Another point is that', 'In addition', 'Furthermore'] },
         { id: 'explain', label: 'Explain or exemplify / Giải thích, nêu ví dụ', phrases: ['This is because', 'For example', 'For instance', 'In other words'] },
@@ -171,6 +210,7 @@
             ? [...new Set(topics.map(plainText).filter(Boolean))]
             : [];
         if (!topicLabels.length) topicLabels.push(topic);
+        const branches = getOutlineBranches(part);
         const mindMap = part?.mindMap && typeof part.mindMap === 'object' ? part.mindMap : {};
         const state = getOutlineState(key, topicLabels, mindMap.topics);
         const vocabTerms = source
@@ -271,7 +311,12 @@
         savedOutlines.set(map.dataset.mindmapKey, state);
         map.dataset.activeBranch = state.activeBranch;
         const status = map.querySelector('[data-mindmap-status]');
-        const branchLabels = new Map(branches.map(branch => [branch.id, branch.label]));
+        const branchLabels = new Map(
+            Array.from(map.querySelectorAll('[data-mindmap-branch]')).map(section => [
+                section.dataset.mindmapBranch,
+                section.querySelector('.dynamic-mindmap__branch-select strong')?.textContent?.trim() || section.dataset.mindmapBranch
+            ])
+        );
         const removePhraseFromOutline = phraseId => {
             map.querySelector(`[data-mindmap-remove="${phraseId}"]`)?.remove();
             delete state.phrases[phraseId];
