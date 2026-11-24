@@ -245,9 +245,13 @@
             
             // Only teachers can seed initial data; student Rules do not allow querying users.
             if (currentUser?.role === 'teacher') {
-                const firstUserQuery = window.fsQuery(window.fsCollection(window.db, window.fPath('users')), window.fsLimit(1));
-                const uSnap = await window.fsGetDocs(firstUserQuery);
-                if (uSnap.empty) await seedCloudData();
+                try {
+                    const firstUserQuery = window.fsQuery(window.fsCollection(window.db, window.fPath('users')), window.fsLimit(1));
+                    const uSnap = await window.fsGetDocs(firstUserQuery);
+                    if (uSnap.empty) await seedCloudData();
+                } catch (seedCheckError) {
+                    console.warn('Unable to check initial user seed:', seedCheckError);
+                }
             }
 
             document.getElementById('cloud-loader-text').textContent = "Establishing Secure Connections...";
@@ -293,25 +297,25 @@
                 ),
                 waitForInitialSnapshot('billing settings', window.fsDoc(window.db, window.fPath('settings'), 'billing'), snap => {
                     if (snap.exists()) BILLING_SETTINGS = snap.data();
-                }),
+                }).catch(error => console.warn('Unable to load billing settings:', error)),
                 waitForInitialSnapshot('availability settings', window.fsDoc(window.db, window.fPath('settings'), 'availability'), snap => {
                     if (snap.exists()) AVAILABILITY = snap.data();
-                }),
+                }).catch(error => console.warn('Unable to load availability settings:', error)),
                 waitForInitialSnapshot('packages', window.fsCollection(window.db, window.fPath('packages')), snap => {
                     PACKAGES = snap.docs.map(d => d.data());
                     if(currentUser?.role === 'teacher') renderStudentsList();
-                }),
+                }).catch(error => console.warn('Unable to load packages:', error)),
                 waitForInitialSnapshot('public profile settings', window.fsDoc(window.db, window.fPath('settings'), 'public_profile'), snap => {
                         if (snap.exists()) PUBLIC_PROFILE = snap.data();
                         if (typeof window.cacheStartupBranding === 'function') window.cacheStartupBranding(PUBLIC_PROFILE);
                         if (typeof window.applyGlobalLogo === 'function') window.applyGlobalLogo();
                         if (document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
-                }),
+                }).catch(error => console.warn('Unable to load public profile settings:', error)),
                 waitForInitialSnapshot('hall of fame', window.fsCollection(window.db, window.fPath('hall_of_fame')), snap => {
                     HOF_STUDENTS = snap.docs.map(d => d.data());
                     if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid();
                     if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
-                }),
+                }).catch(error => console.warn('Unable to load hall of fame:', error)),
                 ...(currentUser?.role === 'teacher'
                   ? [waitForInitialSnapshot('study templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
                     TEACHER_TEMPLATES = [];
@@ -320,12 +324,12 @@
                       TEACHER_TEMPLATES = snap.data().items || [];
                       TEACHER_TEMPLATE_ASSIGNMENTS = snap.data().assignments || {};
                     }
-                  })]
+                  }).catch(error => console.warn('Unable to load study templates:', error))]
                   : (TEACHER_TEMPLATES = [], TEACHER_TEMPLATE_ASSIGNMENTS = {}, []))
             ]);
 
             if (currentUser?.role === 'teacher' && !currentUser.isDemo) {
-                await inheritedClassAssignmentsSyncPromise;
+                await inheritedClassAssignmentsSyncPromise.catch(() => {});
             }
 
             // 3. Attach RESTRICTED listeners based on role
@@ -399,12 +403,15 @@
             promises.push(waitForInitialSnapshot('question feedback', window.fsCollection(window.db, window.fPath('question_feedback')), snap => {
                 QUESTION_FEEDBACK = snap.docs.map(reportDoc => ({ ...reportDoc.data(), id: reportDoc.id }));
                 window.updateTeacherBadges?.();
+            }).catch(error => {
+                console.warn('Unable to load question feedback:', error);
+                QUESTION_FEEDBACK = [];
             }));
             
             promises.push(waitForInitialSnapshot('attendance', window.fsCollection(window.db, window.fPath('attendance')), snap => {
                 ATTENDANCE = snap.docs.map(d => d.data());
                 window.triggerUIRefresh();
-            }));
+            }).catch(error => console.warn('Unable to load attendance:', error)));
             
             // TEACHER SCHEDULE LISTENER WITH NATIVE OS NOTIFICATIONS
             let isSchedInitial = true;
@@ -421,7 +428,7 @@
                         });
                     }
                     isSchedInitial = false;
-            }));
+            }).catch(error => console.warn('Unable to load schedules:', error)));
 
             // TEACHER FORUM LISTENER
             const staffMessageQueries = [
@@ -468,7 +475,7 @@
             promises.push(waitForInitialSnapshot('notes', window.fsCollection(window.db, window.fPath('notes')), snap => {
                 ALL_NOTES = {};
                 snap.docs.forEach(d => ALL_NOTES[d.id] = d.data().data);
-            }));
+            }).catch(error => console.warn('Unable to load notes:', error)));
             promises.push(waitForInitialSnapshot('flashcards', window.fsCollection(window.db, window.fPath('flashcards')), snap => {
                 const temp = FLASHCARDS['temp_test_deck'];
                 FLASHCARDS = {};
@@ -477,7 +484,7 @@
                     if(d.id.startsWith(currentUser.user + '_')) FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data;
                 });
                 if (!document.getElementById('student-fc-panel')?.classList.contains('hidden')) window.renderFlashcardPanel();
-            }));
+            }).catch(error => console.warn('Unable to load flashcards:', error)));
         } else {
             // STUDENT: Restricted queries. ONLY downloads their own private data.
             promises.push(waitForInitialSnapshot('current user profile', window.fsDoc(window.db, window.fPath('users'), currentUser.user), snap => { 
@@ -514,7 +521,7 @@
             promises.push(waitForInitialSnapshot('your attendance', attQ, snap => {
                 ATTENDANCE = snap.docs.map(d => d.data());
                 window.triggerUIRefresh();
-            }));
+            }).catch(error => console.warn('Unable to load student attendance:', error)));
 
             const myClasses = CLASSES.filter(c => !window.isTemplateClass(c) && (c.enrolledStudents || []).includes(currentUser.user));
             let resolveInitialScheduleLoad;
@@ -523,7 +530,7 @@
                 resolveInitialScheduleLoad = resolve;
                 rejectInitialScheduleLoad = reject;
             });
-            promises.push(initialScheduleLoad);
+            promises.push(initialScheduleLoad.catch(error => console.warn('Unable to load student schedules:', error)));
             const initialScheduleTimeout = setTimeout(() => {
                 if (initialScheduleLoadResolved) return;
                 initialScheduleLoadResolved = true;
@@ -718,7 +725,7 @@
                 snap.docs.forEach(d => {
                     if(d.id.startsWith(currentUser.user)) ALL_NOTES[d.id] = d.data().data;
                 });
-            }));
+            }).catch(error => console.warn('Unable to load student notes:', error)));
             const studentFlashcardsQuery = window.fsQuery(
                 window.fsCollection(window.db, window.fPath('flashcards')),
                 window.fsWhere('owner', '==', currentUser.user)
@@ -731,7 +738,7 @@
                     FLASHCARDS[d.id.replace(currentUser.user + '_', '')] = d.data().data;
                 });
                 if (!document.getElementById('student-fc-panel')?.classList.contains('translate-x-full')) window.renderFlashcardPanel();
-            }));
+            }).catch(error => console.warn('Unable to load student flashcards:', error)));
         }
 
         await Promise.all(promises);
@@ -1130,7 +1137,15 @@
             let userDoc;
             try {
                 if (!u.includes('@')) {
-                    userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
+                    try {
+                        userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u));
+                    } catch (directLookupError) {
+                        if (u !== u.toLowerCase()) {
+                            try {
+                                userDoc = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('users'), u.toLowerCase()));
+                            } catch (_) {}
+                        }
+                    }
                 }
                 if (!userDoc?.exists()) {
                     const ownedProfileQuery = window.fsQuery(
@@ -1150,28 +1165,26 @@
             }
 
             if (!userDoc?.exists()) {
-                if (u.includes('@')) {
-                    const profileId = credential.user.uid;
-                    const newProfile = {
-                        user: profileId,
-                        uid: credential.user.uid,
-                        email: credential.user.email || mappedEmail,
-                        role: 'student',
-                        status: 'unpaid',
-                        isPaid: false,
-                        paymentStatus: 'unpaid',
-                        createdAt: new Date().toLocaleDateString()
-                    };
-                    const profileRef = window.fsDoc(window.db, window.fPath('users'), profileId);
-                    const accessRef = window.fsDoc(window.db, window.fPath('account_access'), credential.user.uid);
-                    const batch = window.fsWriteBatch(window.db);
-                    batch.set(profileRef, newProfile);
-                    batch.set(accessRef, { uid: credential.user.uid, username: profileId, role: 'student', paid: false });
-                    await batch.commit();
-                    currentUser = newProfile;
-                } else {
-                    throw new Error('The password was accepted, but the student profile is missing in Firestore. Ask the teacher to restore this account profile.');
-                }
+                const fallbackUsername = (!u.includes('@') && window.LMSAuthHelpers?.isValidUsername?.(u.toLowerCase()))
+                    ? u.toLowerCase()
+                    : credential.user.uid;
+                const newProfile = {
+                    user: fallbackUsername,
+                    uid: credential.user.uid,
+                    ...(u.includes('@') ? { email: credential.user.email || mappedEmail } : {}),
+                    role: 'student',
+                    status: 'unpaid',
+                    isPaid: false,
+                    paymentStatus: 'unpaid',
+                    createdAt: new Date().toLocaleDateString()
+                };
+                const profileRef = window.fsDoc(window.db, window.fPath('users'), fallbackUsername);
+                const accessRef = window.fsDoc(window.db, window.fPath('account_access'), credential.user.uid);
+                const batch = window.fsWriteBatch(window.db);
+                batch.set(profileRef, newProfile);
+                batch.set(accessRef, { uid: credential.user.uid, username: fallbackUsername, role: 'student', paid: false });
+                await batch.commit();
+                currentUser = newProfile;
             } else {
                 currentUser = sanitizeUserProfile(userDoc.data());
             }

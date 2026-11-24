@@ -222,8 +222,12 @@
     window.bootPaymentPortal = async function() {
       paymentCatalogUnsubscribe?.();
       paymentPackagesUnsubscribe?.();
-      const billingSnapshot = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'));
-      if (billingSnapshot.exists()) BILLING_SETTINGS = billingSnapshot.data();
+      try {
+        const billingSnapshot = await window.fsGetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'));
+        if (billingSnapshot.exists()) BILLING_SETTINGS = billingSnapshot.data();
+      } catch (billingError) {
+        console.warn('Unable to load billing settings for payment portal:', billingError);
+      }
       paymentCatalogUnsubscribe = window.fsOnSnapshot(
         window.fsCollection(window.db, window.fPath('course_catalog')),
         snapshot => {
