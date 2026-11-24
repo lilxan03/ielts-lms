@@ -1249,7 +1249,7 @@
 
     function applyAppRoute(route = normalizeAppRoute()) {
       if (currentUser?.role === 'student' && !window.canAccessLMS(currentUser, window.auth?.currentUser) &&
-          (route?.role === 'student' || route?.section === 'test' || parseTestHashRoute())) {
+          (route?.role === 'student' || route?.section === 'test' || route?.section === 'login' || route?.section === 'landing' || parseTestHashRoute())) {
         route = { role: 'student', section: 'dashboard' };
         window.history.replaceState({ lmsRoute: 'student' }, '', '#/student/dashboard');
         window.renderAccountGate();

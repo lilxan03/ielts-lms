@@ -1235,6 +1235,9 @@
           } else {
               await window.bootPaymentPortal();
               window.renderAccountGate();
+              if (typeof window.handleAppRouteNavigation === 'function') {
+                  window.handleAppRouteNavigation(true);
+              }
           }
           if (window.auth?.currentUser) window.authenticatedUserHandled = window.auth.currentUser.uid;
           if (window.auth?.currentUser) window.watchTrustedAccountAccess(window.auth.currentUser.uid, window.auth.currentUser.email);

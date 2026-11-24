@@ -300,8 +300,14 @@
                         if (role === 'teacher' || user.email === 'lyquockhanh03@gmail.com') {
                             document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
                             document.getElementById('student-payment-warning')?.classList.add('hidden');
-                            document.getElementById('start-screen')?.classList.remove('hidden');
-                        } else window.renderAccountGate();
+                            document.getElementById('start-screen')?.classList.add('hidden');
+                            document.getElementById('editor-ui')?.classList.remove('hidden');
+                        } else {
+                            window.renderAccountGate();
+                            if (typeof window.handleAppRouteNavigation === 'function') {
+                                window.handleAppRouteNavigation(true);
+                            }
+                        }
 
                         window.authenticatedUserHandled = user.uid;
                         window.watchTrustedAccountAccess(user.uid, user.email);
