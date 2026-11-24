@@ -297,7 +297,7 @@
                         document.getElementById('auth-ui')?.classList.add('hidden');
                         document.getElementById('public-landing-ui')?.classList.add('hidden');
 
-                        if (role === 'teacher' || user.email === 'lyquockhanh03@gmail.com') {
+                        if (role === 'teacher' || user.email?.trim().toLowerCase() === window.ADMIN_EMAIL) {
                             document.getElementById('awaiting-approval-ui')?.classList.add('hidden');
                             document.getElementById('student-payment-warning')?.classList.add('hidden');
                             document.getElementById('start-screen')?.classList.add('hidden');
@@ -344,6 +344,9 @@
                     document.getElementById('start-screen')?.classList.add('hidden');
                     document.getElementById('editor-ui')?.classList.add('hidden');
                     document.getElementById('public-landing-ui')?.classList.remove('hidden');
+                    if (typeof window.handleAppRouteNavigation === 'function') {
+                        window.handleAppRouteNavigation(true);
+                    }
                 }
             });
             
