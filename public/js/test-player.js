@@ -1992,6 +1992,7 @@
         div.innerHTML = `
           <div class="flex flex-col ${instructionHtml ? 'gap-3' : 'gap-0'}">
             ${instructionHtml}
+            ${isTimeFree && typeof window.renderQuestionScaffoldCoach === 'function' ? window.renderQuestionScaffoldCoach(q, i, APP_DATA.module) : ''}
             ${questionImageHtml}
             <div class="w-full text-slate-800 ${instructionHtml ? 'mt-2' : 'mt-0'}">
               ${content}
