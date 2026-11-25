@@ -1722,20 +1722,55 @@
         } else if(q.type === 'matching_info') {
            const statements = (rawText).split('\n').filter(Boolean);
            const cols = q.options || [];
-           let table = `<div class="overflow-x-auto mb-4"><table class="w-full text-left border-collapse border border-slate-300 bg-white"><thead><tr class="bg-slate-50"><th class="border border-slate-300 px-3 py-2 font-bold text-slate-700" style="font-size: 0.95rem;">Statement</th>${cols.map(c => `<th class="border border-slate-300 px-2 py-2 text-center min-w-[40px] font-bold text-slate-700" style="font-size: 0.95rem;">${displayOption(c)}</th>`).join('')}</tr></thead><tbody>`;
-           statements.forEach((stmt, sIdx) => {
-              const id = q.ids[sIdx];
-              if(!id) return;
-              let stmtTxt = pt(stmt);
-              const badgePrefix = unplacedIds.has(id) ? (() => { unplacedIds.delete(id); return makeBadge(id); })() : '';
-              table += `<tr><td class="border border-slate-300 px-3 py-2 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.4;"><div class="flex items-start gap-1">${badgePrefix}<div>${stmtTxt}</div></div></td>`;
-              cols.forEach(c => {
-                 table += `<td class="border border-slate-300 p-1.5 text-center bg-white"><input type="radio" name="q-${id}" value="${optionAttribute(c)}" ${answers[id]===c?'checked':''} onchange="handleAns(${id}, this.value)" class="w-4 h-4 text-blue-600 cursor-pointer"></td>`;
-              });
-              table += `</tr>`;
-           });
-           table += `</tbody></table></div>`;
-           content = table;
+           const isDescriptiveMatching = q.subtype === 'matching_statements'
+               || cols.some(o => !/^[A-Za-z0-9]{1,3}$/.test(String(o || '').trim()))
+               || /\b(person|people|researcher|researchers|author|authors|writer|writers|expert|experts|scientist|scientists|historian|historians|commentator|commentators|character|characters|name|names|speaker|speakers|company|companies|theory|theories|finding|findings)\b/i.test(String(q.instruction || ''));
+
+           if (isDescriptiveMatching) {
+               const isReusable = Boolean(q.reusable) || /more than once/i.test(String(q.instruction || '')) || cols.length < (q.ids || []).length;
+               let availOpts = [...cols];
+               if (!isReusable) {
+                   const used = q.ids.map(i => answers[i]).filter(Boolean);
+                   availOpts = availOpts.filter(o => { if (used.includes(o)) { used.splice(used.indexOf(o), 1); return false; } return true; });
+               }
+               const rowsHtml = statements.map((stmt, sIdx) => {
+                   const id = q.ids[sIdx];
+                   if (!id) return '';
+                   let stmtTxt = pt(stmt);
+                   const badgePrefix = unplacedIds.has(id) ? (() => { unplacedIds.delete(id); return makeBadge(id); })() : '';
+                   const ans = answers[id] || '';
+                   const hasAns = !!ans;
+                   const dropZoneHtml = `<span class="drop-zone inline-flex items-center align-middle rounded-lg bg-white min-h-[38px] px-2 py-1 transition-all shrink-0 ${hasAns ? 'border-2 border-blue-500 shadow-sm cursor-grab bg-blue-50' : 'border border-dashed border-slate-400 hover:border-blue-400'}"
+                        ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event, ${id})" onclick="window.handleDropZoneClick(${id}, event)"
+                        ${hasAns ? `draggable="true" ondragstart="dragStart(event, '${ans.replace(/'/g,"\\'")}', ${id})"` : ''}>
+                       <span class="px-1.5 min-w-[130px] max-w-[240px] text-center text-sm ${hasAns ? 'font-bold text-blue-900' : 'text-slate-400 italic'} pointer-events-none">${hasAns ? displayOption(ans) : 'Kéo thả vào đây'}</span>
+                   </span>`;
+                   return `<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
+                       <div class="flex items-start gap-1.5 flex-1 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.45;">${badgePrefix}<div>${stmtTxt}</div></div>
+                       <div class="flex items-center justify-end shrink-0">${dropZoneHtml}</div>
+                   </div>`;
+               }).join('');
+               const optionsBankHtml = `<div class="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-xl drop-zone-options transition-colors" ondragover="optionsDragOver(event)" ondragleave="optionsDragLeave(event)" ondrop="returnToOptions(event)">
+                   <p class="italic text-xs sm:text-sm text-slate-500 mb-2.5">Kéo tên/phương án bên dưới thả vào ô trống kế bên mỗi câu${isReusable ? ' (có thể dùng lại nhiều lần)' : ''}:</p>
+                   <div class="flex flex-wrap gap-2 min-h-[34px]">${availOpts.map(o => `<div draggable="true" ondragstart="dragStart(event, ${optionHandlerArg(o)})" onclick="window.mobileTapSelect(event, this, ${optionHandlerArg(o)})" class="draggable-item bg-white border border-slate-300 rounded-lg px-3 py-1.5 min-w-[44px] text-center font-semibold text-slate-800 shadow-sm hover:border-blue-400 hover:text-blue-700 transition cursor-grab">${displayOption(o)}</div>`).join('')}</div>
+               </div>`;
+               content = `<div class="space-y-2.5 mb-2">${rowsHtml}</div>${optionsBankHtml}`;
+           } else {
+               let table = `<div class="overflow-x-auto mb-4"><table class="w-full text-left border-collapse border border-slate-300 bg-white"><thead><tr class="bg-slate-50"><th class="border border-slate-300 px-3 py-2 font-bold text-slate-700" style="font-size: 0.95rem;">Statement</th>${cols.map(c => `<th class="border border-slate-300 px-2 py-2 text-center min-w-[40px] font-bold text-slate-700" style="font-size: 0.95rem;">${displayOption(c)}</th>`).join('')}</tr></thead><tbody>`;
+               statements.forEach((stmt, sIdx) => {
+                  const id = q.ids[sIdx];
+                  if(!id) return;
+                  let stmtTxt = pt(stmt);
+                  const badgePrefix = unplacedIds.has(id) ? (() => { unplacedIds.delete(id); return makeBadge(id); })() : '';
+                  table += `<tr><td class="border border-slate-300 px-3 py-2 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.4;"><div class="flex items-start gap-1">${badgePrefix}<div>${stmtTxt}</div></div></td>`;
+                  cols.forEach(c => {
+                     table += `<td class="border border-slate-300 p-1.5 text-center bg-white"><input type="radio" name="q-${id}" value="${optionAttribute(c)}" ${answers[id]===c?'checked':''} onchange="handleAns(${id}, this.value)" class="w-4 h-4 text-blue-600 cursor-pointer"></td>`;
+                  });
+                  table += `</tr>`;
+               });
+               table += `</tbody></table></div>`;
+               content = table;
+           }
         } else if(q.type === 'essay') {
            let txt = pt(rawText);
            if (APP_DATA.module === 'writing' || APP_DATA.module === 'speaking') {
