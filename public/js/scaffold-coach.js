@@ -38,15 +38,15 @@
             const beforeWords = plain.slice(0, idx).trim().split(/\s+/).slice(-4).join(' ');
             const afterWords = plain.slice(idx + token.length).trim().split(/\s+/).slice(0, 4).join(' ');
             const lastBefore = beforeWords.split(/\s+/).pop()?.toLowerCase() || '';
-            let posHint = 'Phân tích ngữ pháp trước & sau ô để đoán từ loại.';
+            let posHint = 'Phân tích ngữ pháp trước & sau ô để đoán từ loại (N / V / Adj / Số).';
             if (/^(a|an|the|my|his|her|their|our|its|some|many|several|no|this|that|these|those)$/.test(lastBefore)) {
-                posHint = `Sau "${lastBefore}" → thường cần Danh từ (Noun) hoặc Cụm danh từ.`;
+                posHint = `Sau "${lastBefore}" → Danh từ (Noun) hoặc Cụm danh từ. Chú ý ${/^(a|an)$/.test(lastBefore) ? 'số ít' : 'số ít/nhiều'}.`;
             } else if (/^(is|are|was|were|be|become|seem|appear|feel)$/.test(lastBefore)) {
                 posHint = `Sau "${lastBefore}" → thường cần Tính từ (Adj) hoặc Danh từ.`;
             } else if (/^(to|can|will|must|should|may|might|could|would)$/.test(lastBefore)) {
-                posHint = `Sau "${lastBefore}" → thường cần Động từ nguyên mẫu (V-inf) hoặc Danh từ (sau giới từ "to").`;
+                posHint = `Sau "${lastBefore}" → Động từ nguyên mẫu (V-inf) hoặc Danh từ (nếu "to" là giới từ).`;
             } else if (/^(in|on|at|by|for|from|with|about|of|into|during|between)$/.test(lastBefore)) {
-                posHint = `Sau giới từ "${lastBefore}" → thường cần Danh từ / V-ing / Số liệu.`;
+                posHint = `Sau giới từ "${lastBefore}" → Danh từ / V-ing / Số liệu / Địa điểm.`;
             }
             return { id, before: beforeWords, after: afterWords, hint: posHint };
         });
@@ -59,9 +59,14 @@
                 .filter(w => !/^(The|This|That|These|Those|When|Where|What|Which|Who|Why|How|Complete|Choose|Write|Questions?|True|False|Not|Given|Yes|No)$/i.test(w))
         )).slice(0, 6);
         const traps = Array.from(new Set(
-            plain.toLowerCase().match(/\b(only|always|never|all|every|most|mainly|primarily|first|last|more than|less than|fewer|at least|impossible|completely|entirely)\b/g) || []
+            plain.toLowerCase().match(/\b(only|always|never|all|every|most|mainly|primarily|first|last|more than|less than|fewer|at least|impossible|completely|entirely|definitely|unique)\b/g) || []
         )).slice(0, 6);
         return { hard, traps };
+    }
+
+    function renderHardKeywords(hard) {
+        if (!hard.length) return '';
+        return `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Hard Keywords (dùng để Scan):</span>${hard.map(k => `<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>`;
     }
 
     function getStepsForQuestion(q, moduleName) {
@@ -71,164 +76,356 @@
         const wordLimit = extractWordLimit(q?.instruction);
         const { hard, traps } = extractKeywordsHint(q?.text);
 
-        if (type === 'fill_blanks' || subtype === 'summary_box') {
+        // 1. READING: GAP-FILL WITH A BOX (Summary Completion)
+        if (!isListening && subtype === 'summary_box') {
             const gaps = extractGapContexts(q);
+            const opts = (q?.options || []).slice(0, 12);
+            const boxHtml = opts.length
+                ? `<div class="mt-2 flex flex-wrap gap-1.5">${opts.map(o => `<span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-300 text-xs font-semibold text-slate-700">${escapeHtml(stripHtml(o))}</span>`).join('')}</div>`
+                : '';
             const gapHtml = gaps.length
-                ? `<div class="mt-2 space-y-1.5">${gaps.map(g => `<div class="rounded-lg border border-sky-200 bg-white px-3 py-2 text-xs"><span class="inline-block font-black text-sky-800 mr-1.5">Q${g.id}:</span><span class="text-slate-600">${escapeHtml(g.before)}</span> <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">[ ___ ]</span> <span class="text-slate-600">${escapeHtml(g.after)}</span><div class="mt-1 text-[11px] font-semibold text-emerald-700">💡 ${escapeHtml(g.hint)}</div></div>`).join('')}</div>`
+                ? `<div class="mt-2 space-y-1.5">${gaps.map(g => `<div class="rounded-lg border border-sky-200 bg-white px-3 py-2 text-xs"><span class="font-black text-sky-800 mr-1.5">Q${g.id}:</span><span class="text-slate-600">${escapeHtml(g.before)}</span> <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">[ ___ ]</span> <span class="text-slate-600">${escapeHtml(g.after)}</span><div class="mt-1 text-[11px] font-semibold text-emerald-700">💡 ${escapeHtml(g.hint)}</div></div>`).join('')}</div>`
                 : '';
-            const kwHtml = hard.length
-                ? `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Từ khóa neo (Hard Keywords):</span>${hard.map(k => `<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>`
-                : '';
-
             return [
                 {
-                    title: 'Bước 1: Đọc & Highlight giới hạn từ',
-                    action: wordLimit
-                        ? `Hãy highlight cụm giới hạn từ <strong class="px-1.5 py-0.5 rounded bg-yellow-200 text-slate-900">${escapeHtml(wordLimit)}</strong> trên đề bài để không điền thừa từ.`
-                        : (subtype === 'summary_box' ? 'Đây là dạng chọn từ từ bảng cho sẵn (Gap-fill WITH A BOX). Kiểm tra xem các từ trong bảng có được dùng lại không.' : 'Kiểm tra kỹ yêu cầu giới hạn từ ở phần hướng dẫn đề bài và bôi vàng lại.'),
-                    extra: ''
+                    title: 'Bước 1: Phân loại Khung từ vựng (Box Categorization)',
+                    action: 'Đừng vội đọc bài ngay. Dành 30 giây gán nhãn từ loại (<strong>N / V / Adj</strong>) cho các từ trong hộp và tìm cặp từ trái nghĩa/gần nghĩa (thường 1 trong 2 là đáp án hoặc bẫy):',
+                    extra: boxHtml
                 },
                 {
-                    title: 'Bước 2: Phân tích chỗ trống & Dự đoán từ loại',
-                    action: 'Trước khi đọc bài/nghe băng, nhìn vào cụm từ ngay trước và sau mỗi chỗ trống để đoán từ loại (Noun / Verb / Adj / Number) và dạng số ít/nhiều:',
+                    title: 'Bước 2: Phân tích chỗ trống (Grammar & Semantic Filter)',
+                    action: 'Lọc ngữ pháp (cần N số ít/nhiều, V chủ động/bị động, hay Adj) và sắc thái nghĩa tích cực (+) / tiêu cực (-) cho từng ô:',
                     extra: gapHtml
                 },
                 {
-                    title: isListening ? 'Bước 3: Highlight từ khóa & Nghe tín hiệu chuyển ý' : 'Bước 3: Highlight từ khóa & Định vị vùng thông tin',
-                    action: isListening
-                        ? 'Bôi vàng các từ khóa xung quanh chỗ trống (tên riêng, số, danh từ chính). Khi nghe, chú ý từ đồng nghĩa (paraphrase) và bẫy tự sửa lại đáp án.'
-                        : 'Bôi vàng các từ khóa xung quanh ô trống (tên riêng, năm tháng, động/tính từ chính) rồi quét nhanh đoạn văn để định vị câu chứa thông tin.',
-                    extra: kwHtml
+                    title: 'Bước 3: Định vị đoạn văn & Nhặt "Từ gốc" (Tầng Paraphrase 1)',
+                    action: 'Dạng Summary thường nằm gọn trong <strong>1–2 đoạn liên tiếp</strong>. Dùng Hard Keywords để tìm đúng đoạn văn và nhặt <strong>từ gốc trong bài đọc</strong> trước khi nhìn lại hộp từ.',
+                    extra: renderHardKeywords(hard)
                 },
                 {
-                    title: 'Bước 4: Điền đáp án & Kiểm tra lại',
-                    action: subtype === 'summary_box'
-                        ? 'Chọn đáp án khớp cả về nghĩa lẫn ngữ pháp với câu tóm tắt, sau đó bấm Check Answer.'
-                        : 'Giữ nguyên chính tả từ gốc trong bài/audio, kiểm tra lại số ít/nhiều, thì và đảm bảo không vượt quá giới hạn từ.',
+                    title: 'Bước 4: So chiếu 2 tầng Paraphrase & Kiểm tra ngữ pháp',
+                    action: 'Ghép cặp <em>Từ gốc trong bài ↔ Từ đồng nghĩa trong hộp</em> (cơ chế Double Paraphrasing). Kéo từ vào ô, đọc lại toàn câu xem mượt nghĩa và đúng ngữ pháp trước khi bấm Check Answer.',
                     extra: ''
                 }
             ];
         }
 
-        if (type === 'tfng' || type === 'ynng') {
-            const label = type === 'ynng' ? 'YES / NO / NOT GIVEN' : 'TRUE / FALSE / NOT GIVEN';
-            const trapHtml = traps.length
-                ? `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-rose-700">⚠️ Từ khóa cực đoan dễ bẫy:</span>${traps.map(t => `<span class="px-2 py-0.5 rounded bg-rose-100 text-rose-900 border border-rose-300 text-xs font-bold">${escapeHtml(t)}</span>`).join('')}</div>`
-                : '';
-            const kwHtml = hard.length
-                ? `<div class="mt-1.5 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Từ khóa định vị:</span>${hard.map(k => `<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>`
+        // 2. LISTENING PART 4: NOTE / LECTURE COMPLETION
+        if (isListening && (subtype === 'fill_blanks_p4' || (type === 'fill_blanks' && (q?.ids || []).some(id => id >= 31)))) {
+            const gaps = extractGapContexts(q);
+            const gapHtml = gaps.length
+                ? `<div class="mt-2 space-y-1.5">${gaps.map(g => `<div class="rounded-lg border border-sky-200 bg-white px-3 py-2 text-xs"><span class="font-black text-sky-800 mr-1.5">Q${g.id}:</span><span class="text-slate-600">${escapeHtml(g.before)}</span> <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">[ ___ ]</span> <span class="text-slate-600">${escapeHtml(g.after)}</span><div class="mt-1 text-[11px] font-semibold text-emerald-700">💡 ${escapeHtml(g.hint)}</div></div>`).join('')}</div>`
                 : '';
             return [
                 {
-                    title: `Bước 1: Nắm chắc quy tắc ${label}`,
-                    action: `<strong>${type === 'ynng' ? 'YES' : 'TRUE'}</strong> = Khớp hoàn toàn với bài · <strong>${type === 'ynng' ? 'NO' : 'FALSE'}</strong> = Trái ngược trực tiếp · <strong>NOT GIVEN</strong> = Không có thông tin để kết luận (cấm suy diễn!).`,
+                    title: 'Bước 1: Khóa Giới hạn từ & Quét Khung xương Bài giảng',
+                    action: `${wordLimit ? `Highlight ngay giới hạn từ <strong class="px-1.5 py-0.5 rounded bg-yellow-200 text-slate-900">${escapeHtml(wordLimit)}</strong>.` : 'Kiểm tra Word Limit (thường là ONE WORD ONLY).'} Đọc lướt Tiêu đề chính và các Đề mục in đậm (Subheadings) để nắm mạch bài giảng từ đầu tới cuối.`,
                     extra: ''
                 },
                 {
-                    title: 'Bước 2: Highlight từ khóa & Từ dễ bẫy',
-                    action: 'Hãy highlight 2 nhóm từ trong câu hỏi: (1) Từ khóa định vị để tìm đoạn văn, và (2) Từ chỉ mức độ/tần suất/so sánh (only, always, most, first...).',
-                    extra: `${trapHtml}${kwHtml}`
+                    title: 'Bước 2: Phân tích Chỗ trống & Khóa Số ít / Số nhiều',
+                    action: '75–80% đáp án Part 4 là <strong>Danh từ</strong>. Kiểm tra kỹ mạo từ <code>a/an</code> (số ít) hay động từ <code>are/were</code>, không có <code>a/an</code> (dễ là số nhiều <code>-s/-es</code> hoặc không đếm được):',
+                    extra: gapHtml
                 },
                 {
-                    title: 'Bước 3: Đối chiếu từng vế & Chốt đáp án',
-                    action: 'Tách câu hỏi thành Chủ ngữ + Động từ + Tân ngữ/Mức độ rồi đối chiếu trực tiếp với câu trong bài (bấm 🔎 Locate nếu cần kiểm tra vùng thông tin).',
+                    title: 'Bước 3: Xác định "Mỏ neo" & Dự đoán Paraphrase Học thuật',
+                    action: 'Khoanh tròn Hard Keywords (năm, tên nhà khoa học, địa danh) làm mỏ neo. Đổi cụm danh từ trên đề sang văn nói (VD: <em>lack of → shortage of / absence of</em>; <em>causes of decline → why it started falling</em>).',
+                    extra: renderHardKeywords(hard)
+                },
+                {
+                    title: 'Bước 4: Nghe theo "Đèn tín hiệu" & Tránh bẫy đảo trật tự',
+                    action: 'Chú ý cụm chuyển mục (<em>Let\'s turn now to..., Moving on to...</em>) để nhảy mắt kịp. <strong>Cảnh giác bẫy đảo trật tự từ:</strong> đáp án có thể xuất hiện <em>trước</em> khi nghe thấy từ khóa trên đề!',
+                    extra: `<div class="mt-2 rounded-lg bg-slate-50 border border-slate-200 p-2.5 text-[11px] text-slate-700 space-y-1"><div><strong>Tín hiệu chuyển ý hay gặp:</strong></div><div>• <em>Chuyển mục:</em> Let's turn now to... / Moving on to...</div><div>• <em>Nguyên nhân/Kết quả:</em> This stemmed from... / Consequently...</div><div>• <em>Nhấn mạnh (90% chứa đáp án):</em> Crucially... / What is particularly striking is...</div></div>`
+                },
+                {
+                    title: 'Bước 5: Rà soát Chính tả học thuật, Ngữ pháp & Word Limit',
+                    action: 'Kiểm tra chính tả các từ dễ sai (<em>environment, government, temperature, maintenance</em>), kiểm tra đuôi <code>-s/-es</code> và đếm lại số từ trước khi nộp.',
                     extra: ''
                 }
             ];
         }
 
+        // 3. READING / LISTENING PART 1-3: GAP-FILL
+        if (type === 'fill_blanks') {
+            const gaps = extractGapContexts(q);
+            const gapHtml = gaps.length
+                ? `<div class="mt-2 space-y-1.5">${gaps.map(g => `<div class="rounded-lg border border-sky-200 bg-white px-3 py-2 text-xs"><span class="font-black text-sky-800 mr-1.5">Q${g.id}:</span><span class="text-slate-600">${escapeHtml(g.before)}</span> <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold">[ ___ ]</span> <span class="text-slate-600">${escapeHtml(g.after)}</span><div class="mt-1 text-[11px] font-semibold text-emerald-700">💡 ${escapeHtml(g.hint)}</div></div>`).join('')}</div>`
+                : '';
+            return [
+                {
+                    title: 'Bước 1: Đọc kỹ & Highlight Giới hạn từ (Word Limit)',
+                    action: wordLimit
+                        ? `Bôi vàng cụm giới hạn từ <strong class="px-1.5 py-0.5 rounded bg-yellow-200 text-slate-900">${escapeHtml(wordLimit)}</strong> trên đề bài để tuyệt đối không điền thừa từ hoặc thừa mạo từ.`
+                        : 'Đọc kỹ yêu cầu giới hạn từ ở đầu block (VD: ONE WORD ONLY, NO MORE THAN TWO WORDS) và highlight lại.',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 2: Phân tích chỗ trống & Dự đoán Từ loại + Ngữ nghĩa',
+                    action: isListening
+                        ? 'Dự đoán loại thông tin cần nghe: <strong>Tên riêng (chờ đánh vần), SĐT (nghe double/triple), Giá tiền, Ngày tháng</strong>, hoặc Từ loại (N/V/Adj) cho từng ô:'
+                        : 'Xác định 2 yếu tố trước khi nhìn bài đọc: (1) <strong>Từ loại</strong> (N/V/Adj/Số), (2) <strong>Đếm được hay không, Số ít hay nhiều</strong>, chỉ người/vật/nơi chốn:',
+                    extra: gapHtml
+                },
+                {
+                    title: isListening ? 'Bước 3: Highlight từ khóa & Cảnh giác bẫy tự sửa (Distractors)' : 'Bước 3: Chia 2 nhóm từ khóa (Hard vs. Soft Keywords)',
+                    action: isListening
+                        ? 'Bôi vàng từ khóa xung quanh ô trống. Trong băng, người nói rất hay đưa thông tin sai rồi tự sửa lại (<em>"Oh wait, sorry, it\'s actually..."</em>) — chỉ chốt thông tin cuối cùng!'
+                        : '<strong>Hard Keywords</strong> (tên riêng, năm tháng, số liệu) dùng để Scan nhanh tới đúng đoạn văn. <strong>Soft Keywords</strong> (động/tính từ) chuẩn bị săn Paraphrase hoặc đổi Active ↔ Passive.',
+                    extra: renderHardKeywords(hard)
+                },
+                {
+                    title: 'Bước 4: Lấy từ nguyên bản & Kiểm tra Checklist 4 bẫy',
+                    action: 'Nhặt chính xác từ trong bài/audio (không tự đổi dạng từ). Kiểm tra lại: (1) Số ít/nhiều, (2) Không chép thừa <code>a/an/the</code> nếu đề đã có sẵn, (3) Bẫy tương phản (<em>however, although, instead of</em>), (4) Đủ giới hạn từ.',
+                    extra: ''
+                }
+            ];
+        }
+
+        // 4. READING: TRUE / FALSE / NOT GIVEN & YES / NO / NOT GIVEN
+        if (type === 'tfng' || type === 'ynng') {
+            const isYN = type === 'ynng';
+            const tLbl = isYN ? 'YES' : 'TRUE';
+            const fLbl = isYN ? 'NO' : 'FALSE';
+            const trapHtml = traps.length
+                ? `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-rose-700">⚠️ Từ khóa hạn định / bẫy phát hiện được:</span>${traps.map(t => `<span class="px-2 py-0.5 rounded bg-rose-100 text-rose-900 border border-rose-300 text-xs font-bold">${escapeHtml(t)}</span>`).join('')}</div>`
+                : '';
+            return [
+                {
+                    title: `Bước 1: Hiểu đúng bản chất ${tLbl} / ${fLbl} / NOT GIVEN`,
+                    action: `<strong>${tLbl}:</strong> Khớp 100% ý nghĩa (thường được paraphrase). · <strong>${fLbl}:</strong> Trực tiếp mâu thuẫn / trái ngược với bài. · <strong>NOT GIVEN:</strong> Không nhắc tới hoặc thiếu dữ kiện kết luận. <em>Quy tắc vàng: No assumption (cấm tự suy diễn)!</em>`,
+                    extra: ''
+                },
+                {
+                    title: 'Bước 2: Khoanh vùng 3 nhóm từ khóa bẫy (Qualifiers & Quantifiers)',
+                    action: '80% đáp án nằm ở các từ hạn định: (1) <strong>Tuyệt đối vs Tương đối</strong> (<em>always, never, all, only</em> vs <em>often, some, may</em>), (2) <strong>Mức độ chắc chắn</strong> (<em>definitely, will</em> vs <em>likely, suggest</em>), (3) <strong>Nhân quả & So sánh</strong> (<em>caused by, more than</em>).',
+                    extra: `${trapHtml}${renderHardKeywords(hard)}`
+                },
+                {
+                    title: 'Bước 3: Scanning & Đọc trọn ngữ cảnh (câu trước/sau)',
+                    action: 'Dùng tên riêng/năm tháng để tìm nhanh đoạn văn. Đọc kỹ câu chứa thông tin và 1–2 câu xung quanh, cảnh giác liên từ đối lập (<em>however, although, despite, yet</em>) và phủ định ngầm (<em>fail to, rarely, avoid, little</em>).',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 4: So chiếu logic theo "Checklist 3 nhánh"',
+                    action: `Tách câu hỏi thành 3 mảnh rồi đối chiếu từng mảnh: <strong>[1. Chủ ngữ]</strong> có trong bài? → <strong>[2. Hành động / Tính chất]</strong> khớp không? → <strong>[3. Mức độ / Điều kiện]</strong> khớp không? Khớp hết = ${tLbl}; Trái 1 điểm = ${fLbl}; Thiếu dữ kiện = NOT GIVEN.`,
+                    extra: ''
+                }
+            ];
+        }
+
+        // 5. READING: MULTIPLE CHOICE 2/5 HOẶC 3/6
+        if (!isListening && (subtype === 'mcq_2_5' || subtype === 'mcq_3_6')) {
+            const nIds = (q?.ids || []).length || 2;
+            const nOpts = (q?.options || []).length || 5;
+            return [
+                {
+                    title: `Bước 1: Khóa chặt trục câu hỏi (${nIds}/${nOpts})`,
+                    action: `Chọn đúng <strong>${nIds} chữ cái trong ${nOpts} lựa chọn</strong>. Xác định rõ <strong>Trục nội dung (Question Focus)</strong>: đề hỏi Lợi ích (benefits), Khó khăn (problems), Nguyên nhân (reasons) hay Đề xuất (solutions)? Ý đúng nhưng lệch trục → Loại ngay!`,
+                    extra: ''
+                },
+                {
+                    title: 'Bước 2: Gom nhóm phương án (Categorization) & Soi Qualifiers',
+                    action: 'Gom 5–6 phương án thành <strong>2–3 nhóm chủ đề</strong> (VD: Nhóm Tài chính, Nhóm Con người, Nhóm Kỹ thuật) hoặc <strong>Cặp đối lập</strong>. Khoanh tròn các từ cực đoan (<em>all, only, completely, excessive</em> — xác suất False rất cao).',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 3: Quét bài đọc theo từng Nhóm chủ đề (Cluster Scanning)',
+                    action: 'Thay vì nhớ rời từng câu A–E, hãy đọc đoạn văn theo từng cụm chủ đề vừa gom (VD: khi bài nói về chi phí → đối chiếu ngay toàn bộ Nhóm Tài chính).',
+                    extra: renderHardKeywords(hard)
+                },
+                {
+                    title: 'Bước 4: Gán nhãn loại trừ (FALSE / NOT GIVEN / WRONG FOCUS / TRUE)',
+                    action: 'Gán nhãn cho từng phương án trong nhóm: Trái ngược → <strong>FALSE</strong>; Không có căn cứ → <strong>NOT GIVEN</strong>; Sai trọng tâm câu hỏi → <strong>WRONG FOCUS</strong>; Khớp nghĩa paraphrase → <strong>TRUE</strong>.',
+                    extra: ''
+                }
+            ];
+        }
+
+        // 6. MULTIPLE CHOICE (Reading 1/4 & Listening Part 2/3)
         if (type === 'multiple_choice') {
             const nIds = (q?.ids || []).length || 1;
-            const nOpts = (q?.options || []).length || 4;
+            const nOpts = (q?.options || []).length || (isListening ? 3 : 4);
+            if (isListening) {
+                const isPart3 = subtype === 'mcq_1_3_p3' || (q?.ids || []).some(id => id >= 21);
+                return [
+                    {
+                        title: `Bước 1: Đọc câu dẫn & Phân biệt ${nIds}/${nOpts} lựa chọn`,
+                        action: `Đánh dấu số đáp án cần chọn (<strong>${nIds}/${nOpts}</strong>) và gạch chân từ khóa khác biệt giữa 3 lựa chọn A, B, C trước khi băng chạy.`,
+                        extra: renderHardKeywords(hard)
+                    },
+                    {
+                        title: isPart3 ? 'Bước 2: Bắt đúng người nói & Tín hiệu Đồng thuận / Bác bỏ' : 'Bước 2: Nghe trọn ý & Cảnh giác bẫy "Nhắc hết cả 3 phương án"',
+                        action: isPart3
+                            ? 'Part 3 là hội thoại 2–3 người: xác định câu hỏi hỏi ý kiến của ai. Chú ý câu đồng tình (<em>Exactly, You\'re right</em>) vs phản bác/chỉnh sửa (<em>That\'s a fair point, though..., I\'m not convinced...</em>).'
+                            : 'Người nói thường nhắc tới cả A, B, C nhưng 2 lựa chọn là bẫy sai thời điểm (<em>used to, last year</em>) hoặc bị phủ định bằng <em>however, actually, instead</em>.',
+                        extra: ''
+                    },
+                    {
+                        title: 'Bước 3: Loại trừ đáp án nhiễu & Chốt lựa chọn',
+                        action: 'Loại phương án bị bác bỏ hoặc không đúng câu hỏi (dùng nút 🪄 50/50 nếu cần luyện loại trừ).',
+                        extra: ''
+                    }
+                ];
+            }
             return [
                 {
-                    title: `Bước 1: Highlight yêu cầu (${nIds}/${nOpts}) & Từ khóa câu dẫn`,
-                    action: `Đánh dấu rõ số đáp án cần chọn (<strong>${nIds} đáp án trong ${nOpts} lựa chọn</strong>) và bôi vàng từ khóa chính ở câu hỏi (stem) trước khi đọc các lựa chọn.`,
-                    extra: hard.length ? `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Từ khóa gợi ý:</span>${hard.map(k => `<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>` : ''
+                    title: 'Bước 1: Đọc kỹ Câu dẫn (Stem) & Định vị đoạn văn',
+                    action: 'Gạch chân từ khóa ở câu dẫn trước (chưa cần đọc vội 4 lựa chọn A–D) rồi Scan tìm đoạn văn chứa thông tin câu hỏi.',
+                    extra: renderHardKeywords(hard)
                 },
                 {
-                    title: isListening ? 'Bước 2: Nghe bắt ý chính & Cảnh giác Distractors' : 'Bước 2: Định vị đoạn văn & Hiểu ý gốc',
-                    action: isListening
-                        ? 'Trong Listening, người nói thường nhắc tới cả 3 lựa chọn nhưng sẽ bác bỏ hoặc sửa lại bằng từ nối tương phản (however, actually, instead...).'
-                        : 'Tìm đúng đoạn văn chứa từ khóa câu dẫn, đọc hiểu câu gốc trong bài trước rồi mới so với các lựa chọn A/B/C/D.',
+                    title: 'Bước 2: Đọc hiểu câu gốc trong bài trước khi nhìn A/B/C/D',
+                    action: 'Đọc kỹ 2–3 câu trong bài để tự trả lời câu hỏi bằng tiếng Việt/Anh trước, tránh bị các lựa chọn bẫy dẫn dắt.',
                     extra: ''
                 },
                 {
-                    title: 'Bước 3: Loại trừ 3 loại bẫy (Elimination)',
-                    action: 'Gạch bỏ các đáp án: (1) Trái ngược thông tin bài, (2) Không được nhắc đến (Not Given), (3) Lặp từ giống hệt bài nhưng sai quan hệ nghĩa.',
+                    title: 'Bước 3: So chiếu & Loại trừ 3 loại bẫy kinh điển',
+                    action: 'Gạch bỏ ngay: (1) <strong>Opposite</strong> (trái ý bài), (2) <strong>Not Given</strong> (tự thêm ý ngoài bài), (3) <strong>Word-spotting trap</strong> (lặp từ y hệt bài nhưng sai quan hệ nghĩa).',
                     extra: ''
                 }
             ];
         }
 
+        // 7. READING: MATCHING HEADINGS
         if (type === 'matching_headings') {
             return [
                 {
-                    title: 'Bước 1: Đọc & Highlight từ khóa từng Heading',
-                    action: 'Đọc toàn bộ danh sách Headings và gạch chân từ khóa phân biệt giữa các heading có chủ đề gần giống nhau.',
+                    title: 'Bước 1: Phân tích danh sách Headings & Cặp "song sinh"',
+                    action: 'Gạch chân từ khóa phân biệt trong bảng La Mã (i, ii, iii...), khoanh từ chỉ thái độ/chức năng (<em>Benefits vs Drawbacks, Causes vs Solutions, A shift</em>). Đánh dấu các cặp heading na ná nhau.',
                     extra: ''
                 },
                 {
-                    title: 'Bước 2: Đọc đoạn văn lấy Main Idea',
-                    action: 'Đọc 1–2 câu đầu, 1–2 câu cuối và chú ý từ chuyển hướng (However, Yet, In contrast) để nắm ý bao trùm cả đoạn — tránh chọn theo 1 chi tiết nhỏ lẻ.',
+                    title: 'Bước 2: Chọn thứ tự làm "Dễ trước – Khó sau"',
+                    action: 'Gạch bỏ heading đã dùng làm ví dụ (Example). Làm các <strong>đoạn ngắn, 1 luận điểm</strong> trước; để các đoạn dài/nhiều quan điểm tranh luận làm cuối cùng để thu hẹp bảng La Mã.',
                     extra: ''
                 },
                 {
-                    title: 'Bước 3: Khớp Heading & Gạch bỏ phương án đã dùng',
-                    action: 'Chọn Heading diễn đạt đúng nhất ý chính toàn đoạn rồi loại dần các Heading đã chọn.',
+                    title: 'Bước 3: Đọc đoạn theo 2 kỹ thuật (Top-down & Bottom-up)',
+                    action: '<strong>Top-down:</strong> Tìm Topic Sentence (đầu đoạn, giữa đoạn sau <em>However/Instead</em>, hoặc câu chốt cuối đoạn). <strong>Bottom-up:</strong> Nếu đoạn liệt kê, tự tóm tắt thành 3–5 từ tiếng Việt trước khi nhìn lại bảng Headings.',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 4: Kiểm tra nguyên tắc "Cái Ô" (Loại trừ 4 bẫy)',
+                    action: 'Heading đúng phải bao trùm <strong>70–80% nội dung đoạn</strong>. Loại bỏ: (1) <em>Too Specific</em> (chỉ nói 1 câu ví dụ), (2) <em>Too Broad</em>, (3) <em>Word-Match Trap</em> (trùng từ vựng bề mặt), (4) <em>Opposite</em>.',
                     extra: ''
                 }
             ];
         }
 
-        if (subtype === 'matching_endings') {
+        // 8. READING: MATCHING INFORMATION
+        if (type === 'matching_info') {
             return [
                 {
-                    title: 'Bước 1: Đọc & Highlight từ khóa ở vế đầu (Stems)',
-                    action: 'Gạch chân chủ ngữ và động từ chính ở các vế câu chưa hoàn chỉnh để định vị đoạn văn tương ứng.',
+                    title: 'Bước 1: Kiểm tra quy tắc NB & Xếp thứ tự ưu tiên',
+                    action: 'Kiểm tra xem có dòng <em>"NB: You may use any letter more than once"</em> không (có = chắc chắn có đoạn dùng 2 lần). Mẹo: <strong>Làm dạng này cuối cùng</strong> sau khi đã hiểu bố cục bài đọc; ưu tiên câu có tên riêng/số liệu làm trước.',
                     extra: ''
                 },
                 {
-                    title: 'Bước 2: Dự đoán nghĩa & Kiểm tra ngữ pháp vế sau',
-                    action: 'Tìm thông tin gốc trong bài rồi đối chiếu với danh sách vế kết (A–G), kiểm tra xem cấu trúc ngữ pháp khi ghép lại có trôi chảy không.',
+                    title: 'Bước 2: Giải mã "Từ khóa chức năng" của Supporting Sentence',
+                    action: 'Matching Info tìm <strong>chi tiết/dẫn chứng (Supporting Sentence)</strong> chứ không phải ý chính. Bắt đúng tín hiệu: <em>a reason</em> → because/due to; <em>a comparison</em> → whereas/more...than; <em>an example</em> → such as/for instance; <em>a prediction</em> → will/forecast.',
+                    extra: renderHardKeywords(hard)
+                },
+                {
+                    title: 'Bước 3: Đọc theo khối đoạn văn (Block-by-Block Mapping)',
+                    action: 'Đọc lướt từng đoạn A, B, C... (nắm Topic Sentence + quét các câu số liệu/dẫn chứng nổi bật). Đọc xong Đoạn A đối chiếu ngay với bảng câu hỏi; câu nào phân vân quá 1 phút → bỏ qua sang Đoạn B.',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 4: So chiếu Paraphrase & Kiểm tra đúng chức năng',
+                    action: 'Đảm bảo câu trong bài khớp đúng chức năng câu hỏi (VD: hỏi <em>a reason for failure</em> thì phải có lý do thất bại, không chỉ nhắc tới việc thất bại).',
                     extra: ''
                 }
             ];
         }
 
+        // 9. READING: MATCHING STATEMENTS (Features)
+        if (!isListening && subtype === 'matching_statements') {
+            return [
+                {
+                    title: 'Bước 1: Quét & Đếm tần suất nhân vật (Xếp thứ tự ưu tiên)',
+                    action: 'Scan toàn bài khoanh tròn tên nhân vật/đối tượng (A, B, C...). <strong>Nhân vật xuất hiện 1 lần làm ĐẦU TIÊN</strong> (thông tin nằm gọn 1 chỗ); 2–3 lần làm tiếp theo; rải rác cả bài làm CUỐI CÙNG bằng loại trừ.',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 2: Chỉ đọc 2 dạng câu chứa phát biểu của nhân vật',
+                    action: 'Bỏ qua tiểu sử, chỉ đọc: (1) <strong>Direct Speech</strong> (trong ngoặc kép <code>"..."</code>), và (2) <strong>Reported Speech</strong> (sau <em>argued that, claimed that, doubted that, According to X...</em>).',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 3: Rút gọn Statements & Nhận diện thái độ',
+                    action: 'Rút gọn từng câu hỏi thành <code>Chủ ngữ + Hành động + Thái độ (ủng hộ / phản đối / trung lập)</code> để khớp nhanh với động từ tường thuật.',
+                    extra: renderHardKeywords(hard)
+                },
+                {
+                    title: 'Bước 4: So chiếu Paraphrase & Gạch bỏ dần',
+                    action: 'Khớp về mặt logic (câu hỏi trùng từ gốc thường là bẫy). Khi ghép xong câu nào, loại trừ dần để thu hẹp phạm vi.',
+                    extra: ''
+                }
+            ];
+        }
+
+        // 10. READING: MATCHING SENTENCE ENDINGS
+        if (!isListening && subtype === 'matching_endings') {
+            return [
+                {
+                    title: 'Bước 1: Đọc & Highlight từ khóa ở Vế đầu (Stems)',
+                    action: 'Gạch chân chủ ngữ và động từ chính ở từng vế đầu (1, 2, 3...) để biết câu đang nói về ai/vấn đề gì và dự đoán nghĩa vế kết.',
+                    extra: renderHardKeywords(hard)
+                },
+                {
+                    title: 'Bước 2: Scan bài đọc theo trình tự câu hỏi',
+                    action: 'Các câu Matching Endings thường đi theo đúng thứ tự từ trên xuống dưới trong bài đọc. Tìm câu gốc giải thích phần tiếp theo của vế đầu.',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 3: Khớp nghĩa Paraphrase với danh sách Vế kết (A–G)',
+                    action: 'So chiếu ý nghĩa trong bài đọc với các vế kết cho sẵn (chú ý từ đồng nghĩa và bẫy mượn từ nhưng sai nghĩa).',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 4: Kiểm tra hòa hợp Ngữ pháp (Grammar Check)',
+                    action: 'Ghép vế đầu + vế kết vừa chọn thành 1 câu hoàn chỉnh để kiểm tra sự hòa hợp Chủ–Vị, thì và liên từ.',
+                    extra: ''
+                }
+            ];
+        }
+
+        // 11. LISTENING: MAP LABELLING
         if (type === 'map_labelling_grid' || type === 'map_labelling_hotspots' || subtype === 'map_dnd') {
             return [
                 {
-                    title: 'Bước 1: Xác định điểm xuất phát & Phương hướng',
-                    action: 'Tìm ngay vị trí bắt đầu (Entrance / You are here) và la bàn (North/South/East/West) trên bản đồ.',
+                    title: 'Bước 1: Xác định Điểm xuất phát & La bàn (N/S/E/W)',
+                    action: 'Tìm ngay vị trí bắt đầu (<em>Entrance / Gate / You are here</em>) và kiểm tra xem bản đồ có la bàn Đông–Tây–Nam–Bắc không.',
                     extra: ''
                 },
                 {
-                    title: 'Bước 2: Đọc trước các mốc đã có tên (Landmarks)',
-                    action: 'Ghi nhớ các địa điểm đã ghi sẵn xung quanh các ô trống (ví dụ: Main Hall, Reception, Bridge) để bám theo đường đi trong audio.',
+                    title: 'Bước 2: Ghi nhớ các Mốc cố định (Landmarks) quanh ô trống',
+                    action: 'Đọc nhanh tên các khu vực đã có sẵn trên bản đồ để làm mốc định hướng khi người nói di chuyển.',
                     extra: ''
                 },
                 {
-                    title: 'Bước 3: Nghe chỉ dẫn vị trí & Kéo/chọn đáp án',
-                    action: 'Tập trung bắt các cụm giới từ chỉ vị trí: opposite, next to, just past, in the top-right corner, on the far side of...',
+                    title: 'Bước 3: Bắt cụm giới từ chỉ vị trí & Hướng rẽ',
+                    action: 'Tập trung nghe: <em>opposite, next to, just past, in the top-right corner, on the far side of, turn left/right, go straight ahead</em>.',
                     extra: ''
                 }
             ];
         }
 
+        // 12. LISTENING: MATCHING PART 2 / PART 3
+        const isListP3 = subtype === 'matching_p3' || (q?.ids || []).some(id => id >= 21);
         return [
             {
-                title: 'Bước 1: Highlight từ khóa ở câu hỏi & Danh sách lựa chọn',
-                action: isListening
-                    ? 'Đọc trước danh sách lựa chọn (A, B, C...) để nắm nhóm thông tin cần nghe và gạch chân từ khóa của từng câu hỏi.'
-                    : 'Đánh dấu tên riêng/đối tượng (A, B, C...) trong bài đọc trước, sau đó highlight từ khóa ở từng câu hỏi để dễ đối chiếu paraphrase.',
-                extra: hard.length ? `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Từ khóa gợi ý:</span>${hard.map(k => `<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>` : ''
+                title: 'Bước 1: Đọc kỹ Hộp lựa chọn (A–H) & Highlight từ khóa',
+                action: isListP3
+                    ? 'Đọc trước các lựa chọn (A–H) để nắm từ khóa sẽ bị paraphrase. Chú ý xem bảng lựa chọn nói về thái độ, nhận xét hay hành động.'
+                    : 'Đọc trước danh sách lựa chọn (A–H) và từ khóa của từng mục câu hỏi (câu hỏi 1, 2, 3... luôn đi đúng thứ tự trong audio).',
+                extra: renderHardKeywords(hard)
             },
             {
-                title: 'Bước 2: Khoanh vùng & So chiếu Paraphrase',
-                action: isListening
-                    ? 'Lắng nghe tín hiệu chuyển sang từng mục câu hỏi và bắt cặp nghĩa tương đương với các lựa chọn trong hộp.'
-                    : 'Đọc kỹ các câu xung quanh đối tượng đã khoanh vùng, so chiếu nghĩa tương đương (tránh bẫy trùng từ bề mặt).',
+                title: isListP3 ? 'Bước 2: Nghe tương tác 2 người & Bẫy thay đổi ý kiến' : 'Bước 2: Bắt Paraphrase & Cảnh giác thông tin nhiễu',
+                action: isListP3
+                    ? 'Ở Part 3, hai người nói thường trao đổi qua lại trước khi chốt ý. Luôn nghe hết lượt trao đổi xem họ có đồng ý với nhau hay bác bỏ bằng <em>"Actually, I think..."</em>.'
+                    : 'Gạch bỏ hoặc bỏ qua các phương án bị người nói phủ định (<em>used to be, not anymore, instead</em>), chọn ý được chốt sau cùng.',
                 extra: ''
             }
         ];
