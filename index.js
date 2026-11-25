@@ -5,10 +5,13 @@ const admin = require('firebase-admin');
 const OpenAI = require('openai');
 const { toFile } = require('openai/uploads');
 const { Readable } = require('node:stream');
+const crypto = require('node:crypto');
 const { buildStudentTestAccess } = require('./test-access-index');
+const { findMatchingSchedule, normalizeRecordingUrl } = require('./recording-matcher');
 
 admin.initializeApp();
 const openaiApiKey = defineSecret('OPENAI_API_KEY');
+const recordingWebhookSecret = defineSecret('RECORDING_WEBHOOK_SECRET');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -497,5 +500,93 @@ exports.lookupStudyItem = onRequest({
   } catch (error) {
     console.error('Study lookup error:', error);
     return sendJson(res, 500, { error: 'AI lookup failed' });
+  }
+});
+
+function verifyWebhookSecret(provided, expected) {
+  const a = Buffer.from(String(provided || '').trim(), 'utf8');
+  const b = Buffer.from(String(expected || '').trim(), 'utf8');
+  if (!b.length || a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
+exports.ingestClassRecording = onRequest({
+  secrets: [recordingWebhookSecret],
+  timeoutSeconds: 30,
+  memory: '256MiB',
+  cors: true
+}, async (req, res) => {
+  if (req.method === 'OPTIONS') return sendJson(res, 204, {});
+  if (req.method !== 'POST') return sendJson(res, 405, { ok: false, error: 'POST required' });
+
+  const authHeader = req.get('Authorization') || '';
+  const bearerSecret = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  const providedSecret = req.get('x-webhook-secret') || bearerSecret;
+  if (!verifyWebhookSecret(providedSecret, recordingWebhookSecret.value())) {
+    return sendJson(res, 401, { ok: false, error: 'Unauthorized webhook request' });
+  }
+
+  try {
+    const body = req.body && typeof req.body === 'object' ? req.body : {};
+    const recordingLink = normalizeRecordingUrl(body.recordingLink);
+    if (!recordingLink) {
+      return sendJson(res, 400, { ok: false, error: 'Valid HTTPS recordingLink is required' });
+    }
+
+    const db = admin.firestore();
+    const schedulesSnapshot = await db.collection('schedules').get();
+    const schedules = schedulesSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+
+    const match = findMatchingSchedule(schedules, {
+      recordingLink,
+      recordedAt: body.recordedAt || body.emailDate,
+      subject: cleanHtml(body.subject),
+      meetingTitle: cleanHtml(body.meetingTitle),
+      tzOffsetMinutes: body.tzOffsetMinutes,
+      overwrite: Boolean(body.overwrite)
+    });
+
+    if (!match.matched) {
+      return sendJson(res, 200, {
+        ok: true,
+        matched: false,
+        updated: false,
+        reason: match.reason || 'no_matching_schedule'
+      });
+    }
+
+    if (match.alreadySet) {
+      return sendJson(res, 200, {
+        ok: true,
+        matched: true,
+        updated: false,
+        alreadySet: true,
+        scheduleId: match.schedule.id,
+        className: match.schedule.className || '',
+        date: match.schedule.date || '',
+        time: match.schedule.time || ''
+      });
+    }
+
+    await db.collection('schedules').doc(match.schedule.id).update({
+      recordingLink,
+      recordingUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      recordingSource: 'gmail_auto'
+    });
+
+    return sendJson(res, 200, {
+      ok: true,
+      matched: true,
+      updated: true,
+      scheduleId: match.schedule.id,
+      className: match.schedule.className || '',
+      date: match.schedule.date || '',
+      time: match.schedule.time || '',
+      titleScore: match.titleScore,
+      diffHours: match.diffHours
+    });
+  } catch (error) {
+    console.error('Recording ingest error:', error);
+    return sendJson(res, 500, { ok: false, error: 'Could not ingest recording link' });
   }
 });
