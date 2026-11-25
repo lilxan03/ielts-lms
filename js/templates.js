@@ -2,6 +2,7 @@
         const templateId = TEACHER_TEMPLATE_ASSIGNMENTS[getTemplateAssignmentKey(skill, type)];
         return TEACHER_TEMPLATES.find(template => template.id === templateId)?.html || '';
     }
+    window.getAssignedQuestionTemplateHtml = getAssignedQuestionTemplateHtml;
 
     function renderTemplateAssignmentSettings(templateId) {
         const targetOptions = Object.entries(TEMPLATE_QUESTION_TYPES).map(([skill, types]) =>

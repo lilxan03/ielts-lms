@@ -1933,7 +1933,9 @@
             if (q.type === 'multiple_choice' && !q.multi) {
                 btnContainer += `<button id="btn-5050-${i}" onclick="window.applyFiftyFifty(${i})" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-amber-200">🪄 50/50</button>`;
             }
-            if (q.hint && q.hint.trim() !== '' && q.hint !== '<br>' && q.hint !== '<p><br></p>') {
+            const rawHint = (q.hint && q.hint.trim() !== '' && q.hint !== '<br>' && q.hint !== '<p><br></p>') ? q.hint : '';
+            const effectiveHint = rawHint || (typeof window.getAssignedQuestionTemplateHtml === 'function' ? window.getAssignedQuestionTemplateHtml(APP_DATA.module, q.type) : '');
+            if (effectiveHint && effectiveHint.trim() !== '' && effectiveHint !== '<br>' && effectiveHint !== '<p><br></p>') {
                 btnContainer += `<button onclick="window.toggleScaffoldHint(${i})" class="text-xs bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-sky-200">💡 Hint / Kỹ thuật</button>`;
             }
             if (q.type !== 'essay' && q.type !== 'audio_record') {
@@ -1953,7 +1955,7 @@
             chkBtn = `<div class="mt-4 flex justify-end items-center">${btnContainer}</div>
                       <div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-base font-bold"></div>
                       <div id="inline-hint-${i}" class="hidden mt-4 text-slate-700 text-[15px] leading-relaxed bg-sky-50 p-5 rounded-xl border border-sky-200 shadow-inner animate-fade-in-up">
-                          ${q.hint || ''}
+                          ${effectiveHint || ''}
                       </div>`;
         }
 

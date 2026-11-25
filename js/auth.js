@@ -316,16 +316,15 @@
                     if(document.getElementById('hof-full-screen') && !document.getElementById('hof-full-screen').classList.contains('hidden')) window.renderHOFGrid();
                     if(document.getElementById('public-landing-ui') && !document.getElementById('public-landing-ui').classList.contains('hidden')) window.renderPublicProfile();
                 }).catch(error => console.warn('Unable to load hall of fame:', error)),
-                ...(currentUser?.role === 'teacher'
-                  ? [waitForInitialSnapshot('study templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
+                waitForInitialSnapshot('study templates', window.fsDoc(window.db, window.fPath('settings'), 'templates'), snap => {
                     TEACHER_TEMPLATES = [];
                     TEACHER_TEMPLATE_ASSIGNMENTS = {};
                     if (snap.exists()) {
                       TEACHER_TEMPLATES = snap.data().items || [];
                       TEACHER_TEMPLATE_ASSIGNMENTS = snap.data().assignments || {};
                     }
-                  }).catch(error => console.warn('Unable to load study templates:', error))]
-                  : (TEACHER_TEMPLATES = [], TEACHER_TEMPLATE_ASSIGNMENTS = {}, []))
+                    window.triggerUIRefresh?.();
+                  }).catch(error => console.warn('Unable to load study templates:', error))
             ]);
 
             if (currentUser?.role === 'teacher' && !currentUser.isDemo) {
