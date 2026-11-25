@@ -26,7 +26,8 @@ Vì project Firebase `khanh-ielts-v2` đang dùng gói **Spark (miễn phí)** (
   "runtimeVersion": "V8",
   "oauthScopes": [
     "https://www.googleapis.com/auth/gmail.modify",
-    "https://www.googleapis.com/auth/datastore"
+    "https://www.googleapis.com/auth/datastore",
+    "https://www.googleapis.com/auth/script.external_request"
   ]
 }
 ```

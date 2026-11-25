@@ -6,6 +6,7 @@
  * Yêu cầu bật scope trong `appsscript.json` (xem docs/recording-automation-setup.md):
  * - https://www.googleapis.com/auth/gmail.modify
  * - https://www.googleapis.com/auth/datastore
+ * - https://www.googleapis.com/auth/script.external_request
  */
 
 const FIREBASE_PROJECT_ID = 'khanh-ielts-v2';
