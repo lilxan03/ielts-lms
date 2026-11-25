@@ -1727,10 +1727,8 @@
               const id = q.ids[sIdx];
               if(!id) return;
               let stmtTxt = pt(stmt);
-              const plainStmt = stmt.replace(/<[^>]*>/g, '').trim();
-              const hasLeadingNum = new RegExp(`^${id}(?:[.):\\s]|$)`).test(plainStmt);
-              const numberedPrefix = hasLeadingNum ? '' : `<span class="font-bold text-slate-900 mr-1.5">${id}</span>`;
-              table += `<tr><td class="border border-slate-300 px-3 py-2 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.4;">${numberedPrefix}${stmtTxt}</td>`;
+              const badgePrefix = unplacedIds.has(id) ? (() => { unplacedIds.delete(id); return makeBadge(id); })() : '';
+              table += `<tr><td class="border border-slate-300 px-3 py-2 font-medium text-slate-700" style="font-size: 0.95rem; line-height: 1.4;"><div class="flex items-start gap-1">${badgePrefix}<div>${stmtTxt}</div></div></td>`;
               cols.forEach(c => {
                  table += `<td class="border border-slate-300 p-1.5 text-center bg-white"><input type="radio" name="q-${id}" value="${optionAttribute(c)}" ${answers[id]===c?'checked':''} onchange="handleAns(${id}, this.value)" class="w-4 h-4 text-blue-600 cursor-pointer"></td>`;
               });
