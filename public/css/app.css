@@ -189,7 +189,7 @@
     .rich-editor i, .exam-reading-pane i, #questions-container i { font-style: italic; }
     .rich-editor u, .exam-reading-pane u, #questions-container u { text-decoration: underline; }
 
-    .reading-mode-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.5rem 0.75rem; border: 1px solid #dbeafe; background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%); border-radius: 0.75rem; }
+    .reading-mode-controls { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.5rem 0.75rem; border: 1px solid #dbeafe; background: linear-gradient(135deg, rgba(239, 246, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%); backdrop-filter: blur(8px); box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.12); border-radius: 0.75rem; }
     .reading-mode-controls button { border: 1px solid #bfdbfe; background: white; color: #1d4ed8; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.45rem 0.7rem; border-radius: 0.6rem; transition: all 0.2s; }
     .reading-mode-controls button:hover { background: #dbeafe; }
     .reading-mode-controls label { font-size: 0.68rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #475569; }

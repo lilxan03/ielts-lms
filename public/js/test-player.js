@@ -995,7 +995,7 @@
                   }
               } else {
                   // ✨ NEW: Compact single-row layout. No header text, reduced padding, side-by-side elements.
-                  window.listeningMediaInjection = `<div class="bg-blue-50 border border-blue-200 p-1.5 rounded-lg shadow-sm flex items-center gap-3"><audio id="practice-listening-audio" controls crossorigin="anonymous" src="${listeningAudioUrl}" class="w-full flex-1 h-9 outline-none"></audio><button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button></div>`;
+                  window.listeningMediaInjection = `<div class="sticky top-0 z-30 bg-blue-50/95 backdrop-blur-sm border border-blue-200 p-1.5 rounded-lg shadow-md flex items-center gap-3"><audio id="practice-listening-audio" controls crossorigin="anonymous" src="${listeningAudioUrl}" class="w-full flex-1 h-9 outline-none"></audio><button onclick="toggleTranscript()" class="shrink-0 text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1.5 rounded shadow hover:bg-blue-100 font-bold transition" title="Show/Hide Transcript">👁️ Transcript</button></div>`;
                   if (examAudio && examAudio.src) { examAudio.pause(); examAudio.src = ''; }
                   if (listeningOverlay) { listeningOverlay.classList.add('hidden'); listeningOverlay.classList.remove('flex'); }
               }
