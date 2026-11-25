@@ -303,9 +303,15 @@
     window.currentTemplateId = null;
     const TEMPLATE_QUESTION_TYPES = {
         reading: [
-            ['multiple_choice', 'Multiple Choice'],
-            ['fill_blanks', 'Gap Fill'],
-            ['dnd_list', 'Drag & Drop'],
+            ['mcq_1_4', 'Multiple Choice (1/4)'],
+            ['mcq_2_5', 'Multiple Choice (2/5)'],
+            ['mcq_3_6', 'Multiple Choice (3/6)'],
+            ['multiple_choice', 'Multiple Choice (Mặc định)'],
+            ['fill_blanks', 'Gap Fill (Điền từ vào chỗ trống)'],
+            ['summary_box', 'Drag & Drop — Gap-fill WITH A BOX'],
+            ['matching_statements', 'Drag & Drop — Matching Statements'],
+            ['matching_endings', 'Drag & Drop — Matching Endings'],
+            ['dnd_list', 'Drag & Drop (Mặc định)'],
             ['tfng', 'True / False / Not Given'],
             ['ynng', 'Yes / No / Not Given'],
             ['matching_headings', 'Matching Headings'],
@@ -314,9 +320,18 @@
             ['map_labelling_grid', 'Map Labelling (Grid)']
         ],
         listening: [
-            ['multiple_choice', 'Multiple Choice'],
-            ['fill_blanks', 'Gap Fill'],
-            ['dnd_list', 'Drag & Drop'],
+            ['mcq_1_3_p2', 'Multiple Choice (1/3 — Part 1 & 2)'],
+            ['mcq_1_3_p3', 'Multiple Choice (1/3 — Part 3 & 4)'],
+            ['mcq_2_5', 'Multiple Choice (2/5)'],
+            ['mcq_3_6', 'Multiple Choice (3/6)'],
+            ['multiple_choice', 'Multiple Choice (Mặc định)'],
+            ['fill_blanks_p1', 'Gap Fill (Part 1–3)'],
+            ['fill_blanks_p4', 'Gap Fill (Part 4)'],
+            ['fill_blanks', 'Gap Fill (Mặc định)'],
+            ['matching_p2', 'Drag & Drop — Matching Part 2'],
+            ['matching_p3', 'Drag & Drop — Matching Part 3'],
+            ['map_dnd', 'Drag & Drop — Map Labelling'],
+            ['dnd_list', 'Drag & Drop (Mặc định)'],
             ['map_labelling_hotspots', 'Map Labelling (Hotspots)'],
             ['map_labelling_grid', 'Map Labelling (Grid)']
         ],

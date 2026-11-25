@@ -1,5 +1,7 @@
-    function getAssignedQuestionTemplateHtml(skill, type) {
-        const templateId = TEACHER_TEMPLATE_ASSIGNMENTS[getTemplateAssignmentKey(skill, type)];
+    function getAssignedQuestionTemplateHtml(skill, type, subtype = '') {
+        const subKey = subtype ? getTemplateAssignmentKey(skill, subtype) : '';
+        const typeKey = getTemplateAssignmentKey(skill, type);
+        const templateId = (subKey && TEACHER_TEMPLATE_ASSIGNMENTS[subKey]) || TEACHER_TEMPLATE_ASSIGNMENTS[typeKey];
         return TEACHER_TEMPLATES.find(template => template.id === templateId)?.html || '';
     }
     window.getAssignedQuestionTemplateHtml = getAssignedQuestionTemplateHtml;

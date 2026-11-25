@@ -1892,7 +1892,8 @@
         </div>`;
 
         const mkTemplateToolbar = (editorId) => {
-            const defaultTemplateId = TEACHER_TEMPLATE_ASSIGNMENTS[getTemplateAssignmentKey(APP_DATA.module, q.type)];
+            const subKey = q.subtype ? getTemplateAssignmentKey(APP_DATA.module, q.subtype) : '';
+            const defaultTemplateId = (subKey && TEACHER_TEMPLATE_ASSIGNMENTS[subKey]) || TEACHER_TEMPLATE_ASSIGNMENTS[getTemplateAssignmentKey(APP_DATA.module, q.type)];
             const tplOpts = TEACHER_TEMPLATES.map(t => `<option value="${t.id}">${t.name}${t.id === defaultTemplateId ? ' (Assigned default)' : ''}</option>`).join('');
             const defaultTemplate = TEACHER_TEMPLATES.find(t => t.id === defaultTemplateId);
             return `<div class="sticky top-[72px] z-10 flex flex-wrap gap-1.5 bg-slate-100 px-3 py-2 rounded-t-lg border border-slate-300 w-full shadow-md">
@@ -1930,6 +1931,7 @@
             <div class="flex items-center gap-3">
                 <span class="bg-blue-100 text-blue-800 font-black text-[10px] px-2.5 py-1 rounded-md uppercase tracking-wider shadow-sm">Block ${i+1}</span>
                 <span class="text-sm font-bold text-slate-700 capitalize">${q.questionFormat === 'matching_sentence_endings' ? 'matching sentence endings' : q.type.replace(/_/g, ' ')}</span>
+                ${q.subtype ? `<span class="bg-indigo-100 text-indigo-800 font-bold text-[10px] px-2 py-0.5 rounded uppercase tracking-wide">${q.subtype.replace(/_/g, ' ')}</span>` : ''}
             </div>
             <div class="flex gap-2">
                 ${i > 0 ? `<button onclick="moveEditorQuestion(${i}, -1)" class="w-7 h-7 flex items-center justify-center bg-white border border-slate-200 rounded hover:bg-blue-50 hover:text-blue-600 text-slate-500 font-bold transition shadow-sm" title="Move Up">↑</button>` : ''}

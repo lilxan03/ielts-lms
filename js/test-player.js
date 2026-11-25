@@ -1935,7 +1935,8 @@
                 btnContainer += `<button id="btn-5050-${i}" onclick="window.applyFiftyFifty(${i})" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-amber-200">🪄 50/50</button>`;
             }
             const rawHint = (q.hint && q.hint.trim() !== '' && q.hint !== '<br>' && q.hint !== '<p><br></p>') ? q.hint : '';
-            effectiveHint = rawHint || (typeof window.getAssignedQuestionTemplateHtml === 'function' ? window.getAssignedQuestionTemplateHtml(APP_DATA.module, q.type) : '');
+            const qSubtype = q.subtype || (q.questionFormat === 'matching_sentence_endings' ? 'matching_endings' : '');
+            effectiveHint = rawHint || (typeof window.getAssignedQuestionTemplateHtml === 'function' ? window.getAssignedQuestionTemplateHtml(APP_DATA.module, q.type, qSubtype) : '');
             if (effectiveHint && effectiveHint.trim() !== '' && effectiveHint !== '<br>' && effectiveHint !== '<p><br></p>') {
                 btnContainer += `<button onclick="window.toggleScaffoldHint(${i})" class="text-xs bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-sky-200">💡 Hint / Kỹ thuật</button>`;
             }
