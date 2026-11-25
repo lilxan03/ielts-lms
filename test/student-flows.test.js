@@ -1210,3 +1210,66 @@ test('program-modules groups 4 IELTS skills into ielts and scopes student visibl
     assert.deepEqual(getStudentVisiblePrograms(multiCls, { user: 'vip_01' }, mixedTests), ['toeic']);
     assert.deepEqual(getStudentVisiblePrograms(multiCls, { user: 'reg_01' }, mixedTests), ['ielts', 'toeic']);
 });
+
+test('triggerUIRefresh preserves selectedParts and skips hot-reload while Speaking recording is active', async () => {
+    const schedulingSource = fs.readFileSync(path.join(__dirname, '..', 'js', 'scheduling.js'), 'utf8');
+    let renderPartCalls = 0;
+    const examUiEl = { classList: { contains: () => false } };
+    const titleEl = { textContent: '' };
+
+    const context = {
+        console,
+        setTimeout: (fn) => { fn(); return 1; },
+        clearTimeout: () => {},
+        document: {
+            activeElement: null,
+            getElementById: (id) => {
+                if (id === 'exam-ui') return examUiEl;
+                if (id === 'exam-module-title') return titleEl;
+                return { classList: { contains: () => true } };
+            }
+        },
+        currentUser: { role: 'student', user: 'student_01' },
+        CLASSES: [],
+        SCHEDULES: [],
+        AVAILABILITY: {},
+        TEST_BANK: [{
+            id: 'spk_test_1',
+            title: 'Speaking Test 1',
+            parts: [
+                { title: 'Part 1', questions: [{ id: 1, type: 'audio_record', ids: [1] }] },
+                { title: 'Part 2', questions: [{ id: 2, type: 'audio_record', ids: [2] }] },
+                { title: 'Part 3', questions: [{ id: 3, type: 'audio_record', ids: [3] }] }
+            ]
+        }],
+        APP_DATA: {
+            id: 'spk_test_1',
+            title: 'Speaking Test 1',
+            parts: [{ title: 'Part 2', questions: [{ id: 2, type: 'audio_record', ids: [2] }] }]
+        },
+        currentPartIdx: 0,
+        currentBlockIdx: 0,
+        mediaRecorder: { state: 'inactive' },
+        isSpeakingSimulationLocked: () => false,
+        renderPart: () => { renderPartCalls++; },
+        window: {
+            isFullExamMode: false,
+            activeTestSelectedParts: [1]
+        }
+    };
+    vm.createContext(context);
+    vm.runInContext(schedulingSource, context);
+
+    // 1. Selected single part must NOT be overwritten by full 3-part test on Firestore refresh
+    context.window.triggerUIRefresh();
+    assert.equal(renderPartCalls, 0);
+    assert.equal(context.APP_DATA.parts.length, 1);
+    assert.equal(context.APP_DATA.parts[0].title, 'Part 2');
+
+    // 2. Active Speaking recording must block hot-reload even when test content changes
+    context.TEST_BANK[0].parts[1].title = 'Part 2 (Updated)';
+    context.mediaRecorder.state = 'recording';
+    context.window.triggerUIRefresh();
+    assert.equal(renderPartCalls, 0);
+    assert.equal(context.APP_DATA.parts[0].title, 'Part 2');
+});

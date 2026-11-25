@@ -299,12 +299,18 @@
 
             // ✨ NEW: Real-Time Live Sync for Active Exams & Previews!
             const examUI = document.getElementById('exam-ui');
-            if (examUI && !examUI.classList.contains('hidden') && APP_DATA && APP_DATA.id && !window.isFullExamMode) {
+            const isSpeakingRecordingNow =
+                (typeof isSpeakingSimulationLocked === 'function' && isSpeakingSimulationLocked()) ||
+                (typeof mediaRecorder !== 'undefined' && mediaRecorder && mediaRecorder.state === 'recording');
+            if (examUI && !examUI.classList.contains('hidden') && APP_DATA && APP_DATA.id && !window.isFullExamMode && !isSpeakingRecordingNow) {
                 const freshTest = TEST_BANK.find(t => t.id === APP_DATA.id);
+                const freshParts = Array.isArray(window.activeTestSelectedParts) && window.activeTestSelectedParts.length > 0 && freshTest?.parts
+                    ? window.activeTestSelectedParts.map(idx => freshTest.parts[idx]).filter(Boolean)
+                    : freshTest?.parts;
                 // Only hot-reload if the content actually changed
-                if (freshTest && JSON.stringify(freshTest.parts) !== JSON.stringify(APP_DATA.parts)) {
+                if (freshTest && Array.isArray(freshParts) && freshParts.length > 0 && JSON.stringify(freshParts) !== JSON.stringify(APP_DATA.parts)) {
                     // Update global state without wiping the student's answers
-                    APP_DATA.parts = JSON.parse(JSON.stringify(freshTest.parts));
+                    APP_DATA.parts = JSON.parse(JSON.stringify(freshParts));
                     APP_DATA.title = freshTest.title;
                     const titleEl = document.getElementById('exam-module-title');
                     if (titleEl) titleEl.textContent = APP_DATA.title;
@@ -317,9 +323,17 @@
                         try { cursorStart = activeEl.selectionStart; cursorEnd = activeEl.selectionEnd; } catch(e) {}
                     }
 
-                    // Hot-reload the screen
+                    // Hot-reload the screen while preserving the active part and question block
+                    const preservedBlockIdx = typeof currentBlockIdx === 'number' ? currentBlockIdx : 0;
                     if (typeof renderPart === 'function') {
-                        renderPart(Math.min(currentPartIdx, Math.max(0, APP_DATA.parts.length - 1)));
+                        const targetPartIdx = Math.min(currentPartIdx, Math.max(0, APP_DATA.parts.length - 1));
+                        renderPart(targetPartIdx);
+                        const maxBlockIdx = Math.max(0, (APP_DATA.parts[targetPartIdx]?.questions?.length || 1) - 1);
+                        if (preservedBlockIdx > 0 && typeof activateQuestionBlock === 'function') {
+                            currentBlockIdx = Math.min(preservedBlockIdx, maxBlockIdx);
+                            activateQuestionBlock(targetPartIdx, currentBlockIdx);
+                            if (typeof updateExamUI === 'function') updateExamUI();
+                        }
                     }
 
                     // Restore cursor focus seamlessly

@@ -298,6 +298,9 @@
           return;
       }
       clearSpeakingPartTwoSession();
+      window.activeTestSelectedParts = Array.isArray(selectedParts) && selectedParts.length > 0
+          ? selectedParts.filter(idx => Number.isInteger(idx) && idx >= 0)
+          : null;
       if (syntheticTestObj) {
           APP_DATA = syntheticTestObj;
       } else {
