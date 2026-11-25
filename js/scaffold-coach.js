@@ -52,21 +52,71 @@
         });
     }
 
+    const STOP_WORDS = new Set([
+        'the', 'and', 'for', 'with', 'from', 'that', 'this', 'these', 'those', 'which', 'what', 'when', 'where', 'who', 'whom', 'whose', 'why', 'how',
+        'are', 'was', 'were', 'been', 'being', 'have', 'has', 'had', 'does', 'did', 'doing', 'will', 'would', 'could', 'should', 'can', 'may', 'might', 'must',
+        'not', 'but', 'yet', 'nor', 'also', 'very', 'more', 'most', 'some', 'any', 'many', 'much', 'few', 'other', 'another', 'such', 'only', 'just',
+        'about', 'into', 'over', 'under', 'above', 'below', 'between', 'among', 'through', 'during', 'before', 'after', 'around', 'while', 'because',
+        'they', 'them', 'their', 'theirs', 'there', 'here', 'then', 'than', 'its', 'his', 'her', 'hers', 'our', 'ours', 'your', 'yours', 'you',
+        'examples', 'example', 'reasons', 'reason', 'details', 'detail', 'description', 'mention', 'reference', 'comparison', 'following', 'statements',
+        'statement', 'paragraph', 'paragraphs', 'information', 'passage', 'section', 'according', 'writer', 'author', 'agree', 'correct', 'letter', 'boxes'
+    ]);
+
+    function stripLeadingQuestionNumbers(text) {
+        return String(text || '')
+            .replace(/<[^>]+>/g, '\n')
+            .split(/\r?\n/)
+            .map(line => line.replace(/^\s*\d{1,2}\s*[\.\):]?\s+/, '').trim())
+            .filter(Boolean)
+            .join('\n');
+    }
+
     function extractKeywordsHint(text) {
-        const plain = stripHtml(text).replace(/__GAP_\d+__/g, ' ');
-        const hard = Array.from(new Set(
-            (plain.match(/\b(?:[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})*|\d{3,4}s?|\d+(?:\.\d+)?%?)\b/g) || [])
-                .filter(w => !/^(The|This|That|These|Those|When|Where|What|Which|Who|Why|How|Complete|Choose|Write|Questions?|True|False|Not|Given|Yes|No)$/i.test(w))
-        )).slice(0, 6);
+        const cleanedLines = stripLeadingQuestionNumbers(text)
+            .replace(/\{(blank|drop):\d+\}/gi, ' ')
+            .replace(/__GAP_\d+__/g, ' ');
+        const plain = stripHtml(cleanedLines);
+
+        // Hard keywords: real years (1000-2099), percentages/quantities with units, or proper nouns NOT at sentence/line start
+        const yearsAndQuantities = plain.match(/\b(?:1\d{3}|20\d{2})s?\b|\b\d+(?:\.\d+)?\s*(?:%|percent|million|billion|thousand|km|metres|meters|years|months|weeks|days|hours)\b/gi) || [];
+        const midSentenceNames = [];
+        cleanedLines.split(/\r?\n/).forEach(line => {
+            const tokens = line.trim().split(/\s+/);
+            tokens.forEach((tok, idx) => {
+                const cleanTok = tok.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '');
+                if (!cleanTok) return;
+                if (idx > 0 && /^[A-Z][a-z]{2,}$/.test(cleanTok) && !STOP_WORDS.has(cleanTok.toLowerCase())) {
+                    midSentenceNames.push(cleanTok);
+                } else if (/^[A-Z]{2,5}$/.test(cleanTok) && !/^(THE|AND|FOR|NOT|YES|NO|TRUE|FALSE|GIVEN|ONE|TWO|ONLY|WORD|WORDS|MAX|WPM|NB)$/.test(cleanTok)) {
+                    midSentenceNames.push(cleanTok);
+                }
+            });
+        });
+        const hard = Array.from(new Set([...yearsAndQuantities, ...midSentenceNames])).slice(0, 6);
+
+        // Content / soft keywords: meaningful words from the question text
+        const words = plain
+            .replace(/[^A-Za-z0-9'\-\s]/g, ' ')
+            .split(/\s+/)
+            .map(w => w.replace(/^['\-]+|['\-]+$/g, ''))
+            .filter(w => w.length >= 4 && !/^\d+$/.test(w) && !STOP_WORDS.has(w.toLowerCase()) && !hard.includes(w));
+        const soft = Array.from(new Set(words.map(w => w.toLowerCase()))).slice(0, 8);
+
         const traps = Array.from(new Set(
             plain.toLowerCase().match(/\b(only|always|never|all|every|most|mainly|primarily|first|last|more than|less than|fewer|at least|impossible|completely|entirely|definitely|unique)\b/g) || []
         )).slice(0, 6);
-        return { hard, traps };
+        return { hard, soft, traps };
     }
 
-    function renderHardKeywords(hard) {
-        if (!hard.length) return '';
-        return `<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Hard Keywords (dùng để Scan):</span>${hard.map(k => `<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>`;
+    function renderHardKeywords(hard, soft = []) {
+        const parts = [];
+        if (hard && hard.length) {
+            parts.push(`<div class="mt-2 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Hard Keywords (Scan nhanh):</span>${hard.map(k => `<span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>`);
+        }
+        if (soft && soft.length) {
+            parts.push(`<div class="mt-1.5 flex flex-wrap items-center gap-1.5"><span class="text-[11px] font-bold text-slate-600">Keywords nội dung (săn Paraphrase):</span>${soft.map(k => `<span class="px-2 py-0.5 rounded bg-sky-100 text-sky-900 border border-sky-300 text-xs font-bold">${escapeHtml(k)}</span>`).join('')}</div>`);
+        }
+        return parts.join('');
     }
 
     function getStepsForQuestion(q, moduleName) {
@@ -74,7 +124,7 @@
         const subtype = String(q?.subtype || (q?.questionFormat === 'matching_sentence_endings' ? 'matching_endings' : '') || type);
         const isListening = moduleName === 'listening';
         const wordLimit = extractWordLimit(q?.instruction);
-        const { hard, traps } = extractKeywordsHint(q?.text);
+        const { hard, soft, traps } = extractKeywordsHint(q?.text);
 
         // 1. READING: GAP-FILL WITH A BOX (Summary Completion)
         if (!isListening && subtype === 'summary_box') {
@@ -100,7 +150,7 @@
                 {
                     title: 'Bước 3: Định vị đoạn văn & Nhặt "Từ gốc" (Tầng Paraphrase 1)',
                     action: 'Dạng Summary thường nằm gọn trong <strong>1–2 đoạn liên tiếp</strong>. Dùng Hard Keywords để tìm đúng đoạn văn và nhặt <strong>từ gốc trong bài đọc</strong> trước khi nhìn lại hộp từ.',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 4: So chiếu 2 tầng Paraphrase & Kiểm tra ngữ pháp',
@@ -130,7 +180,7 @@
                 {
                     title: 'Bước 3: Xác định "Mỏ neo" & Dự đoán Paraphrase Học thuật',
                     action: 'Khoanh tròn Hard Keywords (năm, tên nhà khoa học, địa danh) làm mỏ neo. Đổi cụm danh từ trên đề sang văn nói (VD: <em>lack of → shortage of / absence of</em>; <em>causes of decline → why it started falling</em>).',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 4: Nghe theo "Đèn tín hiệu" & Tránh bẫy đảo trật tự',
@@ -171,7 +221,7 @@
                     action: isListening
                         ? 'Bôi vàng từ khóa xung quanh ô trống. Trong băng, người nói rất hay đưa thông tin sai rồi tự sửa lại (<em>"Oh wait, sorry, it\'s actually..."</em>) — chỉ chốt thông tin cuối cùng!'
                         : '<strong>Hard Keywords</strong> (tên riêng, năm tháng, số liệu) dùng để Scan nhanh tới đúng đoạn văn. <strong>Soft Keywords</strong> (động/tính từ) chuẩn bị săn Paraphrase hoặc đổi Active ↔ Passive.',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 4: Lấy từ nguyên bản & Kiểm tra Checklist 4 bẫy',
@@ -198,7 +248,7 @@
                 {
                     title: 'Bước 2: Khoanh vùng 3 nhóm từ khóa bẫy (Qualifiers & Quantifiers)',
                     action: '80% đáp án nằm ở các từ hạn định: (1) <strong>Tuyệt đối vs Tương đối</strong> (<em>always, never, all, only</em> vs <em>often, some, may</em>), (2) <strong>Mức độ chắc chắn</strong> (<em>definitely, will</em> vs <em>likely, suggest</em>), (3) <strong>Nhân quả & So sánh</strong> (<em>caused by, more than</em>).',
-                    extra: `${trapHtml}${renderHardKeywords(hard)}`
+                    extra: `${trapHtml}${renderHardKeywords(hard, soft)}`
                 },
                 {
                     title: 'Bước 3: Scanning & Đọc trọn ngữ cảnh (câu trước/sau)',
@@ -231,7 +281,7 @@
                 {
                     title: 'Bước 3: Quét bài đọc theo từng Nhóm chủ đề (Cluster Scanning)',
                     action: 'Thay vì nhớ rời từng câu A–E, hãy đọc đoạn văn theo từng cụm chủ đề vừa gom (VD: khi bài nói về chi phí → đối chiếu ngay toàn bộ Nhóm Tài chính).',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 4: Gán nhãn loại trừ (FALSE / NOT GIVEN / WRONG FOCUS / TRUE)',
@@ -251,7 +301,7 @@
                     {
                         title: `Bước 1: Đọc câu dẫn & Phân biệt ${nIds}/${nOpts} lựa chọn`,
                         action: `Đánh dấu số đáp án cần chọn (<strong>${nIds}/${nOpts}</strong>) và gạch chân từ khóa khác biệt giữa 3 lựa chọn A, B, C trước khi băng chạy.`,
-                        extra: renderHardKeywords(hard)
+                        extra: renderHardKeywords(hard, soft)
                     },
                     {
                         title: isPart3 ? 'Bước 2: Bắt đúng người nói & Tín hiệu Đồng thuận / Bác bỏ' : 'Bước 2: Nghe trọn ý & Cảnh giác bẫy "Nhắc hết cả 3 phương án"',
@@ -271,7 +321,7 @@
                 {
                     title: 'Bước 1: Đọc kỹ Câu dẫn (Stem) & Định vị đoạn văn',
                     action: 'Gạch chân từ khóa ở câu dẫn trước (chưa cần đọc vội 4 lựa chọn A–D) rồi Scan tìm đoạn văn chứa thông tin câu hỏi.',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 2: Đọc hiểu câu gốc trong bài trước khi nhìn A/B/C/D',
@@ -323,7 +373,7 @@
                 {
                     title: 'Bước 2: Giải mã "Từ khóa chức năng" của Supporting Sentence',
                     action: 'Matching Info tìm <strong>chi tiết/dẫn chứng (Supporting Sentence)</strong> chứ không phải ý chính. Bắt đúng tín hiệu: <em>a reason</em> → because/due to; <em>a comparison</em> → whereas/more...than; <em>an example</em> → such as/for instance; <em>a prediction</em> → will/forecast.',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 3: Đọc theo khối đoạn văn (Block-by-Block Mapping)',
@@ -354,7 +404,7 @@
                 {
                     title: 'Bước 3: Rút gọn Statements & Nhận diện thái độ',
                     action: 'Rút gọn từng câu hỏi thành <code>Chủ ngữ + Hành động + Thái độ (ủng hộ / phản đối / trung lập)</code> để khớp nhanh với động từ tường thuật.',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 4: So chiếu Paraphrase & Gạch bỏ dần',
@@ -370,7 +420,7 @@
                 {
                     title: 'Bước 1: Đọc & Highlight từ khóa ở Vế đầu (Stems)',
                     action: 'Gạch chân chủ ngữ và động từ chính ở từng vế đầu (1, 2, 3...) để biết câu đang nói về ai/vấn đề gì và dự đoán nghĩa vế kết.',
-                    extra: renderHardKeywords(hard)
+                    extra: renderHardKeywords(hard, soft)
                 },
                 {
                     title: 'Bước 2: Scan bài đọc theo trình tự câu hỏi',
@@ -419,7 +469,7 @@
                 action: isListP3
                     ? 'Đọc trước các lựa chọn (A–H) để nắm từ khóa sẽ bị paraphrase. Chú ý xem bảng lựa chọn nói về thái độ, nhận xét hay hành động.'
                     : 'Đọc trước danh sách lựa chọn (A–H) và từ khóa của từng mục câu hỏi (câu hỏi 1, 2, 3... luôn đi đúng thứ tự trong audio).',
-                extra: renderHardKeywords(hard)
+                extra: renderHardKeywords(hard, soft)
             },
             {
                 title: isListP3 ? 'Bước 2: Nghe tương tác 2 người & Bẫy thay đổi ý kiến' : 'Bước 2: Bắt Paraphrase & Cảnh giác thông tin nhiễu',
