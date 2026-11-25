@@ -336,6 +336,11 @@
         if (el) el.classList.toggle('hidden');
     };
 
+    window.toggleInlineExplanation = function(blockIdx) {
+        const el = document.getElementById(`inline-explanation-${blockIdx}`);
+        if (el) el.classList.toggle('hidden');
+    };
+
     window.applyFiftyFifty = function(blockIdx) {
         const q = APP_DATA.parts[currentPartIdx].questions[blockIdx];
         if (!q || q.type !== 'multiple_choice' || q.multi) return;

@@ -1928,17 +1928,15 @@
         
         let chkBtn = '';
         let btnContainer = '';
-        let effectiveHint = '';
+        let rawExpl = '';
         
         if (isTimeFree) {
             if (q.type === 'multiple_choice' && !q.multi) {
                 btnContainer += `<button id="btn-5050-${i}" onclick="window.applyFiftyFifty(${i})" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-amber-200">🪄 50/50</button>`;
             }
-            const rawHint = (q.hint && q.hint.trim() !== '' && q.hint !== '<br>' && q.hint !== '<p><br></p>') ? q.hint : '';
-            const qSubtype = q.subtype || (q.questionFormat === 'matching_sentence_endings' ? 'matching_endings' : '');
-            effectiveHint = rawHint || (typeof window.getAssignedQuestionTemplateHtml === 'function' ? window.getAssignedQuestionTemplateHtml(APP_DATA.module, q.type, qSubtype) : '');
-            if (effectiveHint && effectiveHint.trim() !== '' && effectiveHint !== '<br>' && effectiveHint !== '<p><br></p>') {
-                btnContainer += `<button onclick="window.toggleScaffoldHint(${i})" class="text-xs bg-sky-100 hover:bg-sky-200 text-sky-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-sky-200">💡 Hint / Kỹ thuật</button>`;
+            rawExpl = (q.explanation && q.explanation.trim() !== '' && q.explanation !== '<br>' && q.explanation !== '<p><br></p>') ? q.explanation : '';
+            if (rawExpl) {
+                btnContainer += `<button type="button" onclick="window.toggleInlineExplanation(${i})" class="text-xs bg-purple-100 hover:bg-purple-200 text-purple-800 font-bold px-3 py-1.5 rounded transition shadow-sm mr-2 border border-purple-200">📖 Explanation</button>`;
             }
             if (q.type !== 'essay' && q.type !== 'audio_record') {
                 btnContainer += `<button onclick="quickCheckAnswer(${i})" class="text-xs bg-slate-200 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 font-bold px-3 py-1.5 rounded transition shadow-sm">Check Answer</button>`;
@@ -1956,9 +1954,10 @@
         if (btnContainer) {
             chkBtn = `<div class="mt-4 flex justify-end items-center">${btnContainer}</div>
                       <div id="quick-res-${i}" class="hidden mt-2 p-2 rounded text-base font-bold"></div>
-                      <div id="inline-hint-${i}" class="hidden mt-4 text-slate-700 text-[15px] leading-relaxed bg-sky-50 p-5 rounded-xl border border-sky-200 shadow-inner animate-fade-in-up">
-                          ${effectiveHint || ''}
-                      </div>`;
+                      ${rawExpl ? `<div id="inline-explanation-${i}" class="hidden mt-4 text-purple-900 text-[15px] leading-relaxed bg-purple-50 p-5 rounded-xl border border-purple-200 shadow-inner animate-fade-in-up">
+                          <b class="text-purple-700 uppercase tracking-widest text-[10px] block mb-2">📖 Giải thích đáp án (Explanation)</b>
+                          ${rawExpl}
+                      </div>` : ''}`;
         }
 
         let leftoverBadges = Array.from(unplacedIds).map(id => makeBadge(id)).join('');
