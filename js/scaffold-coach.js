@@ -119,7 +119,138 @@
         return parts.join('');
     }
 
-    function getStepsForQuestion(q, moduleName) {
+    function getWritingSteps(q, part) {
+        const taskFlag = String(part?.writingTask || '').toLowerCase();
+        const partTitle = stripHtml(part?.title || '');
+        const isTask1 = taskFlag === 'task1' || /\btask\s*1\b/i.test(partTitle);
+        const hasSample = Boolean(stripHtml(part?.text || ''));
+        const { hard, soft } = extractKeywordsHint(`${partTitle} ${q?.instruction || ''} ${q?.text || ''}`);
+        const kwExtra = renderHardKeywords(hard, soft);
+
+        if (isTask1) {
+            return [
+                {
+                    title: 'Bước 1: Đọc biểu đồ/quy trình & Lập Mind Map (Main vs Minor)',
+                    action: 'Đọc kỹ đề bài & biểu đồ ở cột trái. Dùng <strong>Dynamic Mind Map</strong> ở cột trái để tách 2 nhóm: <strong>Main Details (Overview)</strong> — xu hướng chung, điểm cao/thấp nhất (không đưa số liệu) và <strong>Minor Details (Body)</strong> — số liệu, so sánh chi tiết.',
+                    extra: kwExtra
+                },
+                {
+                    title: 'Bước 2: Viết Introduction & Overview trong Viết theo khối',
+                    action: 'Điền 2 khối đầu của <strong>Scaffolded Writing / Viết theo khối</strong> bên dưới: (1) <strong>Introduction</strong> — paraphrase lại đề bài; (2) <strong>Overview</strong> — tóm tắt 2–3 xu hướng nổi bật nhất (<em>Overall, It is clear that...</em>).',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 3: Triển khai Body 1 & Body 2 với số liệu chính xác',
+                    action: 'Nhóm đối tượng hợp lý vào <strong>Body 1 &amp; Body 2</strong>. Đưa số liệu từ nhánh <em>Minor Details</em> kèm từ nối &amp; cấu trúc so sánh/xu hướng (<em>peaked at, declined steadily, whereas, compared to</em>).',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 4: Kiểm tra Writing Analyzer & Đối chiếu Sample Answer',
+                    action: `Kiểm tra bộ đếm <strong>Words (tối thiểu 150 từ)</strong> và bảng <strong>Writing Text Analyzer</strong> bên dưới (lỗi lặp từ, từ nối, cấu trúc câu).${hasSample ? ' Sau khi viết xong, bấm <strong>👁️ Show Sample Answer</strong> ở cột trái để đối chiếu theo 4 tiêu chí <em>TA, CC, LR, GRA</em>.' : ''}`,
+                    extra: ''
+                }
+            ];
+        }
+
+        return [
+            {
+                title: 'Bước 1: Xác định dạng bài & Lập Mind Map (Position → Point → Explanation)',
+                action: 'Xác định rõ dạng đề (<em>Opinion, Discussion, Advantages/Disadvantages, Problem/Solution</em>). Dùng <strong>Dynamic Mind Map</strong> ở cột trái để chốt: <strong>Position (Thesis Statement)</strong> → <strong>Main Point</strong> → <strong>Explanation</strong>, đồng thời chọn từ vựng &amp; Discourse Markers gợi ý.',
+                extra: kwExtra
+            },
+            {
+                title: 'Bước 2: Viết Introduction & Chốt Thesis Statement',
+                action: 'Ở khối <strong>Introduction</strong> trong <strong>Scaffolded Writing</strong> bên dưới: paraphrase bối cảnh đề bài (1–2 câu) và viết <strong>Thesis Statement</strong> trả lời trực tiếp yêu cầu đề bài.',
+                extra: ''
+            },
+            {
+                title: 'Bước 3: Phát triển Body 1 & Body 2 theo mạch P-E-E',
+                action: 'Mỗi đoạn thân bài triển khai đủ: <strong>Point</strong> (câu chủ đề rõ ràng) → <strong>Explanation</strong> (giải thích nguyên nhân/cơ chế bằng <em>This is because, Consequently</em>) → <strong>Example</strong> (ví dụ cụ thể).',
+                extra: ''
+            },
+            {
+                title: 'Bước 4: Viết Conclusion, Kiểm tra Analyzer & Đối chiếu Sample Answer',
+                action: `Viết <strong>Conclusion</strong> khẳng định lại quan điểm (không thêm ý mới). Đảm bảo bộ đếm <strong>Words ≥ 250 từ</strong>, rà soát bảng <strong>Writing Text Analyzer</strong> bên dưới.${hasSample ? ' Sau đó mở <strong>👁️ Show Sample Answer</strong> ở cột trái để đối chiếu theo 4 tiêu chí <em>TR, CC, LR, GRA</em>.' : ''}`,
+                extra: ''
+            }
+        ];
+    }
+
+    function getSpeakingSteps(q, part) {
+        const partTitle = stripHtml(part?.title || '');
+        const speakingQ = stripHtml(part?.speakingQuestions || '');
+        const hasSample = Boolean(stripHtml(part?.text || ''));
+        const { hard, soft } = extractKeywordsHint(`${partTitle} ${speakingQ} ${q?.instruction || ''} ${q?.text || ''}`);
+        const kwExtra = renderHardKeywords(hard, soft);
+        const isPart2 = /\bpart\s*2\b/i.test(partTitle) || /\bdescribe\b/i.test(partTitle + ' ' + speakingQ);
+        const isPart3 = /\bpart\s*3\b/i.test(partTitle);
+
+        const sampleHint = hasSample
+            ? ' Sau đó bấm <strong>🔊 Listen to Sample Answer</strong> và <strong>👁️ Show Sample Answer</strong> ở cột trái để so sánh cách dùng từ &amp; ngữ điệu theo 4 tiêu chí <em>FC, LR, GRA, PR</em>.'
+            : '';
+
+        if (isPart2) {
+            return [
+                {
+                    title: 'Bước 1: Lập dàn ý 4 nhánh trên Mind Map (1 phút chuẩn bị)',
+                    action: 'Dùng <strong>Dynamic Mind Map</strong> ở cột trái để ghi nhanh từ khóa cho 4 chặng: <strong>Topic Sentence</strong> (mở bài) → <strong>Background Info</strong> (bối cảnh) → <strong>Main Point</strong> (chi tiết Cue Card) → <strong>Feelings &amp; Future Plans</strong>.',
+                    extra: kwExtra
+                },
+                {
+                    title: 'Bước 2: Thực hành nói liên tục 1.5–2 phút vào Micro',
+                    action: 'Bấm <strong>🎙️ Micro</strong> bên dưới (hoặc theo đồng hồ mô phỏng <strong>1 phút chuẩn bị → 2 phút nói</strong>). Bám theo 4 nhánh Mind Map và dùng từ nối (<em>To begin with, What impressed me most was, Looking back...</em>) để giữ mạch nói trôi chảy.',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 3: Nghe lại Playback & Đối chiếu Sample Answer',
+                    action: `Nghe lại bản ghi âm của bạn để kiểm tra thời lượng (~2 phút), chia thì và phát âm âm cuối.${sampleHint}`,
+                    extra: ''
+                }
+            ];
+        }
+
+        if (isPart3) {
+            return [
+                {
+                    title: 'Bước 1: Dựng khung Point – Explanation – Example trên Mind Map',
+                    action: 'Câu hỏi Part 3 mang tính khái quát xã hội. Dùng <strong>Dynamic Mind Map</strong> ở cột trái để phác thảo: <strong>Point</strong> (luận điểm trực tiếp) → <strong>Explanation</strong> (nguyên nhân/tác động) → <strong>Example &amp; Link Back</strong> (ví dụ &amp; chốt ý).',
+                    extra: kwExtra
+                },
+                {
+                    title: 'Bước 2: Ghi âm câu trả lời phân tích (30–45 giây)',
+                    action: 'Bấm <strong>🎙️ Micro</strong> bên dưới để ghi âm. Tránh nói lan man về bản thân; ưu tiên góc nhìn xã hội và từ nối học thuật (<em>From a broader perspective, This is largely due to, A clear example is...</em>).',
+                    extra: ''
+                },
+                {
+                    title: 'Bước 3: Nghe lại Playback & Đối chiếu Sample Answer',
+                    action: `Nghe lại bản ghi âm để kiểm tra tính logic và độ đa dạng cấu trúc câu.${sampleHint}`,
+                    extra: ''
+                }
+            ];
+        }
+
+        return [
+            {
+                title: 'Bước 1: Phác thảo Direct Answer + Further Details trên Mind Map',
+                action: 'Đọc câu hỏi ở cột trái và dùng <strong>Dynamic Mind Map</strong> để chuẩn bị nhanh 2 phần: <strong>Direct Answer</strong> (trả lời thẳng vào câu hỏi) + <strong>Further Details</strong> (1 lý do, thói quen hoặc chi tiết ngắn), kèm 2–3 từ vựng gợi ý.',
+                extra: kwExtra
+            },
+            {
+                title: 'Bước 2: Bấm Micro ghi âm tự nhiên (15–25 giây/câu)',
+                action: 'Bấm <strong>🎙️ Micro</strong> bên dưới để nói tự nhiên theo cấu trúc 2–3 câu (<em>Yes, definitely... / To be honest... because...</em>), không cần học thuộc lòng.',
+                extra: ''
+            },
+            {
+                title: 'Bước 3: Nghe lại Playback & Đối chiếu Sample Answer',
+                action: `Nghe lại bản ghi âm để tự kiểm tra độ trôi chảy, nhấn trọng âm và phát âm.${sampleHint}`,
+                extra: ''
+            }
+        ];
+    }
+
+    function getStepsForQuestion(q, moduleName, partObj) {
+        if (moduleName === 'writing') return getWritingSteps(q, partObj);
+        if (moduleName === 'speaking') return getSpeakingSteps(q, partObj);
         const type = String(q?.type || '');
         const subtype = String(q?.subtype || (q?.questionFormat === 'matching_sentence_endings' ? 'matching_endings' : '') || type);
         const isListening = moduleName === 'listening';
@@ -485,9 +616,10 @@
     const completedByBlock = new Map();
     const openByBlock = new Map();
 
-    root.renderQuestionScaffoldCoach = function(q, blockIdx, moduleName) {
-        if (!['reading', 'listening'].includes(moduleName)) return '';
-        const steps = getStepsForQuestion(q, moduleName);
+    root.renderQuestionScaffoldCoach = function(q, blockIdx, moduleName, partObj) {
+        if (!['reading', 'listening', 'writing', 'speaking'].includes(moduleName)) return '';
+        const activePart = partObj || (typeof APP_DATA !== 'undefined' && typeof currentPartIdx !== 'undefined' ? APP_DATA?.parts?.[currentPartIdx] : null);
+        const steps = getStepsForQuestion(q, moduleName, activePart);
         if (!steps.length) return '';
 
         const activeStep = activeStepByBlock.get(blockIdx) || 0;
@@ -495,6 +627,11 @@
         const isOpen = openByBlock.get(blockIdx) || false;
         const step = steps[Math.min(activeStep, steps.length - 1)];
         const isDone = completed.has(activeStep);
+        const footerTip = moduleName === 'writing'
+            ? 'Mẹo: Kết hợp Mind Map bên trái với Viết theo khối & Bộ phân tích bên dưới.'
+            : (moduleName === 'speaking'
+                ? 'Mẹo: Ghi chú từ khóa trên Mind Map bên trái, nói tự nhiên vào Micro rồi nghe lại.'
+                : 'Mẹo: Bôi đen chữ trên đề bài/đoạn văn để highlight ghi nhớ.');
 
         const tabsHtml = steps.map((s, idx) => {
             const active = idx === activeStep;
@@ -523,7 +660,7 @@
                         <p class="text-[13px] leading-relaxed">${step.action}</p>
                         ${step.extra || ''}
                         <div class="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                            <span class="text-[11px] text-slate-500 italic">Mẹo: Bôi đen chữ trên đề bài/đoạn văn để highlight ghi nhớ.</span>
+                            <span class="text-[11px] text-slate-500 italic">${escapeHtml(footerTip)}</span>
                             <button type="button" onclick="window.markScaffoldStepDone(${blockIdx}, ${activeStep}, ${steps.length})" class="px-3 py-1 rounded-lg text-xs font-bold transition ${isDone ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'}">
                                 ${isDone ? '✓ Đã xong bước này' : (activeStep < steps.length - 1 ? 'Hoàn thành & Sang bước tiếp →' : 'Hoàn thành ✓')}
                             </button>
