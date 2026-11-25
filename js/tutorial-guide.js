@@ -48,14 +48,6 @@
             howToUse: 'Điều chỉnh tốc độ <strong>WPM</strong> (khuyên dùng 200–250 WPM), bấm <strong>▶ PLAY</strong> để bắt đầu, <strong>⏸ PAUSE</strong> để dừng lại ghi chú, <strong>↺ RESTART</strong> để chạy lại từ đầu hoặc <strong>PREV / NEXT</strong> để nhảy đoạn.',
             selector: '#btn-skimming-play'
         },
-        syntax_chunking: {
-            topic: 'reading',
-            badge: 'Reading Tool',
-            title: '🧩 Syntax Chunking (Phân tích cấu trúc S / V / O)',
-            whatFor: 'Giúp bạn tách những câu văn học thuật dài và khó thành từng cụm <strong>Chủ ngữ (S) – Động từ (V) – Tân ngữ (O)</strong> để hiểu đúng nghĩa gốc thay vì dịch từng từ.',
-            howToUse: 'Bôi đen một cụm từ trong bài đọc bên trái, sau đó bấm nút màu tương ứng (<strong>Chủ ngữ - S</strong>, <strong>Động từ - V</strong>, <strong>Tân ngữ - O</strong>) để gắn nhãn trực quan.',
-            selector: '[data-tutorial-target="syntax-chunking"]'
-        },
         vocab_highlights: {
             topic: 'reading',
             badge: 'Reading Tool',
@@ -181,7 +173,7 @@
             id: 'reading',
             label: '📖 Reading',
             title: 'Hướng dẫn các tính năng Reading',
-            featureKeys: ['skimming', 'syntax_chunking', 'vocab_highlights', 'scaffold_coach', 'check_answer', 'locate', 'explanation', 'fifty_fifty']
+            featureKeys: ['skimming', 'vocab_highlights', 'scaffold_coach', 'check_answer', 'locate', 'explanation', 'fifty_fifty']
         },
         {
             id: 'listening',
@@ -445,18 +437,9 @@
                 injectBadgeOnce(skimPlay.parentElement, 'skimming', 'Hướng dẫn thanh Skimming WPM');
             }
 
-            // Reading Syntax Chunking & Vocab/Grammar checkboxes
+            // Reading Vocab/Grammar checkboxes
             const passage = document.getElementById('passage-container');
             if (passage) {
-                passage.querySelectorAll('strong').forEach(el => {
-                    if (/Syntax Chunking/i.test(el.textContent || '')) {
-                        const row = el.parentElement;
-                        if (row) {
-                            row.setAttribute('data-tutorial-target', 'syntax-chunking');
-                            injectBadgeOnce(row, 'syntax_chunking', 'Hướng dẫn Syntax Chunking S/V/O');
-                        }
-                    }
-                });
                 passage.querySelectorAll('label').forEach(el => {
                     if (/Show Vocab Highlights/i.test(el.textContent || '')) {
                         const bar = el.parentElement;

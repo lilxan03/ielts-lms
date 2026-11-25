@@ -1156,30 +1156,7 @@
                 <input type="number" id="reading-speed-input" value="220" min="50" max="1000" onchange="window.updateSkimmingSpeed()">
             </div>` : '';
 
-          const syntaxChunkingControls = APP_DATA.module === 'reading' ? `
-            <div class="syntax-chunking-controls" aria-label="Syntax highlighting and chunking tools">
-                <strong>Syntax Chunking / Phân tích cấu trúc câu</strong>
-                <span>Select a phrase in the passage, then choose a label:</span>
-                <button type="button" data-syntax-role="subject" class="syntax-chunking-button syntax-chunking-button--subject">Chủ ngữ · S</button>
-                <button type="button" data-syntax-role="verb" class="syntax-chunking-button syntax-chunking-button--verb">Động từ · V</button>
-                <button type="button" data-syntax-role="object" class="syntax-chunking-button syntax-chunking-button--object">Tân ngữ · O</button>
-                <button type="button" data-syntax-clear class="syntax-chunking-clear">Xoá nhãn</button>
-                <span id="syntax-chunking-status" class="syntax-chunking-status" role="status" aria-live="polite">Công cụ giúp bạn đọc theo cụm thay vì dịch từng từ.</span>
-            </div>` : '';
-
-          passageContainer.innerHTML = `${advancedReadingControls}${syntaxChunkingControls}${studyToggles}<div class="passage-text font-bold mb-6">${lmsSanitizeHtml(p.title)}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
-          const syntaxControls = passageContainer.querySelector('.syntax-chunking-controls');
-          syntaxControls?.querySelectorAll('[data-syntax-role]').forEach(button => {
-              const captureSelection = () => window.captureSyntaxChunkSelection();
-              button.addEventListener('pointerdown', captureSelection);
-              button.addEventListener('mousedown', event => {
-                  captureSelection();
-                  event.preventDefault();
-              });
-              button.addEventListener('click', () => window.applySyntaxChunk(button.dataset.syntaxRole));
-          });
-          syntaxControls?.querySelector('[data-syntax-clear]')?.addEventListener('mousedown', event => event.preventDefault());
-          syntaxControls?.querySelector('[data-syntax-clear]')?.addEventListener('click', () => window.clearSyntaxChunks());
+          passageContainer.innerHTML = `${advancedReadingControls}${studyToggles}<div class="passage-text font-bold mb-6">${lmsSanitizeHtml(p.title)}</div>${media}<div id="passage-text-content" class="passage-text text-justify">${htmlText}</div>`;
           const speedInput = document.getElementById('reading-speed-input');
           if (speedInput) {
               speedInput.value = String(Math.round(window.readingSpeed || 220));
