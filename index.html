@@ -3137,7 +3137,7 @@
       <div class="flex items-center gap-4">
         
         <!-- NEW: Back Button (Only visible in Free Mode) -->
-        <button id="exam-back-btn" onclick="window.exitTestWithoutSaving()" class="hidden px-4 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 rounded-xl font-bold text-sm transition items-center gap-2 border border-slate-200 shadow-sm" title="Leave without saving">&larr; Back</button>
+        <button id="exam-back-btn" onclick="window.exitTestWithoutSaving()" class="hidden px-4 py-2 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 text-slate-600 rounded-xl font-bold text-sm transition items-center gap-2 border border-slate-200 shadow-sm" title="Leave without saving" data-student-en="← Back" data-student-vi="← Quay lại">&larr; Back</button>
 
         <div id="app-logo-exam" class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow text-white font-black text-xl overflow-hidden shrink-0">
            K
@@ -3162,14 +3162,14 @@
       <!-- Right: Controls & Actions -->
       <div class="flex items-center gap-4">
          <div class="hidden md:flex flex-col text-right mr-2">
-            <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Candidate</span>
+            <span class="text-[10px] text-slate-400 uppercase tracking-wider font-bold" data-student-en="Candidate" data-student-vi="Thí sinh">Candidate</span>
             <span id="exam-candidate-name" class="font-bold text-slate-700 text-sm leading-none">Student</span>
          </div>
          
          <div class="w-px h-8 bg-slate-200 hidden md:block"></div>
 
          <div class="flex items-center gap-2">
-            <span id="autosave-status" class="text-xs font-bold text-emerald-500 opacity-0 transition-opacity mr-1">✓ Saved</span>
+            <span id="autosave-status" class="text-xs font-bold text-emerald-500 opacity-0 transition-opacity mr-1" data-student-en="✓ Saved" data-student-vi="✓ Đã lưu">✓ Saved</span>
 
             <button id="exam-flashcard-btn" onclick="window.startTestVocabStudy()" class="hidden w-10 h-10 rounded-full border border-slate-200 bg-slate-50 items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:text-blue-600 hover:shadow-sm transition-all" title="Study Test Vocab">
               🗂️
@@ -3185,14 +3185,14 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             </button>
             
-            <button type="button" onclick="window.openAppTutorial()" class="h-10 px-3 rounded-full border border-amber-300 bg-amber-100 flex items-center justify-center gap-1.5 text-amber-900 hover:bg-amber-200 hover:shadow-sm transition-all text-xs font-black" title="Hướng dẫn làm bài">
-              <span class="w-4 h-4 rounded-full bg-amber-400 text-slate-900 font-serif font-black text-[11px] flex items-center justify-center">i</span> <span class="hidden sm:inline">Hướng dẫn</span>
+            <button type="button" onclick="window.openAppTutorial()" class="h-10 px-3 rounded-full border border-amber-300 bg-amber-100 flex items-center justify-center gap-1.5 text-amber-900 hover:bg-amber-200 hover:shadow-sm transition-all text-xs font-black" title="Guide">
+              <span class="w-4 h-4 rounded-full bg-amber-400 text-slate-900 font-serif font-black text-[11px] flex items-center justify-center">i</span> <span class="hidden sm:inline" data-student-en="Guide" data-student-vi="Hướng dẫn">Guide</span>
             </button>
 
             <button onclick="window.toggleTheme()" class="theme-toggle-btn w-10 h-10 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-white hover:border-blue-300 hover:shadow-sm transition-all text-lg" title="Toggle Theme">🌙</button>
 
             <button id="exam-submit-btn" onclick="exitTest()" class="ml-2 px-5 py-2.5 bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white rounded-lg font-black text-xs transition-colors shadow-sm flex items-center border border-rose-200 hover:border-rose-600 tracking-wide uppercase">
-              <span id="exam-action-btn-text">Submit Test</span>
+              <span id="exam-action-btn-text" data-student-en="Submit Test" data-student-vi="Nộp bài">Submit Test</span>
             </button>
          </div>
       </div>
@@ -3225,11 +3225,11 @@
       <!-- Notes Side Panel -->
       <div id="notes-panel" class="hidden w-80 bg-slate-50 border-l border-slate-300 shadow-inner flex flex-col shrink-0">
         <div class="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-white">
-          <h3 class="font-bold text-slate-800">My Notes</h3>
+          <h3 class="font-bold text-slate-800" data-student-en="My Notes" data-student-vi="Ghi chú của tôi">My Notes</h3>
           <button onclick="toggleNotesPanel()" class="text-slate-400 hover:text-slate-700 font-bold text-xl leading-none">&times;</button>
         </div>
         <div id="notes-list" class="flex-1 p-4 overflow-y-auto space-y-4">
-          <div class="text-center text-slate-400 mt-10">Select text in the passage to highlight or add a note.</div>
+          <div class="text-center text-slate-400 mt-10" data-student-en="Select text in the passage to highlight or add a note." data-student-vi="Bôi đen chữ trong bài đọc để highlight hoặc thêm ghi chú.">Select text in the passage to highlight or add a note.</div>
         </div>
       </div>
     </div>
@@ -3239,7 +3239,7 @@
       <div class="w-32 flex items-center gap-3">
         <label class="flex items-center space-x-2 cursor-pointer text-slate-600" title="Mark for Review">
           <input type="checkbox" id="review-checkbox" onchange="toggleReview(this)" class="w-5 h-5 accent-blue-600">
-          <span class="font-bold text-sm">Review</span>
+          <span class="font-bold text-sm" data-student-en="Review" data-student-vi="Xem lại">Review</span>
         </label>
       </div>
       <div class="flex-1 flex min-w-0 items-center justify-center gap-3 px-4" id="exam-navigation">

@@ -213,7 +213,7 @@
           session.recorder.start();
           session.phase = 'recording';
           session.deadline = Date.now() + 120000;
-          updateSpeakingSimulationDisplay(session, 'Recording — keep speaking until time is up. / Đang ghi âm — hãy tiếp tục nói đến khi hết giờ.', 120000);
+          updateSpeakingSimulationDisplay(session, window.studentText?.('Recording — keep speaking until time is up.', 'Đang ghi âm — hãy tiếp tục nói đến khi hết giờ.') || 'Recording — keep speaking until time is up.', 120000);
       } catch (error) {
           failSpeakingPartTwoSession(session, error);
       }
@@ -226,7 +226,7 @@
           if (remaining <= 0) {
               startSpeakingSimulationRecording(session);
           } else {
-              updateSpeakingSimulationDisplay(session, 'Preparation time — plan your response. / Thời gian chuẩn bị — hãy lập ý.', remaining);
+              updateSpeakingSimulationDisplay(session, window.studentText?.('Preparation time — plan your response.', 'Thời gian chuẩn bị — hãy lập ý.') || 'Preparation time — plan your response.', remaining);
           }
           return;
       }
@@ -234,14 +234,14 @@
           if (remaining <= 0) {
               session.phase = 'saving';
               clearInterval(session.interval);
-              updateSpeakingSimulationDisplay(session, 'Time is up. Processing your recording… / Đã hết giờ. Đang xử lý bản ghi…', 0);
+              updateSpeakingSimulationDisplay(session, window.studentText?.('Time is up. Processing your recording…', 'Đã hết giờ. Đang xử lý bản ghi…') || 'Time is up. Processing your recording…', 0);
               try {
                   session.recorder.stop();
               } catch (error) {
                   failSpeakingPartTwoSession(session, error);
               }
           } else {
-              updateSpeakingSimulationDisplay(session, 'Recording — keep speaking until time is up. / Đang ghi âm — hãy tiếp tục nói đến khi hết giờ.', remaining);
+              updateSpeakingSimulationDisplay(session, window.studentText?.('Recording — keep speaking until time is up.', 'Đang ghi âm — hãy tiếp tục nói đến khi hết giờ.') || 'Recording — keep speaking until time is up.', remaining);
           }
       }
     }
@@ -267,7 +267,7 @@
       };
       speakingSimulationSession = session;
       updateSpeakingSimulationLock(true);
-      updateSpeakingSimulationDisplay(session, 'Requesting microphone access… / Đang yêu cầu quyền sử dụng micrô…', 60000);
+      updateSpeakingSimulationDisplay(session, window.studentText?.('Requesting microphone access…', 'Đang yêu cầu quyền sử dụng micrô…') || 'Requesting microphone access…', 60000);
       try {
           if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder !== 'function') {
               throw new Error('This browser does not support microphone recording.');
@@ -285,7 +285,7 @@
           session.recorder.onerror = event => failSpeakingPartTwoSession(session, event.error || event);
           session.phase = 'preparation';
           session.deadline = Date.now() + 60000;
-          updateSpeakingSimulationDisplay(session, 'Preparation time — plan your response. / Thời gian chuẩn bị — hãy lập ý.', 60000);
+          updateSpeakingSimulationDisplay(session, window.studentText?.('Preparation time — plan your response.', 'Thời gian chuẩn bị — hãy lập ý.') || 'Preparation time — plan your response.', 60000);
           session.interval = setInterval(() => tickSpeakingPartTwoSession(session), 100);
       } catch (error) {
           failSpeakingPartTwoSession(session, error);
@@ -386,7 +386,9 @@
       document.getElementById('exam-candidate-name').textContent = window.getStudentDisplayName ? window.getStudentDisplayName(currentUser) : currentUser.user;
       document.getElementById('exam-preview-badge').classList.add('hidden');
       document.getElementById('exam-module-title').textContent = APP_DATA.title + (window.isFullExamMode ? ` (Full Exam - Section ${window.fullExamCurrentIndex + 1}/3)` : '');
-      document.getElementById('exam-action-btn-text').textContent = window.isFullExamMode ? (window.fullExamCurrentIndex < 2 ? "NEXT SECTION" : "SUBMIT EXAM") : "SUBMIT TEST";
+      document.getElementById('exam-action-btn-text').textContent = window.isFullExamMode
+        ? (window.fullExamCurrentIndex < 2 ? (window.studentText?.('NEXT SECTION', 'PHẦN TIẾP THEO') || 'NEXT SECTION') : (window.studentText?.('SUBMIT EXAM', 'NỘP BÀI THI') || 'SUBMIT EXAM'))
+        : (window.studentText?.('SUBMIT TEST', 'NỘP BÀI') || 'SUBMIT TEST');
       
       const backBtn = document.getElementById('exam-back-btn');
       const fcBtn = document.getElementById('exam-flashcard-btn');
@@ -526,12 +528,14 @@
         const label = document.getElementById('sample-answer-toggle-label');
         if (!content) return;
         const nowHidden = content.classList.toggle('hidden');
-        if (label) label.textContent = nowHidden ? 'Show Sample Answer' : 'Hide Sample Answer';
+        if (label) label.textContent = nowHidden
+            ? (window.studentText?.('Show Sample Answer', 'Xem bài mẫu') || 'Show Sample Answer')
+            : (window.studentText?.('Hide Sample Answer', 'Ẩn bài mẫu') || 'Hide Sample Answer');
         if (nowHidden && window.speechSynthesis) {
             sampleSpeechRunId++;
             window.speechSynthesis.cancel();
             const speechButton = document.getElementById('sample-answer-speech-button');
-            if (speechButton) speechButton.textContent = '🔊 Listen to Sample Answer';
+            if (speechButton) speechButton.textContent = window.studentText?.('🔊 Listen to Sample Answer', '🔊 Nghe bài mẫu') || '🔊 Listen to Sample Answer';
             clearSpeechWordHighlight(content);
         }
     };
@@ -825,7 +829,7 @@
       finalizeCurrentQuestionTiming();
       currentPartIdx = idx; currentBlockIdx = 0;
       window.currentTestPartIndex = idx;
-      document.getElementById('part-indicator').textContent = `Part ${idx + 1} of ${APP_DATA.parts.length}`;
+      document.getElementById('part-indicator').textContent = window.studentText?.(`Part ${idx + 1} of ${APP_DATA.parts.length}`, `Phần ${idx + 1} / ${APP_DATA.parts.length}`) || `Part ${idx + 1} of ${APP_DATA.parts.length}`;
       const p = APP_DATA.parts[idx];
       
       let pText = p.text || '';
@@ -889,10 +893,10 @@
               studyToggles = `
               <div class="flex flex-wrap gap-4 mb-6 p-4 bg-white border border-slate-200 rounded-xl shadow-sm justify-start md:justify-center w-full">
                   <label class="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none hover:text-blue-600 transition">
-                      <input type="checkbox" checked onchange="document.getElementById('passage-container').classList.toggle('hide-vocab', !this.checked)" class="w-4 h-4 text-blue-600 rounded"> 💡 Show Vocab Highlights
+                      <input type="checkbox" checked onchange="document.getElementById('passage-container').classList.toggle('hide-vocab', !this.checked)" class="w-4 h-4 text-blue-600 rounded"> ${window.studentText?.('💡 Show Vocab Highlights', '💡 Hiện từ vựng nổi bật') || '💡 Show Vocab Highlights'}
                   </label>
                   <label class="flex items-center gap-2 text-sm font-bold text-slate-700 cursor-pointer select-none hover:text-emerald-600 transition">
-                      <input type="checkbox" checked onchange="document.getElementById('passage-container').classList.toggle('hide-grammar', !this.checked)" class="w-4 h-4 text-emerald-600 rounded"> 🪄 Show Grammar Highlights
+                      <input type="checkbox" checked onchange="document.getElementById('passage-container').classList.toggle('hide-grammar', !this.checked)" class="w-4 h-4 text-emerald-600 rounded"> ${window.studentText?.('🪄 Show Grammar Highlights', '🪄 Hiện ngữ pháp nổi bật') || '🪄 Show Grammar Highlights'}
                   </label>
               </div>`;
           }
@@ -1071,14 +1075,14 @@
               let toggleSampleHtml = '';
               if (sampleText && sampleText !== '<br>' && sampleText !== '<p><br></p>') {
                   const speechButton = APP_DATA.module === 'speaking' ? `
-                      <button type="button" id="sample-answer-speech-button" onclick="window.toggleSampleAnswerSpeech()" class="text-xs font-bold bg-amber-500 text-white border border-amber-600 px-4 py-2.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-2" aria-label="Listen to sample answer">
-                          🔊 Listen to Sample Answer
+                      <button type="button" id="sample-answer-speech-button" onclick="window.toggleSampleAnswerSpeech()" class="text-xs font-bold bg-amber-500 text-white border border-amber-600 px-4 py-2.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-2" aria-label="${window.studentText?.('Listen to sample answer', 'Nghe bài mẫu') || 'Listen to sample answer'}">
+                          ${window.studentText?.('🔊 Listen to Sample Answer', '🔊 Nghe bài mẫu') || '🔊 Listen to Sample Answer'}
                       </button>` : '';
                   toggleSampleHtml = `
                   <div class="mt-8 pt-6 border-t border-slate-200 w-full">
                       <div class="flex flex-wrap items-center gap-2">
                         <button type="button" onclick="window.toggleSampleAnswer()" class="text-xs font-bold bg-white border border-slate-300 text-slate-700 px-4 py-2.5 rounded-lg shadow-sm hover:bg-slate-50 transition flex items-center gap-2">
-                          👁️ <span id="sample-answer-toggle-label">Show Sample Answer</span>
+                          👁️ <span id="sample-answer-toggle-label">${window.studentText?.('Show Sample Answer', 'Xem bài mẫu') || 'Show Sample Answer'}</span>
                         </button>${speechButton}
                       </div>
                       <div id="sample-answer-content" class="hidden mt-4 passage-text text-justify bg-blue-50/50 border border-blue-200 rounded-xl p-6 shadow-inner text-base text-slate-800 leading-relaxed">${htmlText}</div>
@@ -1787,15 +1791,15 @@
                })[character]);
                const wordCount = String(answers[q.ids[0]] || '').trim().split(/\s+/).filter(Boolean).length;
                content = `${txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : ''}
-                 <section class="scaffolded-writing" data-writing-scaffold-question aria-label="Scaffolded writing editor">
+                 <section class="scaffolded-writing" data-writing-scaffold-question aria-label="${window.studentText?.('Scaffolded writing editor', 'Trình soạn thảo viết theo khối') || 'Scaffolded writing editor'}">
                    <header class="scaffolded-writing__header">
-                     <div><h3>Scaffolded Writing / Viết theo khối</h3><p>Build your response one paragraph at a time. Your blocks are combined into one answer when submitted.</p></div>
-                     <span><b data-writing-scaffold-count>${wordCount}</b> words</span>
+                     <div><h3>${window.studentText?.('Scaffolded Writing', 'Viết theo khối') || 'Scaffolded Writing'}</h3><p>${window.studentText?.('Build your response one paragraph at a time. Your blocks are combined into one answer when submitted.', 'Xây dựng bài viết từng đoạn một. Các khối sẽ được tự động ghép thành một bài hoàn chỉnh khi nộp.') || 'Build your response one paragraph at a time. Your blocks are combined into one answer when submitted.'}</p></div>
+                     <span><b data-writing-scaffold-count>${wordCount}</b> ${window.studentText?.('words', 'từ') || 'words'}</span>
                    </header>
                    ${blocks.map((block, index) => `
                      <label class="scaffolded-writing__block">
                        <span class="scaffolded-writing__block-heading"><b>${escapeDraft(block.title)}</b><small>${escapeDraft(block.hint)}</small></span>
-                       <textarea data-writing-scaffold-block="${escapeDraft(block.id)}" oninput="window.updateScaffoldedWriting(${q.ids[0]}, this)" class="scaffolded-writing__textarea" rows="${index < 2 ? 3 : 6}" placeholder="Write this part of your response…">${escapeDraft(draftBlocks[index] || '')}</textarea>
+                       <textarea data-writing-scaffold-block="${escapeDraft(block.id)}" oninput="window.updateScaffoldedWriting(${q.ids[0]}, this)" class="scaffolded-writing__textarea" rows="${index < 2 ? 3 : 6}" placeholder="${window.studentText?.('Write this part of your response…', 'Viết phần này của câu trả lời…') || 'Write this part of your response…'}">${escapeDraft(draftBlocks[index] || '')}</textarea>
                      </label>
                    `).join('')}
                    <div data-writing-analysis>${window.renderWritingTextAnalyzer?.(answers[q.ids[0]] || '') || ''}</div>
@@ -1830,7 +1834,7 @@
                const escapeDraft = value => String(value || '').replace(/[&<>"']/g, character => ({
                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
                })[character]);
-               content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="window.updateWritingEssay(${q.ids[0]}, this)" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="Start typing...">${escapeDraft(essayAnswer)}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">Words: <span id="wc-${q.ids[0]}">${essayAnswer.trim().split(/\\s+/).filter(Boolean).length}</span></div><div id="writing-analysis-${q.ids[0]}">${window.renderWritingTextAnalyzer?.(essayAnswer) || ''}</div>`;
+               content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + `<textarea id="writing-textarea" oninput="window.updateWritingEssay(${q.ids[0]}, this)" onblur="handleAns(${q.ids[0]}, this.value)" class="w-full h-96 border border-slate-300 rounded p-4 outline-none focus:ring-2 focus:ring-emerald-500 resize-none font-sans text-lg" placeholder="${window.studentText?.('Start typing...', 'Bắt đầu viết...') || 'Start typing...'}">${escapeDraft(essayAnswer)}</textarea><div class="text-right text-sm text-slate-500 mt-2 font-bold">${window.studentText?.('Words:', 'Số từ:') || 'Words:'} <span id="wc-${q.ids[0]}">${essayAnswer.trim().split(/\\s+/).filter(Boolean).length}</span></div><div id="writing-analysis-${q.ids[0]}">${window.renderWritingTextAnalyzer?.(essayAnswer) || ''}</div>`;
            }
         } else if(q.type === 'audio_record') {
            let txt = pt(rawText);
@@ -1858,12 +1862,12 @@
            content = (txt ? `<div class="mb-4 leading-relaxed whitespace-pre-wrap">${txt}</div>` : '') + corpSpeakingHelper +
                (simulatedCueCard
                    ? `<section class="speaking-simulation-panel mt-4 rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 sm:p-7 text-center shadow-inner" aria-live="polite">
-                        <p id="speaking-simulation-status" class="font-bold text-amber-950">${simulationComplete ? 'Recording saved. You can now submit your test.' : 'Preparing your timed attempt…'}</p>
+                        <p id="speaking-simulation-status" class="font-bold text-amber-950">${simulationComplete ? (window.studentText?.('Recording saved. You can now submit your test.', 'Đã lưu bản ghi âm. Bạn có thể nộp bài ngay bây giờ.') || 'Recording saved. You can now submit your test.') : (window.studentText?.('Preparing your timed attempt…', 'Đang chuẩn bị lượt nói tính giờ…') || 'Preparing your timed attempt…')}</p>
                         <div id="speaking-simulation-countdown" class="mt-3 font-mono text-5xl sm:text-6xl font-black tracking-wider text-amber-700" aria-label="Speaking timer">${simulationComplete ? '00:00' : '01:00'}</div>
-                        <p class="mt-3 text-xs font-medium text-amber-900">Preparation: 60 seconds · Recording: 2 minutes / Chuẩn bị: 60 giây · Ghi âm: 2 phút</p>
+                        <p class="mt-3 text-xs font-medium text-amber-900">${window.studentText?.('Preparation: 60 seconds · Recording: 2 minutes', 'Chuẩn bị: 60 giây · Ghi âm: 2 phút') || 'Preparation: 60 seconds · Recording: 2 minutes'}</p>
                         <audio id="mic-playback-${q.ids[0]}" controls src="${simulationComplete ? escapeHtmlAttributeValue(answers[q.ids[0]]) : ''}" class="${simulationComplete ? '' : 'hidden'} w-full mt-5"></audio>
                       </section>`
-                   : `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">Click to Record</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`);
+                   : `<div class="flex items-center gap-4 bg-amber-50 p-4 rounded border border-amber-200"><button id="mic-btn-${q.ids[0]}" onclick="toggleRecording(${q.ids[0]})" class="w-16 h-16 rounded-full bg-rose-500 text-white font-bold shadow-lg hover:bg-rose-600 flex items-center justify-center transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg></button><div class="flex-1"><p id="mic-status-${q.ids[0]}" class="font-bold text-slate-700">${window.studentText?.('Click to Record', 'Bấm để ghi âm') || 'Click to Record'}</p><audio id="mic-playback-${q.ids[0]}" controls src="${answers[q.ids[0]]||''}" class="w-full mt-2 ${answers[q.ids[0]]?'':'hidden'}"></audio></div></div>`);
         } else if (q.type === 'pair_roleplay') {
             qTextHtml = `
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -2284,12 +2288,12 @@
 
     function renderListeningDistractorLegend(summary) {
       if (!summary) return '';
-      return `<div class="listening-distractor-legend" aria-label="Distractor highlight legend">
-        <strong>Distractor review / Phân tích bẫy:</strong>
-        ${summary.distractor ? '<span><i class="listening-distractor-swatch listening-distractor-swatch--red"></i>Possible distractor mention / Thông tin nhiễu</span>' : ''}
-        ${summary.correct ? '<span><i class="listening-distractor-swatch listening-distractor-swatch--green"></i>Correct-option phrase / Cụm từ khớp đáp án</span>' : ''}
-        ${summary.signpost ? '<span><i class="listening-distractor-swatch listening-distractor-swatch--green"></i>Signposting word / Từ chuyển ý</span>' : ''}
-        <small>Phrase matches are automated hints; review them in context.</small>
+      return `<div class="listening-distractor-legend" aria-label="${window.studentText?.('Distractor highlight legend', 'Chú giải phân tích bẫy') || 'Distractor highlight legend'}">
+        <strong>${window.studentText?.('Distractor review:', 'Phân tích bẫy:') || 'Distractor review:'}</strong>
+        ${summary.distractor ? `<span><i class="listening-distractor-swatch listening-distractor-swatch--red"></i>${window.studentText?.('Possible distractor mention', 'Thông tin nhiễu') || 'Possible distractor mention'}</span>` : ''}
+        ${summary.correct ? `<span><i class="listening-distractor-swatch listening-distractor-swatch--green"></i>${window.studentText?.('Correct-option phrase', 'Cụm từ khớp đáp án') || 'Correct-option phrase'}</span>` : ''}
+        ${summary.signpost ? `<span><i class="listening-distractor-swatch listening-distractor-swatch--green"></i>${window.studentText?.('Signposting word', 'Từ chuyển ý') || 'Signposting word'}</span>` : ''}
+        <small>${window.studentText?.('Phrase matches are automated hints; review them in context.', 'Các cụm từ được tô màu là gợi ý tự động; hãy đối chiếu lại trong ngữ cảnh.') || 'Phrase matches are automated hints; review them in context.'}</small>
       </div>`;
     }
     window.quickCheckAnswer = function(blockIdx) {

@@ -1273,3 +1273,49 @@ test('triggerUIRefresh preserves selectedParts and skips hot-reload while Speaki
     assert.equal(renderPartCalls, 0);
     assert.equal(context.APP_DATA.parts[0].title, 'Part 2');
 });
+
+test('Writing and skill UI helpers follow studentText language without mixed EN/VI labels', () => {
+    const createLangContext = (lang) => {
+        const ctx = {
+            window: null,
+            module: { exports: {} },
+            studentText: (en, vi) => (lang === 'vi' ? vi : en)
+        };
+        ctx.window = ctx;
+        vm.createContext(ctx);
+        vm.runInContext(readAppScript('dynamic-mindmap.js'), ctx);
+        vm.runInContext(readAppScript('scaffolded-writing.js'), ctx);
+        vm.runInContext(readAppScript('scaffold-coach.js'), ctx);
+        vm.runInContext(readAppScript('tutorial-guide.js'), ctx);
+        return ctx;
+    };
+
+    const enCtx = createLangContext('en');
+    const enMindMap = enCtx.renderDynamicMindMap({ title: 'Writing Task 2', writingTask: 'task2' }, [], 'en-key');
+    assert.match(enMindMap, /Dynamic Mind Map/);
+    assert.doesNotMatch(enMindMap, /Sơ đồ tư duy/);
+    assert.doesNotMatch(enMindMap, /ĐỀ BÀI/);
+    const enBlocks = enCtx.getScaffoldedWritingBlocks({ writingTask: 'task2' });
+    assert.equal(enBlocks[0].title, '1. Paraphrase the task');
+    const enAnalyzer = enCtx.renderWritingTextAnalyzer('');
+    assert.match(enAnalyzer, /Real-time Text Analyzer/);
+    assert.doesNotMatch(enAnalyzer, /Phân tích bài viết/);
+    const enCoach = enCtx.renderQuestionScaffoldCoach({ type: 'essay' }, 0, 'writing', { title: 'Task 2', writingTask: 'task2' });
+    assert.match(enCoach, /Step-by-Step Guide/);
+    assert.doesNotMatch(enCoach, /Hướng dẫn từng bước/);
+    assert.equal(enCtx.module.exports.TUTORIAL_TOPICS[0].label, '🏠 Overview');
+
+    const viCtx = createLangContext('vi');
+    const viMindMap = viCtx.renderDynamicMindMap({ title: 'Writing Task 2', writingTask: 'task2' }, [], 'vi-key');
+    assert.match(viMindMap, /Sơ đồ tư duy/);
+    assert.doesNotMatch(viMindMap, /Dynamic Mind Map/);
+    const viBlocks = viCtx.getScaffoldedWritingBlocks({ writingTask: 'task2' });
+    assert.match(viBlocks[0].title, /Diễn đạt lại đề bài/);
+    const viAnalyzer = viCtx.renderWritingTextAnalyzer('');
+    assert.match(viAnalyzer, /Phân tích bài viết/);
+    assert.doesNotMatch(viAnalyzer, /Real-time Text Analyzer/);
+    const viCoach = viCtx.renderQuestionScaffoldCoach({ type: 'essay' }, 0, 'writing', { title: 'Task 2', writingTask: 'task2' });
+    assert.match(viCoach, /Hướng dẫn từng bước/);
+    assert.doesNotMatch(viCoach, /Step-by-Step Guide/);
+    assert.equal(viCtx.module.exports.TUTORIAL_TOPICS[0].label, '🏠 Tổng quan');
+});

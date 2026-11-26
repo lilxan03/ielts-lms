@@ -178,17 +178,18 @@
     document.addEventListener('selectionchange', window.captureSyntaxChunkSelection);
 
     window.applySyntaxChunk = function(role) {
+        const rt = (en, vi) => (typeof window !== 'undefined' && typeof window.studentText === 'function' ? window.studentText(en, vi) : vi);
         const roleLabels = {
-            subject: 'Chủ ngữ / Subject',
-            verb: 'Động từ / Verb',
-            object: 'Tân ngữ / Object'
+            subject: rt('Subject', 'Chủ ngữ'),
+            verb: rt('Verb', 'Động từ'),
+            object: rt('Object', 'Tân ngữ')
         };
         const root = document.getElementById('passage-text-content');
         const status = document.getElementById('syntax-chunking-status');
         const selection = window.getSelection();
         if (!roleLabels[role]) return;
         if (!root) {
-            if (status) status.textContent = 'Không tìm thấy đoạn văn để gắn nhãn. Hãy tải lại phần Reading.';
+            if (status) status.textContent = rt('Reading passage not found. Please reload the Reading section.', 'Không tìm thấy đoạn văn để gắn nhãn. Hãy tải lại phần Reading.');
             return;
         }
 
@@ -199,13 +200,13 @@
             ? selectedRange
             : savedSyntaxChunkSelection;
         if (!range || !root.contains(range.commonAncestorContainer) || range.collapsed) {
-            if (status) status.textContent = 'Chọn một cụm từ trong đoạn văn trước khi gán nhãn.';
+            if (status) status.textContent = rt('Select a phrase in the passage before labeling.', 'Chọn một cụm từ trong đoạn văn trước khi gán nhãn.');
             return;
         }
 
         const overlapsChunk = [...root.querySelectorAll('.syntax-chunk')].some(chunk => range.intersectsNode(chunk));
         if (overlapsChunk) {
-            if (status) status.textContent = 'Xoá nhãn hiện tại trước khi gán nhãn chồng lên cụm từ.';
+            if (status) status.textContent = rt('Clear existing labels before overlapping a phrase.', 'Xoá nhãn hiện tại trước khi gán nhãn chồng lên cụm từ.');
             return;
         }
 
@@ -217,10 +218,11 @@
         range.insertNode(chunk);
         selection?.removeAllRanges();
         savedSyntaxChunkSelection = null;
-        if (status) status.textContent = `Đã đánh dấu ${roleLabels[role]}.`;
+        if (status) status.textContent = rt(`Marked ${roleLabels[role]}.`, `Đã đánh dấu ${roleLabels[role]}.`);
     };
 
     window.clearSyntaxChunks = function() {
+        const rt = (en, vi) => (typeof window !== 'undefined' && typeof window.studentText === 'function' ? window.studentText(en, vi) : vi);
         const root = document.getElementById('passage-text-content');
         if (!root) return;
         root.querySelectorAll('.syntax-chunk').forEach(chunk => {
@@ -228,7 +230,7 @@
         });
         savedSyntaxChunkSelection = null;
         const status = document.getElementById('syntax-chunking-status');
-        if (status) status.textContent = 'Đã xoá các nhãn cấu trúc câu.';
+        if (status) status.textContent = rt('Cleared syntax labels.', 'Đã xoá các nhãn cấu trúc câu.');
     };
 
     function renderReadingControls() {
