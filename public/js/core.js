@@ -113,6 +113,23 @@
     window.lmsBootedUid = null;
     window.ADMIN_EMAIL = 'lyquockhanh03@gmail.com';
 
+    window.isAdminUser = function(profile = currentUser, firebaseUser = window.auth?.currentUser) {
+      if (window.trustedAccountAccess?.admin === true && (!profile || !window.trustedAccountAccess.uid || profile.uid === window.trustedAccountAccess.uid)) {
+        return true;
+      }
+      const candidates = [
+        firebaseUser?.email,
+        profile?.email,
+        profile?.user,
+        profile?.username
+      ];
+      if (candidates.some(val => typeof val === 'string' && val.trim().toLowerCase() === window.ADMIN_EMAIL)) {
+        return true;
+      }
+      if (profile?.isAdmin === true || profile?.role === 'admin') return true;
+      return false;
+    };
+
     window.isAccountApproved = function(profile, firebaseUser = window.auth?.currentUser) {
       const email = firebaseUser?.email?.trim().toLowerCase();
       return email === window.ADMIN_EMAIL || profile?.disabled !== true;

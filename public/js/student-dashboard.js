@@ -1340,10 +1340,16 @@
                 toggleEditorTab('bank');
               }
             } else {
-              const validTabs = ['overview', 'bank', 'classes', 'students', 'payments', 'timetable', 'landing'];
+              const isAdmin = typeof window.isAdminUser === 'function' ? window.isAdminUser() : false;
+              const validTabs = isAdmin
+                ? ['overview', 'bank', 'classes', 'students', 'payments', 'timetable', 'landing']
+                : ['overview', 'bank', 'classes', 'students', 'timetable', 'landing'];
+              if (route.section === 'payments' && !isAdmin) {
+                window.history.replaceState({ lmsRoute: 'teacher' }, '', '#/teacher/overview');
+              }
               const tab = validTabs.includes(route.section) && !(route.section === 'overview' && currentUser.role !== 'teacher')
                 ? route.section
-                : 'bank';
+                : (route.section === 'payments' ? 'overview' : 'bank');
               if (tab === 'bank' && ['tests', 'classes'].includes(route.detail)) {
                 sessionStorage.setItem('lms_dash_view', route.detail);
               }

@@ -393,6 +393,11 @@
     };
 
     window.renderPaymentsView = function() {
+        const isAdmin = typeof window.isAdminUser === 'function' ? window.isAdminUser() : true;
+        if (!isAdmin) {
+            document.getElementById('editor-view-payments')?.classList.add('hidden');
+            return;
+        }
         document.getElementById('bill-fee').value = BILLING_SETTINGS.feePerLesson || 100000;
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
@@ -1359,7 +1364,7 @@
                                 </summary>
                                 <div class="student-actions-menu">
                                     <button type="button" data-student-profile-preview="${lmsEscapeHtml(s.user)}">👁️ Switch to student dashboard</button>
-                                    <button type="button" onclick="togglePaymentStatus('${s.user}', ${isPending || !billing.hasAccess}); this.closest('details').open = false">${isPending ? '✓ Approve payment' : billing.hasAccess ? '🔒 Lock access' : '🔓 Unlock access'}</button>
+                                    ${(typeof window.isAdminUser !== 'function' || window.isAdminUser()) ? `<button type="button" onclick="togglePaymentStatus('${s.user}', ${isPending || !billing.hasAccess}); this.closest('details').open = false">${isPending ? '✓ Approve payment' : billing.hasAccess ? '🔒 Lock access' : '🔓 Unlock access'}</button>` : ''}
                                     <button type="button" onclick="window.promptEditStudentContact('${s.user}'); this.closest('details').open = false">✏️ Edit contact info</button>
                                     <button type="button" onclick="window.openRadarEditor('${s.user}'); this.closest('details').open = false">📊 Edit radar chart</button>
                                     <button type="button" onclick="window.promptResetStudentPassword('${s.user}'); this.closest('details').open = false">🔑 Reset password</button>
@@ -1400,6 +1405,11 @@
             } else {
                 html += staff.map(s => {
                     const isMe = s.user === currentUser.user;
+                    const isStaffAdmin = typeof window.isAdminUser === 'function' ? window.isAdminUser(s, isMe ? window.auth?.currentUser : null) : false;
+                    const roleBadgeClass = isStaffAdmin
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                        : 'bg-indigo-100 text-indigo-700 border border-indigo-200';
+                    const roleBadgeText = isStaffAdmin ? 'admin' : s.role;
                     const actions = `<button onclick="window.promptResetStudentPassword('${s.user}')" class="bg-white border border-slate-200 hover:border-amber-400 hover:text-amber-600 text-slate-500 px-3 py-1.5 rounded-lg transition shadow-sm text-xs font-bold" title="Reset Password">🔑 Reset Pass</button>`;
                     const staffLabel = window.getStudentDisplayName ? window.getStudentDisplayName(s) : s.user;
                     return `
@@ -1414,7 +1424,7 @@
                             </div>
                         </td>
                         <td class="p-4">
-                            <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm bg-indigo-100 text-indigo-700 border border-indigo-200">${s.role}</span>
+                            <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded shadow-sm ${roleBadgeClass}">${roleBadgeText}</span>
                         </td>
                         <td class="p-4 text-right">${actions}</td>
                     </tr>
@@ -1430,6 +1440,7 @@
     window.promptEditStudentContact = function(username) {
         const u = USERS.find(x => x.user === username);
         if(!u) return;
+        const isAdmin = typeof window.isAdminUser === 'function' ? window.isAdminUser() : true;
 
         document.getElementById('modal-title').textContent = `Edit Profile: ${username}`;
         document.getElementById('modal-message').innerHTML = `
@@ -1446,6 +1457,7 @@
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Phone / Zalo Number</label>
                     <input type="text" id="edit-phone" value="${(u.phone || '').replace(/"/g, '&quot;')}" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-mono text-blue-700 font-bold transition">
                 </div>
+                ${isAdmin ? `
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Số CCCD / MST cá nhân (Khai thuế HKD)</label>
                     <input type="text" id="edit-tax-id" value="${(u.taxId || '').replace(/"/g, '&quot;')}" placeholder="12 số CCCD hoặc Mã số thuế" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-mono text-slate-800 font-bold transition">
@@ -1453,7 +1465,7 @@
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Địa chỉ (Ghi sổ doanh thu / Hóa đơn)</label>
                     <input type="text" id="edit-tax-address" value="${(u.taxAddress || '').replace(/"/g, '&quot;')}" placeholder="Quận/Huyện, Tỉnh/Thành phố" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-medium text-slate-700 transition">
-                </div>
+                </div>` : ''}
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">School / Internal Notes</label>
                     <input type="text" id="edit-school" value="${(u.school || '').replace(/"/g, '&quot;')}" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-medium text-slate-700 transition">
@@ -1472,9 +1484,11 @@
             u.realName = document.getElementById('edit-real-name').value.trim();
             u.parentName = document.getElementById('edit-parent-name').value.trim();
             u.phone = document.getElementById('edit-phone').value.trim();
-            u.taxId = document.getElementById('edit-tax-id')?.value.trim() || '';
-            u.taxAddress = document.getElementById('edit-tax-address')?.value.trim() || '';
-            if (u.realName) u.taxPayerName = u.realName;
+            if (isAdmin) {
+                u.taxId = document.getElementById('edit-tax-id')?.value.trim() || '';
+                u.taxAddress = document.getElementById('edit-tax-address')?.value.trim() || '';
+                if (u.realName) u.taxPayerName = u.realName;
+            }
             u.school = document.getElementById('edit-school').value.trim();
             
             try {
@@ -1832,6 +1846,10 @@
     };
 
     async function togglePaymentStatus(username, status) {
+        if (typeof window.isAdminUser === 'function' && !window.isAdminUser()) {
+            showModalMsg("Truy cập bị giới hạn", "Chỉ tài khoản Admin mới có quyền duyệt học phí và mở khóa tài khoản.");
+            return;
+        }
         const user = USERS.find(u => u.user === username);
         if(user) {
             // ✨ FIX: Handle Gem Top-Ups vs Course Enrollments

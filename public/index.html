@@ -2342,7 +2342,7 @@
             <button type="button" onclick="window.navigateAppRoute('teacher/bank/classes')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 text-xs font-bold transition">📝 Chấm bài &amp; Lớp học</button>
             <button type="button" onclick="window.navigateAppRoute('teacher/students'); setTimeout(() => typeof promptCreateStudent === 'function' && promptCreateStudent(), 100);" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 text-xs font-bold transition">🎓 Thêm học viên</button>
             <button type="button" onclick="window.navigateAppRoute('teacher/students'); setTimeout(() => document.getElementById('consultation-leads-crm')?.scrollIntoView({ behavior: 'smooth' }), 150);" class="inline-flex items-center gap-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 border border-cyan-400/30 px-3.5 py-2 text-xs font-black transition">📋 Xem Lead Tư Vấn (CRM)</button>
-            <button type="button" onclick="window.navigateAppRoute('teacher/payments')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 text-xs font-bold transition">💳 Duyệt học phí</button>
+            <button type="button" id="overview-quick-payments-btn" onclick="window.navigateAppRoute('teacher/payments')" class="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 px-3.5 py-2 text-xs font-bold transition">💳 Duyệt học phí</button>
           </div>
         </section>
 

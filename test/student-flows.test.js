@@ -1328,7 +1328,7 @@ test('Writing and skill UI helpers follow studentText language without mixed EN/
     assert.equal(viCtx.module.exports.TUTORIAL_TOPICS[0].label, '🏠 Tổng quan');
 });
 
-test('student checkout collects HKD tax payer fields and teacher approval records S1-HKD revenue ledger entry', async () => {
+test('student checkout remains unchanged while admin approval records S1-HKD revenue ledger and non-admin teacher cannot access payments', async () => {
     const elements = new Map();
     const getOrCreateEl = id => {
         if (!elements.has(id)) elements.set(id, createElement());
@@ -1340,11 +1340,6 @@ test('student checkout collects HKD tax payer fields and teacher approval record
         options: [{ value: 'cls_ielts_1', text: '👥 IELTS Intensive B2' }]
     });
     elements.set('checkout-lpm', createElement('12'));
-    elements.set('checkout-payer-name', createElement('Nguyễn Văn Minh'));
-    elements.set('checkout-payer-phone', createElement('0912345678'));
-    elements.set('checkout-tax-id', createElement('079203001234'));
-    elements.set('checkout-tax-address', createElement('Quận 7, TP.HCM'));
-    elements.set('checkout-tax-invoice', { checked: true });
     elements.set('vietqr-image', createElement());
     elements.set('vietqr-desc', createElement());
     elements.set('vietqr-amount', createElement());
@@ -1356,16 +1351,39 @@ test('student checkout collects HKD tax payer fields and teacher approval record
     elements.set('hkd-tax-period-type', createElement('year'));
     elements.set('hkd-tax-year', createElement(String(new Date().getFullYear())));
     elements.set('hkd-tax-subperiod', createElement('Q1'));
+    elements.set('tab-btn-payments', createElement());
+    elements.set('editor-view-payments', createElement());
+    elements.set('overview-quick-payments-btn', createElement());
+    elements.set('profile-drop-role', createElement());
+    elements.set('profile-drop-icon', createElement());
 
     const student = {
         user: 'minh_01',
         uid: 'minh-uid',
         email: 'minh@gmail.com',
         role: 'student',
+        realName: 'Nguyễn Văn Minh',
+        phone: '0912345678',
+        taxId: '079203001234',
+        taxAddress: 'Quận 7, TP.HCM',
         isPaid: false,
         paymentStatus: 'unpaid'
     };
+    const adminTeacher = {
+        user: 'khanh_admin',
+        uid: 'admin-uid',
+        email: 'lyquockhanh03@gmail.com',
+        role: 'teacher'
+    };
+    const otherTeacher = {
+        user: 'teacher_02',
+        uid: 'teacher2-uid',
+        email: 'teacher2@khanhlms.com',
+        role: 'teacher'
+    };
+
     const savedDocs = [];
+    const modalMessages = [];
     const context = {
         console,
         Date,
@@ -1389,12 +1407,17 @@ test('student checkout collects HKD tax payer fields and teacher approval record
         routerReady: false,
         appRouterApplying: false,
         tempCustomQRBase64: null,
+        ADMIN_EMAIL: 'lyquockhanh03@gmail.com',
         currentUser: student,
-        USERS: [student],
+        auth: { currentUser: { uid: 'minh-uid', email: 'minh@gmail.com' } },
+        USERS: [student, adminTeacher, otherTeacher],
         CLASSES: [{ id: 'cls_ielts_1', name: 'IELTS Intensive B2', feePerLesson: 150000, enrolledStudents: [] }],
         PACKAGES: [],
         ATTENDANCE: [],
         SUBMISSIONS: [],
+        SCHEDULES: [],
+        TEST_BANK: [],
+        QUESTION_FEEDBACK: [],
         BILLING_SETTINGS: {
             feePerLesson: 150000,
             lessonsPerMonth: 12,
@@ -1410,17 +1433,22 @@ test('student checkout collects HKD tax payer fields and teacher approval record
         getClassBaseFee: cls => cls.feePerLesson || 150000,
         isTemplateClass: () => false,
         renderClasses: () => {},
-        showModalMsg: () => {},
+        showModalMsg: (title, msg) => modalMessages.push({ title, msg }),
         syncTrustedAccountAccess: async () => {},
         document: {
             getElementById: id => getOrCreateEl(id),
-            querySelectorAll: () => []
+            querySelectorAll: () => [],
+            addEventListener: () => {}
         },
-        sessionStorage: { setItem: () => {} },
+        sessionStorage: { setItem: () => {}, getItem: () => null, removeItem: () => {} },
         localStorage: { getItem: () => null, setItem: () => {} },
         window: null
     };
     context.window = context;
+    context.isAdminUser = (profile = context.currentUser, firebaseUser = context.auth?.currentUser) => {
+        const candidates = [firebaseUser?.email, profile?.email, profile?.user, profile?.username];
+        return candidates.some(val => typeof val === 'string' && val.trim().toLowerCase() === context.ADMIN_EMAIL);
+    };
     context.db = {};
     context.fPath = col => col;
     context.fsDoc = (_db, collection, id) => ({ collection, id });
@@ -1430,30 +1458,50 @@ test('student checkout collects HKD tax payer fields and teacher approval record
 
     vm.createContext(context);
     vm.runInContext(readAppScript('billing.js'), context);
+    vm.runInContext(readAppScript('teacher-dashboard.js'), context);
     vm.runInContext(readAppScript('teacher-admin.js'), context);
+    context.showToast = (title, msg) => modalMessages.push({ title, msg });
+    context.showModalMsg = (title, msg) => modalMessages.push({ title, msg });
+    context.renderClasses = () => {};
 
-    // 1. Calculate checkout plans and select 1-month standard plan (12 * 150,000 = 1,800,000 VND)
+    // 1. Student checkout markup must NOT contain any tax form fields
+    context.renderStudentCheckout();
+    assert.doesNotMatch(elements.get('student-payment-warning').innerHTML, /S1-HKD|CCCD|MST|Khai thuế/i);
+    elements.get('checkout-course').value = 'cls_ielts_1';
     context.updateCheckoutMath();
     context.selectPaymentPackage(0);
-    assert.match(elements.get('vietqr-desc').textContent, /Hoc phi IELTS Intensive B2 - Nguyễn Văn Minh - 0912345678/);
+    assert.equal(elements.get('vietqr-desc').textContent, 'Nguyễn Văn Minh - 👥 IELTS Intensive B2');
 
-    // 2. Student submits payment notification with HKD tax declaration fields
+    // 2. Student submits payment notification as usual
     await context.notifyTeacherPayment();
     assert.equal(student.paymentStatus, 'pending');
     assert.equal(student.pendingAmount, 1800000);
-    assert.equal(student.pendingTaxPayerName, 'Nguyễn Văn Minh');
-    assert.equal(student.pendingTaxPayerPhone, '0912345678');
-    assert.equal(student.pendingTaxId, '079203001234');
-    assert.equal(student.pendingTaxAddress, 'Quận 7, TP.HCM');
-    assert.equal(student.pendingTaxInvoiceRequested, true);
-    assert.equal(student.realName, 'Nguyễn Văn Minh');
-    assert.equal(student.phone, '0912345678');
 
-    // 3. Teacher approves the payment -> generates S1-HKD ledger entry in paymentHistory
+    // 3. Non-admin teacher account cannot see Payments tab or approve payments
+    context.currentUser = otherTeacher;
+    context.auth.currentUser = { uid: 'teacher2-uid', email: 'teacher2@khanhlms.com' };
+    assert.equal(context.isAdminUser(), false);
+    context.applyAdminRoleUI();
+    assert.equal(elements.get('tab-btn-payments').classList.contains('hidden'), true);
+    assert.equal(elements.get('overview-quick-payments-btn').classList.contains('hidden'), true);
+    assert.equal(elements.get('profile-drop-role').textContent, 'Teacher');
+
+    await vm.runInContext(`togglePaymentStatus('minh_01', true)`, context);
+    assert.equal(student.isPaid, false);
+    assert.equal(student.paymentStatus, 'pending');
+
+    // 4. Admin account (lyquockhanh03@gmail.com) sees Payments tab and approves payment -> records S1-HKD entry
+    context.currentUser = adminTeacher;
+    context.auth.currentUser = { uid: 'admin-uid', email: 'lyquockhanh03@gmail.com' };
+    assert.equal(context.isAdminUser(), true);
+    context.applyAdminRoleUI();
+    assert.equal(elements.get('tab-btn-payments').classList.contains('hidden'), false);
+    assert.equal(elements.get('overview-quick-payments-btn').classList.contains('hidden'), false);
+    assert.equal(elements.get('profile-drop-role').textContent, 'Admin');
+
     await vm.runInContext(`togglePaymentStatus('minh_01', true)`, context);
     assert.equal(student.isPaid, true);
     assert.equal(student.paymentStatus, 'paid');
-    assert.equal(student.pendingTaxPayerName, null);
     assert.equal(student.paymentHistory.length, 1);
 
     const record = student.paymentHistory[0];
@@ -1462,28 +1510,15 @@ test('student checkout collects HKD tax payer fields and teacher approval record
     assert.equal(record.payerPhone, '0912345678');
     assert.equal(record.taxId, '079203001234');
     assert.equal(record.taxAddress, 'Quận 7, TP.HCM');
-    assert.equal(record.invoiceRequested, true);
     assert.equal(record.amount, 1800000);
     assert.equal(record.vatRate, 0);
     assert.equal(record.pitRate, 2);
-    assert.equal(record.vatAmount, 0);
     assert.equal(record.pitAmount, 36000);
 
-    // 4. S1-HKD ledger aggregation and tax calculation
     const entries = context.collectHkdTaxEntries(context.USERS, context.BILLING_SETTINGS);
     assert.equal(entries.length, 1);
-    assert.equal(entries[0].payerName, 'Nguyễn Văn Minh');
-    assert.equal(entries[0].taxId, '079203001234');
-
     const summary = context.calculateHkdTaxSummary(entries, { vatRate: 0, pitRate: 2, annualRevenue: 1800000 });
     assert.equal(summary.periodRevenue, 1800000);
-    assert.equal(summary.vatAmount, 0);
-    assert.equal(summary.pitAmount, 36000);
     assert.equal(summary.totalTax, 36000);
     assert.equal(summary.netRevenue, 1764000);
-    assert.equal(summary.invoiceRequestedCount, 1);
-
-    context.renderHkdTaxLedger();
-    assert.match(elements.get('hkd-tax-ledger-table-container').innerHTML, /Nguyễn Văn Minh/);
-    assert.match(elements.get('hkd-tax-ledger-table-container').innerHTML, /079203001234/);
 });

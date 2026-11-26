@@ -255,11 +255,6 @@
         const expiredPlanNotice = billingExpiry !== null && billingExpiry <= Date.now()
             ? `<p class="text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3 mb-5 font-semibold">Your ${currentUser.billingPlanTitle || 'tuition plan'} expired on ${formatBillingDate(billingExpiry)}. Submit your next payment and wait for teacher verification to restore course access.</p>`
             : '';
-        const defaultPayerName = lmsEscapeHtml(currentUser.pendingTaxPayerName || currentUser.taxPayerName || currentUser.realName || currentUser.parentName || '');
-        const defaultPayerPhone = lmsEscapeHtml(currentUser.pendingTaxPayerPhone || currentUser.phone || '');
-        const defaultTaxId = lmsEscapeHtml(currentUser.pendingTaxId || currentUser.taxId || '');
-        const defaultTaxAddress = lmsEscapeHtml(currentUser.pendingTaxAddress || currentUser.taxAddress || '');
-        const defaultInvoiceChecked = currentUser.pendingTaxInvoiceRequested ? 'checked' : '';
 
         document.getElementById('student-payment-warning').innerHTML = `
          <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200 flex flex-col lg:flex-row">
@@ -293,36 +288,6 @@
                         <button type="button" onclick="window.applyReferralCode()" class="bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-100 px-4 rounded-lg font-bold text-sm">Apply</button>
                     </div>
                     <div id="checkout-referral-status" class="text-xs text-slate-500 mt-2" aria-live="polite"></div>
-                </div>
-
-                <div class="mb-5 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 shadow-sm space-y-3">
-                    <div class="flex items-center justify-between gap-2">
-                        <h3 class="text-xs font-black text-indigo-900 uppercase tracking-widest flex items-center gap-1.5">🧾 Thông tin người nộp &amp; Khai thuế HKD</h3>
-                        <span class="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">Sổ doanh thu S1-HKD</span>
-                    </div>
-                    <p class="text-xs text-slate-600 leading-relaxed">Điền họ tên thật và SĐT người nộp học phí để đối soát chuyển khoản và ghi nhận chứng từ khai thuế Hộ kinh doanh cá nhân. Mã số thuế/CCCD và địa chỉ là tùy chọn.</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label for="checkout-payer-name" class="block text-[11px] font-bold text-slate-700 mb-1">Họ và tên người nộp / Học viên <span class="text-rose-600">*</span></label>
-                            <input id="checkout-payer-name" type="text" maxlength="150" value="${defaultPayerName}" placeholder="VD: Nguyễn Văn A" oninput="window.updateCheckoutTransferNote && window.updateCheckoutTransferNote()" class="w-full bg-white border border-slate-300 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold text-sm">
-                        </div>
-                        <div>
-                            <label for="checkout-payer-phone" class="block text-[11px] font-bold text-slate-700 mb-1">Số điện thoại liên hệ <span class="text-rose-600">*</span></label>
-                            <input id="checkout-payer-phone" type="tel" maxlength="40" value="${defaultPayerPhone}" placeholder="VD: 0912345678" oninput="window.updateCheckoutTransferNote && window.updateCheckoutTransferNote()" class="w-full bg-white border border-slate-300 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-bold text-sm font-mono">
-                        </div>
-                        <div>
-                            <label for="checkout-tax-id" class="block text-[11px] font-bold text-slate-600 mb-1">Số CCCD / MST cá nhân <span class="font-normal text-slate-400">(Tùy chọn)</span></label>
-                            <input id="checkout-tax-id" type="text" maxlength="40" value="${defaultTaxId}" placeholder="12 số CCCD hoặc MST" class="w-full bg-white border border-slate-300 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-medium text-sm font-mono">
-                        </div>
-                        <div>
-                            <label for="checkout-tax-address" class="block text-[11px] font-bold text-slate-600 mb-1">Địa chỉ <span class="font-normal text-slate-400">(Tùy chọn)</span></label>
-                            <input id="checkout-tax-address" type="text" maxlength="300" value="${defaultTaxAddress}" placeholder="Quận/Huyện, Tỉnh/Thành phố" class="w-full bg-white border border-slate-300 text-slate-800 p-2.5 rounded-lg outline-none focus:border-blue-500 font-medium text-sm">
-                        </div>
-                    </div>
-                    <label class="flex items-center gap-2 pt-1 cursor-pointer select-none">
-                        <input id="checkout-tax-invoice" type="checkbox" ${defaultInvoiceChecked} class="w-4 h-4 accent-indigo-600 rounded">
-                        <span class="text-xs font-bold text-slate-700">Yêu cầu xuất biên lai / hóa đơn học phí điện tử HKD</span>
-                    </label>
                 </div>
 
                 <h3 class="text-sm font-black text-slate-700 uppercase tracking-wider mb-3">Choose a payment plan</h3>
@@ -506,38 +471,23 @@
             }
         });
 
-        window.updateCheckoutTransferNote();
-        document.getElementById('vietqr-amount').textContent = formatVND(pkg.final);
-    };
-
-    window.updateCheckoutTransferNote = function updateCheckoutTransferNote() {
-        const pkg = window.checkoutPlans?.[window.selectedCheckoutPlan];
-        if (!pkg) return;
         const courseSel = document.getElementById('checkout-course');
         let courseName = 'Course';
         if (courseSel && courseSel.options[courseSel.selectedIndex]) {
-            courseName = courseSel.options[courseSel.selectedIndex].text.replace('📦 ', '').replace('👥 ', '');
+            courseName = courseSel.options[courseSel.selectedIndex].text.replace('📦 ', '');
         }
-        const payerNameInput = document.getElementById('checkout-payer-name');
-        const payerPhoneInput = document.getElementById('checkout-payer-phone');
-        const payerName = (payerNameInput && payerNameInput.value.trim()) || getStudentDisplayName();
-        const payerPhone = (payerPhoneInput && payerPhoneInput.value.trim()) || '';
-        const msg = payerPhone
-            ? `Hoc phi ${courseName} - ${payerName} - ${payerPhone}`
-            : `${payerName} - ${courseName}`;
-
-        const qrImg = document.getElementById('vietqr-image');
-        const qrDesc = document.getElementById('vietqr-desc');
-        if (!qrImg || !qrDesc) return;
-
+        const studentName = getStudentDisplayName();
+        const msg = `${studentName} - ${courseName}`;
+        
         if (BILLING_SETTINGS.customQR) {
-            qrImg.src = BILLING_SETTINGS.customQR;
-            qrDesc.textContent = "Use Custom QR above & ref: " + msg;
+            document.getElementById('vietqr-image').src = BILLING_SETTINGS.customQR;
+            document.getElementById('vietqr-desc').textContent = "Use Custom QR above & ref: " + studentName;
         } else {
             const qrUrl = `https://img.vietqr.io/image/${BILLING_SETTINGS.bankId}-${BILLING_SETTINGS.bankAcc}-compact2.png?amount=${pkg.final}&addInfo=${encodeURIComponent(msg)}&accountName=${encodeURIComponent(BILLING_SETTINGS.bankName)}`;
-            qrImg.src = qrUrl;
-            qrDesc.textContent = msg;
+            document.getElementById('vietqr-image').src = qrUrl;
+            document.getElementById('vietqr-desc').textContent = msg;
         }
+        document.getElementById('vietqr-amount').textContent = formatVND(pkg.final);
     };
 
     window.simulateAutoPayment = function simulateAutoPayment() { }; 
@@ -549,30 +499,7 @@
             return;
         }
         const selVal = courseSel.value;
-        const courseName = courseSel.options[courseSel.selectedIndex].text.replace('📦 ', '').replace('👥 ', '');
-
-        const payerNameInput = document.getElementById('checkout-payer-name');
-        const payerPhoneInput = document.getElementById('checkout-payer-phone');
-        const taxIdInput = document.getElementById('checkout-tax-id');
-        const taxAddressInput = document.getElementById('checkout-tax-address');
-        const taxInvoiceInput = document.getElementById('checkout-tax-invoice');
-
-        const payerName = payerNameInput ? payerNameInput.value.trim() : (currentUser.realName || getStudentDisplayName());
-        const payerPhone = payerPhoneInput ? payerPhoneInput.value.trim() : (currentUser.phone || '');
-        const taxId = taxIdInput ? taxIdInput.value.trim() : (currentUser.taxId || '');
-        const taxAddress = taxAddressInput ? taxAddressInput.value.trim() : (currentUser.taxAddress || '');
-        const taxInvoiceRequested = Boolean(taxInvoiceInput && taxInvoiceInput.checked);
-
-        if (payerNameInput && !payerName) {
-            showModalMsg("Thiếu thông tin người nộp", "Vui lòng nhập Họ và tên người nộp / học viên để ghi nhận biên lai học phí & khai thuế HKD.");
-            payerNameInput.focus?.();
-            return;
-        }
-        if (payerPhoneInput && !payerPhone) {
-            showModalMsg("Thiếu số điện thoại", "Vui lòng nhập Số điện thoại liên hệ của người nộp để đối soát học phí.");
-            payerPhoneInput.focus?.();
-            return;
-        }
+        const courseName = courseSel.options[courseSel.selectedIndex].text;
         
         const btn = document.getElementById('btn-verify-pay');
         btn.disabled = true;
@@ -585,7 +512,6 @@
             btn.textContent = "I Have Transferred the Money ✓";
             return;
         }
-        const now = Date.now();
         const previousUser = { ...currentUser };
         currentUser.pendingRenewal = currentUser.isPaid === true;
         currentUser.paymentStatus = 'pending';
@@ -594,19 +520,7 @@
         currentUser.pendingAmount = pkg.final;
         currentUser.pendingPlanTitle = pkg.title;
         currentUser.pendingPlanMonths = pkg.months;
-        currentUser.pendingPaymentId = `pay_${now}_${Math.random().toString(36).slice(2, 8)}`;
-        currentUser.pendingSubmittedAt = now;
-        currentUser.pendingPaymentMethod = 'bank_transfer';
-        currentUser.pendingTaxPayerName = payerName || null;
-        currentUser.pendingTaxPayerPhone = payerPhone || null;
-        currentUser.pendingTaxId = taxId || null;
-        currentUser.pendingTaxAddress = taxAddress || null;
-        currentUser.pendingTaxInvoiceRequested = taxInvoiceRequested;
-        if (payerName && !currentUser.realName) currentUser.realName = payerName;
-        if (payerName) currentUser.taxPayerName = payerName;
-        if (payerPhone) currentUser.phone = payerPhone;
-        if (taxId) currentUser.taxId = taxId;
-        if (taxAddress) currentUser.taxAddress = taxAddress;
+        currentUser.pendingPaymentId = `pay_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         currentUser.pendingReferralCreditsUsed = Math.min(pkg.referralCreditsApplied || 0, Number(currentUser.referralDiscountCredits) || 0);
         currentUser.pendingReferralBy = window.checkoutReferralState && !currentUser.referralDiscountUsed && !currentUser.isPaid && !Number(currentUser.totalLessonsPaid)
             ? window.checkoutReferralState.referrer
@@ -635,31 +549,17 @@
         
         const cloudUserIdx = USERS.findIndex(u => u.user === currentUser.user);
         if (cloudUserIdx > -1) {
-            Object.assign(USERS[cloudUserIdx], {
-                paymentStatus: 'pending',
-                pendingInfo: currentUser.pendingInfo,
-                pendingClasses: currentUser.pendingClasses,
-                pendingLessons: currentUser.pendingLessons,
-                pendingAmount: currentUser.pendingAmount,
-                pendingPlanTitle: currentUser.pendingPlanTitle,
-                pendingPlanMonths: currentUser.pendingPlanMonths,
-                pendingPaymentId: currentUser.pendingPaymentId,
-                pendingSubmittedAt: currentUser.pendingSubmittedAt,
-                pendingPaymentMethod: currentUser.pendingPaymentMethod,
-                pendingTaxPayerName: currentUser.pendingTaxPayerName,
-                pendingTaxPayerPhone: currentUser.pendingTaxPayerPhone,
-                pendingTaxId: currentUser.pendingTaxId,
-                pendingTaxAddress: currentUser.pendingTaxAddress,
-                pendingTaxInvoiceRequested: currentUser.pendingTaxInvoiceRequested,
-                realName: currentUser.realName,
-                taxPayerName: currentUser.taxPayerName,
-                phone: currentUser.phone,
-                taxId: currentUser.taxId,
-                taxAddress: currentUser.taxAddress,
-                pendingReferralCreditsUsed: currentUser.pendingReferralCreditsUsed,
-                pendingReferralBy: currentUser.pendingReferralBy,
-                pendingReferralCode: currentUser.pendingReferralCode
-            });
+            USERS[cloudUserIdx].paymentStatus = 'pending';
+            USERS[cloudUserIdx].pendingInfo = currentUser.pendingInfo;
+            USERS[cloudUserIdx].pendingClasses = currentUser.pendingClasses;
+            USERS[cloudUserIdx].pendingLessons = currentUser.pendingLessons;
+            USERS[cloudUserIdx].pendingAmount = currentUser.pendingAmount;
+            USERS[cloudUserIdx].pendingPlanTitle = currentUser.pendingPlanTitle;
+            USERS[cloudUserIdx].pendingPlanMonths = currentUser.pendingPlanMonths;
+            USERS[cloudUserIdx].pendingPaymentId = currentUser.pendingPaymentId;
+            USERS[cloudUserIdx].pendingReferralCreditsUsed = currentUser.pendingReferralCreditsUsed;
+            USERS[cloudUserIdx].pendingReferralBy = currentUser.pendingReferralBy;
+            USERS[cloudUserIdx].pendingReferralCode = currentUser.pendingReferralCode;
         }
         try {
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), currentUser.user), currentUser);

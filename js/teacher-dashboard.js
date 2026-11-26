@@ -172,10 +172,26 @@
             window.showToast?.('Đã đánh dấu đã đọc', 'Các thông báo phản hồi, đặt lịch và báo lỗi câu hỏi đã được đánh dấu đã xem.', 'success');
         };
 
+        window.applyAdminRoleUI = function() {
+            const isAdmin = typeof window.isAdminUser === 'function' ? window.isAdminUser() : false;
+            const paySidebarBtn = document.getElementById('tab-btn-payments');
+            if (paySidebarBtn) paySidebarBtn.classList.toggle('hidden', !isAdmin);
+            const payView = document.getElementById('editor-view-payments');
+            if (payView && !isAdmin) payView.classList.add('hidden');
+            const quickPayBtn = document.getElementById('overview-quick-payments-btn');
+            if (quickPayBtn) quickPayBtn.classList.toggle('hidden', !isAdmin);
+            const roleLabel = document.getElementById('profile-drop-role');
+            if (roleLabel) roleLabel.textContent = isAdmin ? 'Admin' : 'Teacher';
+            const roleIcon = document.getElementById('profile-drop-icon');
+            if (roleIcon) roleIcon.textContent = isAdmin ? 'A' : 'T';
+            return isAdmin;
+        };
+
         window.updateTeacherBadges = function() {
         if (!currentUser || currentUser.role !== 'teacher') return;
+        const isAdmin = window.applyAdminRoleUI();
 
-        const pendingStudentList = (USERS || []).filter(u => u.role === 'student' && u.paymentStatus === 'pending');
+        const pendingStudentList = isAdmin ? (USERS || []).filter(u => u.role === 'student' && u.paymentStatus === 'pending') : [];
         const pendingSubList = (SUBMISSIONS || []).filter(s => s.score === 'Pending Grade');
         const newBookingList = (SCHEDULES || []).filter(s => s.isNewBooking);
         const newReplyList = (SUBMISSIONS || []).filter(s => s.studentReply && !s.teacherReadReply);
@@ -363,10 +379,13 @@
         const escapeText = value => String(value ?? '').replace(/[&<>"']/g, char => ({
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         })[char]);
+        const isAdmin = typeof window.applyAdminRoleUI === 'function'
+            ? window.applyAdminRoleUI()
+            : (typeof window.isAdminUser === 'function' ? window.isAdminUser() : false);
         const studentUsers = USERS.filter(user => user.role === 'student' && user.disabled !== true);
         const activeStudents = studentUsers.filter(user => hasActiveStudentAccess(user)).length;
         const pendingSubs = SUBMISSIONS.filter(submission => submission.score === 'Pending Grade');
-        const pendingStudents = studentUsers.filter(user => user.paymentStatus === 'pending');
+        const pendingStudents = isAdmin ? studentUsers.filter(user => user.paymentStatus === 'pending') : [];
         const pendingTests = TEST_BANK.filter(test => test.status === 'review_ready');
         const today = new Date();
         const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -529,11 +548,13 @@
 
     function openEditor() {
       document.getElementById('editor-ui').classList.remove('hidden');
+      const isAdmin = typeof window.applyAdminRoleUI === 'function' ? window.applyAdminRoleUI() : false;
       
       // ✨ SMART RESTORE: Read memory to see where the teacher was before refreshing
       const savedSub = sessionStorage.getItem('lms_grading_sub');
       const savedTest = sessionStorage.getItem('lms_editing_test');
       let savedTab = sessionStorage.getItem('lms_teacher_tab') || 'overview';
+      if (savedTab === 'payments' && !isAdmin) savedTab = 'overview';
 
       if (savedSub && currentUser.role === 'teacher') {
           const subId = Number(savedSub);
@@ -561,6 +582,13 @@
     }
 
     function toggleEditorTab(tab) {
+      const isAdmin = typeof window.applyAdminRoleUI === 'function'
+          ? window.applyAdminRoleUI()
+          : (typeof window.isAdminUser === 'function' ? window.isAdminUser() : false);
+      if (tab === 'payments' && !isAdmin) {
+          window.showToast?.('Truy cập bị giới hạn', 'Chỉ tài khoản Admin mới có quyền xem và quản lý Học phí & Khai thuế.', 'error');
+          tab = 'overview';
+      }
       sessionStorage.setItem('lms_teacher_tab', tab);
       const editorRoot = document.getElementById('editor-ui');
       if (editorRoot) editorRoot.classList.toggle('sidebar-focus', tab === 'builder');
