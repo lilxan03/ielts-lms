@@ -302,7 +302,9 @@ service cloud.firestore {
           'pendingPlanTitle', 'pendingPlanMonths', 'pendingPaymentId', 'pendingReferralCreditsUsed',
           'pendingReferralBy', 'pendingReferralCode', 'pendingClasses', 'gems', 'inventory',
           'equipped', 'unlockedTests', 'targetScore', 'testDate', 'avatar', 'currentStreak',
-          'lastLoginDate', 'fcmToken'
+          'lastLoginDate', 'fcmToken', 'realName', 'phone', 'taxPayerName', 'taxId', 'taxAddress',
+          'pendingTaxPayerName', 'pendingTaxPayerPhone', 'pendingTaxId', 'pendingTaxAddress',
+          'pendingTaxInvoiceRequested', 'pendingPaymentMethod', 'pendingSubmittedAt'
         ])
         && data.get('uid', null) == resource.data.get('uid', null)
         && data.get('user', null) == resource.data.get('user', null)
@@ -333,15 +335,27 @@ service cloud.firestore {
         && isValidOptionalString(data, 'avatar', 2048)
         && isValidOptionalString(data, 'lastLoginDate', 40)
         && isValidOptionalString(data, 'fcmToken', 1024)
+        && isValidOptionalString(data, 'realName', 150)
+        && isValidOptionalString(data, 'phone', 40)
+        && isValidOptionalString(data, 'taxPayerName', 150)
+        && isValidOptionalString(data, 'taxId', 40)
+        && isValidOptionalString(data, 'taxAddress', 300)
+        && isValidOptionalString(data, 'pendingTaxPayerName', 150)
+        && isValidOptionalString(data, 'pendingTaxPayerPhone', 40)
+        && isValidOptionalString(data, 'pendingTaxId', 40)
+        && isValidOptionalString(data, 'pendingTaxAddress', 300)
+        && isValidOptionalString(data, 'pendingPaymentMethod', 60)
         && (!('pendingClasses' in data) || data.pendingClasses == null || (data.pendingClasses is list && data.pendingClasses.size() <= 50))
         && (!('inventory' in data) || data.inventory == null || (data.inventory is list && data.inventory.size() <= 200))
         && (!('unlockedTests' in data) || data.unlockedTests == null || (data.unlockedTests is list && data.unlockedTests.size() <= 500))
         && (!('equipped' in data) || data.equipped == null || (data.equipped is map && data.equipped.size() <= 50))
         && (!('pendingRenewal' in data) || data.pendingRenewal == null || data.pendingRenewal is bool)
+        && (!('pendingTaxInvoiceRequested' in data) || data.pendingTaxInvoiceRequested == null || data.pendingTaxInvoiceRequested is bool)
         && (!('pendingLessons' in data) || data.pendingLessons == null || (data.pendingLessons is number && data.pendingLessons >= 0))
         && (!('pendingAmount' in data) || data.pendingAmount == null || (data.pendingAmount is number && data.pendingAmount >= 0))
         && (!('pendingPlanMonths' in data) || data.pendingPlanMonths == null || (data.pendingPlanMonths is number && data.pendingPlanMonths >= 0))
         && (!('pendingReferralCreditsUsed' in data) || data.pendingReferralCreditsUsed == null || (data.pendingReferralCreditsUsed is number && data.pendingReferralCreditsUsed >= 0))
+        && (!('pendingSubmittedAt' in data) || data.pendingSubmittedAt == null || (data.pendingSubmittedAt is number && data.pendingSubmittedAt >= 0))
         && (!('currentStreak' in data) || data.currentStreak == null || (data.currentStreak is int && data.currentStreak >= 0 && data.currentStreak <= 10000));
     }
 

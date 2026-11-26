@@ -251,6 +251,16 @@
                             : 'bg-rose-50 text-rose-700 border-rose-200';
                     const plan = user.billingPlanTitle || (billing.legacy ? 'Existing access (no expiry recorded)' : '—');
                     const pendingInfo = user.paymentStatus === 'pending' ? (user.pendingInfo || 'Awaiting review') : '—';
+                    const pendingTaxMeta = user.paymentStatus === 'pending' && (user.pendingTaxPayerName || user.pendingTaxPayerPhone || user.pendingTaxId)
+                        ? [
+                            user.pendingTaxPayerName ? `Người nộp: ${user.pendingTaxPayerName}` : '',
+                            user.pendingTaxPayerPhone ? `SĐT: ${user.pendingTaxPayerPhone}` : '',
+                            user.pendingTaxId ? `MST/CCCD: ${user.pendingTaxId}` : '',
+                            user.pendingTaxInvoiceRequested ? 'Yêu cầu HĐ' : ''
+                          ].filter(Boolean).join(' · ')
+                        : '';
+                    const safePendingInfo = lmsEscapeHtml(pendingInfo);
+                    const safePendingTaxMeta = lmsEscapeHtml(pendingTaxMeta);
                     const email = typeof user.email === 'string' && !user.email.trim().toLowerCase().endsWith('@khanhlms.com')
                         ? user.email.trim()
                         : '';
@@ -283,7 +293,7 @@
                             <button onclick="window.editStudentBillingDeadline('${user.user}')" class="mt-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:underline">${billing.expiry === null ? 'Set deadline' : 'Edit deadline'}</button>
                         </td>
                         <td class="p-4 text-center"><span class="inline-flex border px-2.5 py-1 rounded-full text-[10px] font-black whitespace-nowrap ${statusClass}">${billing.label}</span></td>
-                        <td class="p-4 text-xs text-slate-600 max-w-[240px] truncate" title="${pendingInfo}">${pendingInfo}</td>
+                        <td class="p-4 text-xs text-slate-600 max-w-[260px]" title="${safePendingInfo}${safePendingTaxMeta ? ` | ${safePendingTaxMeta}` : ''}"><div class="truncate font-semibold">${safePendingInfo}</div>${safePendingTaxMeta ? `<div class="truncate text-[10px] text-indigo-700 font-medium mt-0.5">${safePendingTaxMeta}</div>` : ''}</td>
                         <td class="p-4 text-right">${action}</td>
                     </tr>`;
                 }).join('')}
@@ -387,6 +397,16 @@
         document.getElementById('bill-lpm').value = BILLING_SETTINGS.lessonsPerMonth || 12;
         document.getElementById('bill-disc-combo').value = BILLING_SETTINGS.discCombo || 10;
         document.getElementById('bill-disc-course').value = 20;
+        const setFieldVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+        setFieldVal('bill-hkd-name', BILLING_SETTINGS.hkdName || '');
+        setFieldVal('bill-hkd-tax-id', BILLING_SETTINGS.hkdTaxId || '');
+        setFieldVal('bill-hkd-sector', BILLING_SETTINGS.hkdBusinessSector || 'Dịch vụ giáo dục, đào tạo tiếng Anh');
+        setFieldVal('bill-hkd-address', BILLING_SETTINGS.hkdAddress || '');
+        setFieldVal('bill-hkd-vat', BILLING_SETTINGS.hkdVatRate !== undefined && BILLING_SETTINGS.hkdVatRate !== null ? BILLING_SETTINGS.hkdVatRate : 0);
+        setFieldVal('bill-hkd-pit', BILLING_SETTINGS.hkdPitRate !== undefined && BILLING_SETTINGS.hkdPitRate !== null ? BILLING_SETTINGS.hkdPitRate : 2);
+        setFieldVal('bill-bank-id', BILLING_SETTINGS.bankId || 'MB');
+        setFieldVal('bill-bank-acc', BILLING_SETTINGS.bankAcc || '');
+        setFieldVal('bill-bank-name', BILLING_SETTINGS.bankName || '');
 
         if (BILLING_SETTINGS.customQR) {
             tempCustomQRBase64 = BILLING_SETTINGS.customQR;
@@ -402,6 +422,7 @@
         // Render the Packages list
         const pkgList = document.getElementById('packages-pricing-list');
         renderPaymentAccessList();
+        if (typeof window.renderHkdTaxLedger === 'function') window.renderHkdTaxLedger();
         if (pkgList) {
             if (PACKAGES.length === 0) {
                 pkgList.innerHTML = `<div class="col-span-full text-slate-400 italic text-sm py-4 text-center bg-slate-50 rounded-xl border border-slate-100">No packages created yet.</div>`;
@@ -431,7 +452,503 @@
         setTimeout(() => window.updateRevenueChart('month'), 50);
     };
 
-    // ✨ NEW: Global Revenue Chart Generator
+    // ✨ NEW: Sổ chi tiết doanh thu S1-HKD (Thông tư 88/2021/TT-BTC) & Tính thuế HKD (Thông tư 40/2021/TT-BTC)
+    window.formatHkdReceiptNumber = function(timestamp, index = 1) {
+        const d = new Date(Number(timestamp) || Date.now());
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const seq = String(Math.max(1, index)).padStart(4, '0');
+        return `PT-${yyyy}${mm}-${seq}`;
+    };
+
+    window.collectHkdTaxEntries = function(usersList = USERS, billingSettings = BILLING_SETTINGS) {
+        const entries = [];
+        const safeUsers = Array.isArray(usersList) ? usersList : [];
+        safeUsers.forEach(u => {
+            if (!u || u.role !== 'student') return;
+            const history = Array.isArray(u.paymentHistory) ? u.paymentHistory : [];
+            if (history.length > 0) {
+                history.forEach((payment, idx) => {
+                    const amount = Number(payment.amount) || 0;
+                    if (amount <= 0) return;
+                    const approvedAt = Number(payment.approvedAt) || Number(u.billingLastPaymentAt) || Date.now();
+                    const dateObj = new Date(approvedAt);
+                    const year = dateObj.getFullYear();
+                    const month = dateObj.getMonth() + 1;
+                    const quarter = Math.floor((month - 1) / 3) + 1;
+                    const payerName = payment.payerName || u.taxPayerName || u.realName || u.parentName || (window.getStudentDisplayName ? window.getStudentDisplayName(u) : u.user);
+                    const payerPhone = payment.payerPhone || u.phone || '';
+                    const taxId = payment.taxId || u.taxId || '';
+                    const taxAddress = payment.taxAddress || u.taxAddress || '';
+                    const courseNames = Array.isArray(payment.classes) && payment.classes.length
+                        ? payment.classes.join(', ')
+                        : (payment.courseDescription || payment.plan || u.billingPlanTitle || 'Học phí khóa học');
+                    entries.push({
+                        id: payment.id || `pay_${u.user}_${idx}`,
+                        receiptNo: payment.receiptNo || window.formatHkdReceiptNumber(approvedAt, entries.length + 1),
+                        approvedAt,
+                        year,
+                        quarter,
+                        month,
+                        studentUsername: u.user,
+                        studentEmail: u.email || '',
+                        payerName,
+                        payerPhone,
+                        taxId,
+                        taxAddress,
+                        invoiceRequested: Boolean(payment.invoiceRequested),
+                        paymentMethod: payment.paymentMethod || 'Chuyển khoản NH',
+                        receivingBank: payment.receivingBank || (billingSettings?.bankAcc ? `${billingSettings.bankId || 'MB'} - ${billingSettings.bankAcc}` : ''),
+                        plan: payment.plan || 'Học phí',
+                        months: Number(payment.months) || 1,
+                        lessons: Number(payment.lessons) || 0,
+                        description: payment.description || `Thu học phí ${courseNames} (${payment.plan || `${payment.months || 1} tháng`}) - HV: ${payerName}`,
+                        amount
+                    });
+                });
+            } else if (u.isPaid && Number(u.billingLastPaymentAmount) > 0) {
+                const amount = Number(u.billingLastPaymentAmount) || 0;
+                const approvedAt = Number(u.billingLastPaymentAt) || Date.now();
+                const dateObj = new Date(approvedAt);
+                const year = dateObj.getFullYear();
+                const month = dateObj.getMonth() + 1;
+                const quarter = Math.floor((month - 1) / 3) + 1;
+                const payerName = u.taxPayerName || u.realName || u.parentName || (window.getStudentDisplayName ? window.getStudentDisplayName(u) : u.user);
+                entries.push({
+                    id: u.lastApprovedPaymentId || `legacy_${u.user}`,
+                    receiptNo: window.formatHkdReceiptNumber(approvedAt, entries.length + 1),
+                    approvedAt,
+                    year,
+                    quarter,
+                    month,
+                    studentUsername: u.user,
+                    studentEmail: u.email || '',
+                    payerName,
+                    payerPhone: u.phone || '',
+                    taxId: u.taxId || '',
+                    taxAddress: u.taxAddress || '',
+                    invoiceRequested: false,
+                    paymentMethod: 'Chuyển khoản NH',
+                    receivingBank: billingSettings?.bankAcc ? `${billingSettings.bankId || 'MB'} - ${billingSettings.bankAcc}` : '',
+                    plan: u.billingPlanTitle || 'Học phí',
+                    months: Number(u.billingPlanMonths) || 1,
+                    lessons: Number(u.totalLessonsPaid) || 0,
+                    description: `Thu học phí (${u.billingPlanTitle || 'Khóa học'}) - HV: ${payerName}`,
+                    amount
+                });
+            }
+        });
+
+        const manualEntries = Array.isArray(billingSettings?.manualTaxEntries) ? billingSettings.manualTaxEntries : [];
+        manualEntries.forEach((m, idx) => {
+            const amount = Number(m.amount) || 0;
+            if (amount <= 0) return;
+            const approvedAt = Number(m.approvedAt) || Date.now();
+            const dateObj = new Date(approvedAt);
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth() + 1;
+            const quarter = Math.floor((month - 1) / 3) + 1;
+            entries.push({
+                id: m.id || `manual_${idx}`,
+                receiptNo: m.receiptNo || window.formatHkdReceiptNumber(approvedAt, entries.length + 1),
+                approvedAt,
+                year,
+                quarter,
+                month,
+                studentUsername: m.studentUsername || '',
+                studentEmail: '',
+                payerName: m.payerName || 'Khách nộp học phí',
+                payerPhone: m.payerPhone || '',
+                taxId: m.taxId || '',
+                taxAddress: m.taxAddress || '',
+                invoiceRequested: Boolean(m.invoiceRequested),
+                paymentMethod: m.paymentMethod || 'Chuyển khoản NH',
+                receivingBank: m.receivingBank || '',
+                plan: m.plan || 'Phiếu thu bổ sung',
+                months: Number(m.months) || 1,
+                lessons: Number(m.lessons) || 0,
+                description: m.description || `Thu học phí - ${m.payerName || ''}`,
+                amount,
+                isManual: true
+            });
+        });
+
+        entries.sort((a, b) => a.approvedAt - b.approvedAt);
+        const countersByMonth = {};
+        entries.forEach(entry => {
+            const ym = `${entry.year}${String(entry.month).padStart(2, '0')}`;
+            countersByMonth[ym] = (countersByMonth[ym] || 0) + 1;
+            if (!entry.receiptNo || /^PT-\d{6}-\d{4}$/.test(entry.receiptNo)) {
+                entry.receiptNo = `PT-${ym}-${String(countersByMonth[ym]).padStart(4, '0')}`;
+            }
+        });
+        return entries.sort((a, b) => b.approvedAt - a.approvedAt);
+    };
+
+    window.calculateHkdTaxSummary = function(entries, options = {}) {
+        const vatRate = Number.isFinite(Number(options.vatRate)) ? Number(options.vatRate) : 0;
+        const pitRate = Number.isFinite(Number(options.pitRate)) ? Number(options.pitRate) : 2;
+        const periodRevenue = (entries || []).reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+        const annualRevenue = Number.isFinite(Number(options.annualRevenue)) ? Number(options.annualRevenue) : periodRevenue;
+        const vatAmount = Math.round(periodRevenue * (vatRate / 100));
+        const pitAmount = Math.round(periodRevenue * (pitRate / 100));
+        const totalTax = vatAmount + pitAmount;
+        const netRevenue = periodRevenue - totalTax;
+        const invoiceRequestedCount = (entries || []).filter(item => item.invoiceRequested).length;
+        return {
+            transactionCount: (entries || []).length,
+            invoiceRequestedCount,
+            periodRevenue,
+            annualRevenue,
+            vatRate,
+            pitRate,
+            vatAmount,
+            pitAmount,
+            totalTax,
+            netRevenue
+        };
+    };
+
+    window.renderHkdTaxLedger = function() {
+        const periodTypeEl = document.getElementById('hkd-tax-period-type');
+        const yearEl = document.getElementById('hkd-tax-year');
+        const subperiodEl = document.getElementById('hkd-tax-subperiod');
+        const cardsContainer = document.getElementById('hkd-tax-summary-cards');
+        const tableContainer = document.getElementById('hkd-tax-ledger-table-container');
+        const subtitleEl = document.getElementById('hkd-tax-profile-subtitle');
+        if (!cardsContainer || !tableContainer) return;
+
+        const allEntries = window.collectHkdTaxEntries(USERS, BILLING_SETTINGS);
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        const currentQuarter = Math.floor((currentMonth - 1) / 3) + 1;
+
+        const yearsSet = new Set([currentYear, ...allEntries.map(e => e.year)]);
+        const years = Array.from(yearsSet).sort((a, b) => b - a);
+        const selectedYear = Number(yearEl?.value) || currentYear;
+        if (yearEl) {
+            yearEl.innerHTML = years.map(y => `<option value="${y}" ${y === selectedYear ? 'selected' : ''}>Năm ${y}</option>`).join('');
+        }
+
+        const periodType = periodTypeEl ? periodTypeEl.value : 'quarter';
+        if (subperiodEl) {
+            if (periodType === 'year') {
+                subperiodEl.classList.add('hidden');
+            } else if (periodType === 'quarter') {
+                subperiodEl.classList.remove('hidden');
+                const prevQ = /^Q[1-4]$/.test(subperiodEl.value) ? Number(subperiodEl.value.slice(1)) : currentQuarter;
+                subperiodEl.innerHTML = [1, 2, 3, 4].map(q => `<option value="Q${q}" ${q === prevQ ? 'selected' : ''}>Quý ${q}</option>`).join('');
+            } else {
+                subperiodEl.classList.remove('hidden');
+                const prevM = /^M\d+$/.test(subperiodEl.value) ? Number(subperiodEl.value.slice(1)) : currentMonth;
+                subperiodEl.innerHTML = Array.from({ length: 12 }, (_, i) => i + 1).map(m => `<option value="M${m}" ${m === prevM ? 'selected' : ''}>Tháng ${m}</option>`).join('');
+            }
+        }
+
+        const subVal = subperiodEl ? subperiodEl.value : `Q${currentQuarter}`;
+        const yearEntries = allEntries.filter(e => e.year === selectedYear);
+        const filteredEntries = yearEntries.filter(e => {
+            if (periodType === 'year') return true;
+            if (periodType === 'quarter') return `Q${e.quarter}` === subVal;
+            if (periodType === 'month') return `M${e.month}` === subVal;
+            return true;
+        });
+
+        const annualRevenue = yearEntries.reduce((sum, e) => sum + e.amount, 0);
+        const vatRate = BILLING_SETTINGS.hkdVatRate !== undefined && BILLING_SETTINGS.hkdVatRate !== null ? Number(BILLING_SETTINGS.hkdVatRate) : 0;
+        const pitRate = BILLING_SETTINGS.hkdPitRate !== undefined && BILLING_SETTINGS.hkdPitRate !== null ? Number(BILLING_SETTINGS.hkdPitRate) : 2;
+        const summary = window.calculateHkdTaxSummary(filteredEntries, { vatRate, pitRate, annualRevenue });
+
+        const periodLabel = periodType === 'year'
+            ? `Năm ${selectedYear}`
+            : periodType === 'quarter'
+                ? `Quý ${subVal.replace('Q', '')}/${selectedYear}`
+                : `Tháng ${subVal.replace('M', '')}/${selectedYear}`;
+
+        if (subtitleEl) {
+            const hkdTitle = [
+                BILLING_SETTINGS.hkdName ? `HKD: ${BILLING_SETTINGS.hkdName}` : '',
+                BILLING_SETTINGS.hkdTaxId ? `MST/CCCD: ${BILLING_SETTINGS.hkdTaxId}` : '',
+                BILLING_SETTINGS.hkdBusinessSector || 'Dịch vụ giáo dục, đào tạo tiếng Anh'
+            ].filter(Boolean).join(' · ');
+            subtitleEl.textContent = `${hkdTitle} — Kỳ kê khai: ${periodLabel}`;
+        }
+
+        cardsContainer.innerHTML = `
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Doanh thu kỳ (${lmsEscapeHtml(periodLabel)})</div>
+                <div class="text-2xl font-black text-blue-800 mt-1">${formatVND(summary.periodRevenue)}</div>
+                <div class="text-xs font-semibold text-slate-500 mt-1">${summary.transactionCount} chứng từ thu · ${summary.invoiceRequestedCount} yêu cầu biên lai/HĐ</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Thuế GTGT (${summary.vatRate}%) &amp; TNCN (${summary.pitRate}%)</div>
+                <div class="text-2xl font-black text-rose-700 mt-1">${formatVND(summary.totalTax)}</div>
+                <div class="text-xs font-semibold text-slate-500 mt-1">GTGT: ${formatVND(summary.vatAmount)} · TNCN: ${formatVND(summary.pitAmount)}</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Doanh thu thực nhận sau thuế</div>
+                <div class="text-2xl font-black text-emerald-700 mt-1">${formatVND(summary.netRevenue)}</div>
+                <div class="text-xs font-semibold text-slate-500 mt-1">Đã trừ dự toán thuế HKD trong kỳ</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lũy kế năm ${selectedYear}</div>
+                <div class="text-2xl font-black text-indigo-800 mt-1">${formatVND(summary.annualRevenue)}</div>
+                <div class="text-xs font-semibold text-slate-500 mt-1">${yearEntries.length} giao dịch trong năm ${selectedYear}</div>
+            </div>
+        `;
+
+        if (filteredEntries.length === 0) {
+            tableContainer.innerHTML = `<div class="p-8 text-center text-slate-500 italic text-sm">Chưa có chứng từ thu học phí nào trong kỳ ${lmsEscapeHtml(periodLabel)}. Khi giáo viên duyệt học phí, chứng từ sẽ tự động ghi vào sổ S1-HKD tại đây.</div>`;
+            return;
+        }
+
+        tableContainer.innerHTML = `
+            <table class="w-full min-w-[1100px] text-left border-collapse text-sm">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        <th class="p-3.5">Số hiệu CT</th>
+                        <th class="p-3.5">Ngày tháng</th>
+                        <th class="p-3.5">Người nộp / Học viên</th>
+                        <th class="p-3.5">MST / CCCD &amp; SĐT</th>
+                        <th class="p-3.5">Diễn giải nội dung (S1-HKD)</th>
+                        <th class="p-3.5">Hình thức</th>
+                        <th class="p-3.5 text-right">Doanh thu</th>
+                        <th class="p-3.5 text-right">Thuế (${summary.vatRate + summary.pitRate}%)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    ${filteredEntries.map(item => {
+                        const itemTax = Math.round(item.amount * ((summary.vatRate + summary.pitRate) / 100));
+                        const dateStr = new Date(item.approvedAt).toLocaleDateString('vi-VN');
+                        return `<tr class="hover:bg-indigo-50/30">
+                            <td class="p-3.5 font-mono text-xs font-black text-indigo-800 whitespace-nowrap">${lmsEscapeHtml(item.receiptNo)}</td>
+                            <td class="p-3.5 text-xs font-bold text-slate-600 whitespace-nowrap">${lmsEscapeHtml(dateStr)}</td>
+                            <td class="p-3.5">
+                                <div class="font-bold text-slate-800">${lmsEscapeHtml(item.payerName)}</div>
+                                ${item.taxAddress ? `<div class="text-[11px] text-slate-500 truncate max-w-[220px]" title="${lmsEscapeHtml(item.taxAddress)}">${lmsEscapeHtml(item.taxAddress)}</div>` : ''}
+                            </td>
+                            <td class="p-3.5 text-xs font-mono text-slate-600">
+                                <div>${item.taxId ? `CCCD/MST: <b>${lmsEscapeHtml(item.taxId)}</b>` : '<span class="text-slate-400 font-sans italic">Chưa cung cấp</span>'}</div>
+                                ${item.payerPhone ? `<div class="text-[11px] text-slate-500">SĐT: ${lmsEscapeHtml(item.payerPhone)}</div>` : ''}
+                                ${item.invoiceRequested ? `<span class="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-sans font-black text-[9px] uppercase">Yêu cầu xuất HĐ</span>` : ''}
+                            </td>
+                            <td class="p-3.5 text-xs text-slate-700 max-w-[320px]">
+                                <div class="font-semibold text-slate-800">${lmsEscapeHtml(item.description)}</div>
+                                <div class="text-[10px] text-slate-400 mt-0.5">${lmsEscapeHtml(item.plan)} ${item.lessons ? `· ${item.lessons} buổi` : ''}</div>
+                            </td>
+                            <td class="p-3.5 text-xs font-semibold text-slate-600 whitespace-nowrap">${lmsEscapeHtml(item.paymentMethod)}</td>
+                            <td class="p-3.5 text-right font-black text-emerald-700 whitespace-nowrap">${formatVND(item.amount)}</td>
+                            <td class="p-3.5 text-right font-bold text-rose-600 whitespace-nowrap">${formatVND(itemTax)}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+                <tfoot>
+                    <tr class="bg-indigo-50/60 border-t-2 border-indigo-100 font-black text-slate-900">
+                        <td colspan="6" class="p-3.5 text-right uppercase text-xs tracking-wider text-indigo-950">Tổng cộng kỳ ${lmsEscapeHtml(periodLabel)} (${summary.transactionCount} chứng từ):</td>
+                        <td class="p-3.5 text-right text-emerald-800">${formatVND(summary.periodRevenue)}</td>
+                        <td class="p-3.5 text-right text-rose-700">${formatVND(summary.totalTax)}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        `;
+    };
+
+    window.exportHkdTaxLedgerCSV = function() {
+        const periodTypeEl = document.getElementById('hkd-tax-period-type');
+        const yearEl = document.getElementById('hkd-tax-year');
+        const subperiodEl = document.getElementById('hkd-tax-subperiod');
+        const allEntries = window.collectHkdTaxEntries(USERS, BILLING_SETTINGS);
+        const now = new Date();
+        const selectedYear = Number(yearEl?.value) || now.getFullYear();
+        const periodType = periodTypeEl ? periodTypeEl.value : 'quarter';
+        const subVal = subperiodEl ? subperiodEl.value : 'Q1';
+
+        const filtered = allEntries.filter(e => {
+            if (e.year !== selectedYear) return false;
+            if (periodType === 'year') return true;
+            if (periodType === 'quarter') return `Q${e.quarter}` === subVal;
+            if (periodType === 'month') return `M${e.month}` === subVal;
+            return true;
+        }).sort((a, b) => a.approvedAt - b.approvedAt);
+
+        const vatRate = BILLING_SETTINGS.hkdVatRate !== undefined && BILLING_SETTINGS.hkdVatRate !== null ? Number(BILLING_SETTINGS.hkdVatRate) : 0;
+        const pitRate = BILLING_SETTINGS.hkdPitRate !== undefined && BILLING_SETTINGS.hkdPitRate !== null ? Number(BILLING_SETTINGS.hkdPitRate) : 2;
+        const summary = window.calculateHkdTaxSummary(filtered, { vatRate, pitRate });
+
+        const csvEscape = val => {
+            const s = String(val ?? '').replace(/\r?\n/g, ' ');
+            return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+        };
+
+        const hkdName = BILLING_SETTINGS.hkdName || 'HKD IELTS W KHANH';
+        const hkdTaxId = BILLING_SETTINGS.hkdTaxId || '';
+        const hkdAddress = BILLING_SETTINGS.hkdAddress || '';
+        const hkdSector = BILLING_SETTINGS.hkdBusinessSector || 'Dịch vụ giáo dục, đào tạo tiếng Anh';
+        const periodCode = periodType === 'year' ? `${selectedYear}` : `${selectedYear}_${subVal}`;
+
+        const rows = [
+            ['SỔ CHI TIẾT DOANH THU BÁN HÀNG HÓA, DỊCH VỤ (Mẫu số S1-HKD - Thông tư 88/2021/TT-BTC)'],
+            ['Hộ, cá nhân kinh doanh:', hkdName, 'Mã số thuế / CCCD:', hkdTaxId],
+            ['Địa chỉ:', hkdAddress, 'Ngành nghề:', hkdSector],
+            ['Kỳ kê khai thuế:', periodCode, `Tỷ lệ thuế GTGT: ${vatRate}%`, `Tỷ lệ thuế TNCN: ${pitRate}%`],
+            [],
+            ['STT', 'Số hiệu chứng từ', 'Ngày tháng chứng từ', 'Họ tên người nộp / Học viên', 'Số điện thoại', 'Số CCCD / MST người mua', 'Địa chỉ người mua', 'Diễn giải nội dung thu học phí', 'Hình thức thanh toán', 'Yêu cầu xuất HĐ', 'Doanh thu tính thuế (VND)', `Thuế GTGT (${vatRate}%)`, `Thuế TNCN (${pitRate}%)`, 'Tổng thuế phải nộp (VND)']
+        ];
+
+        filtered.forEach((item, index) => {
+            const dateStr = new Date(item.approvedAt).toLocaleDateString('vi-VN');
+            const vatAmt = Math.round(item.amount * (vatRate / 100));
+            const pitAmt = Math.round(item.amount * (pitRate / 100));
+            rows.push([
+                index + 1,
+                item.receiptNo,
+                dateStr,
+                item.payerName,
+                item.payerPhone,
+                item.taxId,
+                item.taxAddress,
+                item.description,
+                item.paymentMethod,
+                item.invoiceRequested ? 'Có' : 'Không',
+                item.amount,
+                vatAmt,
+                pitAmt,
+                vatAmt + pitAmt
+            ]);
+        });
+
+        rows.push([
+            '', '', '', '', '', '', '', 'TỔNG CỘNG KỲ KÊ KHAI', '', '',
+            summary.periodRevenue,
+            summary.vatAmount,
+            summary.pitAmount,
+            summary.totalTax
+        ]);
+
+        const csvContent = '\uFEFF' + rows.map(row => row.map(csvEscape).join(',')).join('\r\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `So_Doanh_Thu_S1_HKD_${periodCode}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        if (typeof window.showToast === 'function') {
+            window.showToast('Đã xuất Sổ S1-HKD', `Đã tải file CSV khai thuế kỳ ${periodCode}.`);
+        }
+    };
+
+    window.promptAddManualTaxEntry = function() {
+        if (!currentUser || currentUser.role !== 'teacher') return;
+        const todayInput = formatBillingDateInput(Date.now());
+        document.getElementById('modal-title').textContent = 'Ghi Phiếu Thu Học Phí Vào Sổ S1-HKD';
+        document.getElementById('modal-message').innerHTML = `
+            <div class="space-y-3 mt-2 text-left">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Họ tên người nộp / Học viên *</label>
+                        <input type="text" id="manual-tax-payer" placeholder="Nguyễn Văn A" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-indigo-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Số tiền thu (VND) *</label>
+                        <input type="number" id="manual-tax-amount" min="1000" step="1000" placeholder="1200000" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-black text-emerald-700 outline-none focus:border-indigo-500 text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Ngày thu tiền *</label>
+                        <input type="date" id="manual-tax-date" value="${todayInput}" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-indigo-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Số điện thoại</label>
+                        <input type="text" id="manual-tax-phone" placeholder="0912345678" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-mono text-slate-800 outline-none focus:border-indigo-500 text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Số CCCD / MST cá nhân</label>
+                        <input type="text" id="manual-tax-id" placeholder="Tùy chọn" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-mono text-slate-800 outline-none focus:border-indigo-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Hình thức thanh toán</label>
+                        <select id="manual-tax-method" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-bold text-slate-800 outline-none focus:border-indigo-500 text-sm bg-white">
+                            <option value="Chuyển khoản NH">Chuyển khoản NH</option>
+                            <option value="Tiền mặt">Tiền mặt</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Địa chỉ người nộp</label>
+                    <input type="text" id="manual-tax-address" placeholder="Quận/Huyện, Tỉnh/TP (Tùy chọn)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-medium text-slate-800 outline-none focus:border-indigo-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Diễn giải chứng từ (S1-HKD) *</label>
+                    <input type="text" id="manual-tax-desc" placeholder="Thu học phí khóa IELTS Intensive (1 tháng)" class="w-full border-2 border-slate-200 p-2.5 rounded-lg font-medium text-slate-800 outline-none focus:border-indigo-500 text-sm">
+                </div>
+                <label class="flex items-center gap-2 pt-1 cursor-pointer">
+                    <input type="checkbox" id="manual-tax-invoice" class="w-4 h-4 accent-indigo-600 rounded">
+                    <span class="text-xs font-bold text-slate-700">Khách yêu cầu xuất hóa đơn / biên lai học phí</span>
+                </label>
+            </div>
+        `;
+        document.getElementById('modal-input').classList.add('hidden');
+        document.getElementById('modal-cancel').classList.remove('hidden');
+        document.getElementById('custom-modal').classList.remove('hidden');
+
+        document.getElementById('modal-cancel').onclick = () => document.getElementById('custom-modal').classList.add('hidden');
+        document.getElementById('modal-confirm').onclick = async () => {
+            const payerName = document.getElementById('manual-tax-payer')?.value.trim();
+            const amount = Number(document.getElementById('manual-tax-amount')?.value) || 0;
+            const dateVal = document.getElementById('manual-tax-date')?.value;
+            const payerPhone = document.getElementById('manual-tax-phone')?.value.trim() || '';
+            const taxId = document.getElementById('manual-tax-id')?.value.trim() || '';
+            const paymentMethod = document.getElementById('manual-tax-method')?.value || 'Chuyển khoản NH';
+            const taxAddress = document.getElementById('manual-tax-address')?.value.trim() || '';
+            const desc = document.getElementById('manual-tax-desc')?.value.trim() || `Thu học phí - ${payerName}`;
+            const invoiceRequested = Boolean(document.getElementById('manual-tax-invoice')?.checked);
+
+            if (!payerName || amount <= 0) {
+                alert('Vui lòng nhập họ tên người nộp và số tiền hợp lệ.');
+                return;
+            }
+            const parsedDate = parseBillingDeadlineDate(dateVal) || Date.now();
+            const entry = {
+                id: `manual_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                approvedAt: parsedDate,
+                payerName,
+                payerPhone,
+                taxId,
+                taxAddress,
+                paymentMethod,
+                description: desc,
+                invoiceRequested,
+                amount
+            };
+            const btn = document.getElementById('modal-confirm');
+            btn.disabled = true;
+            btn.textContent = 'Đang lưu...';
+            try {
+                if (!Array.isArray(BILLING_SETTINGS.manualTaxEntries)) BILLING_SETTINGS.manualTaxEntries = [];
+                BILLING_SETTINGS.manualTaxEntries.push(entry);
+                await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'), BILLING_SETTINGS);
+                document.getElementById('custom-modal').classList.add('hidden');
+                window.renderHkdTaxLedger();
+                window.updateRevenueChart('month');
+                if (typeof window.showToast === 'function') window.showToast('Đã ghi sổ S1-HKD', `Đã thêm phiếu thu của ${payerName}.`);
+            } catch (e) {
+                console.error('Could not save manual tax entry:', e);
+                showModalMsg('Lỗi', 'Không thể lưu phiếu thu lên hệ thống.');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'OK';
+            }
+        };
+    };
+
+    // ✨ NEW: Global Revenue Chart Generator (Uses real S1-HKD ledger entries when available)
     window.revenueChartInstance = null;
     window.updateRevenueChart = function(period) {
         ['month', 'quarter', 'year'].forEach(p => {
@@ -449,24 +966,56 @@
             window.revenueChartInstance.destroy();
         }
 
-        // Dynamically calculate a realistic baseline based on actual active students
-        const activeCount = USERS.filter(u => u.role === 'student' && hasActiveStudentAccess(u)).length;
-        const defaultFee = BILLING_SETTINGS.feePerLesson || 100000;
-        const defaultLpm = BILLING_SETTINGS.lessonsPerMonth || 12;
-        const avgMonthlyValue = activeCount > 0 ? (activeCount * defaultFee * defaultLpm) : (5 * 100000 * 12); // Fallback to 5 students if empty
+        const ledgerEntries = typeof window.collectHkdTaxEntries === 'function' ? window.collectHkdTaxEntries(USERS, BILLING_SETTINGS) : [];
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1;
+        const currentQuarter = Math.floor((currentMonth - 1) / 3) + 1;
 
         let labels = [];
         let data = [];
 
-        if (period === 'month') {
-            labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-            data = [avgMonthlyValue*0.2, avgMonthlyValue*0.4, avgMonthlyValue*0.1, avgMonthlyValue*0.3].map(Math.round);
-        } else if (period === 'quarter') {
-            labels = ['Month 1', 'Month 2', 'Month 3'];
-            data = [avgMonthlyValue*0.8, avgMonthlyValue*1.2, avgMonthlyValue*0.9].map(Math.round);
-        } else if (period === 'year') {
-            labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            data = labels.map((_, i) => Math.round(avgMonthlyValue * 0.5 + (Math.sin(i)*avgMonthlyValue*0.2) + (i*avgMonthlyValue*0.1)));
+        if (ledgerEntries.length > 0) {
+            if (period === 'month') {
+                labels = ['Tuần 1', 'Tuần 2', 'Tuần 3', 'Tuần 4'];
+                data = [0, 0, 0, 0];
+                ledgerEntries.filter(e => e.year === currentYear && e.month === currentMonth).forEach(e => {
+                    const day = new Date(e.approvedAt).getDate();
+                    const weekIdx = Math.min(3, Math.floor((day - 1) / 7));
+                    data[weekIdx] += e.amount;
+                });
+            } else if (period === 'quarter') {
+                const startMonth = (currentQuarter - 1) * 3 + 1;
+                labels = [`Tháng ${startMonth}`, `Tháng ${startMonth + 1}`, `Tháng ${startMonth + 2}`];
+                data = [0, 0, 0];
+                ledgerEntries.filter(e => e.year === currentYear && e.quarter === currentQuarter).forEach(e => {
+                    const idx = e.month - startMonth;
+                    if (idx >= 0 && idx < 3) data[idx] += e.amount;
+                });
+            } else if (period === 'year') {
+                labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+                data = Array(12).fill(0);
+                ledgerEntries.filter(e => e.year === currentYear).forEach(e => {
+                    if (e.month >= 1 && e.month <= 12) data[e.month - 1] += e.amount;
+                });
+            }
+        } else {
+            // Fallback baseline when no payment history exists yet
+            const activeCount = USERS.filter(u => u.role === 'student' && hasActiveStudentAccess(u)).length;
+            const defaultFee = BILLING_SETTINGS.feePerLesson || 100000;
+            const defaultLpm = BILLING_SETTINGS.lessonsPerMonth || 12;
+            const avgMonthlyValue = activeCount > 0 ? (activeCount * defaultFee * defaultLpm) : 0;
+
+            if (period === 'month') {
+                labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                data = [avgMonthlyValue*0.2, avgMonthlyValue*0.4, avgMonthlyValue*0.1, avgMonthlyValue*0.3].map(Math.round);
+            } else if (period === 'quarter') {
+                labels = ['Month 1', 'Month 2', 'Month 3'];
+                data = [avgMonthlyValue*0.8, avgMonthlyValue*1.2, avgMonthlyValue*0.9].map(Math.round);
+            } else if (period === 'year') {
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                data = labels.map((_, i) => Math.round(avgMonthlyValue * 0.5 + (Math.sin(i)*avgMonthlyValue*0.2) + (i*avgMonthlyValue*0.1)));
+            }
         }
 
         window.revenueChartInstance = new Chart(ctx, {
@@ -898,6 +1447,14 @@
                     <input type="text" id="edit-phone" value="${(u.phone || '').replace(/"/g, '&quot;')}" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-mono text-blue-700 font-bold transition">
                 </div>
                 <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Số CCCD / MST cá nhân (Khai thuế HKD)</label>
+                    <input type="text" id="edit-tax-id" value="${(u.taxId || '').replace(/"/g, '&quot;')}" placeholder="12 số CCCD hoặc Mã số thuế" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-mono text-slate-800 font-bold transition">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Địa chỉ (Ghi sổ doanh thu / Hóa đơn)</label>
+                    <input type="text" id="edit-tax-address" value="${(u.taxAddress || '').replace(/"/g, '&quot;')}" placeholder="Quận/Huyện, Tỉnh/Thành phố" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-medium text-slate-700 transition">
+                </div>
+                <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">School / Internal Notes</label>
                     <input type="text" id="edit-school" value="${(u.school || '').replace(/"/g, '&quot;')}" class="w-full border-2 border-slate-200 p-2.5 rounded-lg outline-none focus:border-blue-500 font-medium text-slate-700 transition">
                 </div>
@@ -915,13 +1472,17 @@
             u.realName = document.getElementById('edit-real-name').value.trim();
             u.parentName = document.getElementById('edit-parent-name').value.trim();
             u.phone = document.getElementById('edit-phone').value.trim();
+            u.taxId = document.getElementById('edit-tax-id')?.value.trim() || '';
+            u.taxAddress = document.getElementById('edit-tax-address')?.value.trim() || '';
+            if (u.realName) u.taxPayerName = u.realName;
             u.school = document.getElementById('edit-school').value.trim();
             
             try {
                 await window.fsSetDoc(window.fsDoc(window.db, window.fPath('users'), username), u);
                 document.getElementById('custom-modal').classList.add('hidden');
                 renderStudentsList();
-                if (typeof window.showToast === 'function') window.showToast("Saved", "Contact information updated successfully.");
+                if (typeof window.renderHkdTaxLedger === 'function') window.renderHkdTaxLedger();
+                if (typeof window.showToast === 'function') window.showToast("Saved", "Contact & tax information updated successfully.");
             } catch(e) {
                 showModalMsg("Error", "Failed to save contact info to the cloud.");
             }
@@ -1080,10 +1641,22 @@
         const btn = document.getElementById('btn-save-billing');
         btn.textContent = "Saving..."; btn.disabled = true;
         
+        const vatInput = document.getElementById('bill-hkd-vat');
+        const pitInput = document.getElementById('bill-hkd-pit');
+        const parsedVat = vatInput && vatInput.value !== '' ? Number(vatInput.value) : (BILLING_SETTINGS.hkdVatRate ?? 0);
+        const parsedPit = pitInput && pitInput.value !== '' ? Number(pitInput.value) : (BILLING_SETTINGS.hkdPitRate ?? 2);
+
         BILLING_SETTINGS = {
-            bankId: BILLING_SETTINGS.bankId || 'MB',
-            bankAcc: BILLING_SETTINGS.bankAcc || '',
-            bankName: BILLING_SETTINGS.bankName || '',
+            ...BILLING_SETTINGS,
+            bankId: (document.getElementById('bill-bank-id')?.value || BILLING_SETTINGS.bankId || 'MB').trim().toUpperCase(),
+            bankAcc: (document.getElementById('bill-bank-acc')?.value ?? BILLING_SETTINGS.bankAcc ?? '').trim(),
+            bankName: (document.getElementById('bill-bank-name')?.value ?? BILLING_SETTINGS.bankName ?? '').trim().toUpperCase(),
+            hkdName: (document.getElementById('bill-hkd-name')?.value ?? BILLING_SETTINGS.hkdName ?? '').trim(),
+            hkdTaxId: (document.getElementById('bill-hkd-tax-id')?.value ?? BILLING_SETTINGS.hkdTaxId ?? '').trim(),
+            hkdBusinessSector: (document.getElementById('bill-hkd-sector')?.value ?? BILLING_SETTINGS.hkdBusinessSector ?? 'Dịch vụ giáo dục, đào tạo tiếng Anh').trim(),
+            hkdAddress: (document.getElementById('bill-hkd-address')?.value ?? BILLING_SETTINGS.hkdAddress ?? '').trim(),
+            hkdVatRate: Number.isFinite(parsedVat) && parsedVat >= 0 ? parsedVat : 0,
+            hkdPitRate: Number.isFinite(parsedPit) && parsedPit >= 0 ? parsedPit : 2,
             feePerLesson: Number(document.getElementById('bill-fee').value) || 100000,
             lessonsPerMonth: Number(document.getElementById('bill-lpm').value) || 12,
             discCombo: Number(document.getElementById('bill-disc-combo').value) || 0,
@@ -1093,7 +1666,8 @@
 
         try {
             await window.fsSetDoc(window.fsDoc(window.db, window.fPath('settings'), 'billing'), BILLING_SETTINGS);
-            showModalMsg("Saved", "Pricing and Banking settings updated. Students will see the new configurations automatically.");
+            if (typeof window.renderHkdTaxLedger === 'function') window.renderHkdTaxLedger();
+            showModalMsg("Saved", "Pricing, Banking and HKD Tax settings updated. Students and tax ledgers will use the new configurations automatically.");
         } catch (e) {
             showModalMsg("Error", "Could not save settings to cloud.");
         }
@@ -1309,7 +1883,7 @@
                     if (isApprovedCoursePayment) {
                         const planTitle = user.pendingPlanTitle || user.pendingInfo || 'Monthly tuition';
                         const parsedMonths = Number(user.pendingPlanMonths);
-                        const titleMonths = /full course|4m/i.test(planTitle) ? 4 : /2 month/i.test(planTitle) ? 2 : 1;
+                        const titleMonths = /full course|4m/i.test(planTitle) ? 4 : /3m|3 month/i.test(planTitle) ? 3 : /2 month/i.test(planTitle) ? 2 : 1;
                         const planMonths = Number.isInteger(parsedMonths) && parsedMonths > 0 ? parsedMonths : titleMonths;
                         const now = Date.now();
                         const currentExpiry = getBillingExpiryMillis(user);
@@ -1317,18 +1891,58 @@
                         const expiresAt = addBillingMonths(billingStart, planMonths);
                         const paymentId = user.pendingPaymentId || `approved_${username}_${now}`;
                         const paymentHistory = Array.isArray(user.paymentHistory) ? user.paymentHistory : [];
+                        const enrolledClassNames = (user.pendingClasses || [])
+                            .map(cid => CLASSES.find(c => c.id === cid)?.name)
+                            .filter(Boolean);
+                        const payerName = user.pendingTaxPayerName || user.taxPayerName || user.realName || user.parentName || (window.getStudentDisplayName ? window.getStudentDisplayName(user) : user.user);
+                        const payerPhone = user.pendingTaxPayerPhone || user.phone || '';
+                        const taxId = user.pendingTaxId || user.taxId || '';
+                        const taxAddress = user.pendingTaxAddress || user.taxAddress || '';
+                        const invoiceRequested = Boolean(user.pendingTaxInvoiceRequested);
+                        const paymentMethod = user.pendingPaymentMethod === 'cash' ? 'Tiền mặt' : 'Chuyển khoản NH';
+                        const receiptNo = window.formatHkdReceiptNumber
+                            ? window.formatHkdReceiptNumber(now, paymentHistory.length + 1)
+                            : `PT-${now}`;
+                        const vatRate = BILLING_SETTINGS.hkdVatRate !== undefined && BILLING_SETTINGS.hkdVatRate !== null ? Number(BILLING_SETTINGS.hkdVatRate) : 0;
+                        const pitRate = BILLING_SETTINGS.hkdPitRate !== undefined && BILLING_SETTINGS.hkdPitRate !== null ? Number(BILLING_SETTINGS.hkdPitRate) : 2;
+                        const paidAmount = Number(user.pendingAmount) || 0;
+
+                        if (payerName && !user.realName) user.realName = payerName;
+                        if (payerName) user.taxPayerName = payerName;
+                        if (payerPhone) user.phone = payerPhone;
+                        if (taxId) user.taxId = taxId;
+                        if (taxAddress) user.taxAddress = taxAddress;
+
                         user.billingPlanTitle = user.pendingPlanTitle || `${planMonths} Month Plan`;
                         user.billingPlanMonths = planMonths;
                         user.billingLastPaymentAt = now;
-                        user.billingLastPaymentAmount = Number(user.pendingAmount) || 0;
+                        user.billingLastPaymentAmount = paidAmount;
                         user.billingExpiresAt = expiresAt;
                         user.billingAccessOverride = false;
                         if (!paymentHistory.some(payment => payment.id === paymentId)) {
+                            const courseLabel = enrolledClassNames.length ? enrolledClassNames.join(', ') : (user.pendingInfo || user.billingPlanTitle);
                             paymentHistory.push({
                                 id: paymentId,
+                                receiptNo,
                                 plan: user.billingPlanTitle,
                                 months: planMonths,
-                                amount: user.billingLastPaymentAmount,
+                                lessons: Number(user.pendingLessons) || 0,
+                                classes: enrolledClassNames,
+                                courseDescription: courseLabel,
+                                description: `Thu học phí ${courseLabel} (${user.billingPlanTitle}) - HV: ${payerName}`,
+                                payerName,
+                                payerPhone,
+                                taxId,
+                                taxAddress,
+                                invoiceRequested,
+                                paymentMethod,
+                                receivingBank: BILLING_SETTINGS.bankAcc ? `${BILLING_SETTINGS.bankId || 'MB'} - ${BILLING_SETTINGS.bankAcc}` : '',
+                                vatRate,
+                                pitRate,
+                                vatAmount: Math.round(paidAmount * (vatRate / 100)),
+                                pitAmount: Math.round(paidAmount * (pitRate / 100)),
+                                amount: paidAmount,
+                                submittedAt: user.pendingSubmittedAt || now,
                                 approvedAt: now,
                                 expiresAt
                             });
@@ -1374,6 +1988,13 @@
                     user.pendingPlanTitle = null;
                     user.pendingPlanMonths = null;
                     user.pendingPaymentId = null;
+                    user.pendingSubmittedAt = null;
+                    user.pendingPaymentMethod = null;
+                    user.pendingTaxPayerName = null;
+                    user.pendingTaxPayerPhone = null;
+                    user.pendingTaxId = null;
+                    user.pendingTaxAddress = null;
+                    user.pendingTaxInvoiceRequested = null;
                 }
             }
 
@@ -1381,6 +2002,7 @@
             await window.syncTrustedAccountAccess(user);
             renderStudentsList();
             renderPaymentAccessList();
+            if (typeof window.renderHkdTaxLedger === 'function') window.renderHkdTaxLedger();
             renderClasses(); 
         }
     }

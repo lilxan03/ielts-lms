@@ -302,3 +302,46 @@ test('staff retain access to all tests, classes, schedules, and submissions', as
   await assertSucceeds(getDocs(collection(db, 'schedules')));
   await assertSucceeds(getDocs(collection(db, 'submissions')));
 });
+
+test('students can submit HKD tax payer fields with a pending tuition notification but cannot self-approve payment', async () => {
+  await testEnv.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(), 'users/alice'), {
+      user: 'alice',
+      uid: 'alice-uid',
+      email: 'alice@example.com',
+      role: 'student',
+      status: 'unpaid',
+      isPaid: false,
+      paymentStatus: 'unpaid'
+    });
+  });
+
+  const db = testEnv.authenticatedContext('alice-uid', { email: 'alice@example.com' }).firestore();
+  await assertSucceeds(updateDoc(doc(db, 'users/alice'), {
+    paymentStatus: 'pending',
+    pendingInfo: 'IELTS Intensive (1 Month Standard) · 1.800.000 ₫',
+    pendingAmount: 1800000,
+    pendingLessons: 12,
+    pendingPlanTitle: '1 Month Standard',
+    pendingPlanMonths: 1,
+    pendingPaymentId: 'pay_12345',
+    pendingSubmittedAt: 1700000000000,
+    pendingPaymentMethod: 'bank_transfer',
+    pendingTaxPayerName: 'Nguyễn Thị Alice',
+    pendingTaxPayerPhone: '0912345678',
+    pendingTaxId: '079203001234',
+    pendingTaxAddress: 'Quận 7, TP.HCM',
+    pendingTaxInvoiceRequested: true,
+    realName: 'Nguyễn Thị Alice',
+    taxPayerName: 'Nguyễn Thị Alice',
+    phone: '0912345678',
+    taxId: '079203001234',
+    taxAddress: 'Quận 7, TP.HCM',
+    pendingClasses: ['class-a']
+  }));
+
+  await assertFails(updateDoc(doc(db, 'users/alice'), {
+    isPaid: true,
+    paymentStatus: 'paid'
+  }));
+});

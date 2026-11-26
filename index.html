@@ -2657,10 +2657,36 @@
           <div class="w-full">
             <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-6">
                 <div class="p-6 border-b border-slate-100">
-                    <h3 class="text-xl font-black text-blue-950">🎓 Student Access & Payment Status</h3>
+                    <h3 class="text-xl font-black text-blue-950">🎓 Student Access &amp; Payment Status</h3>
                     <p class="text-sm text-slate-500 mt-1">Review each student's paid plan, access expiry, and pending payment request.</p>
                 </div>
                 <div id="payment-access-list" class="overflow-x-auto"></div>
+            </div>
+
+            <!-- ✨ NEW: HKD TAX DECLARATION & S1-HKD REVENUE LEDGER PANEL -->
+            <div id="hkd-tax-ledger-panel" class="bg-white border border-indigo-100 rounded-2xl shadow-sm overflow-hidden mb-6">
+                <div class="p-6 border-b border-slate-100 bg-gradient-to-r from-indigo-50/70 via-white to-emerald-50/60 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-black uppercase tracking-widest mb-1.5">
+                            <span>🧾 Mẫu S1-HKD (TT 88/2021/TT-BTC) &amp; Tờ khai 01/CNKD (TT 40/2021/TT-BTC)</span>
+                        </div>
+                        <h3 class="text-xl font-black text-blue-950 flex items-center gap-2">Sổ Doanh Thu &amp; Khai Thuế Hộ Kinh Doanh (HKD) Cá Nhân</h3>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-0.5" id="hkd-tax-profile-subtitle">Tự động cập nhật chứng từ thu học phí, thông tin người nộp và tính thuế GTGT / TNCN theo kỳ khai thuế.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <select id="hkd-tax-period-type" onchange="window.renderHkdTaxLedger && window.renderHkdTaxLedger()" class="border border-slate-300 bg-white rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-indigo-500 shadow-sm">
+                            <option value="year">Cả năm</option>
+                            <option value="quarter" selected>Theo Quý</option>
+                            <option value="month">Theo Tháng</option>
+                        </select>
+                        <select id="hkd-tax-year" onchange="window.renderHkdTaxLedger && window.renderHkdTaxLedger()" class="border border-slate-300 bg-white rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-indigo-500 shadow-sm"></select>
+                        <select id="hkd-tax-subperiod" onchange="window.renderHkdTaxLedger && window.renderHkdTaxLedger()" class="border border-slate-300 bg-white rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-indigo-500 shadow-sm"></select>
+                        <button type="button" onclick="window.promptAddManualTaxEntry && window.promptAddManualTaxEntry()" class="px-3.5 py-2 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-black transition shadow-sm">+ Ghi phiếu thu</button>
+                        <button type="button" onclick="window.exportHkdTaxLedgerCSV && window.exportHkdTaxLedgerCSV()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition shadow-sm flex items-center gap-1.5">⬇ Xuất Sổ S1-HKD (CSV)</button>
+                    </div>
+                </div>
+                <div id="hkd-tax-summary-cards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 p-6 bg-slate-50/60 border-b border-slate-100"></div>
+                <div id="hkd-tax-ledger-table-container" class="overflow-x-auto"></div>
             </div>
             
             <!-- REVENUE ANALYTICS CHART -->
@@ -2695,12 +2721,58 @@
                    </div>
                </div>
                
-               <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Core Pricing & Discounts</h4>
+               <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Core Pricing &amp; Discounts</h4>
                <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block" title="Used as base fee for new classes">Default Fee/Lesson</label><input type="number" id="bill-fee" class="w-full border-2 border-emerald-200 bg-emerald-50 p-2.5 rounded-xl font-black text-emerald-900 outline-none focus:border-emerald-500 transition"></div>
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Lessons / Month</label><input type="number" id="bill-lpm" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-black text-slate-800 outline-none focus:border-blue-500 transition"></div>
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Combo Disc (%)</label><input type="number" id="bill-disc-combo" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none focus:border-amber-500 transition" placeholder="e.g. 10"></div>
                   <div><label class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Full Course Discount (4 months)</label><input type="number" id="bill-disc-course" value="20" readonly aria-label="Full course discount fixed at 20 percent" class="w-full border-2 border-amber-200 bg-amber-50 p-2.5 rounded-xl font-black text-amber-900 outline-none"></div>
+               </div>
+
+               <div class="mb-8 border-t border-slate-100 pt-6">
+                  <h4 class="text-[10px] font-black text-indigo-700 uppercase tracking-widest mb-3 flex items-center gap-1.5">🏛️ Thông tin Hộ Kinh Doanh (HKD) &amp; Cấu hình Thuế</h4>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div>
+                          <label for="bill-hkd-name" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Tên Hộ kinh doanh / Cá nhân kinh doanh</label>
+                          <input type="text" id="bill-hkd-name" placeholder="VD: HKD IELTS W KHANH" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-800 outline-none focus:border-indigo-500 transition text-sm">
+                      </div>
+                      <div>
+                          <label for="bill-hkd-tax-id" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Mã số thuế HKD / Số CCCD chủ hộ</label>
+                          <input type="text" id="bill-hkd-tax-id" placeholder="VD: 07920300xxxx" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-mono font-bold text-slate-800 outline-none focus:border-indigo-500 transition text-sm">
+                      </div>
+                      <div>
+                          <label for="bill-hkd-sector" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Ngành nghề khai thuế (Mẫu 01/CNKD)</label>
+                          <input type="text" id="bill-hkd-sector" placeholder="Dịch vụ giáo dục, đào tạo tiếng Anh" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-800 outline-none focus:border-indigo-500 transition text-sm">
+                      </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <div>
+                          <label for="bill-hkd-address" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Địa chỉ kinh doanh</label>
+                          <input type="text" id="bill-hkd-address" placeholder="Quận 7, TP. Hồ Chí Minh" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-medium text-slate-800 outline-none focus:border-indigo-500 transition text-sm">
+                      </div>
+                      <div>
+                          <label for="bill-hkd-vat" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block" title="Dịch vụ dạy học thuộc đối tượng không chịu thuế GTGT (0%) hoặc dịch vụ khác (5%)">Tỷ lệ thuế GTGT (%)</label>
+                          <input type="number" step="0.1" min="0" max="100" id="bill-hkd-vat" value="0" class="w-full border-2 border-indigo-200 bg-indigo-50/50 p-2.5 rounded-xl font-black text-indigo-900 outline-none focus:border-indigo-500 transition text-sm">
+                      </div>
+                      <div>
+                          <label for="bill-hkd-pit" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block" title="Thuế TNCN đối với dịch vụ giáo dục/đào tạo theo TT 40/2021/TT-BTC là 2%">Tỷ lệ thuế TNCN (%)</label>
+                          <input type="number" step="0.1" min="0" max="100" id="bill-hkd-pit" value="2" class="w-full border-2 border-indigo-200 bg-indigo-50/50 p-2.5 rounded-xl font-black text-indigo-900 outline-none focus:border-indigo-500 transition text-sm">
+                      </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                          <label for="bill-bank-id" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Ngân hàng nhận học phí (Mã VietQR)</label>
+                          <input type="text" id="bill-bank-id" placeholder="VD: MB, VCB, TCB, ACB..." class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-800 outline-none focus:border-blue-500 transition text-sm uppercase">
+                      </div>
+                      <div>
+                          <label for="bill-bank-acc" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Số tài khoản nhận học phí</label>
+                          <input type="text" id="bill-bank-acc" placeholder="Số tài khoản ngân hàng" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-mono font-bold text-slate-800 outline-none focus:border-blue-500 transition text-sm">
+                      </div>
+                      <div>
+                          <label for="bill-bank-name" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block">Chủ tài khoản</label>
+                          <input type="text" id="bill-bank-name" placeholder="TEN CHU TAI KHOAN" class="w-full border-2 border-slate-200 bg-slate-50 p-2.5 rounded-xl font-bold text-slate-800 outline-none focus:border-blue-500 transition text-sm uppercase">
+                      </div>
+                  </div>
                </div>
                
                <div class="mb-8 border-t border-slate-100 pt-6">

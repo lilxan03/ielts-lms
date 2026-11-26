@@ -40,7 +40,7 @@
     let CHAT_MESSAGES = []; // <--- NEW: Stores all class communications!
     let HOF_STUDENTS = []; // ✨ NEW: Dedicated Collection for Hall of Fame
     let AVAILABILITY = { duration: 60, schedule: {0:[], 1:[], 2:[], 3:[], 4:[], 5:[], 6:[]} };
-    let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10 };
+    let BILLING_SETTINGS = { feePerLesson: 100000, lessonsPerMonth: 12, bankId: 'MB', bankAcc: '0123456789', bankName: 'NGUYEN VAN TEACHER', discCombo: 10, discCourse: 10, hkdName: '', hkdTaxId: '', hkdAddress: '', hkdBusinessSector: 'Dịch vụ giáo dục, đào tạo tiếng Anh', hkdVatRate: 0, hkdPitRate: 2 };
     let PUBLIC_PROFILE = { missionTitle: '', missionText: '', heroImage: null, features: [], achievements: [], pdfs: [] };
     let currentUser = JSON.parse(sessionStorage.getItem('ielts_session')) || null;
     window.classMatchesName = function(name, cls) {
