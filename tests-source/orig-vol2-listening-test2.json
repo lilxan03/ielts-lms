@@ -1,0 +1,402 @@
+{
+  "id": "orig_vol2_listening_test2",
+  "title": "VOL 2 Listening Test 2",
+  "module": "listening",
+  "topics": [
+    "VOL 2",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol2-audio/resolve/main/t2_p1.mp3",
+      "text": "<p>SUMMARY KEYWORDS</p><p>policy, pay, insurance, subsection, insured, saver, cover, maximum</p><p>payout, car, camera, travel, listen, insurance policies, motorbikes, portable</p><p>electronic, reasonable, overslept, airline, aircraft, wise decision</p><p>SPEAKERS</p><p>Speaker 2 (48%), Speaker 3 (38%), Speaker 1 (9%)</p><p>1</p><p>Speaker 1</p><p>0:00</p><p>Part One you will hear a woman asking a sales assistant about insurance policies.</p><p>Before you listen again, you have 30 seconds to read questions, one to six?</p><p>2</p><p>Speaker 2</p><p>0:46</p><p>Good morning, take a seat. I see you've picked up some of our brochures.</p><p>3</p><p>Speaker 3</p><p>0:51</p><p>Yes, I've been reading the one on travel.</p><p>2</p><p>Speaker 2</p><p>0:54</p><p>Would the travel insurance be for you or for your family as well?</p><p>0:59</p><p>Just for me.</p><p>1:00</p><p>So individual?</p><p>1:02</p><p>That's right.</p><p>1:03</p><p>Are you looking for a basic or a comprehensive policy?</p><p>3</p><p>Speaker 3</p><p>1:07</p><p>To be honest, I've had basic in the past, but it didn't pay out very much.</p><p>2</p><p>Speaker 2</p><p>1:12</p><p>That's often true. With our company, you can be insured for different amounts. For</p><p>instance, in section one baggage and personal effects, you can be insured for all five</p><p>subsections or for as few as two.</p><p>3</p><p>Speaker 3</p><p>1:27</p><p>I think I'd like insurance for all five since I'm going to some unsafe places.</p><p>1:32</p><p>wise decision. By the way,</p><p>3</p><p>Speaker 3</p><p>1:35</p><p>can a camera be counted as a single item, or must it be included in cameras and</p><p>portable electronic equipment.</p><p>2</p><p>Speaker 2</p><p>1:43</p><p>If you have an expensive camera, you can nominate it as a single item, our maximum</p><p>payout is $1,500. Occasionally, people have their camera and computer stolen together.</p><p>If insurance is only taken out on subsection two, this may not cover the replacement of</p><p>both things. That's what</p><p>3</p><p>Speaker 3</p><p>2:03</p><p>happened with my previous policy. However, in that one, there was a higher limit for lost</p><p>or stolen money. Yours is only $700.</p><p>2</p><p>Speaker 2</p><p>2:13</p><p>These days with credit cards. People don't carry much cash. So we've set the limit</p><p>accordingly. Still, we pay out well for documents.</p><p>3</p><p>Speaker 3</p><p>2:22</p><p>Indeed, in the disruptive Travel section, reasonable costs is written for a missed</p><p>connection or an early return instead of an amount of money. What exactly are</p><p>reasonable costs?</p><p>2</p><p>Speaker 2</p><p>2:35</p><p>Put it this way. If you miss your flight due to poor weather that is verifiable we pay $300</p><p>per day of lost time. If you arrive at check in as the aircraft is leaving because you</p><p>overslept, we still pay out with only $100 a day. We rely on information from the airline</p><p>to determine this.</p><p>1</p><p>Speaker 1</p><p>2:57</p><p>Before you listen to the rest of the conversation, you have 30 seconds to read questions</p><p>seven to 10.</p><p>3:33</p><p>Are you also interested in vehicle insurance?</p><p>3</p><p>Speaker 3</p><p>3:36</p><p>Yes, I am. I'm about to buy a nice old car. A vintage Jaguar XJ six.</p><p>2</p><p>Speaker 2</p><p>3:43</p><p>Hey, I used to have one of those. Although nowadays I prefer old motorbikes. Did you</p><p>know you can insure a vehicle on its own? Or you can include it in our multi saver policy</p><p>along with your house and contents?</p><p>3</p><p>Speaker 3</p><p>3:56</p><p>Yes, I saw that. It's true. I'm buying an expensive car. But I rent my house so I'm not</p><p>ready for a multi saver.</p><p>2</p><p>Speaker 2</p><p>4:05</p><p>I understand. Have you decided which level of cover you'd like for your car? Top cover?</p><p>Are you sure it is pricey?</p><p>3</p><p>Speaker 3</p><p>4:14</p><p>I know. But last time I had insurance. I wasn't covered for storm damage.</p><p>2</p><p>Speaker 2</p><p>4:19</p><p>done telling me that was just before the November hailstorm.</p><p>3</p><p>Speaker 3</p><p>4:23</p>",
+      "questions": [
+        {
+          "blockId": "b_ov2l2_1_6",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "points": 6,
+          "instruction": "Questions 1-10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nTravel Insurance\nType: 1.",
+          "text": "<p>Comprehensive</p><p>Section 1 - Baggage and Personal Effects</p><p>- single 2</p><p>: $1 ,500</p><p>- cameras and portable electronic 3</p><p>- money: $ {blank:4}</p><p>- disrupted travel: rational 5</p><p>$2.500</p><p>(missed connections or early return (as verified by the 6</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p>",
+          "correctAnswers": {
+            "1": "Individual",
+            "2": "item",
+            "3": "equipment",
+            "4": "700",
+            "5": "costs",
+            "6": "airline"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_7",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            7
+          ],
+          "points": 1,
+          "text": "7. Question 7",
+          "options": [
+            "A a new motorbike.",
+            "B an old car.",
+            "C a new car.",
+            "D"
+          ],
+          "correctAnswers": {
+            "7": "B an old car."
+          },
+          "instruction": "Questions 7 — 8\nChoose the correct letter, A,B or C\nThe woman will buy"
+        },
+        {
+          "blockId": "b_ov2l2_8",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            8
+          ],
+          "points": 1,
+          "text": "8. Question 8",
+          "options": [
+            "A a new motorbike.",
+            "B an old car.",
+            "C a new car.",
+            "D"
+          ],
+          "correctAnswers": {
+            "8": "C a new car."
+          }
+        },
+        {
+          "blockId": "b_ov2l2_9",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            9
+          ],
+          "points": 1,
+          "text": "9. Question 9",
+          "options": [
+            "A it includes an agreement on the value of a holder's vehicle",
+            "B it covers vehicles of any age",
+            "C there is a stand-down period before it takes effect",
+            "D it covers storm damage",
+            "E it is cheaper than many other policies"
+          ],
+          "correctAnswers": {
+            "9": "C there is a stand-down period before it takes effect"
+          },
+          "instruction": "Questions 9 — 10\nChoose TWO letter, A- E\nWhich TWO of the following relate to the Top Cover policy?"
+        },
+        {
+          "blockId": "b_ov2l2_10",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            10
+          ],
+          "points": 1,
+          "text": "10. Question 10",
+          "options": [
+            "A it includes an agreement on the value of a holder's vehicle",
+            "B it covers vehicles of any age",
+            "C there is a stand-down period before it takes effect",
+            "D it covers storm damage",
+            "E it is cheaper than many other policies"
+          ],
+          "correctAnswers": {
+            "10": "D it covers storm damage"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol2-audio/resolve/main/t2_p2.mp3",
+      "text": "<p>SUMMARY KEYWORDS</p><p>donations, eye, charity, program, problems, saver, colleges, life, affiliation, full time</p><p>positions, pairs, group, work, people, ai, link, includes, organization, gain, donate</p><p>SPEAKERS</p><p>Speaker 1 (98%)</p><p>0:06</p><p>Section two, you will hear a</p><p>1</p><p>Speaker 1</p><p>0:10</p><p>man introducing a charity to a group of listeners. First, you have some time to look at</p><p>questions 11 to 16? Now listen carefully and answer questions 11</p><p>0:56</p><p>to 16</p><p>1</p><p>Speaker 1</p><p>1:00</p><p>Hello, everyone. Thanks for attending tonight's event. Let me start with the early history</p><p>of our charity I savor it savor was founded by a retired optometrist Timothy gains. I have</p><p>spent much of my working life at eye saver. I am 60 years old now. And I started</p><p>working for this organization 15 years ago, when I left a corporate position to help</p><p>people with eye problems. Now our charity has been helping people for three decades.</p><p>You may know that we are now doing various other things to help people with eye</p><p>problems. That includes medications for children with eye diseases, and operational</p><p>help to those in the public who have eye problems. But when Mr. Gaines just founded</p><p>eye saver, he wanted the program to be able to offer common eye equipment to those</p><p>who needed it. We receive occasional donations from corporations and charity groups.</p><p>Now we have over 1500 volunteers who work on the streets with the little red donation</p><p>boxes, which many of you are familiar with. And this is the main source of funding for</p><p>us. Besides, we are planning to work to secure donations from wealthy benefactors.</p><p>Many people are passionate about charity cause and have been inquiring how to</p><p>donate money to us. I really appreciate that. But our main need is to collect glasses for</p><p>our patients. Many of you have multiple pairs of old glasses in your possession. And we</p><p>encourage you to gather these pairs which you no longer need, and donate them to our</p><p>cause. In doing this, you'll be able to make sure that someone else can see better. Most</p><p>of us cannot imagine a life in which we are unable to see well. This is why your</p><p>eyeglass donations are so critical to our mission. And as a side note, we offer full time</p><p>positions. Let me know if you are interested. Our goal is to make people aware that</p><p>even the smallest of donations can help change a person's life, so your donation can be</p><p>a turning point for them. The other day, when I was talking to some people on the street,</p><p>they were surprised to find out how easily some AI problems can be cured. And I'm</p><p>proud to say that our next program will aim at educating people about common eye</p><p>diseases, we are able to prevent many fatal eye problems. In order to publicize our</p><p>charity program, we surely need to do some advertising. When we first started our</p><p>program, we used computers to create awareness for our cause, for instance,</p><p>promoting seminars in which we informed people as to how they could help us to solve</p><p>AI problems. But in recent years, the main means of advertising our program is through</p><p>audio recordings. We have found it cost efficient and effective. It's good to know that</p><p>many of our staff are recommending our program to their friends and colleagues. But I</p><p>am afraid that our training cannot show people the whole picture of our program. Before</p><p>you hear the rest of the talk, you have some time to look at questions 17 to 20.</p><p>4:41</p><p>Now listen,</p><p>1</p><p>Speaker 1</p><p>4:42</p><p>and answer questions 17 to 20.</p><p>4:48</p><p>Finally,</p><p>1</p><p>Speaker 1</p><p>4:49</p><p>I would like to tell you about some organizations which have played important roles in</p><p>the development and success of ice saver. Our affiliation with the National Vision Fund</p><p>Finding group has allowed us to gain fame and to become even more significant. So</p><p>many people around the country are coming for our services. Our association with the</p><p>eye for the future organization has allowed us to run cooperative ads, by which we seek</p><p>producers of equipment to work with us. Meanwhile, some of our staff has been sent to</p><p>this organization for some special training, their skills should be improved very soon.</p><p>Also, we have had a longtime cooperation with Sam's ik institution. Our relationship with</p><p>it has given us the opportunity to link with many different academic institutions, including</p><p>colleges and universities with good reputation. And we have a similar friendship with a</p><p>group called youth health. Our connection with that group allows us to link directly with</p><p>young kids. Since this is a crucial stage in their growth. We plan to contact with some</p><p>colleges and hope that with their help, more college students could get to know our</p><p>program. So as you can see, we have all bases covered in linking with students as we</p><p>have affiliations directly with both administrators and the students themselves. Thank</p><p>you so much for your attention today. As we try to stamp out AI problems. We will</p><p>appreciate your donations no matter how large or how small. We believe with our</p><p>efforts, the world will be a brighter and more beautiful that's the end of section two. You</p><p>now have half a minute to check your answers.</p><p>7:15</p><p>Now turn to section three</p>",
+      "questions": [
+        {
+          "blockId": "b_ov2l2_11_16",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "points": 6,
+          "instruction": "Questions 11-16\nQuestions 11-20\nChoose the correct letter, A, B or C.\nWhen was Eyesaver founded?",
+          "text": "<p>A 15 years ago</p><p>B 30 years ago</p><p>C 60 years ago</p><p>What was the original aim of the program?</p><p>A to offer common equipment</p><p>B to offer medication to children with eye diseases</p><p>C to offer operational help to people who had eye problems</p><p>The main funding comes from</p><p>A monthly donation.</p><p>B donation from rich people.</p><p>C money collected on the street.</p><p>What does the speaker expect listeners to provide?</p><p>A glasses for the patients</p><p>B money donation</p><p>C voluntary work</p><p>What is the main purpose of this program?</p><p>A to show people their donation can make a difference</p><p>11 11</p><p>B to show people how easily eye problems can cured</p><p>C to educate people about common eye diseases</p><p>Eyesaver advertises for the through</p><p>A computers.</p><p>B recordings.</p><p>C training.</p><p>Q11: {blank:11}</p><p>Q12: {blank:12}</p><p>Q13: {blank:13}</p><p>Q14: {blank:14}</p><p>Q15: {blank:15}</p><p>Q16: {blank:16}</p>",
+          "correctAnswers": {
+            "11": "30 years ago",
+            "12": "to offer common equipment",
+            "13": "money collected on the street.",
+            "14": "glasses for the patients",
+            "15": "to show people their donation can make a difference",
+            "16": "recordings."
+          }
+        },
+        {
+          "blockId": "b_ov2l2_17_20",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 4,
+          "instruction": "Questions 17-20\nWhat role does each of the following organisations play for the development of Eyesaver?\nWrite the correct letter, A-F, next to Question 26-30.\nPart 3",
+          "text": "<p>A gain more donation</p><p>B involve more children in need</p><p>C earn support from colleges</p><p>D help look for equipment manufacturers</p><p>E take the reputation to a higher level</p><p>F recruit and support staff</p><p>National Vision Funding Group ..... ..... ...... .</p><p>Eye for the Future</p><p>Sam's Eyecare Institution</p><p>Youth Health</p><p>Q17: {blank:17}</p><p>Q18: {blank:18}</p><p>Q19: {blank:19}</p><p>Q20: {blank:20}</p>",
+          "correctAnswers": {
+            "17": "take the reputation to a higher level",
+            "18": "help look for equipment manufacturers",
+            "19": "earn support from colleges",
+            "20": "recruit and support staff"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol2-audio/resolve/main/t2_p3.mp3",
+      "text": "<p>SUMMARY KEYWORDS</p><p>arts, lecturers, courses, science, faculty, physics, study, students, maths, conference, a</p><p>nderson, fact, week, postgraduate studies, approval, hegel, classical</p><p>mechanics, seconds, thought, major</p><p>SPEAKERS</p><p>Speaker 2 (54%), Speaker 3 (22%), Speaker 1 (12%)</p><p>1</p><p>Speaker 1</p><p>0:01</p><p>Part Three study options. You will hear a professor talking to her student about his</p><p>study options. Before you listen, you have 30 seconds to read questions 21 to 24?</p><p>0:46</p><p>Come in ranky.</p><p>0:47</p><p>Thank you, Professor Anderson.</p><p>0:50</p><p>I've been meaning to contact you. But I just got back last night.</p><p>0:53</p><p>Where have you been?</p><p>0:54</p><p>Conferences in Massachusetts and New York?</p><p>2</p><p>Speaker 2</p><p>0:57</p><p>For physics? Yes. Great. I'm looking forward to attending conferences one day.</p><p>3</p><p>Speaker 3</p><p>1:04</p><p>I imagine that won't be so far away. I was extremely impressed with your classical</p><p>mechanics exam. In fact, you were one of only two students out of 180 to get an A plus.</p><p>1:15</p><p>Wow, I really did enjoy the course.</p><p>1:19</p><p>So how can I help you?</p><p>2</p><p>Speaker 2</p><p>1:20</p><p>I'm sorry to say it's a bit of a long story. You see, I've had to rethink my studies</p><p>completely. And I wonder if I'm making the right decision.</p><p>1:30</p><p>You're doing two degrees and you science and arts</p><p>2</p><p>Speaker 2</p><p>1:33</p><p>I was doing to I've decided to focus on science. Oh, it all came about because I wanted</p><p>to study abroad for a year, I was thinking about Edinburgh. Firstly, I sought approval</p><p>from the maths and physics departments. I wanted to take quantum mechanics and</p><p>computer simulations at Edinboro.</p><p>3</p><p>Speaker 3</p><p>1:53</p><p>Those are third year courses, right? Yeah. So</p><p>2</p><p>Speaker 2</p><p>1:57</p><p>I received approval from maths and physics. The stumbling block was the higher</p><p>authority, the science faculty. When I submitted my application, it was rejected. What? It</p><p>turns out that students who study abroad for a year can only do first or second year</p><p>courses or third year courses in a subject. That's not their major. I've never heard that</p><p>before. Needless to say, the lecturers who approved my transfer hadn't either, and nor</p><p>does the regulation appear on the science faculty website.</p><p>2:29</p><p>That'd be right. This faculty is disorganized.</p><p>2</p><p>Speaker 2</p><p>2:33</p><p>So then I thought I'd take art courses at Edinburgh and leave the third year maths until I</p><p>came back. I quickly got approval for second year history and philosophy from the arts</p><p>faculty.</p><p>2:44</p><p>When are you heading off?</p><p>2</p><p>Speaker 2</p><p>2:46</p><p>That's just it. During this process, I began to think carefully about my studies. To be</p><p>honest, the arts courses I've done were less challenging than the science ones. So I've</p><p>decided to drop arts.</p><p>1</p><p>Speaker 1</p><p>2:59</p><p>Before you listen to the rest of the conversation, you have 30 seconds to read questions</p><p>25 to 30?</p><p>3:35</p><p>Where do I figure in all this?</p><p>2</p><p>Speaker 2</p><p>3:37</p><p>The first week after I'd made my decision, I felt fine. Without doing the art courses. I</p><p>could finish my science degree earlier. But this week, I've had some doubts. When I</p><p>started the two degrees. Lecturers in the science faculty assured me that these days</p><p>scientists need a rounded education, which they get if they take some arts courses. I</p><p>was even told I'd learned to write and think better if I did philosophy.</p><p>3</p><p>Speaker 3</p><p>4:04</p><p>I do think the claims made by some lecturers are dubious.</p><p>2</p><p>Speaker 2</p><p>4:07</p><p>Then there's the fact that now I'm going to be stuck here next year. I was so excited</p><p>about going to Europe.</p><p>3</p><p>Speaker 3</p><p>4:14</p><p>It is disappointing to give that up. Still, the reason I wanted to contact you rhaggy Is that</p><p>I'm looking for students to work six hours a week in my lab. It's paid work, not highly</p><p>paid, but probably better than working in a bar. Also, we've just bought a new laser,</p><p>which you'd learn to use.</p><p>4:32</p><p>That sounds excellent. As to going abroad.</p><p>3</p><p>Speaker 3</p><p>4:35</p><p>Why not do your Postgraduate Studies in the US. There's some amazing physics being</p><p>done in Massachusetts. If you like I can send you the papers from the conference.</p><p>Thanks. Of course, I'd be sad to lose you if you did go abroad. But an A plus student</p><p>like you has a very good chance of winning a major scholarship.</p><p>4:52</p><p>Goodness, I've never even considered that.</p><p>4:55</p>",
+      "questions": [
+        {
+          "blockId": "b_ov2l2_21",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21. What was the Professor attending in Massachusetts and New York?",
+          "options": [
+            "A Physics Conferences",
+            "B Physics Class",
+            "C Mechanics Conferences"
+          ],
+          "correctAnswers": {
+            "21": "A Physics Conferences"
+          },
+          "instruction": "Questions 21-30\nQuestions 21-30\nChoose the correct letter, A. B or C"
+        },
+        {
+          "blockId": "b_ov2l2_22",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22. Question 22",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "22": "B"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_23",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23. Question 23",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "23": "C"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_24",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24. Question 24",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "24": "B"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_25",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25. Question 25",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "25": "A"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_26",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            26
+          ],
+          "points": 1,
+          "text": "26. Question 26",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "26": "B"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_27",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            27
+          ],
+          "points": 1,
+          "text": "27. Question 27",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "27": "C"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_28",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            28
+          ],
+          "points": 1,
+          "text": "28. Question 28",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "28": "A"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_29",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            29
+          ],
+          "points": 1,
+          "text": "29. Question 29",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "29": "C"
+          }
+        },
+        {
+          "blockId": "b_ov2l2_30",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            30
+          ],
+          "points": 1,
+          "text": "30. Question 30",
+          "options": [
+            "A",
+            "B",
+            "C"
+          ],
+          "correctAnswers": {
+            "30": "B"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol2-audio/resolve/main/t2_p4.mp3",
+      "text": "<p>SUMMARY KEYWORDS</p><p>leatherback turtles, dives, leather</p><p>bags, turtles, jellyfish, animals, leatherback, diving, recorded, nested, scientists, tissue,</p><p>layer, female, deep diver, surface, sea, leathery skin, captivity, migrates</p><p>SPEAKERS</p><p>Speaker 1 (100%)</p><p>1</p><p>Speaker 1</p><p>0:03</p><p>Secrets are called leatherback turtle. Jenny the mannequin of Florida Atlantic University</p><p>has shown that the advantages of leatherback streamlined shape Swimmy, leatherback</p><p>turtles have a lower drag more efficient than other species, indicating more efficient the</p><p>force to swim at the same distance to other sea turtles of the comparable size and</p><p>weight. leatherback turtles spend on leverage 20% less energy among all the deep</p><p>diving animals. The champions have always been assumed to be the marine mammals,</p><p>the great whales and ala CEOs. Our recent investigations however, suggest that</p><p>leatherback sea turtles may also be ranked among the oceans greatest air breathing</p><p>diver reptiles. Well Mary the dives of the leatherback sea turtles near St. Crocs. In the</p><p>US Virgin Islands, scientists recorded as 650 pounds of female that sank to more than</p><p>3330 feet and remained there for 37 minutes. High pressure also poses a challenge to</p><p>deep diver in terms of strong forces could compress the chest, causing broken bones or</p><p>tissue damage online is hot shout relatives leatherbacks has soft a shell made up from</p><p>widely separated the ribs and buried in a thick tissue and whole structure is overlaid</p><p>with a leathery skin. How do the deep diving animals whales CEOs of penguins and</p><p>leatherback turtles avoid a decompression sickness and other hazards while they dive</p><p>to the great depths even sleep for long period of time. Many of the deepest diving</p><p>marine mammals have a small loss and forcefully exhale before diving. In addition to</p><p>reducing the belly and sea so that they can dive more easily. This severely limits the</p><p>amount of nitrogen in their bloodstream. One reason the leatherback ranges so far,</p><p>maybe specialized the diet. This giant of the sea fleas mainly on jellyfish full of a high</p><p>protein, and the other useful minerals that require during the day I was on a variety of</p><p>jellyfish and related prey are abandoned. They're eaten by few other animals, as one</p><p>might suspect. A lifespan eating mostly jellyfish requires some special adaptions to</p><p>make the job easier. During the 1994 and 1985 nesting seasons, with the assistance of</p><p>scientists attach the record is to 10 Female leather bags had just laid eggs. As a result,</p><p>we were able to monitor the pattern of migration in Atlantic Ocean when they returned to</p><p>the sea. Some of the longest travel recorded for many animal have been made by this</p><p>marine turtle, a 9070. A female leather bag was tagged when she nested in cerami on</p><p>the northeast coast of South America. Less than one year later, she was captured of the</p><p>coast of Ghana, West Africa, having traveled 3700 miles across the Atlantic Ocean.</p><p>Upon returning to the surface, the Turtles change a quick breath and immediately</p><p>heading straight down again. Later on no time was given to sleep on rest. We then</p><p>begin to track and track the turtles when they swim back to the surface. On closer</p><p>examination, we noticed a difference in dives depending on the time of the day, nine</p><p>dives are shallower, with a less in depth than day dives. leatherbacks are such</p><p>swimmers, they rarely stop moving a behavior that has made it impossible to tip them in</p><p>captivity. The fur on the flippers are more than half the lens of those body and the</p><p>generated power from huge muscles, which can account for 30% of the animal's total</p><p>body weight. Says leather bags cannot easily be studied in captivity, researchers have</p><p>been developing methods of studying them and see the use the recorder and the</p><p>instrument capable of recording location and adapts in C. Developed by Gerald acumen</p><p>on psychological research laboratory. The device has been used to study diving marine</p><p>animals. Why they keep diving scientists as soon realized that the turtles were probably</p><p>costing much of the energy to follow their food source. In tropical waters. Jellyfish are</p><p>most common at Creek gaps in a biological zone called the diva scattering layer,</p><p>described shortly after development of the Sona this turns consists of layer of</p><p>zooplankton, the Hoover's below 1800 feet during the day and migrates to the surface</p><p>and night</p>",
+      "questions": [
+        {
+          "blockId": "b_ov2l2_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31-40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nBackground :",
+          "text": "<p>31. The advantageous . {blank:31}</p><p>than others.</p><p>32. it is one of the deepest {blank:32}</p><p>Leatherback Turtles</p><p>— of leatherback turtles makes them swim efficiently</p><p>. reptile.</p><p>33. Shell is . {blank:33}</p><p>34. Leatherbacks can . {blank:34}</p><p>lungs.</p><p>not bony to avoid from high pressure.</p><p>in the water for several hours due to their size of</p><p>35. Main food is jellyfish contains high proportion in {blank:35}</p><p>and mineral.</p><p>Research methods:</p><p>36. Scientists æn learn their . {blank:36}</p><p>pattern in Atlantic ocean.</p><p>37. Scientists can start tracking when the turtle reaches . {blank:37}</p><p>38. Huge front flipper can produce {blank:38}</p><p>from strong muscles</p><p>39. A new recorder can monitor not only their location but also the {blank:39}</p><p>sea.</p><p>40. Leatherback turtles are found using more to search food. {blank:40}</p><p>in the</p>",
+          "correctAnswers": {
+            "31": "shape",
+            "32": "dives",
+            "33": "soft",
+            "34": "sleep",
+            "35": "protein",
+            "36": "migration",
+            "37": "surface",
+            "38": "power",
+            "39": "depth",
+            "40": "energy"
+          }
+        }
+      ]
+    }
+  ]
+}
