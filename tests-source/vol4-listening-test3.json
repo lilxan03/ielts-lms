@@ -1,0 +1,387 @@
+{
+  "id": "vol4_listening_test3",
+  "title": "Vol 4 Listening Test 3",
+  "module": "listening",
+  "topics": [
+    "Vol 4",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol4-audio/resolve/main/test3_sec1.mp3",
+      "text": "<p><b>RECEPTIONIST:</b> Good morning, Sunset Hotel. How may I help you?</p><p><b>CUSTOMER:</b> Good morning. I just saw an advert in the paper about your hotel. Where exactly is it located?</p><p><b>RECEPTIONIST:</b> We are situated on Sunset Avenue, north of the beach. Close to many scenic spots, it is an ideal choice for travellers interested in sightseeing.</p><p><b>CUSTOMER:</b> That's great. Is there a vacant four-bed room? We'll be travelling with our two sons aged 9 and 11, so it's best that we are able to stay in one room.</p><p><b>RECEPTIONIST:</b> Let me check, just a moment... Um, we only have a few four-bed rooms, and I'm afraid they are fully booked at the moment. The earliest time available is August, but there might be some left in July if a previous customer cancels the reservation.</p><p><b>CUSTOMER:</b> Oh, that'll do. How much would the room cost me?</p><p><b>RECEPTIONIST:</b> It's 77.50 euros during peak time, but the price would be much lower during off-peak season. Only 50 euros.</p><p><b>CUSTOMER:</b> So if I book a room right now, is there any discount?</p><p><b>RECEPTIONIST:</b> Yes. We do offer a 30% discount for any reservation made one month ahead of schedule. It is a very reasonable price.</p><p><b>CUSTOMER:</b> That does sound tempting. Does the price include anything?</p><p><b>RECEPTIONIST:</b> The price includes two breakfast vouchers per room per day. You can use them at two different restaurants in our hotel. There's also a 20-minute spa trial available, but you have to book it beforehand at the concierge or directly at the Spa Centre.</p><p><b>CUSTOMER:</b> Um, I'm wondering if there is a hairdryer in the room. It takes ages to dry my hair without one. Do I have to bring one?</p><p><b>RECEPTIONIST:</b> No, there is absolutely no need to bring that for each room is equipped with a hairdryer. But I have to inform you that towels are not provided. You'll have to bring your own or hire some at the front desk.</p><p><b>CUSTOMER:</b> Oh, I see.</p><p><b>CUSTOMER:</b> Before making a reservation, can you tell me a little bit more about your hotel?</p><p><b>RECEPTIONIST:</b> Sure, no problem. We aim to please our guests by providing impeccable service and all the modern amenities, trying to make them feel at home. In the lounge, there are a list of books, ranging from contemporary literature to classic poetry, free for any guest to read. There is also a games room offering a number of indoor games including popular board games like Monopoly as well as the beloved Table Soccer. A nice place to go to on rainy days.</p><p><b>CUSTOMER:</b> Are there computers available in the hotel? I might have a few emails to respond to during my stay there.</p><p><b>RECEPTIONIST:</b> I'm afraid we currently Co not provide any for our customers. However, Internet is available within our hotel premises. Just use the room number and guest name to log in.</p><p><b>CUSTOMER:</b> That means I have to brirg my own laptop then. All right. Um, because I'm travelling with my two sons, is there anything that they might be interested in?</p><p><b>RECEPTIONIST:</b> Yes, a popular activity here for children is collecting shells on the beach. Our hotel has a private beach. When there are very few visitors, you can take a stroll down the beach with your children and enjoy some quality family time undisturbed.</p><p><b>CUSTOMER:</b> That sound nice, but you see, my boys really love adventure. Is there something more exciting for them to participate in?</p><p><b>RECEPTIONIST:</b> We do have bicycles ready for hire. You can cycle with the boys along the bush track by the hotel which is an ideal place to explore the wonders of nature. But because there is only a limited number of bicycles, we apply a 'first come, first served' rule.</p><p><b>CUSTOMER:</b> Got it. I think my boys would love it. How can I arrange the payment then? Can I pay by credit card?</p><p><b>RECEPTIONIST:</b> Of course. We take credit cards.</p><p><b>CUSTOMER:</b> Thank you. You've been a great help.</p><p><b>RECEPTIONIST:</b> My pleasure, Ma'am.</p>",
+      "questions": [
+        {
+          "blockId": "b_v4l3_1_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 10,
+          "instruction": "Questions 1–10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.",
+          "text": "<h4>Hotel Reservation</h4><p><i>Example: Location: north from the coast</i></p><p>• Four-bed room available in {blank:1}<br>• Room price:<br>  - in high season: € {blank:2}<br>  - cheaper if you booked {blank:3} in advance<br>• Meal included in price: {blank:4}<br>• Must bring your own: {blank:5}</p><p><b>Hotel facilities:</b><br>• a lounge with a variety of {blank:6}<br>• {blank:7} room<br>• {blank:8}</p><p><b>Activities available:</b><br>• collect {blank:9}<br>• hire {blank:10}</p>",
+          "correctAnswers": {
+            "1": "August",
+            "2": "77.5/77.50",
+            "3": "1 month/one month",
+            "4": "breakfast",
+            "5": "towels",
+            "6": "books",
+            "7": "games",
+            "8": "Internet",
+            "9": "shells",
+            "10": "bicycles"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol4-audio/resolve/main/test3_sec2.mp3",
+      "text": "<p>On behalf of Northfield Sports Complex, I'd like to extend our warmest welcome to you all here this evening. I'm George Dyson, founder of Northfield Sports Complex. I am giving this speech today to celebrate a special occasion. Qil We started the business exactly a decade ago, and today we have developed into a large firm with a sizable group of members. We've also been nominated the Most Valuable Company by Green Town at the yearly Business Awards which will be held next week. As experienced and qualified reporters, you are invited here to experience and witness this historical moment of Northfield Sports Complex together with us.</p><p>Situated within the campus of Green Town University, Northfield Sports Complex is a modern, refreshing and fully-equipped facility for sports of all kinds. As part of its commitment to the local community, Northfield Sports Complex is available not only to school children but also to local residents. It offers a wide range of facilities including a 25-metre swimming pool, paved walking and jogging paths, a well-equipped fitness gym, all-weather pitches, indoor courts for table tennis, tennis and other sports, as well as a renowned skating rink. Different age groups can all find the right sports to participate in. That's why local residents enjoy working out here. As a result, natives here are healthier than most of the people within (Alr nation.</p><p>The whole town is very proud of having nurtured two world champions, who were once both trained right here in our skating rink. Thus it has become the ideal venue to learn to skate and have fun. But what I take pride in most of all is the skating rink that has stirred the interest of boys and girls here in local schools to skate. Since opening, an increasing number of pupils have been paying regular visits to the skating rink.</p><p>A new yoga classroom with trainers will be open next month for mothers with babies. They can bring their own yoga mat and work out together with their babies. This will be a great way for them to get healthy and meet other moms. There will also be a brand new gym open to the pensioners in the near future. Just this month a new swimming pool is open to all fitness levels with special offers for those without a job.</p><p>Our complex is open daily from 8 am to 9 pm except on Thanksgiving and Christmas. We intend to extend our business in the coming year. A list of QIS equipment will be put up for sale ranging from exercising equipment like cardio machines to sports recovery and prevention facilities.</p><p>Within our complex, we try our best to avoid injuries of any kind. We train knowledgeable staff to guide our clients through correct workout regimens. For those who want to further ensure workout safety, they are welcome to (216 apply to be a member of our standing committee. They are responsible for revising the safety guidelines and supervising its enforcement.</p><p>Now I would like to introduce some of our most popular sports facilities here at Northfield Sport Complex. Our 25-metre swimming pool is the centrepiece of the complex. Combining modern, bright and airy surroundings with fully up-to-date changing facilities, the pool is excellent for learning how to swim, improving techniques and, of course, competing in school competitions. It is 7 also bookable for private functions, including pool parties, where lifeguards are available.</p><p>Next, we have the only climbing wall throughout the whole town. Many would see rock climbing as a type of extreme sport, exposing great risk to those who participate. But actually, under proper guidance and with close supervision by the coach here, it is a perfect sport for the youth to increase their flexibility and (218 strengthen their muscles.</p><p>I have to mention our skating rink once again. As our most popular facility, it has been prominently featured in a TV commercial we've released recently. There is no other skating rink larger than ours within the whole nation. (219</p><p>Also, our state-of-the-art gym is an inspiring place to train and keep fit in relaxed and friendly surroundings. The Technogym equipment enables our clients to measure their performance. If you book a one-on-one trainer, he or she might suggest a future training plan and help you train more systematically.</p>",
+      "questions": [
+        {
+          "blockId": "b_v4l3_11",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            11
+          ],
+          "points": 1,
+          "text": "11 What is the purpose of the talk?",
+          "options": [
+            "A to welcome its new members",
+            "B to commemorate its 10th anniversary",
+            "C to celebrate the award it received recently"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "11": "B to commemorate its 10th anniversary"
+          },
+          "instruction": "Questions 11–16\nChoose the correct letter, A, B, or C."
+        },
+        {
+          "blockId": "b_v4l3_12",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            12
+          ],
+          "points": 1,
+          "text": "12 What's the audience of this speech?",
+          "options": [
+            "A journalists",
+            "B local residents",
+            "C school children"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "12": "A journalists"
+          }
+        },
+        {
+          "blockId": "b_v4l3_13",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            13
+          ],
+          "points": 1,
+          "text": "13 Why is the speaker most proud of the skating rink?",
+          "options": [
+            "A Because two world champions have been trained there.",
+            "B Because people in this area are fitter than the rest of the country.",
+            "C Because they have encouraged local school children to participate more in sports."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "13": "C Because they have encouraged local school children to participate more in sports."
+          }
+        },
+        {
+          "blockId": "b_v4l3_14",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            14
+          ],
+          "points": 1,
+          "text": "14 The complex has recently opened a new venue for",
+          "options": [
+            "A the unemployed.",
+            "B mothers with babies.",
+            "C pensioners."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "14": "A the unemployed."
+          }
+        },
+        {
+          "blockId": "b_v4l3_15",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            15
+          ],
+          "points": 1,
+          "text": "15 What does the complex plan to do next year?",
+          "options": [
+            "A extend opening hours",
+            "B expand the space",
+            "C sell fitness equipment"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "15": "C sell fitness equipment"
+          }
+        },
+        {
+          "blockId": "b_v4l3_16",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            16
+          ],
+          "points": 1,
+          "text": "16 What does the complex encourage people to do?",
+          "options": [
+            "A become a coach",
+            "B be on the committee",
+            "C work as volunteers"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "16": "B be on the committee"
+          }
+        },
+        {
+          "blockId": "b_v4l3_17_20",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 4,
+          "instruction": "Questions 17–20\nWhat are the features of the following sports facilities?\nChoose FOUR answers from the box and write the correct letter, A–G, next to Questions 17–20.",
+          "text": "17 Swimming pool\n18 Climbing wall\n19 Skating rink\n20 Gym",
+          "options": [
+            "A A one-on-one coach is bookable.",
+            "B It is featured in a TV drama.",
+            "C It is beneficial for young people.",
+            "D It is only available for women sometimes.",
+            "E It is the largest in the country.",
+            "F It can be booked for parties.",
+            "G It is a place to hold courses for school children."
+          ],
+          "correctAnswers": {
+            "17": "F It can be booked for parties.",
+            "18": "C It is beneficial for young people.",
+            "19": "E It is the largest in the country.",
+            "20": "A A one-on-one coach is bookable."
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol4-audio/resolve/main/test3_sec3.mp3",
+      "text": "<p>Syria: Hi, Greg. How did it go With the research on renewable energy? Have you found anything?</p><p><b>GREG:</b> Yes. But I think it's about time we exchange our findings and discuss our next move. Syria: You read my mind. Right. I'll start first. Germany is the very first country I dug into in order to find innovative means of creating clean energy because 15% of its national electricity supply comes from renewable sources. I found that apart from the traditional fossil fuel industry, there's a German firm that has initiated a project using kites to generate power.</p><p><b>GREG:</b> Really, I've never heard of it before. How does it work? Syria: As a substitution for traditional fossil fuels that release toxic gas into the atmosphere, the power-generating kites can function in any weather. Compared to conventional wind turbines, such kites (221 can produce twice as much energy because the overall power density is proportional to altitude.</p><p><b>GREG:</b> Sounds like an efficient way of producing power. Okay, now let me tell you what I have found. There is an American company manufacturing school buses and city buses depending solely on electricity instead of gasoline. The all-electric vehicles can save up to 20 gallons of fuel on a daily basis. This could reduce transport budgets by over $10,000 each year, not to mention maintenance savings. Syria: Wow, impressive. If only there were more of these electric vehicles around.</p><p><b>GREG:</b> Well, over the years, South Africa has attached great importance to clean energy. The nation encourages using propane gas, which can either be extracted from natural deposits or be produced organically. It is normally stored in gas canisters as a type of cooking gas. To reduce the number of kitchen accidents, a new type of composite gas canister made of fiber was introduced. It is much safer and less likely to explode even when engulfed in fire.</p><p><b>GREG:</b> Now, about the survey, do you have any clues as to what kind of interviewees we should include? Syria: How about local companies doing business on clean energy products?</p><p><b>GREG:</b> Probably not the best choice of respondents. Remember the last time we asked corporate employees tc do the questionnaire, only about 5% of them were actually willing to participate. Syria: That wouldn't be enough then. It seems we have to drop that idea. Then maybe we can ask the professors and administrative staff here to help us. They could provide their insights and understanding on energy production.</p><p><b>GREG:</b> It would be ideal if they would, but I'm afraid most of them are too busy to respond to the list of questions we've prepared. I guess the students here at the university would be more suitable. Syria: You're right. And it is a much bigger sample pool too. Also, I think we should include the locals. Their opinion is key to the promotion of renewable energy here in the town.</p><p><b>GREG:</b> But wouldn't it be difficult to collect data? There's no way the two of us could go from door to door to interview all the residents. Syria: There's no need to worry about that. We'll make it telephone interviews. That way we'll have enough time to get suffcient data.</p><p><b>GREG:</b> Good idea. What should we present in our speech? Syria: Due to lack of media coverage, the majority of people actually have a limited understanding on renewable energy. Most of them aren't able to identify various types of renewable sources. So I feel we could start by clarifying what it is and the benefit of it compared to fossil fuels.</p><p><b>GREG:</b> That makes sense. We could start with wind energy. For centuries, wind has been used to do work. With the help of windmills, farmers used to pump water from wells or turn large grinding stones to grind wheat or corn. The windmills today generate electricity. The cnly problem is that it might not be windy all the time, so it is crucial to choose the appropriate site for wind farms. Syria: Well, I think we can also include comparisons between clean energy and traditional energy resources like coal, oil and natural gas.</p><p><b>GREG:</b> Maybe we can look into the prospect of these conventional sources of energy. The rising cost of fossil fuels and the threat of climate change is a concern to many Syria: Totally. These traditional resources will deplete eventually. Renewable energy currently makes up less than 2% of the world's primary energy supply, and although growing very rapidly, it is not on course to fill the fossil fuel gap.</p><p><b>GREG:</b> Nuclear energy is another type of energy we ought to mention. Nuclear power plants can produce dependable power constantly and release far less greenhouse gases than other traditional power plants. But most people feel that this type of energy is unsafe because radiation isn't easily dealt with, especially in nuclear waste and maintenance materials. Syria: What should we end the speech with?</p><p><b>GREG:</b> Have you heard about a new type of energy called hydrogen fuel? It is an infinitely renewable fuel that doesn't have detrimental environmental effects. The only problem is that it is so expensive that only wealthy individuals can afford it. But I think overall the benefits overshadow its high cost. Syria: I think that even though this new type of renewable energy is too expensive to use at the moment, in the long run, its price will go down and become more accessible.</p>",
+      "questions": [
+        {
+          "blockId": "b_v4l3_21_23",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            21,
+            22,
+            23
+          ],
+          "points": 3,
+          "instruction": "Questions 21–23\nComplete the table below.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<h4>Research about different energy-saving innovations</h4><table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Innovation</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Details</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Kites in Germany</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">used in different {blank:21} conditions to reduce the emission of toxic gas</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Vehicles in America</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">powered by {blank:22}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Gas canister in South Africa</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">invented to reduce its chances to {blank:23}</td></tr></table>",
+          "correctAnswers": {
+            "21": "weather",
+            "22": "electricity",
+            "23": "explode"
+          }
+        },
+        {
+          "blockId": "b_v4l3_24_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_2_5",
+          "ids": [
+            24,
+            25
+          ],
+          "points": 2,
+          "instruction": "Questions 24 and 25\nChoose TWO letters, A–E.",
+          "text": "Which TWO types of interviewees do Greg and Syria choose to do the survey?",
+          "options": [
+            "A staff on campus",
+            "B professors",
+            "C local residents",
+            "D companies",
+            "E university students"
+          ],
+          "multi": true,
+          "correctAnswers": {
+            "24": "C local residents",
+            "25": "E university students"
+          }
+        },
+        {
+          "blockId": "b_v4l3_26",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            26
+          ],
+          "points": 1,
+          "text": "26 What does Syria think about renewable energy?",
+          "options": [
+            "A Most people know very little about renewable energy.",
+            "B The general public can distinguish different kinds of renewable energy.",
+            "C The majority of people feel the need to replace fossil fuels with renewable energy."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "26": "A Most people know very little about renewable energy."
+          },
+          "instruction": "Questions 26–30\nChoose the correct letter, A, B, or C."
+        },
+        {
+          "blockId": "b_v4l3_27",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            27
+          ],
+          "points": 1,
+          "text": "27 What do the speakers say about modern windmills?",
+          "options": [
+            "A They can be used to pump water from wells.",
+            "B The location to build them should be carefully chosen.",
+            "C Farmers use them to grind grain."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "27": "B The location to build them should be carefully chosen."
+          }
+        },
+        {
+          "blockId": "b_v4l3_28",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            28
+          ],
+          "points": 1,
+          "text": "28 What aspect of traditional fuels are they going to address?",
+          "options": [
+            "A how to avoid fossil fuels from being depleted",
+            "B the possible future of traditional resources",
+            "C how to prevent pollution of traditional resources"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "28": "B the possible future of traditional resources"
+          }
+        },
+        {
+          "blockId": "b_v4l3_29",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            29
+          ],
+          "points": 1,
+          "text": "29 What does Greg say about nuclear plants?",
+          "options": [
+            "A They are cleaner and less expensive than fossil fuel.",
+            "B It is the best way to fight climate change.",
+            "C Few people think they are safe."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "29": "C Few people think they are safe."
+          }
+        },
+        {
+          "blockId": "b_v4l3_30",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            30
+          ],
+          "points": 1,
+          "text": "30 What does Syria think of hydrogen fuel?",
+          "options": [
+            "A The price of it will drop eventually.",
+            "B It entails environmental problems.",
+            "C The benefits of it overweigh its high cost."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "30": "A The price of it will drop eventually."
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol4-audio/resolve/main/test3_sec4.mp3",
+      "text": "<p>Oyster is a source of seafood popular among the local industry. Served with caviar and champagne, it is one of the world's ultimate luxury foods, appealing to gourmets with its succulent and delicate flavour. It thus appears to have the greatest potential for commercial culture.</p><p>Even though the national and international market has shown demand for marine products in Zanzibar, it is still challenging to survive in the competitive modern fishing industry. The government ought to restore the business by encouraging aquaculture, recreation and 'bippipg. First, it could utilise modern fish farming technology to supply more high quality marine products. Tourism is an effective stimulus to boost its sales. And with better shipping capability, more products can be delivered abroad.</p>",
+      "questions": [
+        {
+          "blockId": "b_v4l3_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<h4>Fish Farming</h4><p>• Local fish farmers are afraid that genetically modified fish will {blank:31} into the sea.<br>• like to breed fish with special features, like {blank:32}<br>• other solutions:<br>  - to build some cages to prevent the fish from {blank:33}<br>  - to use {blank:34} nets to support the frames of the cages</p><p><b>Problems facing the local fishermen:</b><br>• lack of land on the {blank:35}<br>• lack of {blank:36} fish</p><p><b>Initiatives taken by the government:</b><br>• encourages fish farmers to {blank:37} local fish farming business<br>• helps fish farmers to sell seaweed and oyster:<br>  - Seaweed can be used to make {blank:38}<br>  - Oyster is a source of seafood which can supply local {blank:39} industry.<br>• saves local fishing business by encouraging aquaculture, recreation and {blank:40}</p>",
+          "correctAnswers": {
+            "31": "escape",
+            "32": "tuna",
+            "33": "storms",
+            "34": "strong",
+            "35": "coast",
+            "36": "young",
+            "37": "support",
+            "38": "cosmetics",
+            "39": "hospitality",
+            "40": "shipping"
+          }
+        }
+      ]
+    }
+  ]
+}
