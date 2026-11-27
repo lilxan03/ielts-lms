@@ -1,0 +1,514 @@
+{
+  "id": "orig_vol9_listening_test4",
+  "title": "VOL 9 Listening Test 4",
+  "module": "listening",
+  "topics": [
+    "VOL 9",
+    "Listening"
+  ],
+  "parts": [
+    {
+      "id": 1,
+      "title": "Part 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t4.mp3",
+      "questions": [
+        {
+          "blockId": "l4p1_1_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 10,
+          "instruction": "SECTION 1Read the text and answer questions 1 – 10\nQuestions 1–10Complete the form below.Write ONE WORD AND/OR A NUMBER for each answer.\nWeekend Course Booking\nBooking for: a guitar workshopStart date: 1_____________                    Course code: 2_____________                   Previous course attended: Editing 3_____________Name: Nick 4_____________Address: 27 Hawthorn 5_____________ Bristol, BS4 2QGContact number: 07707 438 297Age: 26Occupation: 6_____________Dietary requests: no 7_____________One-to-one lesson selected: 8_____________ guitarFirst heard about us from: a 9_____________Additional request: would like 10_____________ if possible",
+          "text": "<p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "correctAnswers": {
+            "1": "July 18th",
+            "2": "Q1632",
+            "3": "photographs",
+            "4": "Poskitt",
+            "5": "way",
+            "6": "engineer",
+            "7": "fish",
+            "8": "blues",
+            "9": "magazine",
+            "10": "parking"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Part 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t4.mp3",
+      "questions": [
+        {
+          "blockId": "l4p2_11",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            11
+          ],
+          "points": 1,
+          "text": "11. Question 11",
+          "options": [
+            "A talks about gardening",
+            "B live music",
+            "C an art exhibition",
+            "D a children's playground",
+            "E evening entertainment",
+            "F a competition for adults",
+            "G vegetable market"
+          ],
+          "correctAnswers": {
+            "11": "C an art exhibition"
+          },
+          "instruction": "SECTION 2Read the text and answer questions 11 – 20\nQuestions 11–15What is the main attraction in each of the following areas of the festival?Choose FIVE correct answers, A-G, next to questions 11-15.\nAttractions"
+        },
+        {
+          "blockId": "l4p2_12",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            12
+          ],
+          "points": 1,
+          "text": "12. Question 12",
+          "options": [
+            "A talks about gardening",
+            "B live music",
+            "C an art exhibition",
+            "D a children's playground",
+            "E evening entertainment",
+            "F a competition for adults",
+            "G vegetable market"
+          ],
+          "correctAnswers": {
+            "12": "D a children's playground"
+          }
+        },
+        {
+          "blockId": "l4p2_13",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            13
+          ],
+          "points": 1,
+          "text": "13. Question 13",
+          "options": [
+            "A talks about gardening",
+            "B live music",
+            "C an art exhibition",
+            "D a children's playground",
+            "E evening entertainment",
+            "F a competition for adults",
+            "G vegetable market"
+          ],
+          "correctAnswers": {
+            "13": "F a competition for adults"
+          }
+        },
+        {
+          "blockId": "l4p2_14",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            14
+          ],
+          "points": 1,
+          "text": "14. Question 14",
+          "options": [
+            "A talks about gardening",
+            "B live music",
+            "C an art exhibition",
+            "D a children's playground",
+            "E evening entertainment",
+            "F a competition for adults",
+            "G vegetable market"
+          ],
+          "correctAnswers": {
+            "14": "B live music"
+          }
+        },
+        {
+          "blockId": "l4p2_15",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            15
+          ],
+          "points": 1,
+          "text": "15. Question 15",
+          "options": [
+            "A talks about gardening",
+            "B live music",
+            "C an art exhibition",
+            "D a children's playground",
+            "E evening entertainment",
+            "F a competition for adults",
+            "G vegetable market"
+          ],
+          "correctAnswers": {
+            "15": "A talks about gardening"
+          }
+        },
+        {
+          "blockId": "l4p2_16",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            16
+          ],
+          "points": 1,
+          "text": "16. What does Sam say about the festival tickets?",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "16": "B"
+          },
+          "instruction": "Questions 16–20\nChoose the correct answer.\nDenford Festival"
+        },
+        {
+          "blockId": "l4p2_17",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            17
+          ],
+          "points": 1,
+          "text": "17. On the last night of the festival, visitors will be able to",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "17": "A"
+          }
+        },
+        {
+          "blockId": "l4p2_18",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            18
+          ],
+          "points": 1,
+          "text": "18. What will be provided for international visitors?",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "18": "B"
+          }
+        },
+        {
+          "blockId": "l4p2_19",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            19
+          ],
+          "points": 1,
+          "text": "19. What information is given about car park A?",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "19": "A"
+          }
+        },
+        {
+          "blockId": "l4p2_20",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            20
+          ],
+          "points": 1,
+          "text": "20. What change have the organisers made to the programme this year?",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "20": "B"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Part 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t4.mp3",
+      "questions": [
+        {
+          "blockId": "l4p3_21_23",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            21,
+            22,
+            23
+          ],
+          "points": 3,
+          "instruction": "SECTION 3Read the text and answer questions 21–30\nQuestions 21–23Complete the tables below.Write NO MORE THAN TWO WORDS for each answer.\nAction Research Course for Practising Teachers\nCourse leader: Alan Cumner                        (get his recent book called '21_____________')Course objectives: to develop skills in:●    using different research techniques●    researching as part of a 22_____________●     23_____________ (in a collaborative culture)",
+          "text": "<p>Q21: {blank:21}</p><p>Q22: {blank:22}</p><p>Q23: {blank:23}</p>",
+          "correctAnswers": {
+            "21": "professional learning",
+            "22": "team",
+            "23": "presenting results"
+          }
+        },
+        {
+          "blockId": "l4p3_24_30",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 7,
+          "instruction": "Questions 24–30\nComplete the tables below.\nWrite NO MORE THAN TWO WORDS for each answer.\nCourse Components\nObservational techniques | Additional information",
+          "text": "<p>Using observation checklists | To record aspects of lesson, e.g. 24_____________ of pupils</p><p>Writing a 25_____________ | Used to improve skill of reflection</p><p>26_____________ | Try out on fellow students (in classroom 27_____________)</p><p>Non-observational techniques | Additional information</p><p>Analysing 28_____________ | Use statistics based on own students</p><p>Using questionnaires | Use the 29_____________ to find respondents</p><p>Using 30_____________ | Own choice of respondents</p><p>SECTION 4</p><p>Q24: {blank:24}</p><p>Q25: {blank:25}</p><p>Q26: {blank:26}</p><p>Q27: {blank:27}</p><p>Q28: {blank:28}</p><p>Q29: {blank:29}</p><p>Q30: {blank:30}</p>",
+          "correctAnswers": {
+            "24": "behaviour",
+            "25": "diary",
+            "26": "video recording",
+            "27": "simulation",
+            "28": "test results",
+            "29": "internet",
+            "30": "interviews"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Part 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t4.mp3",
+      "questions": [
+        {
+          "blockId": "l4p4_31",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            31
+          ],
+          "points": 1,
+          "text": "31. What impact does Marc Prensky believe that digital technology has had on young people?",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "31": "A"
+          },
+          "instruction": "Questions 31–33\nChoose the correct answer."
+        },
+        {
+          "blockId": "l4p4_32",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            32
+          ],
+          "points": 1,
+          "text": "32. Digital immigrants tend to access computers",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "32": "B"
+          }
+        },
+        {
+          "blockId": "l4p4_33",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            33
+          ],
+          "points": 1,
+          "text": "33. What example is given of having a 'digital accent'?",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "33": "B"
+          }
+        },
+        {
+          "blockId": "l4p4_34",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            34
+          ],
+          "points": 1,
+          "text": "34. Current teaching methods don't work.",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "34": "B"
+          },
+          "instruction": "Questions 34–40\nWhich theorist makes each of the following points?\nChoose the correct letter, A, B or C, next to questions 34-40.\nTheorists A Allen B James C Vander\nPoints made"
+        },
+        {
+          "blockId": "l4p4_35",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            35
+          ],
+          "points": 1,
+          "text": "35. Many students don't understand computers.",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "35": "C"
+          }
+        },
+        {
+          "blockId": "l4p4_36",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            36
+          ],
+          "points": 1,
+          "text": "36. Computer technology doesn't interest all students.",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "36": "A"
+          }
+        },
+        {
+          "blockId": "l4p4_37",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            37
+          ],
+          "points": 1,
+          "text": "37. Students can still learn the traditional way.",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "37": "B"
+          }
+        },
+        {
+          "blockId": "l4p4_38",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            38
+          ],
+          "points": 1,
+          "text": "38. Students still need to learn research skills.",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "38": "A"
+          }
+        },
+        {
+          "blockId": "l4p4_39",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            39
+          ],
+          "points": 1,
+          "text": "39. We should use computer games to teach.",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "39": "B"
+          }
+        },
+        {
+          "blockId": "l4p4_40",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            40
+          ],
+          "points": 1,
+          "text": "40. Computers can't replace educators.",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "40": "C"
+          }
+        }
+      ]
+    }
+  ]
+}

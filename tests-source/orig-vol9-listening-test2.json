@@ -1,0 +1,539 @@
+{
+  "id": "orig_vol9_listening_test2",
+  "title": "VOL 9 Listening Test 2",
+  "module": "listening",
+  "topics": [
+    "VOL 9",
+    "Listening"
+  ],
+  "parts": [
+    {
+      "id": 1,
+      "title": "Part 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t2.mp3",
+      "questions": [
+        {
+          "blockId": "l2p1_1_5",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "points": 5,
+          "instruction": "Questions 1–5\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nPoppy Reserve\nAlmond Valley Poppy Reserve is a nature reserve• The poppies will be at their best at the end of the 1 …………..   .• The poppies on the hills are 2 …………. in colour.The reserve is located to the 3 …………….  of Lakeside.• The best time for photography is mid-afternoon.• Wear 4 ……….. because of rattlesnakes.• The reserve is a 5 …………. park.",
+          "text": "<p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p>",
+          "correctAnswers": {
+            "1": "month",
+            "2": "orange",
+            "3": "east",
+            "4": "trousers",
+            "5": "state"
+          }
+        },
+        {
+          "blockId": "l2p1_6_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 5,
+          "instruction": "Questions 6–10\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nTour | Start time | Duration | Highlights | Photography\nThe 6 …….. tour | Every hour from 7:30 a.m. | 30 minutes | Viewpoints, film and the 7 ……... | Panoramic pictures",
+          "text": "<p>The wildflower tour | Every two hours from 8:00 a.m. | 8 ……… | Poppy, cream cup, and stage | Close- up tips</p><p>The wildlife tour | 9 ……… a.m. or 7:00 p.m. | 1.5 hours | Coyote, quail, roadrunners | Bring tripod and a 10 …….. lens</p><p>SECTION 2</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "correctAnswers": {
+            "6": "general",
+            "7": "museum",
+            "8": "one hour/1 hour",
+            "9": "5.30/5:30",
+            "10": "zoom"
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Part 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t2.mp3",
+      "questions": [
+        {
+          "blockId": "l2p2_11",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            11
+          ],
+          "points": 1,
+          "text": "11. Jim says that in the Iron Age village",
+          "options": [
+            "A he is sometimes cold at night.",
+            "B he always gets up early.",
+            "C he has time to himself."
+          ],
+          "correctAnswers": {
+            "11": "B he always gets up early."
+          },
+          "instruction": "Questions 11–15\nChoose the correct answer.\nRe-creating life in an Iron Age village"
+        },
+        {
+          "blockId": "l2p2_12",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            12
+          ],
+          "points": 1,
+          "text": "12. What does Jim say about the food they eat in the village?",
+          "options": [
+            "A It takes time to prepare.",
+            "B It is difficult to get used to.",
+            "C It has to be eaten quickly."
+          ],
+          "correctAnswers": {
+            "12": "A It takes time to prepare."
+          }
+        },
+        {
+          "blockId": "l2p2_13",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            13
+          ],
+          "points": 1,
+          "text": "13. Jim says that at the evening meal",
+          "options": [
+            "A they are sometimes too tired to eat.",
+            "B they mainly have fruit and berries.",
+            "C they talk about what they've done."
+          ],
+          "correctAnswers": {
+            "13": "C they talk about what they've done."
+          }
+        },
+        {
+          "blockId": "l2p2_14",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            14
+          ],
+          "points": 1,
+          "text": "14. The most important job for the blacksmiths is",
+          "options": [
+            "A to mend broken tools and implements.",
+            "B to maintain a good source of heat.",
+            "C to collect sufficient firewood."
+          ],
+          "correctAnswers": {
+            "14": "B to maintain a good source of heat."
+          }
+        },
+        {
+          "blockId": "l2p2_15",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            15
+          ],
+          "points": 1,
+          "text": "15. Jim likes the fact that in the village, people",
+          "options": [
+            "A do varied activities.",
+            "B share their knowledge.",
+            "C get a lot of exercise."
+          ],
+          "correctAnswers": {
+            "15": "A do varied activities."
+          }
+        },
+        {
+          "blockId": "l2p2_16",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            16
+          ],
+          "points": 1,
+          "text": "16. Question 16",
+          "options": [
+            "A bone",
+            "B different",
+            "C equal",
+            "D elm",
+            "E hazel",
+            "F iron",
+            "G peg",
+            "H roof",
+            "I scaffold"
+          ],
+          "correctAnswers": {
+            "16": "G peg"
+          },
+          "instruction": "Questions 16–20\nComplete the flow-chart below.\nChoose FIVE correct answers from the box, A-I, next to questions 16-20.\nMAKING AN IRON AGE ROUNDHOUSE\nMark centre of planned house with a 16 …………"
+        },
+        {
+          "blockId": "l2p2_17",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            17
+          ],
+          "points": 1,
+          "text": "17. Question 17",
+          "options": [
+            "A bone",
+            "B different",
+            "C equal",
+            "D elm",
+            "E hazel",
+            "F iron",
+            "G peg",
+            "H roof",
+            "I scaffold"
+          ],
+          "correctAnswers": {
+            "17": "A bone"
+          }
+        },
+        {
+          "blockId": "l2p2_18",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            18
+          ],
+          "points": 1,
+          "text": "18. Question 18",
+          "options": [
+            "A bone",
+            "B different",
+            "C equal",
+            "D elm",
+            "E hazel",
+            "F iron",
+            "G peg",
+            "H roof",
+            "I scaffold"
+          ],
+          "correctAnswers": {
+            "18": "I scaffold"
+          }
+        },
+        {
+          "blockId": "l2p2_19",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            19
+          ],
+          "points": 1,
+          "text": "19. Question 19",
+          "options": [
+            "A bone",
+            "B different",
+            "C equal",
+            "D elm",
+            "E hazel",
+            "F iron",
+            "G peg",
+            "H roof",
+            "I scaffold"
+          ],
+          "correctAnswers": {
+            "19": "E hazel"
+          }
+        },
+        {
+          "blockId": "l2p2_20",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            20
+          ],
+          "points": 1,
+          "text": "20. Question 20",
+          "options": [
+            "A bone",
+            "B different",
+            "C equal",
+            "D elm",
+            "E hazel",
+            "F iron",
+            "G peg",
+            "H roof",
+            "I scaffold"
+          ],
+          "correctAnswers": {
+            "20": "C equal"
+          }
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Part 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t2.mp3",
+      "questions": [
+        {
+          "blockId": "l2p3_21",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21. What do the students find surprising about the way that complaints were dealt with at the call centre?",
+          "options": [
+            "A the way that customers responded to it",
+            "B the employees’s lack of enthusiasm for it",
+            "C the kind of questions employees were obliged to ask"
+          ],
+          "correctAnswers": {
+            "21": "A the way that customers responded to it"
+          },
+          "instruction": "Questions 21–24\nChoose the correct answer.\nPresentation on how jobs might change in the future"
+        },
+        {
+          "blockId": "l2p3_22",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22. What does Emma say about the report by Jerry Kaplan?",
+          "options": [
+            "A It shows how machines will respond to human needs.",
+            "B It emphasises the variety of roles that machines will have.",
+            "C It explains the limitations of machines."
+          ],
+          "correctAnswers": {
+            "22": "C It explains the limitations of machines."
+          }
+        },
+        {
+          "blockId": "l2p3_23",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23. What is Nick's reaction to the article The Human Cloud?",
+          "options": [
+            "A He agrees that companies should focus on making savings.",
+            "B He supports the concept of greater flexibility for employees.",
+            "C He approves of businesses spending more on recruiting experts."
+          ],
+          "correctAnswers": {
+            "23": "B He supports the concept of greater flexibility for employees."
+          }
+        },
+        {
+          "blockId": "l2p3_24",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24. What do the students agree about the use of technology to collect information about employees?",
+          "options": [
+            "A Cameras are an effective means of maintaining security.",
+            "B Sometimes productivity is more important than individual privacy.",
+            "C Employees may object to certain types of monitoring."
+          ],
+          "correctAnswers": {
+            "24": "C Employees may object to certain types of monitoring."
+          }
+        },
+        {
+          "blockId": "l2p3_25",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25. Question 25",
+          "options": [
+            "A at which point of the presentation it should come",
+            "B whether it should be removed completely",
+            "C whether it is clear enough",
+            "D if it needs to be completely re-written",
+            "E if visuals will help or not",
+            "F if the information needs to be checked",
+            "G which further examples should be included",
+            "H which of them will present it"
+          ],
+          "correctAnswers": {
+            "25": "H which of them will present it"
+          },
+          "instruction": "Questions 25–30\nWhat issue do Emma and Nick discuss for each aspect of the presentation?\nChoose SIX correct answers, A-H, next to questions 25-30.\nIssues\nAspects of the presentation"
+        },
+        {
+          "blockId": "l2p3_26",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            26
+          ],
+          "points": 1,
+          "text": "26. Question 26",
+          "options": [
+            "A at which point of the presentation it should come",
+            "B whether it should be removed completely",
+            "C whether it is clear enough",
+            "D if it needs to be completely re-written",
+            "E if visuals will help or not",
+            "F if the information needs to be checked",
+            "G which further examples should be included",
+            "H which of them will present it"
+          ],
+          "correctAnswers": {
+            "26": "B whether it should be removed completely"
+          }
+        },
+        {
+          "blockId": "l2p3_27",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            27
+          ],
+          "points": 1,
+          "text": "27. Question 27",
+          "options": [
+            "A at which point of the presentation it should come",
+            "B whether it should be removed completely",
+            "C whether it is clear enough",
+            "D if it needs to be completely re-written",
+            "E if visuals will help or not",
+            "F if the information needs to be checked",
+            "G which further examples should be included",
+            "H which of them will present it"
+          ],
+          "correctAnswers": {
+            "27": "D if it needs to be completely re-written"
+          }
+        },
+        {
+          "blockId": "l2p3_28",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            28
+          ],
+          "points": 1,
+          "text": "28. Question 28",
+          "options": [
+            "A at which point of the presentation it should come",
+            "B whether it should be removed completely",
+            "C whether it is clear enough",
+            "D if it needs to be completely re-written",
+            "E if visuals will help or not",
+            "F if the information needs to be checked",
+            "G which further examples should be included",
+            "H which of them will present it"
+          ],
+          "correctAnswers": {
+            "28": "G which further examples should be included"
+          }
+        },
+        {
+          "blockId": "l2p3_29",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            29
+          ],
+          "points": 1,
+          "text": "29. Question 29",
+          "options": [
+            "A at which point of the presentation it should come",
+            "B whether it should be removed completely",
+            "C whether it is clear enough",
+            "D if it needs to be completely re-written",
+            "E if visuals will help or not",
+            "F if the information needs to be checked",
+            "G which further examples should be included",
+            "H which of them will present it"
+          ],
+          "correctAnswers": {
+            "29": "E if visuals will help or not"
+          }
+        },
+        {
+          "blockId": "l2p3_30",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            30
+          ],
+          "points": 1,
+          "text": "30. Question 30",
+          "options": [
+            "A at which point of the presentation it should come",
+            "B whether it should be removed completely",
+            "C whether it is clear enough",
+            "D if it needs to be completely re-written",
+            "E if visuals will help or not",
+            "F if the information needs to be checked",
+            "G which further examples should be included",
+            "H which of them will present it"
+          ],
+          "correctAnswers": {
+            "30": "F if the information needs to be checked"
+          }
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Part 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol9-audio/resolve/main/t2.mp3",
+      "questions": [
+        {
+          "blockId": "l2p4_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite NO MORE THAN THREE WORDS for each answer.\nHEALTH ON THE NIGHT SHIFT\nBackground:•    in number of night workers because of 31 …………. 24-hour shopping/services•    need to examine effects of changing work and sleep habits US and British research found these lead to health problems",
+          "text": "<p>B    Sleep Debt•    impossible to get enough sleep during daytime</p><p>C   34 ………….   •    different working/sleeping times, ‘dislocation’</p><p>Effects:A    Physical•    higher incidence of heart and  35 ………………  problems •    more minor illnesses, suggesting that immunity of shift workers is affected</p><p>B    Psychological•    most common: 36 …………….    •    37 ……………… affected, e.g. decision-making, planning, which regulate our 38 …………...</p><p>C    SocialNight shift work can lead to:•    destruction of  39 …………. and other relationships, e.g. 40 …………..       •    eventually, for individuals: social isolation</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "correctAnswers": {
+            "31": "the number of",
+            "32": "internal clock/the internal clock",
+            "33": "light and dark",
+            "34": "unsocial hours",
+            "35": "stomach",
+            "36": "depression",
+            "37": "mental abilities",
+            "38": "performance",
+            "39": "family life",
+            "40": "peer group"
+          }
+        }
+      ]
+    }
+  ]
+}
