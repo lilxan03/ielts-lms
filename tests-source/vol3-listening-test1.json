@@ -1,0 +1,400 @@
+{
+  "id": "vol3_listening_test1",
+  "title": "Vol 3 Listening Test 1",
+  "module": "listening",
+  "topics": [
+    "Vol 3",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test1_sec1.m4a",
+      "text": "<p><b>RECEPTION:</b> Good afternoon, you're through Crete, how may I help to reception at The Island Hotel in you today?</p><p><b>MR. SCHIFFER:</b> Yes, hello there, I'm hoping and myself for about to book a double room for my wife Firstly, two weeks from the 25th April could you tell me whether it's of this year. particularly hot during this</p><p><b>RECEPTION:</b> Yes, of course Sir, during late temperature shouldn't April and early May, the daytime exceed 19 degrees Celsius, but the has been rather erratic and difficult weather am unable to say for certain. to predict in recent years, so I</p><p><b>MR. SCHIFFER:</b> Okay, that sounds good, my wife doesn't it's very hot! I haven't booked like going outside when flights yet, but I must say that I'm unfamiliar with Crete and its transport system. Does the hotel provide an airport shuttle service?</p><p><b>RECEPTION:</b> Yes Sir, we provide a complimentary airport pick-up service for all our guests. It takes about 40 minutes to get here from the airport, but it's at least 60 minutes at rush hours and you will be provided with a fully air-conditioned shuttle bus.</p><p><b>MR. SCHIFFER:</b> Okay, excellent. In that case, do you have any rooms available for the dates I gave you?</p><p><b>RECEPTION:</b> I shall have a look on the system now for you Sir, bear with me just a moment. [brief pause] Yes Sir, I can see now that we have several rooms available. Would you prefer a garden view or a sea view?</p><p><b>MR. SCHIFFER:</b> Well, ideally I would like a sea-view room with a balcony, but of course that depends on the difference in price.</p><p><b>RECEPTION:</b> Not to worry Sir, all of our standard double rooms have en-suite facilities and a a balcony. If you would like one of our sea-view rooms, there is a premium of €60 per night.</p><p><b>MR. SCHIFFER:</b> Okay, so could you tell me the total nightly rate for a standard</p><p><b>RECEPTION:</b> Yes, of course Sir, for the spring months, our rate is €216 per night. For 14 nights, altogether this will come to €3,024.</p><p><b>MR. SCHIFFER:</b> Perfect. I also read on your website that the hotel has gym and spa facilities. Are there any other facilities on offer?</p><p><b>RECEPTION:</b> Yes, we have a large outdoor infinity pool overlooking the ocean, with luxury sun beds and a poolside bar. We also have 3 full-sized tennis courts, where we run a popular doubles tournament, with the winner receiving 2 all-inclusive spa day vouchers.</p><p><b>MR. SCHIFFER:</b> Goodness, I shall have to brush up on my tennis skills!</p><p><b>MR. SCHIFFER:</b> Are there any other activities organised by the hotel that we can partake in? It's just that it's our wedding anniversary on the of June, and I would like to provide my wife with the perfect romantic getaway.</p><p><b>RECEPTION:</b> I can assure you, Sir, that your wife won't be disappointed. Ours is a 5-star resort which is renowned for its luxury and beauty. In terms of activities, the hotel provides thrice weekly entertainment. On Tuesdays, guests will take a mini bus and partake in learning to cook succulent fish dishes with our Michelin starred chef, Enrique. The class will take place in a beautiful valley deep in the Cretan hills, where guests will be treated to an intimate piano performance by our in-house concert pianist, Pedro. On Wednesdays, select number of guests will be fortunate enough to a explore the mountains by helicopter, before being transported to a tropical Cretan garden by shuttle bus. Finally, on Thursdays after dinner, provide a spectacular fireworks display, which a fancy we view from the comfort ofa cable car. guests can absolutely wonderful! I shall book the</p><p><b>MR. SCHIFFER:</b> Oh wow, that all sounds and then I need to look at flights so as not to become room now, take details now or later? [fade extortionate. Would you like to my out] Questionl 19 : daytime, : \"the daytime •c, temperature shouldn,t exceed 19 degrees Celsius (</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l1_1_4",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "points": 4,
+          "instruction": "Questions 1–4\nComplete the notes below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>HOTEL ISLAND</h4><p><i>Example: Type of room required: double room</i></p><p><b>Time:</b><br>• The length of stay: approx 2 weeks<br>• Starting date: 25th April</p><p><b>Temperature:</b><br>• Daytime: up to {blank:1}°C<br>• Erratic weather</p><p><b>Transport:</b><br>• Pick-up service is provided.<br>• Normally transferring to the airport takes about {blank:2}.</p><p><b>Facilities:</b><br>• en-suite facilities and a {blank:3}<br>• gym and spa facilities<br>• a large outdoor swimming pool<br>• three standard {blank:4}</p>",
+          "correctAnswers": {
+            "1": "19",
+            "2": "40/forty minutes",
+            "3": "balcony",
+            "4": "tennis courts"
+          }
+        },
+        {
+          "blockId": "b_v3l1_5_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 6,
+          "instruction": "Questions 5–10\nComplete the table below.\nWrite NO MORE THAN TWO WORDS for each answer.",
+          "text": "<table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Day</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Entertainment activities</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Transportation</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Tuesdays</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• learning to make {blank:5}<br>• having a {blank:6} concert</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• mini bus</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Wednesdays</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• enjoying mountain view<br>• exploring a tropical {blank:8}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• {blank:7}<br>• shuttle bus</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Thursdays</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• having a fancy dinner<br>• watching a spectacular display of {blank:9}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• {blank:10}</td></tr></table>",
+          "correctAnswers": {
+            "5": "fish dishes",
+            "6": "piano",
+            "7": "helicopter",
+            "8": "(Cretan) garden",
+            "9": "fireworks",
+            "10": "cable car"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test1_sec2.m4a",
+      "text": "<p>BarterOnlineUK is a young, up and coming website in the United Kingdom where users can 'buy' new and used goods; however, instead of paying with money, registered users instead exchange their purchase for an item of similar value. This part is perhaps the most complicated, as the registered users themselves must mutually decide on an appropriate value, with value either being the recommended retail price (RRP), or simply how much they believe the item to be worth. The website has been founded by a group of four friends in the north of England. Originally they exchanged their belongings among family members. They frequently found themselves swapping their belongings when they no longer had any use for them. They live by the motto 'one person's trash is another person's treasure', and hate to throw things away. As more and more people caught wind of the idea and wanted to participate in the exchanges, the group decided that the idea had the potential to become a successful business venture, and so it did. and has now been running for business, which short time ago, the website around halfa ear. Despite took 3 months to set up with 500 more than has already garnered only being founded a expected, a huge achievement about 1,500 registered users are registered in the United for the founders. users, from the Re ubiic of Ireland. Kingdom and Canada, some ofthe must first fill in their In order to become With the majority personal details followed a registered member, details, which will be used to by their credit users as this fee is paid, take payment of a monthly or debit card users will be able to fee of £5. As long perform an unlimited number of</p><p>A multitude of items are sold textbook-s, tothe tools, however books on the website, such as for children and com uter soft s, and Q15& The exchange process itself is ames are b far selected most. enter their preferences for not as complicated as it might seem, users what they would like to receive, can state what they would like to give and also explicitly suitable away, and the website will automatically pair up users. If, however, a user doesn't would simply like to buy want to give anything away, but something, BarterOnlineUK does online payment system where users can perform support a secure Despite this, the founding a normal monetary transaction. group strongly discourages the use of the online payment system, clearly stating that this goes against the intended ethos of the company.</p><p>Although bartering is an age-old process, many of the website's users are unsure how to decide which of their own items to exchange. It often helps to order items by popularity using the 'filter' button provided, this will tell the website to find out popular items for users' convenience. To this, the founding members say just put everything you don't want on there, different people have different tastes, and you never know what they might be looking for! In order to aid registered users in their exchanges, and to provide them with assurance, the founders recently added a new feature whereby on completion of an exchange, users will be encouraged to provide each other with feedback. This feedback will include criteria such as the quality of the item as compared with how it was advertised, the ease of communication with the seller, the speed at which the item was delivered, and so on. The Q 20 friends believe that using this method, users will have a more transparent and trustworthy bartering experience. [fade out]</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l1_11",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            11
+          ],
+          "points": 1,
+          "text": "11 The website is organised by",
+          "options": [
+            "A family members.",
+            "B friends.",
+            "C businessmen."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "11": "B friends."
+          },
+          "instruction": "Questions 11–14\nChoose the correct letter, A, B or C.\nOnline Exchange Business"
+        },
+        {
+          "blockId": "b_v3l1_12",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            12
+          ],
+          "points": 1,
+          "text": "12 How long has the website been operated?",
+          "options": [
+            "A about 3 weeks",
+            "B about 3 months",
+            "C about 6 months"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "12": "C about 6 months"
+          }
+        },
+        {
+          "blockId": "b_v3l1_13",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            13
+          ],
+          "points": 1,
+          "text": "13 How many registered users are there in the website?",
+          "options": [
+            "A 1,000",
+            "B 1,500",
+            "C 2,000"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "13": "B 1,500"
+          }
+        },
+        {
+          "blockId": "b_v3l1_14",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            14
+          ],
+          "points": 1,
+          "text": "14 Which country has the most users in the website?",
+          "options": [
+            "A Ireland",
+            "B UK",
+            "C Canada"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "14": "A Ireland"
+          }
+        },
+        {
+          "blockId": "b_v3l1_15_16",
+          "type": "multiple_choice",
+          "subtype": "mcq_2_5",
+          "ids": [
+            15,
+            16
+          ],
+          "points": 2,
+          "instruction": "Questions 15 and 16\nChoose TWO letters, A–E.",
+          "text": "Which TWO things are most popular among users?",
+          "options": [
+            "A children's books",
+            "B textbooks",
+            "C computer games",
+            "D toys",
+            "E tools"
+          ],
+          "multi": true,
+          "correctAnswers": {
+            "15": "A children's books",
+            "16": "C computer games"
+          }
+        },
+        {
+          "blockId": "b_v3l1_17_20",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 4,
+          "instruction": "Questions 17–20\nComplete the sentences below.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<p>17 The website will sort out {blank:17} items to help those who can't decide what to exchange.</p><p>18 Do not bother because everyone's {blank:18} is different.</p><p>19 Users will give {blank:19} on the completion of exchanges.</p><p><b>Criteria:</b><br>• the quality of the item<br>• the ease of communication<br>• the {blank:20} of delivering</p>",
+          "correctAnswers": {
+            "17": "popular",
+            "18": "taste",
+            "19": "feedback",
+            "20": "speed"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test1_sec3.m4a",
+      "text": "<p>Tom: Professor Tomlinson, may Annie and I please quickly you a few questions about the reflective journal ask assignment? It's just that we're a bit confused as to what you want to include and discuss. us</p><p><b>PROF. TOMLINSON:</b> Yes ofcourse, what are you having trouble with? Annie: Well, everything really. To start with, what should be included first in the reflective journal? Perhaps suggestions from others?</p><p><b>PROF. TOMLINSON:</b> No no, firstly you should include the study goals you set yourself at the beginning of the module. This section should have been discussed in some detail towards the beginning of the course by Professor May. You should be able to find her suggestions on the slides she has provided the class online. Annie: Okay, thank you, Professon Could I also trouble you to take a brief look at my bibliography and footnotes? I feel like they're missing something; most of our friends' bibliographies are</p><p><b>PROF. TOMLINSON:</b> well, looking at this which shows that ou have made wide ran e of resources, communication technolo As far as I can effective use of to this, . although you tell, you need not make any changes referencing complies double check that your might want to Style regulations. with the Harvard Referencing said that! Thank you, now I surprised you've Annie: Oh I'm very said you wanted to ask the can set my mind at ease. Tom, you Professor about the achievements section? Professor, in the assignment guidelines, we are asked Tom: Ah yes, biggest achievement in to introduce and elaborate on our saying which skills we learnt in the process, and the past, transferred to various different future how these skills can be The only problem is that I don't know what my careers. achievement actually is. I've only ever worked as a greatest waiter in a hotel restaurant during the summer holidays from university.</p><p><b>PROF. TOMLINSON:</b> If you worked as a waiter in a hotel restaurant, you're bound to have worked with other waiters as part of a team. Would you say that during your time as a waiter, you developed any leadership skills? Tom: Yes, well I suppose I was asked to become the team leader of the food and beverage department. But that's hardly an achievement.</p><p><b>PROF. TOMLINSON:</b> You might not think so, but if you write that you were offered the position of the team leader, it shows a lot more about your character, for example that you're charismatic and work well in a high-pressure situation. Tom: I never would have thought to write that down, thank you! I guess I should start listening to others more often! Annie, do you have any more questions or are you ready to go back to the library? Annie: Yeah, I think I've got everything I need. Thank you very much, Professor Tomlinson! [Tom and Annie alone] Tom: That was really helpful. I'm actually starting to look forward to writing this now, and it should be a really useful exercise to how bad I am at identifying applying for jobs. It's shocking professor Tomlinson my strengths and weaknesses. has shown me that 1 definitel need start dis la in some self-awareness! to (226 Annie: Yeah, Tom, you really do. You're always is great until it comes to applying so modest! Modesty for jobs! Annie: Oh no! I forgot to ask the professor about the section on identifying the skills gained through different activities, do you remember? When it asks you, for example, whether writing an essay develops your study skills or your independent learning and so on? Tom: Oh goodness, we really should have asked him that. I've been having trouble with it too. It just seems like such a pointless task. What do you reckon the answers are? Annie: Hmm...l think writing an essay might be a way of identifying (227 and resolving a problem, because you have to state the problem in the introduction and then solve it. I'm not so sure about taking exams.. .1 thought they were supposed to develop lots of different skill sets. If I really had to choose, I'd say that taking Q 28 exams enables you to become more confident in yourself...do .3 you agree? Tom: Maybe, I really don't know either. What do you think about the last two? Making class notes and presentation notes? Annie: Oh it's so difficult! I think making class notes has to be a way of becoming a more independent learner because you yourself decide what the important information is and learn it. That reminds me, I (230 find takin resentation notes is a disaster! The professors speak much too quickly, and I write much too slowly. [fade outl 4</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l1_21",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21 What should be firstly included in the reflective journal?",
+          "options": [
+            "A topics he is going to talk about",
+            "B study aims for the module",
+            "C suggestions from others"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "21": "B study aims for the module"
+          },
+          "instruction": "Questions 21–26\nChoose the correct letter, A, B or C.\nReflective Journal Assignment"
+        },
+        {
+          "blockId": "b_v3l1_22",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22 The woman has got",
+          "options": [
+            "A a lot of friends to help her.",
+            "B several books that may be useful.",
+            "C sufficient resources showing that she is a good technology user."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "22": "C sufficient resources showing that she is a good technology user."
+          }
+        },
+        {
+          "blockId": "b_v3l1_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23 What was the man's biggest achievement in the past?",
+          "options": [
+            "A He worked as a waiter in a restaurant.",
+            "B He got an offer to lead a team.",
+            "C He became the chairman of the Student Union."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "23": "B He got an offer to lead a team."
+          }
+        },
+        {
+          "blockId": "b_v3l1_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 The man decides to",
+          "options": [
+            "A do it by himself.",
+            "B find a tutor.",
+            "C listen to others."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "C listen to others."
+          }
+        },
+        {
+          "blockId": "b_v3l1_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25 What is the man's attitude after the discussion?",
+          "options": [
+            "A He thinks it is useless.",
+            "B He is looking forward to it.",
+            "C He feels uncertain about it."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "25": "B He is looking forward to it."
+          }
+        },
+        {
+          "blockId": "b_v3l1_26",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            26
+          ],
+          "points": 1,
+          "text": "26 What should be shown in the man's reflective journal?",
+          "options": [
+            "A self-awareness",
+            "B mistakes",
+            "C achievements"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "26": "A self-awareness"
+          }
+        },
+        {
+          "blockId": "b_v3l1_27_30",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 4,
+          "instruction": "Questions 27–30\nWhat is the woman's attitude toward each of the following activities of study?\nChoose FOUR answers from the box and write the correct letter, A–E, next to questions 27–30.",
+          "text": "27 writing an essay\n28 taking exams\n29 making class notes\n30 taking presentation notes",
+          "options": [
+            "A define a problem",
+            "B independent learning",
+            "C develop study skills",
+            "D gain confidence",
+            "E find it difficult"
+          ],
+          "correctAnswers": {
+            "27": "A define a problem",
+            "28": "D gain confidence",
+            "29": "B independent learning",
+            "30": "E find it difficult"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test1_sec4.m4a",
+      "text": "<p>Welcome back to my series of short lectures on apes. Today recent and historical breakthroughs on the behaviour we will examine of chimpanzees, otherwise known as chimps.</p><p>The word 'chimpanzee' is an umbrella term for two different species of apes in the genus Pan, which are the Common Chimpanzee, or Pan Troglodytes, found in West and Central Africa, and the Bonobo, or Pan Paniscus, which are found in the forests of the Democratic Republic of the Congo. Chimpanzees belong to the Hominidae family, together with gorillas, orangutans and indeed humans. Current research tells us that the chimps broke away from the human branch of the Hominidae family approximately six million years ago, and remain the closest living relative to humans to this day. More modern researches into chimpanzees have centred on their behavioural characteristics, once all biological and genetic factors have been ruled out. In this way, scientists have unearthed an unfathomable amount of similarities between human and chimpanzee behaviour. Although much of this research has taken place through observation of captive chimps, the results are widely authoritative reflection of chimps living in the wild. Chimps live seen as an male and female members, with in large so-called communities comprised of many individual chimp's position and influence. the social hierarchy determined by an found that chimps leam and adapt through Through such research, scientists have its language in order to retain power. noted to behave order to intimidate others, while lower-ranking chimps are more int submissively and holding out their hands while grunting. Female chimpanzees also hierarchy, with high social standing inherited by children. It is have a distinct social community to unite and overthrow the not unheard of for dominant females within a alpha male, backing another in his place.</p><p>James Diamond, in his book The Third Chimpanzee suggests that chimps should be reclassified in the genus Homo, instead of Pan, and there now are many arguments still in favour of this. Male common chimpanzees are on average 1.7 metres in height, weighing 70kg, with their female counterparts being somewhat smaller. By comparison, the Bonobo is slightly shorter and lighter, but with longer arms and legs; however, both species walk on all fours, and climb trees with great ease. Jane Goodall made a groundbreaking discovery in 1960, when she observed the use of tools among chimpanzees, including digging for termites with large sticks. A recent study claimed to reveal that common chimpanzees in Senegal have been using spears sharpened with their teeth to hunt; however these reports remain unsubstantiated. Researchers have witnessed such tools, namely rocks, being used by chimps to open coconut Q 34 shells and indeed crushing nuts with stone hammers. As scientific technology has developed, so too has our knowledge of the sheer extent of the chimp's intelligence. Research has now shown that chimps have the capability to learn and use symbols, and understand aspects of the human language, including syntax as well as numerical sequences.</p><p>As I mentioned earlier, the umbrella term 'chimpanzee' is comprised of the common chimpanzee and the bonobo. These two sub-species divided are along the Congo River, with the common chimps living on one side, and the bonobos living on the opposite side of the river. Over the past few decades, sub-species have witnessed both of these an alarming decrease in population gypyi!y, with animal activists now working harder than ever to protect those remaining and encourage procreation.</p><p>In addition, next week's episode will focus captivity are able to learn thin more closely on how chimpanzees in s throu h imitatin the behaviour well how of humans, intellectually to seeing you again next week. Goodnight!</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l1_31_38",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38
+          ],
+          "points": 8,
+          "instruction": "Questions 31–38\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<h4>Chimpanzee behaviours</h4><p><b>Species:</b><br>• We can find Pan or Pan Troglodytes in West and Central Africa.<br>• The Bonobo or Pan Paniscus are found in Democratic Republic of Congo.</p><p><b>Current research:</b><br>• rule out {blank:31} and biological factors<br>• learn through {blank:32} of other chimps' behaviour</p><p><b>Discoveries:</b><br>• The book <i>The Third Chimpanzee</i> by James Diamond discusses some physical features of chimpanzees.<br>• The discovery reported by Jane Goodall suggests that chimpanzees know how to use {blank:33}.</p><p><b>Chimpanzees in Senegal:</b><br>• use spears sharpened with their teeth<br>• can {blank:34} the shell of a coconut<br>• use a {blank:35} hammer to crash nuts<br>• are capable of learning {blank:36} and understanding human language</p><p><b>Sub-species:</b><br>• Bonobos live on the other side of a {blank:37}.<br>• Both of them are reducing alarmingly in population {blank:38}.</p>",
+          "correctAnswers": {
+            "31": "genetic",
+            "32": "observation",
+            "33": "tools",
+            "34": "open",
+            "35": "stone",
+            "36": "symbols",
+            "37": "river",
+            "38": "density"
+          }
+        },
+        {
+          "blockId": "b_v3l1_39_40",
+          "type": "multiple_choice",
+          "subtype": "mcq_2_5",
+          "ids": [
+            39,
+            40
+          ],
+          "points": 2,
+          "instruction": "Questions 39 and 40\nChoose TWO letters, A–E.",
+          "text": "Which TWO topics about chimpanzees will the students discuss next week?",
+          "options": [
+            "A They are slower than human in different ways.",
+            "B They learn things by copying humans' behaviour.",
+            "C They develop behaviours generation by generation.",
+            "D They have very strong ability of logical thinking.",
+            "E They could be modified to adapt to the environment."
+          ],
+          "multi": true,
+          "correctAnswers": {
+            "39": "B They learn things by copying humans' behaviour.",
+            "40": "C They develop behaviours generation by generation."
+          }
+        }
+      ]
+    }
+  ]
+}

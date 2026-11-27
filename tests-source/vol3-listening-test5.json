@@ -1,0 +1,393 @@
+{
+  "id": "vol3_listening_test5",
+  "title": "Vol 3 Listening Test 5",
+  "module": "listening",
+  "topics": [
+    "Vol 3",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test5_sec1.m4a",
+      "text": "<p><b>OPERATOR:</b> Hello, you have reached the complaints department. How can I help you?</p><p><b>JACK:</b> Yes, hello there. I am phoning to make a complaint regarding a flight that I took with you recently.</p><p><b>OPERATOR:</b> OK. There are some details I will need to take from you first. May I have your name please?</p><p><b>JACK:</b> Jack Dawson. That's D-A-W-S-O-N.</p><p><b>OPERATOR:</b> And your address?</p><p><b>JACK:</b> It's 33 Hillcrest Road. That's H-1-double-L-C-R-E-S-T.</p><p><b>OPERATOR:</b> 33 Hillcrest Road. Is that in Exeter?</p><p><b>JACK:</b> Yes.</p><p><b>OPERATOR:</b> And what is the postcode of the residence?</p><p><b>JACK:</b> It's AL698GQ.</p><p><b>OPERATOR:</b> Thank you. Do you have a telephone number?</p><p><b>JACK:</b> Yes. The number at my office is 754688.</p><p><b>OPERATOR:</b> That's good, and may I just take a home phone number for you in case of emergencies?</p><p><b>JACK:</b> No problem. It's 798662.</p><p><b>OPERATOR:</b> Are they both local numbers?</p><p><b>JACK:</b> Yes.</p><p><b>OPERATOR:</b> OK great, thank you for your patience. Now what is the nature of your complaint?</p><p><b>JACK:</b> I'm phoning to complain about a flight I took recently. I always take certain measures to ensure that I will be comfortable. For example, I always pay the additional cost for extra legroom and I always arrive punctually for the flight to make sure that I am seated beneath an air conditioner. Unfortunately I was disappointed to find that the air conditioning on the plane was broken, so I spent the entire flight in discomfort as it was too hot and the air was stuffy.</p><p><b>OPERATOR:</b> I see. I do apologise for this fault with the air conditioning. Now short questionnaire regarding would You mind your recent flight? answering a OK, let's get What did , you think the 1 thought that it was inexpensive that I was still ver hun r afterwards and quite delicious. portion and more of a snack. Providing as it was a a snack for lunch small is not OK, 1 have noted that down. What quality of service that you received was your opinion of from our the The staffwere very helpful, but each timel re uest service it took a Ion time for ressed the button to found this frustrating as there just a staff member to arrive. I the flight to be able to serve all of the weren't enough staff on-board customers.</p><p><b>OPERATOR:</b> OK, that's great. Thank you very much for questions. Are there any other parts of answering those your travel experience that you would like to comment on? Yep. The process of moving through security was very quick and helped to make my travel experience stress-free.</p><p><b>OPERATOR:</b> Okay. Do you have any extra comments on the services you received during the flight?</p><p><b>JACK:</b> Yes, I thought that the seats were very uncomfortable and looked very old. They were also in need of repair as the reclined feature on my chair was broken so I could not go to sleep for the whole flight. Luckily the entertainment facilities were very good so I was able to distract myself by watching movies.</p><p><b>OPERATOR:</b> Thank you so much for taking the time to answer all of my questions, we would like to offer you some gifts as a goodwill gesture, with 20% discount on the cost of your hotel stay. We a also appreciate that international calls to your home country can that you would like to keep your be expensive and we are sure phone card, travels, so please accept a family updated on your which has a credit of €20. the gifts!</p><p><b>JACK:</b> Oh that's really great. Thank you so much for travel with us again</p><p><b>OPERATOR:</b> look forward to having you No problem, we di oues\"</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l5_1_3",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3
+          ],
+          "points": 3,
+          "instruction": "Questions 1–3\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.",
+          "text": "<h4>Customer Feedback</h4><p><i>Example: Name: Jack Dawson</i></p><p>• Address: {blank:1} Road, Exeter</p><p>• Postcode: {blank:2}</p><p>• Telephone: work: {blank:3} / home: 798662</p>",
+          "correctAnswers": {
+            "1": "33 Hillcrest",
+            "2": "AL698GQ",
+            "3": "754688"
+          }
+        },
+        {
+          "blockId": "b_v3l5_4",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            4
+          ],
+          "points": 1,
+          "text": "4 What aspect of the flight does the man complain about?",
+          "options": [
+            "A punctuality",
+            "B legroom",
+            "C temperature"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "4": "C temperature"
+          },
+          "instruction": "Questions 4–6\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v3l5_5",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            5
+          ],
+          "points": 1,
+          "text": "5 What does the man think about the food served during the flight?",
+          "options": [
+            "A It is not enough to eat.",
+            "B It is expensive.",
+            "C It has a bad taste."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "5": "A It is not enough to eat."
+          }
+        },
+        {
+          "blockId": "b_v3l5_6",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            6
+          ],
+          "points": 1,
+          "text": "6 What does the man think of the service of the staff?",
+          "options": [
+            "A satisfied",
+            "B long wait",
+            "C bad attitude"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "6": "B long wait"
+          }
+        },
+        {
+          "blockId": "b_v3l5_7_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 4,
+          "instruction": "Questions 7–10\nComplete the sentences below.\nWrite NO MORE THAN TWO WORDS for each answer.",
+          "text": "<p>7 The man felt satisfied with {blank:7} because it was quick.</p><p>8 During the flight, {blank:8} facilities helped him distract from other poor quality of the service.</p><p>9 As a gift, a 20% discount on the {blank:9} fees will be offered.</p><p>10 The flight company also offers the man a {blank:10} worth €20.</p>",
+          "correctAnswers": {
+            "7": "security",
+            "8": "entertainment",
+            "9": "hotel",
+            "10": "phone card"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test5_sec2.m4a",
+      "text": "<p><b>PRESENTER:</b> Good morning, listeners! And welcome back to Star Radio! Today on the show we have a visitor from Yazoo Car Rental who is going to give us an insight into his company and into the public transport system! Welcome Jonathan!</p><p><b>JONATHAN:</b> Thank you for having me. Yes, I would like to start by portion introducing my company Yazoo Car Rental. We are the cheapest and most reliable rental company in the city and have won multiple awards for the quality of our services. This success did not come easily, however, and it proved important that we stay fresh and are always thinking of ways to attract new customers. button Our first attempt to do this was to offer a free gift with every car rental, which we were confident the customers would be very interested in. The offer of a free hoover with each rental, Qll however, did not attract an new customers so we uite uickl stopped offering it. make opened next door to us and we losing a lot of business to them, so we introduced an started hoped might compete with their service. We offer that we package where you could rent a car with a driver offered a new fee. By introducing this offer, we found that all for a small extra referred to drive the cars themselves, so again of our customers this offer was unsuccessful in attracting more customers. Learning from these mistakes, we decided to offer a package service where the customer no longer had to come to our offices to pick up the rental car. Instead we could drop off and pick up the car anywhere in the city to make the customer's experience a lot more stress free. This offer was very popular and increased Qn our profits by 30%. In order to attract a younger demographic, we updated the models of cars that we offered for rental. We began offering more trendy cars such as minis and smart cars that we thought might appeal to the younger crowd and we also purchased them in more fun colours like reds and greens. This offer attracted some new customers of a younger age group, however not as many as we hoped. Next I decided to offer our services at a discounted price on our website where it could be seen by thousands of people. I thought that this could be a great way to attract a number of new customers who would never have heard of us before and it worked fantastically well. Following the success of the discount offer, we had so many customers that it became necessary to open a new branch of the company in the centre of the city. The cost of renting offices in the city centre was very high, so we hoped that our profits would justify this expensive decision. We made enough profit to keep our city centre offices open, but we had hoped for a greater increase in customer numbers.</p><p><b>JONATHAN:</b> Now for the second part of my talk, which is on the topic Of example, the recent introduction of bus to public transport, for lanes has buses are now unaffected by traffic jams and meant that schedule. Unfortunatel as fewer and fewer are able to stay on bus nowada s, the , service has become eo le are takin the uite inefficient. This reduction in passengers may be due to the newspaper about the dangers posed to pedestrian stories in the however this is largely untrue buses safety by the buses, as are responsible for far less pedestrian-related accidents than cars. I use the bus service often, as car petrol is so expensive nowadays that the bus is far more affordable. However, if I am in a rushl refer taxi as the tend to et ou to our destination to take (218 a ve uickl 3 so you can remain punctual for your appointments. I also very much enjoy flying to my destinations, as the service is incredibly fast and the airports are always very easy to find. Personally, my favourite mode of transportation is the bus. Due to the lack of people using the service I have found that the buses are never overcrowded so there is always a seat available. They are also never dirty as they get cleaned regularly. However, I have found that sometimes the bus can be over a half hour behind schedule which can be very frustrating. There has been a lot of fluctuation in the price of bus tickets in the last couple of years. In the past, El.80 for a ticket was enough to sustain the bus companies, however, as the price of fuel increased so did the ticket prices. Now the ticket prices are declining as the bus companies try to Q 20 encourage more people to use their service again. Well, that's all from me today. Thank you for listening. SECTION 2 Biff</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l5_11_16",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "points": 6,
+          "instruction": "Questions 11–16\nWhat is customers' attitude towards the following services?\nWrite the correct letter, A, B or C, next to questions 11–16.",
+          "text": "11 a free gift\n12 a driver for an extra fee\n13 a package service\n14 updated car models\n15 a discount\n16 a new branch company",
+          "options": [
+            "A They are very interested.",
+            "B They might be less interested.",
+            "C They are not interested."
+          ],
+          "correctAnswers": {
+            "11": "C They are not interested.",
+            "12": "C They are not interested.",
+            "13": "A They are very interested.",
+            "14": "B They might be less interested.",
+            "15": "A They are very interested.",
+            "16": "B They might be less interested."
+          }
+        },
+        {
+          "blockId": "b_v3l5_17",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            17
+          ],
+          "points": 1,
+          "text": "17 What is the problem of the public transport?",
+          "options": [
+            "A Traffic jams",
+            "B Pedestrian safety",
+            "C Low efficiency"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "17": "C Low efficiency"
+          },
+          "instruction": "Questions 17–20\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v3l5_18",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            18
+          ],
+          "points": 1,
+          "text": "18 According to the speaker, what is true about the transportation?",
+          "options": [
+            "A Buses are easy to find.",
+            "B Taxis are punctual.",
+            "C Airplanes are unaffordable."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "18": "B Taxis are punctual."
+          }
+        },
+        {
+          "blockId": "b_v3l5_19",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            19
+          ],
+          "points": 1,
+          "text": "19 According to the speaker, what is true about the bus?",
+          "options": [
+            "A Passengers occasionally spend more than half an hour waiting for it.",
+            "B It is sometimes overcrowded.",
+            "C It is often dirty."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "19": "A Passengers occasionally spend more than half an hour waiting for it."
+          }
+        },
+        {
+          "blockId": "b_v3l5_20",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            20
+          ],
+          "points": 1,
+          "text": "20 What is the existing situation about the price of bus tickets?",
+          "options": [
+            "A It is fluctuating severely.",
+            "B It is declining.",
+            "C It needs to be increased."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "20": "B It is declining."
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test5_sec3.m4a",
+      "text": "<p><b>ALEXANDRA:</b> Excuse me, Dr Thompson. May I speak to you for a minute? new 30 MR THOMPSON: Of course. Please come in.</p><p><b>ALEXANDRA:</b> I'm Alexandra Jones. I'm studying Business here at the university and for my assignment I have to carry out a survey of people who own their own organisations. I heard that you are the founder of your own company, and Itre I was wondering if I could ask you some questions about it.</p><p><b>MR THOMPSON:</b> Yes, of course, please fire away.</p><p><b>ALEXANDRA:</b> OK great, we'll get started! Did you encounter any problems whilst you were starting your company?</p><p><b>MR THOMPSON:</b> Actually it was not as hard as I anticipated. I started out with clear objectives, so I knew exactly what I wanted very difficult to find my corporate identity to be. It was very property market in London is the correct premises as the eventually I found the perfect site. The competitive, but late so I had to create m THOMPSON. tem impressive. Was it difficult dealing Yes, that is very With</p><p><b>ALEXANDRA:</b> staff'? tricky trying to satisfy a group of</p><p><b>THOMPSON:</b> It's always interests, however, I didn't encounter people MR with varying many problems. I found it very important to make the staff appreciated, so I hosted a staff day where we could feel introduce ourselves and get to know each other all individuals. I was also able to talk to them about the as type of work that they would be doing and gave them the ortuni to share with me the issues the had with the o ALEXANDRA: allocation of the work.</p><p><b>ALEXANDRA:</b> OK. Did you hire a management team or did you take on THOMPSOB the role ofthe manager?</p><p><b>THOMPSON:</b> Oh no, I already had enough tasks to take care of. 1 MR employed someone else to take on the role of the manager,</p><p><b>ALEXANDRA:</b> however, he never consulted me before making decisions THOMPSC» so I was forced to let him go and hire someone else. (223 MR</p><p><b>ALEXANDRA:</b> And what did the other staff think of the new manager?</p><p><b>MR THOMPSON:</b> They had a great deal of respect for him. It definitely ALEXANDRA: helped that I consulted with them before hiring him. They (224 THOMPSO were surprised that he has been so successful in his role at MR the company, despite the longer meeting hours.</p><p><b>ALEXANDRA:</b> Since the company opened, has it had any great achievements?</p><p><b>MR THOMPSON:</b> There are many aspects of the company that I am pleased with, however, there is one achievement of which I am particularly proud. I wanted a mural painted to brighten up our entrance area, so I decided it would be a great idea ALEXANDRA to invite the local primary school to create one for us. The MR THOMPS youngsters had a great time and I know they were thrilled to be included.</p><p><b>ALEXANDRA:</b> Oh, that's lovely.</p><p><b>ALEXANDR:</b> Have you encountered any major problems since you opened the company?</p><p><b>THOMPSON:</b> Yes, we are encountering issues with because it is very hard to find people who employment the roles that we were offering, but are qualified for no solution to this. One of our administrators unfortunately there is left to go on maternity leave, which also recently situation, however, we have put us in a tricky managed to find a temporary replacement for her. It's also now approaching when we must carry out our financial training the period find a venue with enough space to hold so I need to everyone. It will be interesting trying to organise that event! Oh gosh, I can imagine. I find it hard enough to organise myselfl</p><p><b>THOMPSON:</b> Organisation is a difficult thing to master, but it is also essential for success! Whilst I was learning how to stay organised, I realised that the role of motivation is essential. (227</p><p><b>ALEXANDRA:</b> OK, that's great!</p><p><b>THOMPSON:</b> I also suggest that you visit the library, as there is a section MR on culture that will have some very valuable material on how to develop your organisation skills.</p><p><b>ALEXANDRA:</b> OK, I'll head to the library when we're finished. n THOMPSON: I think you will find it very useful. They also have a collection of documentaries on the subject of personal organisation and I suggest that you look up the literature on management of change. I personally found these sources incredibly useful. Articles are also a valuable resource and we have a whole collection of them in our university library. I advise that you look at Section 2 where you will find articles on the nature of volunteering.</p><p><b>ALEXANDRA:</b> That's great, thank you so much for your help. 925 MRTHOMPSON: No problem. e,</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l5_21",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21 What was the most difficult problem when the company was founded?",
+          "options": [
+            "A No clear objectives",
+            "B No formal structures",
+            "C No perfect premises"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "21": "B No formal structures"
+          },
+          "instruction": "Questions 21–25\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v3l5_22",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22 What is the staff unsatisfied with?",
+          "options": [
+            "A The type of work",
+            "B The work assignment",
+            "C The feeling of appreciation"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "22": "B The work assignment"
+          }
+        },
+        {
+          "blockId": "b_v3l5_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23 What was the problem of the manager?",
+          "options": [
+            "A He had a lot of tasks to do.",
+            "B He employed too many people and let them go then.",
+            "C He always made decisions by himself."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "23": "C He always made decisions by himself."
+          }
+        },
+        {
+          "blockId": "b_v3l5_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 What does the staff think of the new manager of the company?",
+          "options": [
+            "A They are delighted to see that the meeting time is shorter.",
+            "B They feel annoyed toward him.",
+            "C They are amazed that he has done it well."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "C They are amazed that he has done it well."
+          }
+        },
+        {
+          "blockId": "b_v3l5_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25 What achievement has the organisation made already?",
+          "options": [
+            "A Children were involved in painting the entrance area.",
+            "B There was no particular achievement.",
+            "C It built a local primary school."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "25": "A Children were involved in painting the entrance area."
+          }
+        },
+        {
+          "blockId": "b_v3l5_26_30",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 5,
+          "instruction": "Questions 26–30\nComplete the summary below.\nWrite NO MORE THAN THREE WORDS for each answer.",
+          "text": "<h4>Major Problems of a Company</h4><p>Since the company opened, there have been many problems with employment, but there is no {blank:26}. He needs to find a venue for financial training. It is very hard to run an organisation and the {blank:27} is of great importance to staying organised. To enhance the organisation skills, there is a section on {blank:28} in the library where some valuable books can be found. In addition, the library contains some useful resources, such as a collection of documentaries on personal organisation, the literature on {blank:29}, and the articles on the {blank:30}.</p>",
+          "correctAnswers": {
+            "26": "solution",
+            "27": "role of motivation",
+            "28": "culture",
+            "29": "management of change",
+            "30": "nature of volunteering"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol3-audio/resolve/main/test5_sec4.m4a",
+      "text": "<p>Welcome class to your very first lecture in this series on Architecture conducted by myself, Dr Torben Dahl. Today we will be looking into the relationship ow Yetween climate and architecture, where I will be giving you a critical overview ofthe main climate influences that shape the design of buildings. Throughout this lecture series we will be looking at the latest research into climatic design caried out by experts in the field in addition to case studies and examples drawn from modernist practice both in cities and rural areas. very s no Now, acid rain is one of the climatic elements with the most devastating effects architecture.The chemicals in acid rain can cause paint to peel, corrosion Ofsteel structures such as bridges, and erosion of stone statues. Since the 1970s, ur government has been making great effort to reduce the release of these the chemicals into the atmosphere with positive results. Private organisations have also been raising and funds and recently received a huge donation look at the studies that have been carried out 032 the bank. It is interesting to altitudes. Research has shown that there the effects of acid rain at varying pollutants at higher altitudes, meaning into lower levels of acid in the damaging the negative effects as they are technolo are much less vulnerable to (233 that skyscrapers are levels of damaging pollutants. uages. exposed to acid rain with far lower happen founded to carry out further research into •Idiflgs fr Recently, the Alter Project was towards studying the effects of acid rain on acid rain. This project is directed construction that are vulnerable to damage (234 with: old, traditional buildings of stone particularly vulnerable as it is easily corroded 'tects caused by acid rain. Masonry is is imperative that we protect these iJl cours and weakened by the acidic chemicals. It espec valuable examples of our history and culture. Nitectsaun buildings, as they are</p><p>of concern in the present day. The wraps I Pollution is one of the main sources •toll... contributes considerably as a source of pollution in its construction industry building materials such as concrete and glass, day-to-day processes of creating sustainable methods are being developed to counter this. A however, more new Sky Tower, whose windows have been made from recent case study for this is recycled glass to prevent pollution from the glass-making process.</p><p>Water is the most problematic element to be considered in construction. It is imperative that construction elements such as the insulation are fitted into the Question building in dry weather to prevent it from getting wet. This makes winter an undesirable season for construction as the heavy rainfall can have adverse effects the building. Another climate type that has an enormous affect on buildings :limatic dt on is humidity. Constructions made of steel and stone are largely unaffected by ndernist humidity, however, it can have a serious effect on wooden constructions if the u citie timber has not been correctly treated. Moisture from the air can condense in the Questi( grain of the wood, which then swells and shrinks in proportion to the magnitude of change in its moisture content. This variation in size can have disastrous consequences. unk' , In areas of the world that are prone to earthquakes, certain design and Ques environmental conditions are preferable for protecting buildings in the event of a tremor. Engineers have come up with numerous building procedures to help minimise shaking in buildings. For example, tall buildings have height walls. are a cause for reinforced the soil is of the wrong density to worry in many constructions protect the foundations.</p><p>technology has now been developed (238 Seismic that can help to minimise eadhquakes. sensors can give prior damage happen so that preparations can be made warning when an earthquake is buildings from harm. The movement of building to protect both the people and and monitored over time by architects. structures can now also It has been within the design community that it expressed by for designing buildings would be valuable to be given within earthquake expected to be produced by the government in zones. Guidelines are universal checklist to follow. the near future that will give architects a</p><p>That wraps up the lecture for today. Please remember that mandatory... [fade out] attendance is</p>",
+      "questions": [
+        {
+          "blockId": "b_v3l5_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite NO MORE THAN TWO WORDS for each answer.",
+          "text": "<h4>CLIMATE AND ARCHITECTURE</h4><p>• Cases and examples from practice conducted in {blank:31} as well as rural areas.</p><p><b>Acid rain:</b><br>• The chemicals have devastating effects on the architecture.<br>• The government try to reduce the negative effects.<br>• Funds have been received from a {blank:32}.<br>• {blank:33} experience lower levels of acid in damaging pollutants.<br>• In recent years, Alter Project focuses on the buildings made of {blank:34}.</p><p><b>Pollution:</b><br>• One of the main sources of pollution is from the construction industry.<br>• {blank:35} is used to reduce pollution in Sky Tower.<br>• Construction is affected by the increased {blank:36} in winter.<br>• Humidity affects the {blank:37} buildings whose grain can be condensed by moisture from the air.</p><p><b>Building &amp; Technology:</b><br>• Ground conditions can be a problem when the density of the {blank:38} is wrong.<br>• Architects can now monitor the {blank:39} of buildings.<br>• The government should make {blank:40} for the architects.</p>",
+          "correctAnswers": {
+            "31": "cities",
+            "32": "bank",
+            "33": "Skyscrapers",
+            "34": "stone",
+            "35": "Recycled glass",
+            "36": "rainfall",
+            "37": "wooden",
+            "38": "soil",
+            "39": "movement",
+            "40": "guidelines"
+          }
+        }
+      ]
+    }
+  ]
+}
