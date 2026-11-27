@@ -31,8 +31,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Question 1 - 10\nPart 1\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nTour Booking Enquiry",
-          "text": "<p>• {blank:7} Cover: 230</p><p>• Premier cover: {blank:8}E</p><p>Transport:</p><p>to 2315</p><p>The cheapest way of going to airport: by {blank:9}</p><p>Payment method:</p><p>Pay by {blank:10}</p><p>no extra fee</p><p>Part 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p>",
+          "instruction": "Question 1 - 10\nPart 1\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer.",
+          "text": "<p>Tour Booking Enquiry Type of holiday: {blank:1}</p><p>Hotel:</p><p>• Meal: including {blank:2}</p><p>• Faclities: a pool, a nightclub and a {blank:3}</p><p>• Prices: reduce from {blank:4} E,</p><p>Self- catering Apartment:</p><p>Stay in a {blank:5} rom</p><p>Equipment Rental:</p><p>Rental for one week: {blank:6}</p><p>Types of Insurance:</p><p>• {blank:7} Cover: 230</p><p>• Premier cover: {blank:8} E</p><p>Transport:</p><p>to 2315 The cheapest way of going to airport: by {blank:9}</p><p>Payment method:</p><p>Pay by {blank:10} no extra fee Part 2</p>",
           "correctAnswers": {
             "1": "Surfing",
             "2": "Breakfast",
@@ -61,7 +61,7 @@
             11
           ],
           "points": 1,
-          "text": "11. Question 11",
+          "text": "11. Which TWO items will participants receive when they check in?",
           "options": [
             "A a class list",
             "B a face towel",
@@ -82,7 +82,7 @@
             12
           ],
           "points": 1,
-          "text": "12. Question 12",
+          "text": "12. Which TWO items will participants receive when they check in?",
           "options": [
             "A a class list",
             "B a face towel",
@@ -102,17 +102,18 @@
             13
           ],
           "points": 1,
-          "text": "13. Question 13",
+          "text": "13. Which TWO activities will be hosted in the first afternoon and evening?",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A costume making",
+            "B a musical show",
+            "C an informal dance",
+            "D a talk on dance history",
+            "E a dance test"
           ],
           "correctAnswers": {
-            "13": "C"
+            "13": "C an informal dance"
           },
-          "instruction": "Question 13 and 14\nChoose TWO letter, A- E\nWhich TWO activities will be hosted in the first afternoon and evening?\nA\nB"
+          "instruction": "Question 13 and 14\nChoose TWO letter, A- E\nWhich TWO activities will be hosted in the first afternoon and evening?\nA"
         },
         {
           "blockId": "b_ov1l6_14",
@@ -122,15 +123,16 @@
             14
           ],
           "points": 1,
-          "text": "14. Question 14",
+          "text": "14. Which TWO activities will be hosted in the first afternoon and evening?",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A costume making",
+            "B a musical show",
+            "C an informal dance",
+            "D a talk on dance history",
+            "E a dance test"
           ],
           "correctAnswers": {
-            "14": "D"
+            "14": "D a talk on dance history"
           }
         },
         {
@@ -156,7 +158,7 @@
           "correctAnswers": {
             "15": "C"
           },
-          "instruction": "Questions 15-20\nLabel the map below\nWrite the correct letter, A-J, next to Questions 15-20\nc\nPlan of Community Centre"
+          "instruction": "Questions 15-20\nLabel the map below\nWrite the correct letter, A-J, next to Questions 15-20\nc"
         },
         {
           "blockId": "b_ov1l6_16",
@@ -262,7 +264,7 @@
             20
           ],
           "points": 1,
-          "text": "20. store",
+          "text": "20. store Part 3",
           "options": [
             "A",
             "B",
@@ -294,8 +296,8 @@
             22
           ],
           "points": 2,
-          "instruction": "Questions 21-22\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nAssignment Feedback\nThings that need to be done:",
-          "text": "<p>Hand in book reports with the next assignment</p><p>Check accuracy of the {blank:21} in the last section</p><p>Give more {blank:22}</p><p>Expand ideas to improve the grade</p>",
+          "instruction": "Questions 21-22\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nAssignment Feedback",
+          "text": "<p>Things that need to be done:</p><p>Hand in book reports with the next assignment Check accuracy of the {blank:21} in the last section Give more {blank:22} Expand ideas to improve the grade</p>",
           "correctAnswers": {
             "21": "References",
             "22": "examples"
@@ -314,7 +316,7 @@
           ],
           "points": 5,
           "instruction": "Questions 23-27\nAnswer the questions below\nWrite NO MORE THAN THREE WORDS for each answer.",
-          "text": "<p>23 when will Karen give her presentation? {blank:23}</p><p>24 what must she do during the presentation? {blank:24}</p><p>25 by which date does she have to submit an abstract {blank:25}</p><p>26 where will the presentation take place? {blank:26}</p><p>27 who will grade her presentation? {blank:27}</p>",
+          "text": "<p>23 when will Karen give her presentation? {blank:23} 24 what must she do during the presentation? {blank:24} 25 by which date does she have to submit an abstract {blank:25} 26 where will the presentation take place? {blank:26} 27 who will grade her presentation? {blank:27}</p>",
           "correctAnswers": {
             "23": "next seminar",
             "24": "Explain (the) experiment",
@@ -331,7 +333,7 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. Which THREE modules will Karen study next year?",
           "options": [
             "A Communication Skills",
             "B Data",
@@ -340,7 +342,7 @@
             "E Phonology",
             "F Psy cholinguistics",
             "G Research Methodology",
-            "H Social interaction"
+            "H Social interaction SECTION 4"
           ],
           "correctAnswers": {
             "28": "A Communication Skills"
@@ -355,7 +357,7 @@
             29
           ],
           "points": 1,
-          "text": "29. Question 29",
+          "text": "29. Which THREE modules will Karen study next year?",
           "options": [
             "A Communication Skills",
             "B Data",
@@ -364,7 +366,7 @@
             "E Phonology",
             "F Psy cholinguistics",
             "G Research Methodology",
-            "H Social interaction"
+            "H Social interaction SECTION 4"
           ],
           "correctAnswers": {
             "29": "C Discourse Analysis"
@@ -378,7 +380,7 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. Which THREE modules will Karen study next year?",
           "options": [
             "A Communication Skills",
             "B Data",
@@ -387,7 +389,7 @@
             "E Phonology",
             "F Psy cholinguistics",
             "G Research Methodology",
-            "H Social interaction"
+            "H Social interaction SECTION 4"
           ],
           "correctAnswers": {
             "30": "F Psy cholinguistics"
@@ -417,8 +419,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31-40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nResearch on birds in Australia\nThe study Cunningham in 1995",
-          "text": "<p>Research attached tags to birds's legs to identify their {blank:34} over time.</p><p>Findings</p><p>Birds tended to choose the same nesting site in which they were raised</p><p>Human activities such {blank:35} Had a negative effect on the reproduction</p><p>of birds</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31-40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nResearch on birds in Australia",
+          "text": "<p>The study Cunningham in 1995 It aimed to study birds which were {blank:31} In cities</p><p>•</p><p>•</p><p>Methodology Researchers were able to {blank:32} rather than count the number of birds by some methods, such as random sampling. Researchs studied bird's companionship habits using a {blank:33} system. Research attached tags to birds's legs to identify their {blank:34} over time. Findings Birds tended to choose the same nesting site in which they were raised Human activities such {blank:35} Had a negative effect on the reproduction of birds</p><p>Question 36: {blank:36}</p><p>Question 37: {blank:37}</p><p>Question 38: {blank:38}</p><p>Question 39: {blank:39}</p><p>Question 40: {blank:40}</p>",
           "correctAnswers": {
             "31": "Protected",
             "32": "estimate",

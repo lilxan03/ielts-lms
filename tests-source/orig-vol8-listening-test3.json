@@ -29,12 +29,12 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1–10\nComplete the notes below.Write ONE WORD AND/OR A NUMBER for each answer.\nBeach Heads TravelCustomer Request Sheet\nExample\nName: Duncan WhiteGroup details: three adults and two children",
-          "text": "<p>Date of arrival: 1__________ (staying for 2 weeks)</p><p>Week One</p><p>Accommodation:• Book a 2__________ on the beach• Budge is around 3__________ a night</p><p>Activities:• The children want to go 4__________ – arrange for them to have a 5__________• Book a time for Susan and Jenny to play 6__________• Duncan wants to go 7__________ – send some information</p><p>Week Two</p><p>Accommodation: National Park- book a 8__________ ($100 per night)</p><p>Activities:• Arrange a 9__________ for Jenny• Send Duncan a 10__________ for Marco’s</p><p>SECTION 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 1–10\nComplete the notes below.Write ONE WORD AND/OR A NUMBER for each answer.\nBeach Heads TravelCustomer Request Sheet",
+          "text": "<p>Example Name: Duncan WhiteGroup details: three adults and two children Date of arrival: {blank:1} (staying for 2 weeks) Week One Accommodation:• Book a {blank:2} on the beach• Budge is around {blank:3} a night Activities:• The children want to go {blank:4} – arrange for them to have a {blank:5} • Book a time for Susan and Jenny to play {blank:6} • Duncan wants to go {blank:7} – send some information Week Two Accommodation: National Park- book a {blank:8} ($100 per night) Activities:• Arrange a {blank:9} for Jenny• Send Duncan a {blank:10} for Marco’s SECTION 2</p>",
           "correctAnswers": {
             "1": "October 15/October 15th/15 October/15th October",
             "2": "hotel",
-            "3": "175",
+            "3": "Câu số 4:",
             "4": "sailing",
             "5": "class",
             "6": "golf",
@@ -63,8 +63,8 @@
             15
           ],
           "points": 5,
-          "instruction": "Questions 11–15\nComplete the flow-chart below.Choose FIVE correct answers, A–I, next to the questions 11–15.\nHow to use City Cycle\nSubscribe to the service online to receive a card↓At the station, log on at the computer terminal↓Select a bike by using the 11__________↓Release the bike by using the 12__________ – of your chosen bike↓Remove the bike from the 13__________ (You have ten seconds.)↓Make sure you have a 14__________ before setting off↓At the end of your journey, return the bike to a station and secure in place(A 15__________ – will tell you the bike is locked correctly)",
-          "text": "<p>A buttonB websiteC helmetD lightE lockerF passwordG rackH screenI sound</p><p>SECTION 3</p><p>Q11: {blank:11}</p><p>Q12: {blank:12}</p><p>Q13: {blank:13}</p><p>Q14: {blank:14}</p><p>Q15: {blank:15}</p>",
+          "instruction": "Questions 11–15\nComplete the flow-chart below.Choose FIVE correct answers, A–I, next to the questions 11–15.\nHow to use City Cycle",
+          "text": "<p>Subscribe to the service online to receive a card↓At the station, log on at the computer terminal↓Select a bike by using the {blank:11} ↓Release the bike by using the {blank:12} – of your chosen bike↓Remove the bike from the {blank:13} (You have ten seconds.)↓Make sure you have a {blank:14} before setting off↓At the end of your journey, return the bike to a station and secure in place(A {blank:15} – will tell you the bike is locked correctly) A buttonB websiteC helmetD lightE lockerF passwordG rackH screenI sound SECTION 3</p>",
           "correctAnswers": {
             "11": "H screen",
             "12": "A button",
@@ -95,7 +95,7 @@
           "correctAnswers": {
             "16": "E"
           },
-          "instruction": "Questions 16–20\nLable the plan below.\nChoose the correct letter, A-H, next to questions 16-20."
+          "instruction": "Questions 16–20\nLable the plan below.\nChoose the correct letter, A-H, next to questions 16-20."
         },
         {
           "blockId": "l3p2_17",
@@ -174,7 +174,7 @@
             20
           ],
           "points": 1,
-          "text": "20. Towel",
+          "text": "20. Towel SECTION 3",
           "options": [
             "A",
             "B",
@@ -206,8 +206,8 @@
             23
           ],
           "points": 3,
-          "instruction": "Read the text and answer questions 21–30\nQuestions 21–23Complete the notes below.Write ONE WORD ONLY for each answer.\nProducts using renewable energy sources\na) Kites produced by German companyare attached to ships by long cablescan use wind power in any 21__________could reduce toxic emissions by 50%\nb) Sports car produced by US companyuses 22__________ as a power sourcewill have zero emissions",
-          "text": "<p>c) Ethanol stoves produced in South Africaare safer than paraffin stoves as less likely to 23__________</p><p>Q21: {blank:21}</p><p>Q22: {blank:22}</p><p>Q23: {blank:23}</p>",
+          "instruction": "Read the text and answer questions 21–30\nQuestions 21–23Complete the notes below.Write ONE WORD ONLY for each answer.\nProducts using renewable energy sources",
+          "text": "<p>a) Kites produced by German companyare attached to ships by long cablescan use wind power in any {blank:21} could reduce toxic emissions by 50% b) Sports car produced by US companyuses {blank:22} as a power sourcewill have zero emissions c) Ethanol stoves produced in South Africaare safer than paraffin stoves as less likely to {blank:23}</p>",
           "correctAnswers": {
             "21": "weather",
             "22": "electricity",
@@ -222,7 +222,7 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. 24–25 Who will Sylvia and Greg ask to take part in the survey?",
           "options": [
             "A",
             "B",
@@ -233,7 +233,7 @@
           "correctAnswers": {
             "24": "C"
           },
-          "instruction": "Questions 24–25\nChoose TWO correct answers.\n24–25 Who will Sylvia and Greg ask to take part in the survey?\ncompanies\nlecturers"
+          "instruction": "Questions 24–25\nChoose TWO correct answers.\n24–25 Who will Sylvia and Greg ask to take part in the survey?\ncompanies"
         },
         {
           "blockId": "l3p3_25",
@@ -243,7 +243,7 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. 24–25 Who will Sylvia and Greg ask to take part in the survey?",
           "options": [
             "A",
             "B",
@@ -263,7 +263,7 @@
             26
           ],
           "points": 1,
-          "text": "26. What does Sylvia say about people's knowledge of renewable energy?",
+          "text": "26. What does Sylvia say about people's knowledge of renewable energy? Many people know little about it. People understand it because it has been in the news recently People are eager to find out more about it",
           "options": [
             "A",
             "B",
@@ -283,7 +283,7 @@
             27
           ],
           "points": 1,
-          "text": "27. What do Sylvia and Greg decide to ask about traditional energy consumption?",
+          "text": "27. What do Sylvia and Greg decide to ask about traditional energy consumption? the best way of preventing pollution possible future developments how expensive people find it",
           "options": [
             "A",
             "B",
@@ -302,7 +302,7 @@
             28
           ],
           "points": 1,
-          "text": "28. What does Greg say about nuclear power?",
+          "text": "28. What does Greg say about nuclear power? It is not important for their survey People today have a positive attitude towards it. Some people think it is unsafe",
           "options": [
             "A",
             "B",
@@ -321,7 +321,7 @@
             29
           ],
           "points": 1,
-          "text": "29. What do Sylvia and Greg agree about the cost of renewable energy ?",
+          "text": "29. What do Sylvia and Greg agree about the cost of renewable energy ? Prices will drop in the future People won't pay the high price The benefits outweigh the high cost",
           "options": [
             "A",
             "B",
@@ -340,7 +340,7 @@
             30
           ],
           "points": 1,
-          "text": "30. Sylvia and Greg agree that modern windmills",
+          "text": "30. Sylvia and Greg agree that modern windmills are the most efficient way of harnessing energy should be put in carefully selected locations make the landscape look unattractive",
           "options": [
             "A",
             "B",
@@ -375,8 +375,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31–40\nComplete the notes below.Write ONE WORD ONLY for each answer.\nAbsence from work\nAbsence may be frequent or occasional.\nMain factors involved• a the 31__________ of employees (e.g. females are likely to have responsibility for children)• employees’ 32__________ (but the evidence is inconclusive)• the 33__________ of the organization (absenteeism may be acceptable)• the type of work (higher absence among employees in 34__________)• the 35__________ of an employees work group",
-          "text": "<p>Public sector versus private sector</p><p>Public sector has higher absence levels</p><p>Possible explanation – the public sector is less 36__________</p><p>Systems may be more bureaucratic because of 37__________ factors (e.g. state controls)</p><p>More recent literature suggests public sector organisations usually• have a 38__________ workforce• have more female and more older employees• provide 39__________ for longer, with fewer restrictions• are less likely to 40__________ employer</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31–40\nComplete the notes below.Write ONE WORD ONLY for each answer.\nAbsence from work\nAbsence may be frequent or occasional.",
+          "text": "<p>Main factors involved• a the {blank:31} of employees (e.g. females are likely to have responsibility for children)• employees’ {blank:32} (but the evidence is inconclusive)• the {blank:33} of the organization (absenteeism may be acceptable)• the type of work (higher absence among employees in {blank:34} )• the {blank:35} of an employees work group Public sector versus private sector Public sector has higher absence levels Possible explanation – the public sector is less {blank:36} Systems may be more bureaucratic because of {blank:37} factors (e.g. state controls) More recent literature suggests public sector organisations usually• have a {blank:38} workforce• have more female and more older employees• provide {blank:39} for longer, with fewer restrictions• are less likely to {blank:40} employer</p>",
           "correctAnswers": {
             "31": "gender",
             "32": "attitude",

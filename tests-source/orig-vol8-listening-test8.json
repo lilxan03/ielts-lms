@@ -25,8 +25,8 @@
             6
           ],
           "points": 6,
-          "instruction": "Questions 1–6 ver. 56120\nComplete the sentences below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nProblems with flat\nElinor has been in the flat for 3 months.Elinor shares the flat with her 1 ……….    Elinor must contact the landlord's 2 …….  about the repairs.",
-          "text": "<p>The repairs cannot be started until next week.Elinor may have to pay £ 3 ……… towards some repairs.The agent suggests that Elinor should contact a 4 ………. for urgent repairs.Elinor can be contacted on her 5 ………. number.Elinor will need to sign the 6 ………..  after the repairs are completed.</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p>",
+          "instruction": "Questions 1–6 ver. 56120\nComplete the sentences below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nProblems with flat",
+          "text": "<p>Elinor has been in the flat for 3 months.Elinor shares the flat with her {blank:1} Elinor must contact the landlord's {blank:2} about the repairs. The repairs cannot be started until next week.Elinor may have to pay £ {blank:3} towards some repairs.The agent suggests that Elinor should contact a {blank:4} for urgent repairs.Elinor can be contacted on her {blank:5} number.Elinor will need to sign the {blank:6} after the repairs are completed.</p>",
           "correctAnswers": {
             "1": "cousin",
             "2": "service manager",
@@ -103,10 +103,10 @@
           "options": [
             "A the paintwork",
             "B the glue",
-            "C the carpet"
+            "C the carpet SECTION 2"
           ],
           "correctAnswers": {
-            "10": "C the carpet"
+            "10": "C the carpet SECTION 2"
           }
         }
       ]
@@ -233,7 +233,7 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. 17-18 Which TWO free things does the family ticket on the steam train include?",
           "options": [
             "A an educational talk",
             "B a children's book",
@@ -244,7 +244,7 @@
           "correctAnswers": {
             "17": "B a children's book"
           },
-          "instruction": "Questions 17–18\nChoose TWO correct answers.\n17-18 Which TWO free things does the family ticket on the steam train include?"
+          "instruction": "Questions 17–18\nChoose TWO correct answers.\n17-18 Which TWO free things does the family ticket on the steam train include?"
         },
         {
           "blockId": "l8p2_18",
@@ -254,7 +254,7 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. 17-18 Which TWO free things does the family ticket on the steam train include?",
           "options": [
             "A an educational talk",
             "B a children's book",
@@ -274,18 +274,18 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. 19-20 Which TWO things apply when voting for Our Favourite Place?",
           "options": [
             "A People of any age may vote.",
             "B You may send in your vote by email.",
             "C Only local residents may vote.",
             "D You may vote several times.",
-            "E Voting ends at midnight on Saturday"
+            "E Voting ends at midnight on Saturday SECTION 3"
           ],
           "correctAnswers": {
             "19": "A People of any age may vote."
           },
-          "instruction": "Questions 19–20\nChoose TWO correct answers.\n19-20 Which TWO things apply when voting for Our Favourite Place?"
+          "instruction": "Questions 19–20\nChoose TWO correct answers.\n19-20 Which TWO things apply when voting for Our Favourite Place?"
         },
         {
           "blockId": "l8p2_20",
@@ -295,13 +295,13 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. 19-20 Which TWO things apply when voting for Our Favourite Place?",
           "options": [
             "A People of any age may vote.",
             "B You may send in your vote by email.",
             "C Only local residents may vote.",
             "D You may vote several times.",
-            "E Voting ends at midnight on Saturday"
+            "E Voting ends at midnight on Saturday SECTION 3"
           ],
           "correctAnswers": {
             "20": "D You may vote several times."
@@ -331,8 +331,8 @@
             30
           ],
           "points": 10,
-          "instruction": "Questions 21–30\nComplete the notes below.\nWrite NO MORE THAN THREE WORDS for each answer.\nNOTES ON PRESENTATION AND FEEDBACK\nTimingLikely period for presentation:     14th - 24th June Time of day:                                 21 ………….",
-          "text": "<p>FormatFirst part:                                      40-minute presentation to the  22 ………….</p><p>Second part:                                  20-minute interview with Dr Brown</p><p>RequirementsMust bring to discussion:                  - material used in presentation</p><p>-  23 ……….                                                            -  24 ………..                                                           - book list</p><p>Feedback (given during interview)Students will receive:                         -  25 ……….</p><p>- thinking questions'</p><p>CriteriaGood projects will show the student:        - has done 26 …………                                                                       - has ability to  27 …………</p><p>- has ability to present  28 ……………</p><p>Next stageStage Two:                                                 - produce 29 …………..                                                                       - do data analysis</p><p>Further information from website:            www 30 ……….  com</p><p>SECTION 4</p><p>Q21: {blank:21}</p><p>Q22: {blank:22}</p><p>Q23: {blank:23}</p><p>Q24: {blank:24}</p><p>Q25: {blank:25}</p><p>Q26: {blank:26}</p><p>Q27: {blank:27}</p><p>Q28: {blank:28}</p><p>Q29: {blank:29}</p><p>Q30: {blank:30}</p>",
+          "instruction": "Questions 21–30\nComplete the notes below.\nWrite NO MORE THAN THREE WORDS for each answer.",
+          "text": "<p>NOTES ON PRESENTATION AND FEEDBACK TimingLikely period for presentation: 14th - 24th June Time of day: {blank:21} FormatFirst part: 40-minute presentation to the {blank:22} Second part: 20-minute interview with Dr Brown RequirementsMust bring to discussion: - material used in presentation</p><p>- {blank:23} - {blank:24} - book list</p><p>Feedback (given during interview)Students will receive: - {blank:25}</p><p>- thinking questions'</p><p>CriteriaGood projects will show the student: - has done {blank:26} - has ability to {blank:27}</p><p>- has ability to present {blank:28}</p><p>Next stageStage Two: - produce {blank:29} - do data analysis Further information from website: www {blank:30} com SECTION 4</p>",
           "correctAnswers": {
             "21": "early evening",
             "22": "seminar group",
@@ -369,8 +369,8 @@
             39
           ],
           "points": 9,
-          "instruction": "Questions 31–39\nComplete the table below.\nWrite NO MORE THAN TWO WORDS for each answer.\nResearch in child psychology\nPast | Present",
-          "text": "<p>Three aspects of development: social, cognitive, emotional. | These aspects now regarded as being 31 ………..</p><p>Behaviour was studied in artificial contexts. Example: 32 ……… (was related to behaviour of animals in 33 ………….) | Awareness that child's behaviour is influenced by his/her 34 ……… and the situation he/she is in.</p><p>Child was seen as being 35 ………. Parents were held responsible for way child developed. | No direct link between early influences and child's 36 ……….</p><p>Influence of Piaget: Young children were believed to be 37 ………… | Influence of Harriet Reingold: Examples show that children are aware of other people.</p><p>Psychologist did not take culture into account. Example: importance of 38 ………….. for babies. | Guatemalan study - babies are kept in the 39 ………… for first year → no effect on later development</p><p>Questions 40</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p>",
+          "instruction": "Questions 31–39\nComplete the table below.\nWrite NO MORE THAN TWO WORDS for each answer.\nResearch in child psychology",
+          "text": "<p>Past | Present</p><p>Three aspects of development: social, cognitive, emotional. | These aspects now regarded as being {blank:31}</p><p>Behaviour was studied in artificial contexts. Example: {blank:32} (was related to behaviour of animals in {blank:33} ) | Awareness that child's behaviour is influenced by his/her {blank:34} and the situation he/she is in.</p><p>Child was seen as being {blank:35} Parents were held responsible for way child developed. | No direct link between early influences and child's {blank:36}</p><p>Influence of Piaget: Young children were believed to be {blank:37} | Influence of Harriet Reingold: Examples show that children are aware of other people.</p><p>Psychologist did not take culture into account. Example: importance of {blank:38} for babies. | Guatemalan study - babies are kept in the {blank:39} for first year → no effect on later development</p>",
           "correctAnswers": {
             "31": "connected",
             "32": "learning",
@@ -400,7 +400,7 @@
           "correctAnswers": {
             "40": "C development before birth."
           },
-          "instruction": "Choose the correct answer."
+          "instruction": "Questions 40\nChoose the correct answer."
         }
       ]
     }

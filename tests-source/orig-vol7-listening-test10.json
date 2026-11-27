@@ -29,8 +29,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1–10\nComplete the form below.\nWrite ONE WORD AND/OR NUMBER for each answer.\nBuilding Work\nAddress: 15 Hill Street",
-          "text": "<p>Contact information</p><p>o Name: Sally 1……..</p><p>o phone: 027 584 6613</p><p>Kitchen</p><p>o needs a bigger window</p><p>o the kitchen is too hot – fit a 2………..</p><p>Bathroom</p><p>o put in a 3……… on the back wall</p><p>o decide the 4……… of the small tiles later</p><p>Outside</p><p>o put a higher 5………. in the garden</p><p>o put a new 6………… on the garage door</p><p>o fix the roof – it was damaged by a 7…………..</p><p>o fit a new rain gutter made of 8………..</p><p>Other information</p><p>o start date: 9………..</p><p>o security code: 10……….</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 1–10\nComplete the form below.\nWrite ONE WORD AND/OR NUMBER for each answer.\nBuilding Work",
+          "text": "<p>Address: 15 Hill Street Contact information o Name: Sally {blank:1} o phone: 027 584 6613 Kitchen o needs a bigger window o the kitchen is too hot – fit a {blank:2} Bathroom o put in a {blank:3} on the back wall o decide the {blank:4} of the small tiles later Outside o put a higher {blank:5} in the garden o put a new {blank:6} on the garage door o fix the roof – it was damaged by a {blank:7} o fit a new rain gutter made of {blank:8} Other information o start date: {blank:9} o security code: {blank:10}</p>",
           "correctAnswers": {
             "1": "Keyworth",
             "2": "fan",
@@ -78,14 +78,14 @@
             12
           ],
           "points": 1,
-          "text": "12. Which facilities at the trail rest stations has been added as a",
+          "text": "12. Which facilities at the trail rest stations has been added as a result of a user survey?",
           "options": [
-            "A electric recharge points",
-            "B picnic areas",
-            "C maps and other information"
+            "A see many different plants.",
+            "B enjoy spectacular scenic views.",
+            "C identify a wide range of birds."
           ],
           "correctAnswers": {
-            "12": "C maps and other information"
+            "12": "C identify a wide range of birds."
           }
         },
         {
@@ -132,22 +132,21 @@
             15
           ],
           "points": 1,
-          "text": "15. Question 15",
+          "text": "15. dormitory beds",
           "options": [
-            "A only at weekends",
-            "B voluntary donation expected",
-            "C not yet available",
-            "D help from guests requested",
-            "E provided free",
-            "F advance booking required",
-            "G new equipment",
-            "H available on first-come-first-served basic",
-            "I special rate for children"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "15": "H available on first-come-first-served basic"
+            "15": "H"
           },
-          "instruction": "Questions 15–20\nWhich information is given about each of the following facilities at the\nHalfway Hostel?\nChoose SIX correct answers, A-I, next to questions 15-20.\nInformation"
+          "instruction": "Questions 15–20\nWhich information is given about each of the following facilities at the\nHalfway Hostel?\nChoose SIX correct answers, A-I, next to questions 15-20."
         },
         {
           "blockId": "l10p2_16",
@@ -157,20 +156,19 @@
             16
           ],
           "points": 1,
-          "text": "16. Question 16",
+          "text": "16. family rooms",
           "options": [
-            "A only at weekends",
-            "B voluntary donation expected",
-            "C not yet available",
-            "D help from guests requested",
-            "E provided free",
-            "F advance booking required",
-            "G new equipment",
-            "H available on first-come-first-served basic",
-            "I special rate for children"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "16": "F advance booking required"
+            "16": "F"
           }
         },
         {
@@ -181,20 +179,19 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. clothes washing",
           "options": [
-            "A only at weekends",
-            "B voluntary donation expected",
-            "C not yet available",
-            "D help from guests requested",
-            "E provided free",
-            "F advance booking required",
-            "G new equipment",
-            "H available on first-come-first-served basic",
-            "I special rate for children"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "17": "G new equipment"
+            "17": "G"
           }
         },
         {
@@ -205,20 +202,19 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. meals",
           "options": [
-            "A only at weekends",
-            "B voluntary donation expected",
-            "C not yet available",
-            "D help from guests requested",
-            "E provided free",
-            "F advance booking required",
-            "G new equipment",
-            "H available on first-come-first-served basic",
-            "I special rate for children"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "18": "D help from guests requested"
+            "18": "D"
           }
         },
         {
@@ -229,20 +225,19 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. hot showers",
           "options": [
-            "A only at weekends",
-            "B voluntary donation expected",
-            "C not yet available",
-            "D help from guests requested",
-            "E provided free",
-            "F advance booking required",
-            "G new equipment",
-            "H available on first-come-first-served basic",
-            "I special rate for children"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "19": "E provided free"
+            "19": "E"
           }
         },
         {
@@ -253,7 +248,7 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. bicycle rental",
           "options": [
             "A only at weekends",
             "B voluntary donation expected",
@@ -284,7 +279,7 @@
             21
           ],
           "points": 1,
-          "text": "21. What do Pam and Jason primarily hope to learn more about",
+          "text": "21. What do Pam and Jason primarily hope to learn more about from their project?",
           "options": [
             "A maximizing profits",
             "B minimizing environmental damage",
@@ -303,7 +298,7 @@
             22
           ],
           "points": 1,
-          "text": "22. Which issue about packaging do Pam and Jason feel is most",
+          "text": "22. Which issue about packaging do Pam and Jason feel is most important to food shoppers today?",
           "options": [
             "A providing information about contents",
             "B extending the useful life of products",
@@ -321,7 +316,7 @@
             23
           ],
           "points": 1,
-          "text": "23. Why have Pam and Jason decided to concentrate specifically on",
+          "text": "23. Why have Pam and Jason decided to concentrate specifically on large supermarkets?",
           "options": [
             "A They are the subjects of previously published studies.",
             "B They are the most profitable food retail businesses.",
@@ -339,7 +334,7 @@
             24
           ],
           "points": 1,
-          "text": "24. The professor says that the local population has unusual food-",
+          "text": "24. The professor says that the local population has unusual food- shopping habits because of",
           "options": [
             "A its range of nationalities",
             "B its high education level",
@@ -375,7 +370,7 @@
             26
           ],
           "points": 1,
-          "text": "26. Question 26",
+          "text": "26. the number of different designs offered",
           "options": [
             "A refer to course notes",
             "B widen the choice",
@@ -388,7 +383,7 @@
           "correctAnswers": {
             "26": "B widen the choice"
           },
-          "instruction": "Questions 26–30\nWhat action do Pam and Jason agree to take for each of the following\naspects of their experiment?\nChoose FIVE correct answers, A-G, next to questions 26-30.\nAgreed actions"
+          "instruction": "Questions 26–30\nWhat action do Pam and Jason agree to take for each of the following\naspects of their experiment?\nChoose FIVE correct answers, A-G, next to questions 26-30."
         },
         {
           "blockId": "l10p3_27",
@@ -398,7 +393,7 @@
             27
           ],
           "points": 1,
-          "text": "27. Question 27",
+          "text": "27. the sample size of students",
           "options": [
             "A refer to course notes",
             "B widen the choice",
@@ -420,7 +415,7 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. how to display the packages",
           "options": [
             "A refer to course notes",
             "B widen the choice",
@@ -442,7 +437,7 @@
             29
           ],
           "points": 1,
-          "text": "29. Question 29",
+          "text": "29. finding the reasons for students' choices",
           "options": [
             "A refer to course notes",
             "B widen the choice",
@@ -464,7 +459,7 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. analysis of data collected",
           "options": [
             "A refer to course notes",
             "B widen the choice",
@@ -502,8 +497,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nScience in the Future\nScience were asked to predict changes in their own field in the next 50",
-          "text": "<p>years</p><p>Computer science</p><p>The invention of computers is as significant as the discovery of how to</p><p>create and use 31………… .</p><p>Computer will be seen as being 32……….. .</p><p>Psychology</p><p>Research will become much more 33…………… , and also more</p><p>practical since more 34…………… will be working in the field.</p><p>Imaging devices will give information about the behaviour of</p><p>the 35……….. .</p><p>Genetics</p><p>With increased life expectancy, it is important to consider</p><p>the 36…………. of elderly people’s lives.</p><p>Knowledge of a person’s genome will indicate whether they are likely to</p><p>be affected by a 37…………. .</p><p>The approach to treatment will be on an increasingly 38……….. basis.</p><p>Zoology</p><p>People can explore the world via satellite.</p><p>For example, it is possible to see the effects of the destruction</p><p>of 39………. in East Africa.</p><p>Such increased awareness should enable us to do more to look after</p><p>the 40………… .</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nScience in the Future",
+          "text": "<p>Science were asked to predict changes in their own field in the next 50 years Computer science The invention of computers is as significant as the discovery of how to create and use {blank:31} . Computer will be seen as being {blank:32} . Psychology Research will become much more {blank:33} , and also more practical since more {blank:34} will be working in the field. Imaging devices will give information about the behaviour of the {blank:35} . Genetics With increased life expectancy, it is important to consider the {blank:36} of elderly people’s lives. Knowledge of a person’s genome will indicate whether they are likely to be affected by a {blank:37} . The approach to treatment will be on an increasingly {blank:38} basis. Zoology People can explore the world via satellite. For example, it is possible to see the effects of the destruction of {blank:39} in East Africa. Such increased awareness should enable us to do more to look after the {blank:40} .</p>",
           "correctAnswers": {
             "31": "fire",
             "32": "intelligent",

@@ -29,8 +29,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1–10\nComplete the notes below\nWrite ONE WORD AND/OR A NUMBER for each answer.\nPlanning a party\nExample",
-          "text": "<p>Reason for event: wife’s promotion</p><p>EVENT DETAILS</p><p>Event option: large surprise party</p><p>Number of people: 1……..</p><p>Date: 2……..</p><p>Day of week: Friday</p><p>Time: 6 – 10 p.m.</p><p>Location: the 3……… Room</p><p>Type of music 4………</p><p>FOOD</p><p>Service option 5……….</p><p>Flavour of cake: 6……….</p><p>Message on cake: 7………</p><p>PAYMENT</p><p>Reservation fee paid: $100</p><p>Credit card type: Mastercard</p><p>Credit card number: 8………</p><p>Name: Brian 9………. Troy</p><p>Additional fees: extra charge for 10……….</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 1–10\nComplete the notes below\nWrite ONE WORD AND/OR A NUMBER for each answer.\nPlanning a party",
+          "text": "<p>Example Reason for event: wife’s promotion EVENT DETAILS Event option: large surprise party Number of people: {blank:1} Date: {blank:2} Day of week: Friday Time: 6 – 10 p.m. Location: the {blank:3} Room Type of music {blank:4} FOOD Service option {blank:5} Flavour of cake: {blank:6} Message on cake: {blank:7} PAYMENT Reservation fee paid: $100 Credit card type: Mastercard Credit card number: {blank:8} Name: Brian {blank:9} Troy Additional fees: extra charge for {blank:10}</p>",
           "correctAnswers": {
             "1": "80",
             "2": "26 September",
@@ -97,8 +97,8 @@
             14
           ],
           "points": 2,
-          "instruction": "Questions 13–14\nComplete the summary below\nWrite ONE WORD AND/OR A NUMBER for each answer.\nJoan’s official title in Riding for the Disabled (RDA) is chairperson. In\nher local district there are at present twenty-two riders and 13……..",
-          "text": "<p>helpers on the volunteer list, out of whom 14……… come regularly.</p><p>Q13: {blank:13}</p><p>Q14: {blank:14}</p>",
+          "instruction": "Questions 13–14\nComplete the summary below\nWrite ONE WORD AND/OR A NUMBER for each answer.\nJoan’s official title in Riding for the Disabled (RDA) is chairperson. In",
+          "text": "<p>her local district there are at present twenty-two riders and {blank:13} helpers on the volunteer list, out of whom {blank:14} come regularly.</p>",
           "correctAnswers": {
             "13": "40",
             "14": "25"
@@ -116,7 +116,7 @@
           "options": [
             "A She really likes it.",
             "B She doesn’t mind it.",
-            "C She hates it.",
+            "C She hates it. Activities",
             "D"
           ],
           "correctAnswers": {
@@ -136,11 +136,11 @@
           "options": [
             "A She really likes it.",
             "B She doesn’t mind it.",
-            "C She hates it.",
+            "C She hates it. Activities",
             "D"
           ],
           "correctAnswers": {
-            "16": "C She hates it."
+            "16": "C She hates it. Activities"
           }
         },
         {
@@ -155,7 +155,7 @@
           "options": [
             "A She really likes it.",
             "B She doesn’t mind it.",
-            "C She hates it.",
+            "C She hates it. Activities",
             "D"
           ],
           "correctAnswers": {
@@ -174,26 +174,44 @@
           "options": [
             "A She really likes it.",
             "B She doesn’t mind it.",
-            "C She hates it.",
+            "C She hates it. Activities",
             "D"
           ],
           "correctAnswers": {
-            "18": "C She hates it."
+            "18": "C She hates it. Activities"
           }
         },
         {
-          "blockId": "l3p2_19_20",
+          "blockId": "l3p2_19",
+          "type": "multiple_choice",
+          "subtype": "multiple_choice",
+          "ids": [
+            19
+          ],
+          "points": 1,
+          "text": "19. Question 19",
+          "options": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "correctAnswers": {
+            "19": "B"
+          },
+          "instruction": "Questions 19 ,20"
+        },
+        {
+          "blockId": "l3p2_20_20",
           "type": "fill_blanks",
           "subtype": "fill_blanks",
           "ids": [
-            19,
             20
           ],
-          "points": 2,
+          "points": 1,
           "instruction": "Choose TWO correct answers.\n19-20 Joan says the TWO ways the RDA needs to improve are by",
-          "text": "<p>A giving special training.</p><p>B making fund-raising more effective.</p><p>C opening more RDA centres.</p><p>D providing more helpers.</p><p>E recognising difficulties of disabled riders</p><p>Q19: {blank:19}</p><p>Q20: {blank:20}</p>",
+          "text": "<p>A giving special training.</p><p>B making fund-raising more effective.</p><p>C opening more RDA centres.</p><p>D providing more helpers.</p><p>E recognising difficulties of disabled riders</p><p>Question 20: {blank:20}</p>",
           "correctAnswers": {
-            "19": "B",
             "20": "E              —"
           }
         }
@@ -212,7 +230,7 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. 21-22 Which TWO topics were the aims of the geography lesson",
           "options": [
             "A global interdependency",
             "B manufacturing method",
@@ -233,7 +251,7 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. 21-22 Which TWO topics were the aims of the geography lesson",
           "options": [
             "A global interdependency",
             "B manufacturing method",
@@ -253,7 +271,7 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. 23-24 Which TWO problems do Dean and Hannah identify in their",
           "options": [
             "A the materials",
             "B the student grouping",
@@ -274,7 +292,7 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. 23-24 Which TWO problems do Dean and Hannah identify in their",
           "options": [
             "A the materials",
             "B the student grouping",
@@ -296,19 +314,19 @@
           "points": 1,
           "text": "25. Question 25",
           "options": [
-            "A export routes",
-            "B future",
-            "C talk",
-            "D homework",
-            "E worksheet",
-            "F history",
-            "G producers",
-            "H methods of transport"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "25": "G producers"
+            "25": "G"
           },
-          "instruction": "Questions 25–30\nComplete the flow - chart below.\nChoose SIX correct answers, A-H, next to questions 25–30.\nGeography lesson plan: student activities\nExamine a pencil and discuss where the component materials come from"
+          "instruction": "Questions 25–30\nComplete the flow - chart below.\nChoose SIX correct answers, A-H, next to questions 25–30.\nGeography lesson plan: student activities"
         },
         {
           "blockId": "l3p3_26",
@@ -318,19 +336,19 @@
             26
           ],
           "points": 1,
-          "text": "26. Question 26",
+          "text": "26. Discuss the pros and cons of different ↓ In groups, discuss countries' possible 27……..  to the USA ↓ Complete a 28……..  about pencil distribute a within the USA. ↓ Share ideas about the 29……..  of pencils. ↓",
           "options": [
-            "A export routes",
-            "B future",
-            "C talk",
-            "D homework",
-            "E worksheet",
-            "F history",
-            "G producers",
-            "H methods of transport"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "26": "H methods of transport"
+            "26": "H"
           }
         },
         {
@@ -343,17 +361,17 @@
           "points": 1,
           "text": "27. Question 27",
           "options": [
-            "A export routes",
-            "B future",
-            "C talk",
-            "D homework",
-            "E worksheet",
-            "F history",
-            "G producers",
-            "H methods of transport"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "27": "A export routes"
+            "27": "A"
           }
         },
         {
@@ -366,17 +384,17 @@
           "points": 1,
           "text": "28. Question 28",
           "options": [
-            "A export routes",
-            "B future",
-            "C talk",
-            "D homework",
-            "E worksheet",
-            "F history",
-            "G producers",
-            "H methods of transport"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "28": "E worksheet"
+            "28": "E"
           }
         },
         {
@@ -389,17 +407,17 @@
           "points": 1,
           "text": "29. Question 29",
           "options": [
-            "A export routes",
-            "B future",
-            "C talk",
-            "D homework",
-            "E worksheet",
-            "F history",
-            "G producers",
-            "H methods of transport"
+            "A",
+            "B",
+            "C",
+            "D",
+            "E",
+            "F",
+            "G",
+            "H"
           ],
           "correctAnswers": {
-            "29": "B future"
+            "29": "B"
           }
         },
         {
@@ -410,7 +428,7 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. Prepare a",
           "options": [
             "A export routes",
             "B future",
@@ -449,8 +467,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nThe world’s oldest mechanical computer:\nthe Antikythera mechanism",
-          "text": "<p>Discovery</p><p>It was part of a ship’s 31…….. , found in the sea near Antikythera, in</p><p>Greece.</p><p>It was wrongly thought to be a piece of 32……. .</p><p>It was later found to be a mechanism that had broken into pieces.</p><p>Equipment used for analysis of the mechanism</p><p>“Dome” - produces photographs which make the 33…….. clearer</p><p>“BladeRunner” - produces X-prays</p><p>- originally used to identify 34…….. in engines</p><p>Description</p><p>The mechanism consisted of:</p><p>- 30 or more gear wheels made of 35………..</p><p>- models of the sun, moon and planets</p><p>- a framework made of 36…………</p><p>How the mechanism was used</p><p>The operator turned a 37……… to move the gear wheels.</p><p>The sun, moon and planets could be moved into their correct positions</p><p>for any date.</p><p>Most surprisingly, the mechanism could calculate when</p><p>an 38……. would occur.</p><p>It may have been used as a 39……… when planning festivals.</p><p>Later use of similar technology</p><p>13th – 14th centuries: used for making 40…….. in Western Europe.</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nThe world’s oldest mechanical computer:",
+          "text": "<p>the Antikythera mechanism Discovery It was part of a ship’s {blank:31} , found in the sea near Antikythera, in Greece. It was wrongly thought to be a piece of {blank:32} . It was later found to be a mechanism that had broken into pieces. Equipment used for analysis of the mechanism “Dome” - produces photographs which make the {blank:33} clearer “BladeRunner” - produces X-prays</p><p>- originally used to identify {blank:34} in engines</p><p>Description</p><p>The mechanism consisted of:</p><p>- 30 or more gear wheels made of {blank:35}</p><p>- models of the sun, moon and planets</p><p>- a framework made of {blank:36}</p><p>How the mechanism was used The operator turned a {blank:37} to move the gear wheels. The sun, moon and planets could be moved into their correct positions for any date. Most surprisingly, the mechanism could calculate when an {blank:38} would occur. It may have been used as a {blank:39} when planning festivals. Later use of similar technology 13th – 14th centuries: used for making {blank:40} in Western Europe.</p>",
           "correctAnswers": {
             "31": "cargo",
             "32": "rock",

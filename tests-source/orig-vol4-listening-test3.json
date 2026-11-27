@@ -26,7 +26,7 @@
           ],
           "points": 4,
           "instruction": "PART 1\nQuestions I —4\nQuestions I — 10\nComplete the form below.\nWrite NO MORE THAN TWO WORDS for each answer.",
-          "text": "<p>HOMECARE CLEANING AGENCY</p><p>House Details</p><p>Customer referred by:</p><p>Location:</p><p>Type of cleaning:</p><p>Rooms:</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p>",
+          "text": "<p>HOMECARE CLEANING AGENCY House Details</p><p>Customer referred by:</p><p>Location:</p><p>Type of cleaning:</p><p>Rooms:</p><p>Question 1: {blank:1}</p><p>Question 2: {blank:2}</p><p>Question 3: {blank:3}</p><p>Question 4: {blank:4}</p>",
           "correctAnswers": {
             "1": "Southeast",
             "2": "double",
@@ -42,17 +42,16 @@
             5
           ],
           "points": 1,
-          "text": "5. Question 5",
+          "text": "5. Which extra service does the agency agree to provide?",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A changing the becl linen",
+            "B washing the windows",
+            "C cleaning the fridge"
           ],
           "correctAnswers": {
-            "5": "A"
+            "5": "A changing the becl linen"
           },
-          "instruction": "Questions 5 — 7"
+          "instruction": "Questions 5 — 7\nfriend\nin thel .\nregular"
         },
         {
           "blockId": "b_ov4l3_6",
@@ -62,15 +61,14 @@
             6
           ],
           "points": 1,
-          "text": "6. Question 6",
+          "text": "6. 7 What will be cleaned more thoroughly every three months?",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A B",
+            "B the carpet",
+            "C the bathroom The woman would like the cleaners to"
           ],
           "correctAnswers": {
-            "6": "B"
+            "6": "B the carpet"
           }
         },
         {
@@ -85,27 +83,38 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "7": "B"
           }
         },
         {
-          "blockId": "b_ov4l3_8_10",
+          "blockId": "b_ov4l3_8_8",
           "type": "fill_blanks",
           "subtype": "fill_blanks",
           "ids": [
-            8,
+            8
+          ],
+          "points": 1,
+          "instruction": "Questions 8 10\ndo the washing.\niron the clothes.\nput the clothes away.\nComplete the form below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<p>HOMECARE CLEANING AGENCY Customer Details</p><p>Name:</p><p>Address:</p><p>Day of job:</p><p>Time:</p><p>Cost per hour:</p><p>Rose Kelly 48 {blank:8}</p>",
+          "correctAnswers": {
+            "8": "AMYES"
+          }
+        },
+        {
+          "blockId": "b_ov4l3_9_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
             9,
             10
           ],
-          "points": 3,
-          "instruction": "friend\nin thel .\nregular\ntwo 2\nbedrooms",
-          "text": "<p>5 Which extra service does the agency agree to provide?</p><p>A</p><p>B</p><p>C</p><p>changing the becl linen</p><p>washing the windows</p><p>cleaning the fridge</p><p>What will be cleaned more thoroughly every three months?</p><p>A</p><p>B</p><p>C</p><p>the children's room</p><p>the carpet</p><p>the bathroom</p><p>The woman would like the cleaners to</p><p>A</p><p>B</p><p>C</p><p>Questions 8 10</p><p>do the washing.</p><p>iron the clothes.</p><p>put the clothes away.</p><p>Complete the form below.</p><p>Write NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.</p><p>HOMECARE CLEANING AGENCY</p><p>Customer Details</p><p>Name:</p><p>Address:</p><p>Day of job:</p><p>Time:</p><p>Cost per hour:</p><p>Rose Kelly</p><p>48 8</p><p>Mount Eden</p><p>9.30 am.</p><p>$25</p><p>. Road</p><p>Maximum length of job: 10</p><p>SECTION 2</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "points": 2,
+          "instruction": "Mount Eden",
+          "text": "<p>{blank:9}</p><p>9.30 am. $25 . Road Maximum length of job: {blank:10} SECTION 2</p>",
           "correctAnswers": {
-            "8": "AMYES",
             "9": "Thursday",
             "10": "3 hours"
           }
@@ -125,17 +134,16 @@
             11
           ],
           "points": 1,
-          "text": "11. Question 11",
+          "text": "11. 12",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "11": "A"
           },
-          "instruction": "Questions 11-16\nQuestions 11-20\nChoose the correct letter A, B or C.\nMuseum tour\nWhat does the tour guide advise the visitors to do in the museum today?"
+          "instruction": "Questions 11-16\nQuestions 11-20\nChoose the correct letter A, B or C.\nMuseum tour"
         },
         {
           "blockId": "b_ov4l3_12",
@@ -149,8 +157,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "12": "B"
@@ -164,12 +171,11 @@
             13
           ],
           "points": 1,
-          "text": "13. Question 13",
+          "text": "13. 14",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "13": "A"
@@ -187,8 +193,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "14": "C"
@@ -202,15 +207,13 @@
             15
           ],
           "points": 1,
-          "text": "15. Question 15",
+          "text": "15. 16",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A B c the pubic the government local businesses 1 91 Over the next five years, the museum will invest mainly in",
+            "B C visit the museum's website read the leaflets on display attend the monthly lectures"
           ],
           "correctAnswers": {
-            "15": "A"
+            "15": "A B c the pubic the government local businesses 1 91 Over the next five years, the museum will invest mainly in"
           }
         },
         {
@@ -225,8 +228,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "16": "C"
@@ -240,18 +242,18 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. Collections",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
+            "D E Information has been shown in different museums consists of work by a local resident has exhibits from various countries in only on temporary display shows things that are no longer common is on loan from foreign museum",
             "E"
           ],
           "correctAnswers": {
             "17": "C"
           },
-          "instruction": "Questions 17-20\nWhat information does the guide give about each of the following collections?\nChoose FOUR answers from the box and write the correct letter, A-F, next to\nQuestions 17-20\nB"
+          "instruction": "Questions 17-20\nWhat information does the guide give about each of the following collections?\nChoose FOUR answers from the box and write the correct letter, A-F, next to\nQuestions 17-20"
         },
         {
           "blockId": "b_ov4l3_18",
@@ -261,16 +263,16 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. 18th-century paintings",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
+            "D E Information has been shown in different museums consists of work by a local resident has exhibits from various countries in only on temporary display shows things that are no longer common is on loan from foreign museum",
             "E"
           ],
           "correctAnswers": {
-            "18": "B"
+            "18": "B c"
           }
         },
         {
@@ -281,12 +283,12 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. Farnley collection kitchen appliances fashion gallery",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
+            "D E Information has been shown in different museums consists of work by a local resident has exhibits from various countries in only on temporary display shows things that are no longer common is on loan from foreign museum",
             "E"
           ],
           "correctAnswers": {
@@ -301,16 +303,16 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. SECTION 3 Questions 21-30",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
+            "D E Information has been shown in different museums consists of work by a local resident has exhibits from various countries in only on temporary display shows things that are no longer common is on loan from foreign museum",
             "E"
           ],
           "correctAnswers": {
-            "20": "D"
+            "20": "D E Information has been shown in different museums consists of work by a local resident has exhibits from various countries in only on temporary display shows things that are no longer common is on loan from foreign museum"
           }
         }
       ]
@@ -328,20 +330,20 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. Analysis methods",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A it will save a lot of business time and effort",
+            "B it is visualized",
+            "C it does not fit our company",
+            "D it will take too long",
+            "E it is easy to use",
+            "F it is difficult to apply",
+            "G it is suitable to almost all sized combåhies"
           ],
           "correctAnswers": {
-            "21": "C"
+            "21": "C it does not fit our company"
           },
-          "instruction": "Questions 21-25\nChoose the correct letter from A-G\nWhat are the characteristics of the following analysis methods?\nChoose FIVE letters from the box and write letters A-G, next to questions 21-25\nA"
+          "instruction": "Questions 21-25\nChoose the correct letter from A-G\nWhat are the characteristics of the following analysis methods?\nChoose FIVE letters from the box and write letters A-G, next to questions 21-25"
         },
         {
           "blockId": "b_ov4l3_22",
@@ -351,18 +353,18 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. PEST",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A it will save a lot of business time and effort",
+            "B it is visualized",
+            "C it does not fit our company",
+            "D it will take too long",
+            "E it is easy to use",
+            "F it is difficult to apply",
+            "G it is suitable to almost all sized combåhies"
           ],
           "correctAnswers": {
-            "22": "D"
+            "22": "D it will take too long"
           }
         },
         {
@@ -373,18 +375,18 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. Drill Down",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A it will save a lot of business time and effort",
+            "B it is visualized",
+            "C it does not fit our company",
+            "D it will take too long",
+            "E it is easy to use",
+            "F it is difficult to apply",
+            "G it is suitable to almost all sized combåhies"
           ],
           "correctAnswers": {
-            "23": "E"
+            "23": "E it is easy to use"
           }
         },
         {
@@ -395,18 +397,18 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. PMI",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A it will save a lot of business time and effort",
+            "B it is visualized",
+            "C it does not fit our company",
+            "D it will take too long",
+            "E it is easy to use",
+            "F it is difficult to apply",
+            "G it is suitable to almost all sized combåhies"
           ],
           "correctAnswers": {
-            "24": "A"
+            "24": "A it will save a lot of business time and effort"
           }
         },
         {
@@ -417,18 +419,18 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. Paret WOT 1 91",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A it will save a lot of business time and effort",
+            "B it is visualized",
+            "C it does not fit our company",
+            "D it will take too long",
+            "E it is easy to use",
+            "F it is difficult to apply",
+            "G it is suitable to almost all sized combåhies"
           ],
           "correctAnswers": {
-            "25": "G"
+            "25": "G it is suitable to almost all sized combåhies"
           }
         },
         {
@@ -551,8 +553,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Choose the correct letter, A, B or C.\nWhat does Frances consider as the best strength of the company?\nA\nB\nC",
-          "text": "<p>A seek for cheaper suppliers</p><p>B set up an overseas office</p><p>C compete with major competitors</p><p>Which of the following can be the threat to a compåh</p><p>A increasing competition</p><p>B outdated technology</p><p>C new legislation</p><p>What has Sam learned from the search.</p><p>A using better tools</p><p>B cost of a success business</p><p>C gap between reality and theory</p><p>What is the professor'S suggestion for the report?</p><p>A</p><p>B</p><p>c</p><p>give a final determination</p><p>organiié a clear structure</p><p>dd more detailed information</p><p>Section 4 Questions 31-40</p><p>Complete the notes below</p><p>Write NO MORE THAN TWO WORDS for each answer.</p><p>Employment Survey on Graduates</p><p>Overview</p><p>interviews from which subject: 31</p><p>two research methods: email questionnaires and 32</p><p>Findings</p><p>32% of students tended to acquire another 33</p><p>only 4% were unemployed</p><p>most of the students work in the 34</p><p>majority are happy with: 35</p><p>Feedback</p><p>Useful skills learned in college:</p><p>working as a 36</p><p>personal organization</p><p>Useless skills:</p><p>advice on 39</p><p>ability</p><p>a oftraining)</p><p>(unnecessary)</p><p>sector</p><p>1 91</p><p>advice on finding a {blank:40}(not enough)</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p>",
+          "instruction": "Choose the correct letter, A, B or C.",
+          "text": "<p>26 27 28 29 30 What does Frances consider as the best strength of the company? A B C reputation experienced employees management What factor did Sam overlooked for the future growth of the company A seek for cheaper suppliers B set up an overseas office C compete with major competitors Which of the following can be the threat to a compåh A increasing competition B outdated technology C new legislation What has Sam learned from the search. A using better tools B cost of a success business C gap between reality and theory What is the professor'S suggestion for the report? A B c give a final determination organiié a clear structure dd more detailed information Section 4 Questions {blank:31} -40 Complete the notes below Write NO MORE THAN TWO WORDS for each answer. Employment Survey on Graduates Overview interviews from which subject: 31 two research methods: email questionnaires and {blank:32} Findings 32% of students tended to acquire another {blank:33} only 4% were unemployed most of the students work in the {blank:34} majority are happy with: {blank:35} Feedback</p><p>Useful skills learned in college:</p><p>working as a {blank:36} personal organization</p><p>{blank:37}</p><p>Useless skills:</p><p>{blank:38}</p><p>advice on {blank:39} ability a oftraining) (unnecessary) sector 1 91 advice on finding a {blank:40} (not enough)</p>",
           "correctAnswers": {
             "31": "business management",
             "32": "phone interviews",

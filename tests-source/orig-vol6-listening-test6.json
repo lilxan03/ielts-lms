@@ -25,7 +25,7 @@
           ],
           "points": 5,
           "instruction": "Questions 1-5\nQuestions 1-10\nComplete the notes below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer,",
-          "text": "<p>A Residence Survey</p><p>Example:</p><p>Age of the interviewee: 19</p><p>Current occupation: 1</p><p>Length of living in the north: 2</p><p>Exact living area: 3</p><p>Type of accommodation: a shared 4</p><p>Means of transport:</p><p>private: walking and bicycles</p><p>and taxi</p><p>public: 5</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p>",
+          "text": "<p>A Residence Survey</p><p>Example:</p><p>Age of the interviewee: 19 Current occupation: {blank:1} Length of living in the north: {blank:2} Exact living area: {blank:3} Type of accommodation: a shared {blank:4}</p><p>Means of transport:</p><p>private: walking and bicycles and taxi public: {blank:5}</p>",
           "correctAnswers": {
             "1": "salesman",
             "2": "9 years",
@@ -46,8 +46,8 @@
             10
           ],
           "points": 5,
-          "instruction": "Questions 6-10\nComplete the notes below.\nWrite NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer.\nFrequency of eating out: 6\nPlaces for entertainment: 7",
-          "text": "<p>Other free time activity: go to the 8</p><p>Preferred exercises:</p><p>go swimming</p><p>go to the gym</p><p>go 9</p><p>Parttime course: 10</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 6-10\nComplete the notes below.\nWrite NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer.\nFrequency of eating out: 6",
+          "text": "<p>Places for entertainment: {blank:7} Other free time activity: go to the {blank:8}</p><p>Preferred exercises:</p><p>go swimming go to the gym go {blank:9} Parttime course: {blank:10}</p><p>Question 6: {blank:6}</p>",
           "correctAnswers": {
             "6": "once a month",
             "7": "clubs",
@@ -86,7 +86,7 @@
           "correctAnswers": {
             "11": "B"
           },
-          "instruction": "Questions 11-14\nLabel the map\nbelow\nWrite the correct letter, A-I, next to the questions 11-14\nThe Elmsden Way"
+          "instruction": "Questions 11-14\nLabel the map\nbelow\nWrite the correct letter, A-I, next to the questions 11-14"
         },
         {
           "blockId": "l6p2_12",
@@ -144,7 +144,7 @@
             14
           ],
           "points": 1,
-          "text": "14. Question 14",
+          "text": "14. Rocks Colleen Nature Reserve Ashington China Factory Langton forest",
           "options": [
             "A",
             "B",
@@ -263,7 +263,7 @@
           "options": [
             "A the local newspaper",
             "B the station website",
-            "C national cycling network"
+            "C national cycling network 33"
           ],
           "correctAnswers": {
             "20": "A the local newspaper"
@@ -284,12 +284,10 @@
             21
           ],
           "points": 1,
-          "text": "21. How did Tomas and May both feel about parts of their studies before",
+          "text": "21. How did Tomas and May both feel about parts of their studies before going on are excavations? They lacked motivation. They were enthusiastic.",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "B They were confused. c",
+            "C"
           ],
           "correctAnswers": {
             "21": "C"
@@ -304,12 +302,11 @@
             22
           ],
           "points": 1,
-          "text": "22. What surprised Tomas and May most when they were excavating?",
+          "text": "22. What surprised Tomas and May most when they were excavating? how important photography was how careful you had to be with your records how many rules there were to follow",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "22": "B"
@@ -325,10 +322,8 @@
           "points": 1,
           "text": "23. What did May find that was particularly interesting?",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "B c some fabric some pieces of pots some jewellery",
+            "A"
           ],
           "correctAnswers": {
             "23": "A"
@@ -342,15 +337,13 @@
             24
           ],
           "points": 1,
-          "text": "24. What did Tomas and May both find surprising about the people",
+          "text": "24. What did Tomas and May both find surprising about the people they were studying? The food they ale was very varied.",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A Their main activity was fishing.",
+            "B They were not as tall as people today"
           ],
           "correctAnswers": {
-            "24": "A"
+            "24": "A Their main activity was fishing."
           }
         },
         {
@@ -363,10 +356,8 @@
           "points": 1,
           "text": "25. What do Tomas and May both say about the people they worked with?",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A B c They came from a variety of countries. They worked really hard. They were young and enthusiastic, 34",
+            "B"
           ],
           "correctAnswers": {
             "25": "B"
@@ -382,20 +373,20 @@
           "points": 1,
           "text": "26. Question 26",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
+            "A Excavation Projects Next Week",
+            "B Take 26",
+            "C some soil samples",
+            "D some photographs",
+            "E objects to team leader",
+            "F labels on objects",
+            "G a record sheet",
+            "H a unit number further analysis of objects tools from the site hut a comprehensive plan and dean the area Take photos of the site to be excavated And your team leader for 27 . of the site and measure the levels Make 28 Take 29 Register and put 30 Put in site hut together with tools 35",
             "I"
           ],
           "correctAnswers": {
-            "26": "H"
+            "26": "H a unit number further analysis of objects tools from the site hut a comprehensive plan and dean the area Take photos of the site to be excavated And your team leader for 27 . of the site and measure the levels Make 28 Take 29 Register and put 30 Put in site hut together with tools 35"
           },
-          "instruction": "Questions 26-30\nComplete the flow chart below\nchoose FIVE letters from A-I, next to questions 26-30\nA\nB"
+          "instruction": "Questions 26-30\nComplete the flow chart below\nchoose FIVE letters from A-I, next to questions 26-30\nA"
         },
         {
           "blockId": "l6p3_27",
@@ -407,18 +398,18 @@
           "points": 1,
           "text": "27. Question 27",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
+            "A Excavation Projects Next Week",
+            "B Take 26",
+            "C some soil samples",
+            "D some photographs",
+            "E objects to team leader",
+            "F labels on objects",
+            "G a record sheet",
+            "H a unit number further analysis of objects tools from the site hut a comprehensive plan and dean the area Take photos of the site to be excavated And your team leader for 27 . of the site and measure the levels Make 28 Take 29 Register and put 30 Put in site hut together with tools 35",
             "I"
           ],
           "correctAnswers": {
-            "27": "E"
+            "27": "E objects to team leader"
           }
         },
         {
@@ -431,14 +422,14 @@
           "points": 1,
           "text": "28. Question 28",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
+            "A Excavation Projects Next Week",
+            "B Take 26",
+            "C some soil samples",
+            "D some photographs",
+            "E objects to team leader",
+            "F labels on objects",
+            "G a record sheet",
+            "H a unit number further analysis of objects tools from the site hut a comprehensive plan and dean the area Take photos of the site to be excavated And your team leader for 27 . of the site and measure the levels Make 28 Take 29 Register and put 30 Put in site hut together with tools 35",
             "I"
           ],
           "correctAnswers": {
@@ -455,18 +446,18 @@
           "points": 1,
           "text": "29. Question 29",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
+            "A Excavation Projects Next Week",
+            "B Take 26",
+            "C some soil samples",
+            "D some photographs",
+            "E objects to team leader",
+            "F labels on objects",
+            "G a record sheet",
+            "H a unit number further analysis of objects tools from the site hut a comprehensive plan and dean the area Take photos of the site to be excavated And your team leader for 27 . of the site and measure the levels Make 28 Take 29 Register and put 30 Put in site hut together with tools 35",
             "I"
           ],
           "correctAnswers": {
-            "29": "A"
+            "29": "A Excavation Projects Next Week"
           }
         },
         {
@@ -479,18 +470,18 @@
           "points": 1,
           "text": "30. Question 30",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H",
+            "A Excavation Projects Next Week",
+            "B Take 26",
+            "C some soil samples",
+            "D some photographs",
+            "E objects to team leader",
+            "F labels on objects",
+            "G a record sheet",
+            "H a unit number further analysis of objects tools from the site hut a comprehensive plan and dean the area Take photos of the site to be excavated And your team leader for 27 . of the site and measure the levels Make 28 Take 29 Register and put 30 Put in site hut together with tools 35",
             "I"
           ],
           "correctAnswers": {
-            "30": "D"
+            "30": "D some photographs"
           }
         }
       ]
@@ -517,8 +508,8 @@
             40
           ],
           "points": 10,
-          "instruction": "PART 4\nQuestions 3140\nComplete the notes below.\nWrite ONE WORD ONL Y for each answer.\nCrocodile Study",
-          "text": "<p>i) their own senses and the position of the {blank:39}„</p><p>ii) a similar system to</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q40: {blank:40}</p>",
+          "instruction": "PART 4\nQuestions 3140\nComplete the notes below.\nWrite ONE WORD ONL Y for each answer.",
+          "text": "<p>Crocodile Study Background Type of crocodile studied: crocodiles found in salt water Location of study: Northern Territory, Australia Significance of study: unique because it was the first time a • had been used to track crocodiles</p><p>Previous studies:</p><p>• done using</p><p>• stressful method, also unreliable due to loss of the</p><p>Reasons for study: the management of crocodiles by the government may not be effective</p><p>Research questions:</p><p>How far can crocodiles travel?</p><p>How easily can crocodiles {blank:34} Challenge: crocodiles are difficult to observe because they avoid</p><p>Details of study:</p><p>• number of crocodiles involved: three</p><p>method: crocodiles were measured and Tagged hen relocated using a</p><p>{blank:36}</p><p>• monitoring: scientists got data from a transmitter located on the crocodiles</p><p>Resulb of study:</p><p>Each crocodile first stayed at the site for a few weeks, moving in a random way</p><p>• then took the most {blank:38}</p><p>Conclusions:</p><p>a change in policy is needed way home when travelling long distances, crocodiles may use i) their own senses and the position of the {blank:39} {blank:31} ii) a similar system to 36</p><p>Question 32: {blank:32}</p><p>Question 33: {blank:33}</p><p>Question 35: {blank:35}</p><p>Question 37: {blank:37}</p><p>Question 40: {blank:40}</p>",
           "correctAnswers": {
             "31": "satellite",
             "32": "radio",

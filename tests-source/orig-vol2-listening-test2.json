@@ -27,8 +27,8 @@
             6
           ],
           "points": 6,
-          "instruction": "Questions 1-10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nTravel Insurance\nType: 1.",
-          "text": "<p>Comprehensive</p><p>Section 1 - Baggage and Personal Effects</p><p>- single 2</p><p>: $1 ,500</p><p>- cameras and portable electronic 3</p><p>- money: $ {blank:4}</p><p>- disrupted travel: rational 5</p><p>$2.500</p><p>(missed connections or early return (as verified by the 6</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p>",
+          "instruction": "Questions 1-10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nTravel Insurance",
+          "text": "<p>Type: {blank:1} Comprehensive Section 1 - Baggage and Personal Effects</p><p>- single {blank:2}</p><p>: $1 ,500</p><p>- cameras and portable electronic {blank:3}</p><p>- money: $ {blank:4}</p><p>- disrupted travel: rational {blank:5}</p><p>$2.500 (missed connections or early return (as verified by the {blank:6}</p>",
           "correctAnswers": {
             "1": "Individual",
             "2": "item",
@@ -46,17 +46,17 @@
             7
           ],
           "points": 1,
-          "text": "7. Question 7",
+          "text": "7. The woman will buy",
           "options": [
-            "A a new motorbike.",
-            "B an old car.",
-            "C a new car.",
+            "A",
+            "B",
+            "C because it benefits homeowners.",
             "D"
           ],
           "correctAnswers": {
-            "7": "B an old car."
+            "7": "B"
           },
-          "instruction": "Questions 7 — 8\nChoose the correct letter, A,B or C\nThe woman will buy"
+          "instruction": "Questions 7 — 8\nChoose the correct letter, A,B or C"
         },
         {
           "blockId": "b_ov2l2_8",
@@ -66,15 +66,15 @@
             8
           ],
           "points": 1,
-          "text": "8. Question 8",
+          "text": "8. A a new motorbike.",
           "options": [
-            "A a new motorbike.",
-            "B an old car.",
-            "C a new car.",
+            "A",
+            "B",
+            "C because it benefits homeowners.",
             "D"
           ],
           "correctAnswers": {
-            "8": "C a new car."
+            "8": "C because it benefits homeowners."
           }
         },
         {
@@ -85,13 +85,13 @@
             9
           ],
           "points": 1,
-          "text": "9. Question 9",
+          "text": "9. Which TWO of the following relate to the Top Cover policy?",
           "options": [
             "A it includes an agreement on the value of a holder's vehicle",
             "B it covers vehicles of any age",
             "C there is a stand-down period before it takes effect",
             "D it covers storm damage",
-            "E it is cheaper than many other policies"
+            "E it is cheaper than many other policies Part 2"
           ],
           "correctAnswers": {
             "9": "C there is a stand-down period before it takes effect"
@@ -106,13 +106,13 @@
             10
           ],
           "points": 1,
-          "text": "10. Question 10",
+          "text": "10. Which TWO of the following relate to the Top Cover policy?",
           "options": [
             "A it includes an agreement on the value of a holder's vehicle",
             "B it covers vehicles of any age",
             "C there is a stand-down period before it takes effect",
             "D it covers storm damage",
-            "E it is cheaper than many other policies"
+            "E it is cheaper than many other policies Part 2"
           ],
           "correctAnswers": {
             "10": "D it covers storm damage"
@@ -138,8 +138,8 @@
             16
           ],
           "points": 6,
-          "instruction": "Questions 11-16\nQuestions 11-20\nChoose the correct letter, A, B or C.\nWhen was Eyesaver founded?",
-          "text": "<p>A 15 years ago</p><p>B 30 years ago</p><p>C 60 years ago</p><p>What was the original aim of the program?</p><p>A to offer common equipment</p><p>B to offer medication to children with eye diseases</p><p>C to offer operational help to people who had eye problems</p><p>The main funding comes from</p><p>A monthly donation.</p><p>B donation from rich people.</p><p>C money collected on the street.</p><p>What does the speaker expect listeners to provide?</p><p>A glasses for the patients</p><p>B money donation</p><p>C voluntary work</p><p>What is the main purpose of this program?</p><p>A to show people their donation can make a difference</p><p>11 11</p><p>B to show people how easily eye problems can cured</p><p>C to educate people about common eye diseases</p><p>Eyesaver advertises for the through</p><p>A computers.</p><p>B recordings.</p><p>C training.</p><p>Q11: {blank:11}</p><p>Q12: {blank:12}</p><p>Q13: {blank:13}</p><p>Q14: {blank:14}</p><p>Q15: {blank:15}</p><p>Q16: {blank:16}</p>",
+          "instruction": "Questions 11-16\nQuestions 11-20\nChoose the correct letter, A, B or C.",
+          "text": "<p>{blank:11}</p><p>{blank:12}</p><p>When was Eyesaver founded?</p><p>A {blank:15} years ago B 30 years ago C 60 years ago What was the original aim of the program? A to offer common equipment B to offer medication to children with eye diseases C to offer operational help to people who had eye problems</p><p>{blank:13}</p><p>{blank:14}</p><p>15</p><p>{blank:16}</p><p>The main funding comes from A monthly donation.</p><p>B donation from rich people.</p><p>C money collected on the street.</p><p>What does the speaker expect listeners to provide?</p><p>A glasses for the patients B money donation C voluntary work What is the main purpose of this program? A to show people their donation can make a difference 11 11 B to show people how easily eye problems can cured C to educate people about common eye diseases Eyesaver advertises for the through A computers. B recordings. C training.</p>",
           "correctAnswers": {
             "11": "30 years ago",
             "12": "to offer common equipment",
@@ -160,8 +160,8 @@
             20
           ],
           "points": 4,
-          "instruction": "Questions 17-20\nWhat role does each of the following organisations play for the development of Eyesaver?\nWrite the correct letter, A-F, next to Question 26-30.\nPart 3",
-          "text": "<p>A gain more donation</p><p>B involve more children in need</p><p>C earn support from colleges</p><p>D help look for equipment manufacturers</p><p>E take the reputation to a higher level</p><p>F recruit and support staff</p><p>National Vision Funding Group ..... ..... ...... .</p><p>Eye for the Future</p><p>Sam's Eyecare Institution</p><p>Youth Health</p><p>Q17: {blank:17}</p><p>Q18: {blank:18}</p><p>Q19: {blank:19}</p><p>Q20: {blank:20}</p>",
+          "instruction": "Questions 17-20\nWhat role does each of the following organisations play for the development of Eyesaver?\nWrite the correct letter, A-F, next to Question 26-30.",
+          "text": "<p>{blank:17}</p><p>{blank:18}</p><p>{blank:19}</p><p>{blank:20}</p><p>Part 3 A gain more donation B involve more children in need C earn support from colleges D help look for equipment manufacturers E take the reputation to a higher level F recruit and support staff National Vision Funding Group ____ ____ ____ . Eye for the Future Sam's Eyecare Institution Youth Health</p>",
           "correctAnswers": {
             "17": "take the reputation to a higher level",
             "18": "help look for equipment manufacturers",
@@ -203,7 +203,7 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. What mark did Rangi receive for Classical Mechanics?",
           "options": [
             "A",
             "B",
@@ -221,7 +221,7 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. A C plus",
           "options": [
             "A",
             "B",
@@ -239,7 +239,7 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. B A plus",
           "options": [
             "A",
             "B",
@@ -257,7 +257,7 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. C B plus",
           "options": [
             "A",
             "B",
@@ -275,14 +275,14 @@
             26
           ],
           "points": 1,
-          "text": "26. Question 26",
+          "text": "26. Which degree has Rangi decided to abandon? The Professor thinks the claims of some lecturers are",
           "options": [
-            "A",
-            "B",
-            "C"
+            "A critical.",
+            "B doubtful.",
+            "C boastful."
           ],
           "correctAnswers": {
-            "26": "B"
+            "26": "B doubtful."
           }
         },
         {
@@ -293,7 +293,7 @@
             27
           ],
           "points": 1,
-          "text": "27. Question 27",
+          "text": "27. Part 4",
           "options": [
             "A",
             "B",
@@ -311,7 +311,7 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. Rangi is disappointed because he",
           "options": [
             "A",
             "B",
@@ -329,7 +329,7 @@
             29
           ],
           "points": 1,
-          "text": "29. Question 29",
+          "text": "29. A will have to work in a bar again.",
           "options": [
             "A",
             "B",
@@ -347,14 +347,14 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. B cannot afford to study abroad. In the Professor's opinion, Rangi is",
           "options": [
-            "A",
-            "B",
-            "C"
+            "A thrilled but nervous",
+            "B relieved and grateful",
+            "C a little apprehensive"
           ],
           "correctAnswers": {
-            "30": "B"
+            "30": "B relieved and grateful"
           }
         }
       ]
@@ -382,7 +382,7 @@
           ],
           "points": 10,
           "instruction": "Questions 31-40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nBackground :",
-          "text": "<p>31. The advantageous . {blank:31}</p><p>than others.</p><p>32. it is one of the deepest {blank:32}</p><p>Leatherback Turtles</p><p>— of leatherback turtles makes them swim efficiently</p><p>. reptile.</p><p>33. Shell is . {blank:33}</p><p>34. Leatherbacks can . {blank:34}</p><p>lungs.</p><p>not bony to avoid from high pressure.</p><p>in the water for several hours due to their size of</p><p>35. Main food is jellyfish contains high proportion in {blank:35}</p><p>and mineral.</p><p>Research methods:</p><p>36. Scientists æn learn their . {blank:36}</p><p>pattern in Atlantic ocean.</p><p>37. Scientists can start tracking when the turtle reaches . {blank:37}</p><p>38. Huge front flipper can produce {blank:38}</p><p>from strong muscles</p><p>39. A new recorder can monitor not only their location but also the {blank:39}</p><p>sea.</p><p>40. Leatherback turtles are found using more to search food. {blank:40}</p><p>in the</p>",
+          "text": "<p>31. The advantageous . {blank:31}</p><p>than others.</p><p>32. it is one of the deepest {blank:32}</p><p>Leatherback Turtles — of leatherback turtles makes them swim efficiently . reptile.</p><p>33. Shell is . {blank:33}</p><p>34. Leatherbacks can . {blank:34}</p><p>lungs. not bony to avoid from high pressure. in the water for several hours due to their size of</p><p>35. Main food is jellyfish contains high proportion in {blank:35}</p><p>and mineral.</p><p>Research methods:</p><p>36. Scientists æn learn their . {blank:36}</p><p>pattern in Atlantic ocean.</p><p>37. Scientists can start tracking when the turtle reaches . {blank:37}</p><p>38. Huge front flipper can produce {blank:38}</p><p>from strong muscles</p><p>39. A new recorder can monitor not only their location but also the {blank:39}</p><p>sea.</p><p>40. Leatherback turtles are found using more to search food. {blank:40}</p><p>in the</p>",
           "correctAnswers": {
             "31": "shape",
             "32": "dives",

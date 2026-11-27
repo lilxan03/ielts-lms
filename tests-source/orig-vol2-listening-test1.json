@@ -31,8 +31,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Question 1 - 10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nConsultation\nPatient Information",
-          "text": "<p>Name: Anu {blank:1}</p><p>Post code: 2</p><p>Current address: 3</p><p>Birthday: October 1st 4</p><p>Phone number: 875934</p><p>Part 1</p><p>Questions 1-10</p><p>lights</p><p>Avenue</p><p>Health Condition</p><p>Background: Illness has lasted for 5</p><p>Symptom: see 6</p><p>Possible cause: the room was too 7</p><p>Previous hospital: 8</p><p>Suggestions</p><p>Hospital</p><p>. days</p><p>. for a long time</p><p>Have a good rest after staring at a 9</p><p>Use some medicine to ease eye 10</p><p>Part 2</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Question 1 - 10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nConsultation",
+          "text": "<p>Patient Information Name: Anu {blank:1} Post code: {blank:2} Current address: {blank:3} Birthday: October 1st {blank:4} Phone number: 875934 Part 1 Questions 1- {blank:10} lights Avenue Health Condition Background: Illness has lasted for {blank:5} Symptom: see {blank:6} Possible cause: the room was too {blank:7} Previous hospital: {blank:8} Suggestions Hospital . days . for a long time Have a good rest after staring at a {blank:9} Use some medicine to ease eye 10 Part 2</p>",
           "correctAnswers": {
             "1": "Atkinson",
             "2": "EL14 2BF",
@@ -61,7 +61,7 @@
             11
           ],
           "points": 1,
-          "text": "11. Question 11",
+          "text": "11. 12",
           "options": [
             "A",
             "B",
@@ -71,7 +71,7 @@
           "correctAnswers": {
             "11": "A"
           },
-          "instruction": "Questions 11-13"
+          "instruction": "Questions 11-13\nQuestions 11-20\nChoose the correct letter, A, B or C."
         },
         {
           "blockId": "b_ov2l1_12",
@@ -122,8 +122,8 @@
             17
           ],
           "points": 4,
-          "instruction": "Questions 11-20\nChoose the correct letter, A, B or C.\nWildlife Park\nWhere is the information board?",
-          "text": "<p>A At the reception</p><p>B Inside the cottage</p><p>C On the beach</p><p>Which sport do customers have to book in advance?</p><p>A Beach soccer</p><p>B Water-skiing</p><p>C Scuba diving</p><p>What does the cave tour ticket price include</p><p>A shoes</p><p>B a map of cave</p><p>C Safety helmet</p><p>Davison Wildlife Park is a great place for 14</p><p>Children are allowed to 15</p><p>Red kangaroos are larger than 16</p><p>Crocodiles can live for at least 17</p><p>Q14: {blank:14}</p><p>Q15: {blank:15}</p><p>Q16: {blank:16}</p><p>Q17: {blank:17}</p>",
+          "instruction": "13",
+          "text": "<p>{blank:14}</p><p>{blank:15}</p><p>{blank:16}</p><p>{blank:17}</p><p>Wildlife Park Where is the information board?</p><p>A At the reception B Inside the cottage C On the beach Which sport do customers have to book in advance? A Beach soccer B Water-skiing C Scuba diving What does the cave tour ticket price include A shoes B a map of cave C Safety helmet Davison Wildlife Park is a great place for 14 Children are allowed to 15 Red kangaroos are larger than 16 Crocodiles can live for at least 17</p>",
           "correctAnswers": {
             "14": "family/families",
             "15": "feed the animals",
@@ -139,7 +139,7 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. Which THREE activities are popular now for tourists in inland region?",
           "options": [
             "A hill hiking",
             "B barbecue and bonfire",
@@ -148,7 +148,7 @@
             "E visiting cheese factory",
             "F following nature trails",
             "G fruit picking",
-            "H staff"
+            "H staff Part 3 Questions 21-30"
           ],
           "correctAnswers": {
             "18": "C buying souvenirs"
@@ -163,7 +163,7 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. Which THREE activities are popular now for tourists in inland region?",
           "options": [
             "A hill hiking",
             "B barbecue and bonfire",
@@ -172,7 +172,7 @@
             "E visiting cheese factory",
             "F following nature trails",
             "G fruit picking",
-            "H staff"
+            "H staff Part 3 Questions 21-30"
           ],
           "correctAnswers": {
             "19": "E visiting cheese factory"
@@ -186,7 +186,7 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. Which THREE activities are popular now for tourists in inland region?",
           "options": [
             "A hill hiking",
             "B barbecue and bonfire",
@@ -195,7 +195,7 @@
             "E visiting cheese factory",
             "F following nature trails",
             "G fruit picking",
-            "H staff"
+            "H staff Part 3 Questions 21-30"
           ],
           "correctAnswers": {
             "20": "G fruit picking"
@@ -219,8 +219,8 @@
             24
           ],
           "points": 4,
-          "instruction": "Questions 21-24",
-          "text": "<p>Q21: {blank:21}</p><p>Q22: {blank:22}</p><p>Q23: {blank:23}</p><p>Q24: {blank:24}</p>",
+          "instruction": "Questions 21-24\nChoose the correct letter, A. B or C.\nQuestions 21-25\nChoose the correct letter A, B or C",
+          "text": "<p>{blank:21}</p><p>{blank:22}</p><p>Why did they do it as a team?</p><p>A They needed to do a lot of research.</p><p>B They had worked together before.</p><p>C The research was very cnmplicated.</p><p>Who will be the interviewees at the first stage?</p><p>{blank:23}</p><p>Question 24: {blank:24}</p>",
           "correctAnswers": {
             "21": "They needed to do a lot of research.",
             "22": "shoppers",
@@ -236,8 +236,8 @@
             25
           ],
           "points": 1,
-          "instruction": "Choose the correct letter, A. B or C.\nQuestions 21-25\nChoose the correct letter A, B or C\nWhy did they do it as a team?",
-          "text": "<p>A They needed to do a lot of research.</p><p>B They had worked together before.</p><p>C The research was very cnmplicated.</p><p>Who will be the interviewees at the first stage?</p><p>A manufacturers</p><p>B shoppers</p><p>C managers</p><p>What is the manufacturers' top priority on the labels?</p><p>A the weight</p><p>B the ingredients</p><p>C the price</p><p>What result surprised them?</p><p>A There are a lot of additives in food.</p><p>B The cost of food is much higher than before.</p><p>C Fast food is popular among customers.</p><p>What does Jack worry about most regarding the project?</p><p>A They don't have enough respondents.</p><p>B There is not enough time.</p><p>C Some important data is not available.</p><p>Q25: {blank:25}</p>",
+          "instruction": "24",
+          "text": "<p>{blank:25}</p><p>A manufacturers B shoppers C managers What is the manufacturers' top priority on the labels? A the weight B the ingredients C the price What result surprised them? A There are a lot of additives in food. B The cost of food is much higher than before. C Fast food is popular among customers. What does Jack worry about most regarding the project? A They don't have enough respondents. B There is not enough time. C Some important data is not available.</p>",
           "correctAnswers": {
             "25": "There is not enough time."
           }
@@ -261,7 +261,7 @@
           "correctAnswers": {
             "26": "A do it with a partner"
           },
-          "instruction": "Questions 26-30\nWhat does the tutor suggest doing with Jack's research regarding each of the following\ntasks?\nChoose FIVE answers from the box and write the correct letter, A-E, next to Question\n26-30."
+          "instruction": "Questions 26-30\nWhat does the tutor suggest doing with Jack's research regarding each of the following\ntasks?\nChoose FIVE answers from the box and write the correct letter, A-E, next to Question"
         },
         {
           "blockId": "b_ov2l1_27",
@@ -331,7 +331,7 @@
             30
           ],
           "points": 1,
-          "text": "30. decide on the format of the presentation",
+          "text": "30. decide on the format of the presentation Part 4 Questions 31-40 Complete the notes below. Write ONE WORD ONLY for each answer.",
           "options": [
             "A do it with a partner",
             "B not worthy of doing",
@@ -363,8 +363,8 @@
             36
           ],
           "points": 6,
-          "instruction": "Questions 31-36\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nStudy of Fossil Park\nTypes of fossils:",
-          "text": "<p>31 fossils: more common,actual fossilised remains {blank:31}</p><p>. fossils: indirect evidence of animals, such as footprints or tunnels</p><p>- 32</p><p>Fossilisation processes:</p><p>Organism trapped in volcanic ash</p><p>Petrifaction</p><p>- An animal is 33</p><p>- Mud dries and hardens.</p><p>in the mud after death.</p><p>¯ 34</p><p>. replace the bones leaving a stone shape.</p><p>Purchasing fossils:</p><p>- Site: Shop outside the park or from the park's 35</p><p>- Prices: generally 36</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p>",
+          "instruction": "Questions 31-36\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nStudy of Fossil Park",
+          "text": "<p>Types of fossils:</p><p>- transitional fossils: rare,show evidence of evolutionary change</p><p>31 fossils: more common,actual fossilised remains {blank:31} . fossils: indirect evidence of animals, such as footprints or tunnels</p><p>- {blank:32}</p><p>Fossilisation processes:</p><p>Organism trapped in volcanic ash Petrifaction</p><p>- An animal is {blank:33}</p><p>- Mud dries and hardens.</p><p>in the mud after death. ¯ {blank:34} . replace the bones leaving a stone shape.</p><p>Purchasing fossils:</p><p>- Site: Shop outside the park or from the park's {blank:35}</p><p>- Prices: generally {blank:36}</p>",
           "correctAnswers": {
             "31": "preserved",
             "32": "trace",
@@ -386,7 +386,7 @@
           ],
           "points": 4,
           "instruction": "Questions 37-40\nComplete the table below. Write NO MORE THAN TWO WORDS for each answer.\nTools",
-          "text": "<p>A tape measure</p><p>A notebook</p><p>A camera</p><p>A compass</p><p>Function or purpose</p><p>Record the 37</p><p>— of each fossil</p><p>Record the types of 38</p><p>Record the 39</p><p>Detect 40</p><p>of each fossil</p><p>the fossils to locate</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "text": "<p>A tape measure A notebook A camera A compass Function or purpose Record the {blank:37} — of each fossil Record the types of {blank:38} Record the {blank:39} Detect {blank:40} of each fossil the fossils to locate</p>",
           "correctAnswers": {
             "37": "dimension",
             "38": "rocks",

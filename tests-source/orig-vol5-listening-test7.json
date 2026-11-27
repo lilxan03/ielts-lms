@@ -31,8 +31,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1 - 10\nCustomer's name\nAnna Woods\nCustomer's personal details\n• Current address 1181.",
-          "text": "<p>A small {blank:10}</p><p>. bedrooms</p><p>PART 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p>",
+          "instruction": "Questions 1 - 10\nCustomer's name\nAnna Woods\nCustomer's personal details",
+          "text": "<p>• Current address 1181.</p><p>• Postcode. BT149BJ</p><p>• Phone No: {blank:2}</p><p>Other information</p><p>• Anna is hoping to find work as a {blank:3}</p><p>• She needs to find a {blank:4}</p><p>Requirements for the new property Location</p><p>• Her preferred location is in the {blank:5}</p><p>. (Mobile) ..Park, Ballysillan . the city.</p><p>• Her husband would like to be near a {blank:6}</p><p>• Her son would prefer to be close to a {blank:7}</p><p>Property details:</p><p>•</p><p>•</p><p>•</p><p>She would like to live in a {blank:8} She would prefer {blank:9} A small {blank:10} . bedrooms PART 2</p><p>Question 1: {blank:1}</p>",
           "correctAnswers": {
             "1": "Fordyce",
             "2": "07840051963",
@@ -61,17 +61,16 @@
             11
           ],
           "points": 1,
-          "text": "11. Question 11",
+          "text": "11. Moving Office",
           "options": [
-            "A to have more space",
-            "B to pay less rent",
-            "C be in a central location",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "11": "C be in a central location"
+            "11": "C"
           },
-          "instruction": "Questions 11-16\nQuestions 11-20\nChoose the correct letter, A, B or C.\nMoving Office\nWhat reason does the manager give for moving to a new office building?"
+          "instruction": "Questions 11-16\nQuestions 11-20\nChoose the correct letter, A, B or C."
         },
         {
           "blockId": "b_ov5l7_12",
@@ -81,15 +80,14 @@
             12
           ],
           "points": 1,
-          "text": "12. Question 12",
+          "text": "12. What reason does the manager give for moving to a new office building?",
           "options": [
-            "A to have more space",
-            "B to pay less rent",
-            "C be in a central location",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "12": "B to pay less rent"
+            "12": "B"
           }
         },
         {
@@ -100,15 +98,14 @@
             13
           ],
           "points": 1,
-          "text": "13. Question 13",
+          "text": "13. A to have more space",
           "options": [
-            "A to have more space",
-            "B to pay less rent",
-            "C be in a central location",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "13": "A to have more space"
+            "13": "A"
           }
         },
         {
@@ -119,15 +116,14 @@
             14
           ],
           "points": 1,
-          "text": "14. Question 14",
+          "text": "14. B to pay less rent",
           "options": [
-            "A to have more space",
-            "B to pay less rent",
-            "C be in a central location",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "14": "B to pay less rent"
+            "14": "B"
           }
         },
         {
@@ -138,15 +134,14 @@
             15
           ],
           "points": 1,
-          "text": "15. Question 15",
+          "text": "15. C be in a central location",
           "options": [
-            "A to have more space",
-            "B to pay less rent",
-            "C be in a central location",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "15": "A to have more space"
+            "15": "A"
           }
         },
         {
@@ -157,15 +152,14 @@
             16
           ],
           "points": 1,
-          "text": "16. Question 16",
+          "text": "16. What is best about the new office building?",
           "options": [
-            "A to have more space",
-            "B to pay less rent",
-            "C be in a central location",
-            "D"
+            "A into packing boxes",
+            "B into grey plastic bags",
+            "C into new filing cabinets"
           ],
           "correctAnswers": {
-            "16": "B to pay less rent"
+            "16": "B into grey plastic bags"
           }
         },
         {
@@ -176,7 +170,7 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. Which TWO things do people often forget when lifting heavy things?",
           "options": [
             "A keep your head up",
             "B don't bend your back",
@@ -197,7 +191,7 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. Which TWO things do people often forget when lifting heavy things?",
           "options": [
             "A keep your head up",
             "B don't bend your back",
@@ -217,13 +211,13 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. Which TWO things should staff do when moving papers?",
           "options": [
             "A wear a face mask",
             "B open windows",
             "C wear gloves",
             "D take frequent breaks",
-            "E drink plenty of water"
+            "E drink plenty of water SECTION 3"
           ],
           "correctAnswers": {
             "19": "C wear gloves"
@@ -238,16 +232,16 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. Which TWO things should staff do when moving papers?",
           "options": [
             "A wear a face mask",
             "B open windows",
             "C wear gloves",
             "D take frequent breaks",
-            "E drink plenty of water"
+            "E drink plenty of water SECTION 3"
           ],
           "correctAnswers": {
-            "20": "E drink plenty of water"
+            "20": "E drink plenty of water SECTION 3"
           }
         }
       ]
@@ -265,17 +259,16 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. 22",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "21": "A"
           },
-          "instruction": "Questions 21-26\nQuestions 21-30\nChoose the correct letter, A, B or C.\nMona's presentation topic is about\nA"
+          "instruction": "Questions 21-26\nQuestions 21-30\nChoose the correct letter, A, B or C."
         },
         {
           "blockId": "b_ov5l7_22",
@@ -289,8 +282,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "22": "A"
@@ -304,12 +296,11 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. 24",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "23": "C"
@@ -327,8 +318,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "24": "B"
@@ -342,15 +332,14 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. 26 Mona's presentation topic is about",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A meet one of his friends",
+            "B read more books",
+            "C visit a museum"
           ],
           "correctAnswers": {
-            "25": "A"
+            "25": "A meet one of his friends"
           }
         },
         {
@@ -365,8 +354,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "26": "C"
@@ -380,20 +368,20 @@
             27
           ],
           "points": 1,
-          "text": "27. Question 27",
+          "text": "27. 27-30.",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
+            "A text handouts",
+            "B questions",
+            "C an outline",
+            "D an introduction",
+            "E statement",
             "F",
-            "G"
+            "G explain research step 1. Write step 2.28.."
           ],
           "correctAnswers": {
-            "27": "D"
+            "27": "D an introduction"
           },
-          "instruction": "Questions 27-30\nAccording to Ted, what is the right way to make a successful presentation?\nChoose FOUR letters from the box and write the correct letter, A-F, next to questions\n27-30.\nA"
+          "instruction": "Questions 27-30\nAccording to Ted, what is the right way to make a successful presentation?\nChoose FOUR letters from the box and write the correct letter, A-F, next to questions\n27-30."
         },
         {
           "blockId": "b_ov5l7_28",
@@ -403,18 +391,18 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. 27-30.",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
+            "A text handouts",
+            "B questions",
+            "C an outline",
+            "D an introduction",
+            "E statement",
             "F",
-            "G"
+            "G explain research step 1. Write step 2.28.."
           ],
           "correctAnswers": {
-            "28": "G"
+            "28": "G explain research step 1. Write step 2.28.."
           }
         },
         {
@@ -425,18 +413,18 @@
             29
           ],
           "points": 1,
-          "text": "29. Question 29",
+          "text": "29. step 3. Put a ..further on the topic . .for every picture and support it Step 4. every slide illustrates a thought, all the thoughts link together",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
+            "A text handouts",
+            "B questions",
+            "C an outline",
+            "D an introduction",
+            "E statement",
             "F",
-            "G"
+            "G explain research step 1. Write step 2.28.."
           ],
           "correctAnswers": {
-            "29": "E"
+            "29": "E statement"
           }
         },
         {
@@ -447,18 +435,18 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. Step 5. Write SECTION 4 Question 31-40",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
+            "A text handouts",
+            "B questions",
+            "C an outline",
+            "D an introduction",
+            "E statement",
             "F",
-            "G"
+            "G explain research step 1. Write step 2.28.."
           ],
           "correctAnswers": {
-            "30": "A"
+            "30": "A text handouts"
           }
         }
       ]
@@ -481,8 +469,8 @@
             36
           ],
           "points": 6,
-          "instruction": "Question 31-36\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nGRAPHICAL SYMBOL\n'Graphical symbol'",
-          "text": "<p>A camera was tied to one 36</p><p>many endangered species.</p><p>ofa bird.</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p>",
+          "instruction": "Question 31-36\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nGRAPHICAL SYMBOL",
+          "text": "<p>'Graphical symbol' includes the logographs in Egyptian hieroglyphic writing and ancient</p><p>•</p><p>•</p><p>Chinese pictograms found in Africa, the Americas, and Oceania still has something to do with {blank:31} Ancient graphic writing systems</p><p>• Researchers obtain a wide range of {blank:32}</p><p>civilisations. . use today about past Rosetta Stone was found in 1799 when members of Napoleon's expedition got to Egypt. Frenchman Jean-Francois Champollion determined the phonetic values of the symbols in 1822.</p><p>• In those symbols, {blank:33}</p><p>Camera obscura are used to depict various meanings.</p><p>{blank:34}</p><p>helps people understand history better.</p><p>•</p><p>•</p><p>Some charities will {blank:35} A camera was tied to one {blank:36} many endangered species. ofa bird.</p>",
           "correctAnswers": {
             "31": "commercial",
             "32": "knowledge",
@@ -504,7 +492,7 @@
           ],
           "points": 4,
           "instruction": "Question 37-40\nComplete the sentences below.\nWrite ONE WORD ONLY for each answer",
-          "text": "<p>37 More {blank:37}</p><p>photography.</p><p>will be included in the future with the development of</p><p>38 Companies would like to invest a lot to advertise in . {blank:38}</p><p>39 Designing appealing {blank:39}</p><p>is used as a way of effective branding.</p><p>40 Graphic writing systems are of great importance in the subject of . {blank:40}</p>",
+          "text": "<p>37 More {blank:37} photography. will be included in the future with the development of 38 Companies would like to invest a lot to advertise in . {blank:38} 39 Designing appealing {blank:39} is used as a way of effective branding. 40 Graphic writing systems are of great importance in the subject of . {blank:40}</p>",
           "correctAnswers": {
             "37": "objects",
             "38": "newspapers",

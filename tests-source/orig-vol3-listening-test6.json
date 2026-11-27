@@ -31,8 +31,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1 - 10\nWhite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nAccommodation request\nExample\nName:",
-          "text": "<p>Type of accommodation:</p><p>Preferred location:</p><p>Facilities required:</p><p>Period of time required:</p><p>Start date of rental period:</p><p>Present address:</p><p>Phone number:</p><p>Reference from:</p><p>Maximum rent:</p><p>Applicant's job:</p><p>Documents to be supplied</p><p>ID check:</p><p>Credit check:</p><p>Viewing arrangements</p><p>Address of property:</p><p>Viewing day and time:</p><p>To check:</p><p>Anna Black</p><p>a house</p><p>the I</p><p>of the town</p><p>furnished property - with a 2</p><p>one year</p><p>56, Stone Street</p><p>(mobile)07942 326584</p><p>e 411.</p><p>per month</p><p>applicant's passport</p><p>33, 8</p><p>Saturday 4 p.m</p><p>Is there a 9</p><p>Is there a 10</p><p>Street</p><p>in the house?</p><p>nearby?</p><p>SECTION 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 1 - 10\nWhite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nAccommodation request",
+          "text": "<p>Example</p><p>Name:</p><p>Type of accommodation:</p><p>Preferred location:</p><p>Facilities required:</p><p>Period of time required:</p><p>Start date of rental period:</p><p>Present address:</p><p>Phone number:</p><p>Reference from:</p><p>Maximum rent:</p><p>Applicant's job:</p><p>Documents to be supplied</p><p>ID check:</p><p>Credit check:</p><p>Viewing arrangements</p><p>Address of property:</p><p>Viewing day and time:</p><p>To check:</p><p>Anna Black a house the I of the town furnished property - with a {blank:2} one year</p><p>{blank:3}</p><p>56, Stone Street (mobile)07942 326584 e 411. per month</p><p>{blank:6}</p><p>applicant's passport 33, {blank:8} Saturday {blank:4} p.m Is there a {blank:9} Is there a {blank:10} Street in the house? nearby? SECTION 2</p><p>Question 1: {blank:1}</p><p>Question 5: {blank:5}</p><p>Question 7: {blank:7}</p>",
           "correctAnswers": {
             "1": "southeast",
             "2": "washing machine",
@@ -61,17 +61,16 @@
             11
           ],
           "points": 1,
-          "text": "11. Question 11",
+          "text": "11. 12",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "11": "B"
           },
-          "instruction": "Questions 11-14\nQuestions 11-20\nChoose the correct letter, A, B or C.\nInformation for fire wardens\nThe company is having this meeting about fire procedures because"
+          "instruction": "Questions 11-14\nQuestions 11-20\nChoose the correct letter, A, B or C.\nInformation for fire wardens"
         },
         {
           "blockId": "b_ov3l6_12",
@@ -85,8 +84,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "12": "C"
@@ -100,15 +98,14 @@
             13
           ],
           "points": 1,
-          "text": "13. Question 13",
+          "text": "13. 14",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A B c refused to leave personal items behind. moved too slowly during the evacuation. did not move far away enough from the building.",
+            "B left fire doors open.",
+            "C were unwilling to start the fire alarm. In the fire in January, the problem with office staff was that they"
           ],
           "correctAnswers": {
-            "13": "C"
+            "13": "C were unwilling to start the fire alarm. In the fire in January, the problem with office staff was that they"
           }
         },
         {
@@ -123,8 +120,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "14": "C"
@@ -138,7 +134,7 @@
             15
           ],
           "points": 1,
-          "text": "15. Question 15",
+          "text": "15. Aspects of fire safety ensuring there are no obstacles in fire escape routes checking that fire doors are easily opened showing staff how to look after each other training staff to use fire extinguishers correctly checking that staff are aware of evacuation points checking that flammable liquids are properly stored",
           "options": [
             "A",
             "B",
@@ -148,7 +144,7 @@
           "correctAnswers": {
             "15": "A"
           },
-          "instruction": "Questions 15 - 20\nWhat comment does the speaker make about each of the following aspects of fire\nsafety?\nWrite the correct letter, A, B or C, next to questions 15-20\nA"
+          "instruction": "Questions 15 - 20\nWhat comment does the speaker make about each of the following aspects of fire\nsafety?\nWrite the correct letter, A, B or C, next to questions 15-20"
         },
         {
           "blockId": "b_ov3l6_16",
@@ -158,7 +154,7 @@
             16
           ],
           "points": 1,
-          "text": "16. Question 16",
+          "text": "16. SECTION 3",
           "options": [
             "A",
             "B",
@@ -260,19 +256,19 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. Types of Pigeon",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H"
+            "A Comments",
+            "B eats meat",
+            "C communicates with its wings",
+            "D is found in a variety of locations",
+            "E feeds on a particular type of plant",
+            "F sings to attract a mate",
+            "G is endangered",
+            "H is brightly coloured avoids the ground"
           ],
           "correctAnswers": {
-            "21": "B"
+            "21": "B eats meat"
           },
           "instruction": "Questions 21-25\nQuestions 21-30\nWhat comments do the speakers make about each of the following types of pigeon?\nChoose FIVE answers from the box and write the correct letter, A-H, next to\nquestions 21-25."
         },
@@ -284,19 +280,19 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. Australian crested pigeon",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H"
+            "A Comments",
+            "B eats meat",
+            "C communicates with its wings",
+            "D is found in a variety of locations",
+            "E feeds on a particular type of plant",
+            "F sings to attract a mate",
+            "G is endangered",
+            "H is brightly coloured avoids the ground"
           ],
           "correctAnswers": {
-            "22": "C"
+            "22": "C communicates with its wings"
           }
         },
         {
@@ -307,19 +303,19 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. Rock pigeon",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H"
+            "A Comments",
+            "B eats meat",
+            "C communicates with its wings",
+            "D is found in a variety of locations",
+            "E feeds on a particular type of plant",
+            "F sings to attract a mate",
+            "G is endangered",
+            "H is brightly coloured avoids the ground"
           ],
           "correctAnswers": {
-            "23": "H"
+            "23": "H is brightly coloured avoids the ground"
           }
         },
         {
@@ -330,19 +326,19 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. Black-banded pigeon",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H"
+            "A Comments",
+            "B eats meat",
+            "C communicates with its wings",
+            "D is found in a variety of locations",
+            "E feeds on a particular type of plant",
+            "F sings to attract a mate",
+            "G is endangered",
+            "H is brightly coloured avoids the ground"
           ],
           "correctAnswers": {
-            "24": "D"
+            "24": "D is found in a variety of locations"
           }
         },
         {
@@ -353,19 +349,19 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. Galapagos pigeon Nicobar pigeon",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G",
-            "H"
+            "A Comments",
+            "B eats meat",
+            "C communicates with its wings",
+            "D is found in a variety of locations",
+            "E feeds on a particular type of plant",
+            "F sings to attract a mate",
+            "G is endangered",
+            "H is brightly coloured avoids the ground"
           ],
           "correctAnswers": {
-            "25": "G"
+            "25": "G is endangered"
           }
         },
         {
@@ -376,17 +372,16 @@
             26
           ],
           "points": 1,
-          "text": "26. Question 26",
+          "text": "26. 27",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "26": "A"
           },
-          "instruction": "Questions 26 - 30\nChoose the correct letter, A, B or C\nPigeons\nWhen people feed city pigeons, it causes them to\nA"
+          "instruction": "Questions 26 - 30\nChoose the correct letter, A, B or C\nPigeons\nWhen people feed city pigeons, it causes them to"
         },
         {
           "blockId": "b_ov3l6_27",
@@ -400,8 +395,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "27": "C"
@@ -415,12 +409,11 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. 29",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "28": "A"
@@ -438,8 +431,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "29": "B"
@@ -453,15 +445,13 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. A",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A B c affect our health. damage buildings. cause local flooding. SECTION 4",
+            "B c breed more successfully. become overweight. get sick. The Melbourne city council are tackling their pigeon problem by"
           ],
           "correctAnswers": {
-            "30": "A"
+            "30": "A B c affect our health. damage buildings. cause local flooding. SECTION 4"
           }
         }
       ]
@@ -488,8 +478,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31-40\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nThe Lontar Palm\nThe tree",
-          "text": "<p>.... ..... to the tree trunks to help them climb</p><p>keep their tools attached to a 33</p><p>often own particular trees</p><p>contribute to the upkeep of the communal fence</p><p>Using the juice</p><p>It quickly becomes 34</p><p>if left unprocessed.</p><p>A concentrated form of it is drunk in the rainy season.</p><p>it can be made into sugary 35</p><p>Using other parts of the tree</p><p>The leaf is used:</p><p>to make containers, bags and roofing</p><p>as garden 36</p><p>for brightly decorated hats worn at a 37</p><p>for a musical instrument which sounds like a 38</p><p>The stalk is used to make 39</p><p>The trunk is used in the construction of 40</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31-40\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nThe Lontar Palm",
+          "text": "<p>The tree grows on Roti, an Indonesian island is known as the tree of life' produces delicious juice has a fruit resembling a {blank:31} People climbing the trees ( female trees only) fix {blank:32} ____ to the tree trunks to help them climb keep their tools attached to a {blank:33} often own particular trees contribute to the upkeep of the communal fence Using the juice It quickly becomes {blank:34} if left unprocessed. A concentrated form of it is drunk in the rainy season. it can be made into sugary {blank:35} Using other parts of the tree</p><p>The leaf is used:</p><p>to make containers, bags and roofing as garden {blank:36} for brightly decorated hats worn at a {blank:37} for a musical instrument which sounds like a {blank:38} The stalk is used to make {blank:39} The trunk is used in the construction of {blank:40}</p>",
           "correctAnswers": {
             "31": "coconut",
             "32": "stones",

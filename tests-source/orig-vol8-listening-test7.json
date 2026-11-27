@@ -23,8 +23,8 @@
             4
           ],
           "points": 4,
-          "instruction": "Questions 1–4\nComplete the form below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nTravel AgencyClient Quotation Form\nCountry of destination:        AustraliaSurname:                               1 ……………  Month of travel:                   JulyLength of stay:                      2 ……………   Possible dates of travel:       within first fortnightAirport:                                  BrisbaneArea of destination:               the 3 ………….  (near Brisbane)Type of accommodation       4 ……………",
-          "text": "<p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p>",
+          "instruction": "Questions 1–4\nComplete the form below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nTravel AgencyClient Quotation Form",
+          "text": "<p>Country of destination: AustraliaSurname: {blank:1} Month of travel: JulyLength of stay: {blank:2} Possible dates of travel: within first fortnightAirport: BrisbaneArea of destination: the {blank:3} (near Brisbane)Type of accommodation {blank:4}</p>",
           "correctAnswers": {
             "1": "Thorn",
             "2": "five days/5 days",
@@ -95,7 +95,7 @@
             8
           ],
           "points": 1,
-          "text": "8. Question 8",
+          "text": "8. 8-10 Which THREE facilities does the client want at her accommodation?",
           "options": [
             "A childcare",
             "B playroom",
@@ -103,12 +103,12 @@
             "D gym",
             "E laundry",
             "F cleaning",
-            "G sauna/spa"
+            "G sauna/spa SECTION 2"
           ],
           "correctAnswers": {
             "8": "B playroom"
           },
-          "instruction": "Questions 8–10\nChoose THREE correct answers.\n8-10 Which THREE facilities does the client want at her accommodation?"
+          "instruction": "Questions 8–10\nChoose THREE correct answers.\n8-10 Which THREE facilities does the client want at her accommodation?"
         },
         {
           "blockId": "l7p1_9",
@@ -118,7 +118,7 @@
             9
           ],
           "points": 1,
-          "text": "9. Question 9",
+          "text": "9. 8-10 Which THREE facilities does the client want at her accommodation?",
           "options": [
             "A childcare",
             "B playroom",
@@ -126,7 +126,7 @@
             "D gym",
             "E laundry",
             "F cleaning",
-            "G sauna/spa"
+            "G sauna/spa SECTION 2"
           ],
           "correctAnswers": {
             "9": "E laundry"
@@ -140,7 +140,7 @@
             10
           ],
           "points": 1,
-          "text": "10. Question 10",
+          "text": "10. 8-10 Which THREE facilities does the client want at her accommodation?",
           "options": [
             "A childcare",
             "B playroom",
@@ -148,7 +148,7 @@
             "D gym",
             "E laundry",
             "F cleaning",
-            "G sauna/spa"
+            "G sauna/spa SECTION 2"
           ],
           "correctAnswers": {
             "10": "F cleaning"
@@ -174,8 +174,8 @@
             16
           ],
           "points": 6,
-          "instruction": "Questions 11–16\nComplete the sentences below.\nWrite ONE WORD AND/ OR A NUMBER for each answer.\nReynolds Electrical\nTony Reynolds' first business produced 11 …………",
-          "text": "<p>Reynolds Electrical was started in the year  12 ………..</p><p>There was previously a 13 ……….. where the company is now based.</p><p>The 14 …………  of the products is an important factor for customers.</p><p>The company is building a new 15 …………..</p><p>The company recently won an award for its success in reducing 16 …………</p><p>Q11: {blank:11}</p><p>Q12: {blank:12}</p><p>Q13: {blank:13}</p><p>Q14: {blank:14}</p><p>Q15: {blank:15}</p><p>Q16: {blank:16}</p>",
+          "instruction": "Questions 11–16\nComplete the sentences below.\nWrite ONE WORD AND/ OR A NUMBER for each answer.\nReynolds Electrical",
+          "text": "<p>Tony Reynolds' first business produced {blank:11} Reynolds Electrical was started in the year {blank:12} There was previously a {blank:13} where the company is now based. The {blank:14} of the products is an important factor for customers. The company is building a new {blank:15} The company recently won an award for its success in reducing {blank:16}</p>",
           "correctAnswers": {
             "11": "cars",
             "12": "1928",
@@ -196,8 +196,8 @@
             20
           ],
           "points": 4,
-          "instruction": "Questions 17–20\nComplete the table below.\nWrite ONE WORD ONLY for each answer.\nMeetings\nDay | Topic",
-          "text": "<p>Monday | possible improvements in 17 …………..</p><p>Tuesday | 18 ……………. development</p><p>Wednesday | communication with 19 ………..</p><p>Thursday | getting the right staff</p><p>Friday | making sure the company has enough 20 …………</p><p>SECTION 3</p><p>Q17: {blank:17}</p><p>Q18: {blank:18}</p><p>Q19: {blank:19}</p><p>Q20: {blank:20}</p>",
+          "instruction": "Questions 17–20\nComplete the table below.\nWrite ONE WORD ONLY for each answer.\nMeetings",
+          "text": "<p>Day | Topic</p><p>Monday | possible improvements in {blank:17}</p><p>Tuesday | {blank:18} development</p><p>Wednesday | communication with {blank:19}</p><p>Thursday | getting the right staff</p><p>Friday | making sure the company has enough {blank:20}</p><p>SECTION 3</p>",
           "correctAnswers": {
             "17": "safety",
             "18": "website",
@@ -332,8 +332,8 @@
             30
           ],
           "points": 4,
-          "instruction": "Questions 27–30\nWhich reason is given for the inclusion in Charlie's portfolio of each of the following pieces?\nChoose FOUR correct answers, A-F, next to questions 27-30.\nReason for inclusion in Charlie's Portfolio\nPiecesa design fora book cover 27 …….designs for jewellery 28 ………a wood carving  29 ……….. an advertisement 30 ………….",
-          "text": "<p>A  explanation of a personal relationship</p><p>B  communication of a mood</p><p>C  high degree of accuracy</p><p>D  evidence of originality</p><p>E  use of lettering</p><p>F  combination of different materials</p><p>SECTION 4</p><p>Q27: {blank:27}</p><p>Q28: {blank:28}</p><p>Q29: {blank:29}</p><p>Q30: {blank:30}</p>",
+          "instruction": "Questions 27–30\nWhich reason is given for the inclusion in Charlie's portfolio of each of the following pieces?\nChoose FOUR correct answers, A-F, next to questions 27-30.\nReason for inclusion in Charlie's Portfolio",
+          "text": "<p>Piecesa design fora book cover {blank:27} designs for jewellery {blank:28} a wood carving {blank:29} an advertisement {blank:30} A explanation of a personal relationship B communication of a mood C high degree of accuracy D evidence of originality E use of lettering F combination of different materials SECTION 4</p>",
           "correctAnswers": {
             "27": "E use of lettering",
             "28": "C high degree of accuracy",
@@ -365,8 +365,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nHospital gardens",
-          "text": "<p>A recent survey found that gardens are important in the design of hospitals.</p><p>1984 Schwartz study found that• looking at gardens may speed recovery from surgery and from 31 ………   • patients with views of nature recovered much faster than patients with views of a 32 …………</p><p>European studies• hospitals were a source of 33 ……….</p><p>Looking at nature• can affect electrical activity in the body, especially the 34 …………    • can be beneficial to the 35 ………. system</p><p>1995 Cooper and Bennett study• research methods included analysis, observation and 36 ……….   • gardens with a 37 ……….  were particularly popular</p><p>'Behavioural maps' studies• showed gardens need - areas for private conversation and flat paths- easily moved  38 ………..- landscaping that attracts 39 …………    • middle-aged patients prefer peace and quiet• elderly patients want to feel a part of  40 …………</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nHospital gardens",
+          "text": "<p>A recent survey found that gardens are important in the design of hospitals. 1984 Schwartz study found that• looking at gardens may speed recovery from surgery and from {blank:31} • patients with views of nature recovered much faster than patients with views of a {blank:32} European studies• hospitals were a source of {blank:33} Looking at nature• can affect electrical activity in the body, especially the {blank:34} • can be beneficial to the {blank:35} system 1995 Cooper and Bennett study• research methods included analysis, observation and {blank:36} • gardens with a {blank:37} were particularly popular 'Behavioural maps' studies• showed gardens need - areas for private conversation and flat paths- easily moved {blank:38} - landscaping that attracts {blank:39} • middle-aged patients prefer peace and quiet• elderly patients want to feel a part of {blank:40}</p>",
           "correctAnswers": {
             "31": "infection",
             "32": "wall",

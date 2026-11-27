@@ -29,8 +29,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1–10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nHoliday Job\nLocation 1…….. Island",
-          "text": "<p>Start date 2……..</p><p>Available jobs</p><p>Vacancy 1: Calypso Bistro</p><p>○ working as a 3……………..</p><p>○ no experience needed</p><p>Vacancy 2: Guest Liaison</p><p>○ must be able to 4………….</p><p>Vacancy 3: Activities staff</p><p>○ help with games and water sports</p><p>○ need experience with 5………</p><p>Vacancy 4: In reception</p><p>○ as a porter</p><p>○ must be able to 6……….</p><p>Benefits For all jobs,</p><p>○ there is free 7……….</p><p>○ 8 are provided</p><p>Interview</p><p>○ to be held on 9 ………at 2pm</p><p>○ bring a CV and a 10……….</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 1–10\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.\nHoliday Job",
+          "text": "<p>Location {blank:1} Island Start date {blank:2} Available jobs Vacancy 1: Calypso Bistro ○ working as a {blank:3} ○ no experience needed Vacancy 2: Guest Liaison ○ must be able to {blank:4} Vacancy 3: Activities staff ○ help with games and water sports ○ need experience with {blank:5} Vacancy 4: In reception ○ as a porter ○ must be able to {blank:6} Benefits For all jobs, ○ there is free {blank:7} ○ {blank:8} are provided Interview ○ to be held on {blank:9} at 2pm ○ bring a CV and a {blank:10}</p>",
           "correctAnswers": {
             "1": "Jamieson",
             "2": "11 July",
@@ -152,7 +152,7 @@
           "points": 1,
           "text": "16. a pair of thick trousers",
           "options": [
-            "A Walkers are advised to have this",
+            "A B",
             "B Walkers can have this, if they wish",
             "C Walkers are advised NOT to have this",
             "D"
@@ -172,7 +172,7 @@
           "points": 1,
           "text": "17. a mobile phone",
           "options": [
-            "A Walkers are advised to have this",
+            "A B",
             "B Walkers can have this, if they wish",
             "C Walkers are advised NOT to have this",
             "D"
@@ -191,7 +191,7 @@
           "points": 1,
           "text": "18. a torch",
           "options": [
-            "A Walkers are advised to have this",
+            "A B",
             "B Walkers can have this, if they wish",
             "C Walkers are advised NOT to have this",
             "D"
@@ -210,7 +210,7 @@
           "points": 1,
           "text": "19. something to drink",
           "options": [
-            "A Walkers are advised to have this",
+            "A B",
             "B Walkers can have this, if they wish",
             "C Walkers are advised NOT to have this",
             "D"
@@ -229,13 +229,13 @@
           "points": 1,
           "text": "20. a rucksack",
           "options": [
-            "A Walkers are advised to have this",
+            "A B",
             "B Walkers can have this, if they wish",
             "C Walkers are advised NOT to have this",
             "D"
           ],
           "correctAnswers": {
-            "20": "A Walkers are advised to have this"
+            "20": "A B"
           }
         }
       ]
@@ -253,7 +253,7 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. National Geographic",
           "options": [
             "A Information is not freely accessible",
             "B Too detailed for their purposes",
@@ -262,7 +262,7 @@
             "E Up-to-date information",
             "F difficult to navigate",
             "G some information is missing",
-            "H useful historical information"
+            "H useful historical information Websites"
           ],
           "correctAnswers": {
             "21": "C Contains a useful tool for users"
@@ -277,7 +277,7 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. United Nations",
           "options": [
             "A Information is not freely accessible",
             "B Too detailed for their purposes",
@@ -286,7 +286,7 @@
             "E Up-to-date information",
             "F difficult to navigate",
             "G some information is missing",
-            "H useful historical information"
+            "H useful historical information Websites"
           ],
           "correctAnswers": {
             "22": "A Information is not freely accessible"
@@ -300,7 +300,7 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. Energy Information Administration",
           "options": [
             "A Information is not freely accessible",
             "B Too detailed for their purposes",
@@ -309,7 +309,7 @@
             "E Up-to-date information",
             "F difficult to navigate",
             "G some information is missing",
-            "H useful historical information"
+            "H useful historical information Websites"
           ],
           "correctAnswers": {
             "23": "G some information is missing"
@@ -323,7 +323,7 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. British Petroleum",
           "options": [
             "A Information is not freely accessible",
             "B Too detailed for their purposes",
@@ -332,7 +332,7 @@
             "E Up-to-date information",
             "F difficult to navigate",
             "G some information is missing",
-            "H useful historical information"
+            "H useful historical information Websites"
           ],
           "correctAnswers": {
             "24": "B Too detailed for their purposes"
@@ -346,7 +346,7 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. Central Intelligence Agency",
           "options": [
             "A Information is not freely accessible",
             "B Too detailed for their purposes",
@@ -355,7 +355,7 @@
             "E Up-to-date information",
             "F difficult to navigate",
             "G some information is missing",
-            "H useful historical information"
+            "H useful historical information Websites"
           ],
           "correctAnswers": {
             "25": "E Up-to-date information"
@@ -369,7 +369,7 @@
             26
           ],
           "points": 1,
-          "text": "26. Question 26",
+          "text": "26. World Bank",
           "options": [
             "A Information is not freely accessible",
             "B Too detailed for their purposes",
@@ -378,10 +378,10 @@
             "E Up-to-date information",
             "F difficult to navigate",
             "G some information is missing",
-            "H useful historical information"
+            "H useful historical information Websites"
           ],
           "correctAnswers": {
-            "26": "H useful historical information"
+            "26": "H useful historical information Websites"
           }
         },
         {
@@ -392,7 +392,7 @@
             27
           ],
           "points": 1,
-          "text": "27. Question 27",
+          "text": "27. 27-28 Which TWO decisions do the students reach about the subject",
           "options": [
             "A They will keep the assessment criteria in mind.",
             "B They will limit the scale of their investigation.",
@@ -413,7 +413,7 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. 27-28 Which TWO decisions do the students reach about the subject",
           "options": [
             "A They will keep the assessment criteria in mind.",
             "B They will limit the scale of their investigation.",
@@ -433,7 +433,7 @@
             29
           ],
           "points": 1,
-          "text": "29. Question 29",
+          "text": "29. 29-30 Which TWO tasks will Charley be responsible for?",
           "options": [
             "A reviewing the final draft",
             "B collecting basic figures",
@@ -454,7 +454,7 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. 29-30 Which TWO tasks will Charley be responsible for?",
           "options": [
             "A reviewing the final draft",
             "B collecting basic figures",
@@ -490,8 +490,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nPublic Monument Assignment\nSection one",
-          "text": "<p>First, identify the monument and justify your choice</p><p>Comment on the 31 ……….of the monument</p><p>Add information about its:</p><p>• geographical location</p><p>• 32………….. significance</p><p>• historical context</p><p>Illustrate assignment with:</p><p>• 33………….</p><p>• photos (with captions)</p><p>End with: record of architect's achievements</p><p>Section two: Design and construction</p><p>Include information about</p><p>• The 34……….. of any particular style on the design</p><p>• The 35…………. used in construction</p><p>• Specialist 36 ………….required</p><p>Section three: Assessment of design</p><p>Content should include:</p><p>• personal assessment</p><p>• results of your survey</p><p>Use personal assessment and survey to consider:</p><p>• the 37………….. for building the monument</p><p>• the monument's 38 ………..effect on members of the public</p><p>• how well the monument suits its 39…………</p><p>Remember!</p><p>Credit given for good 40………..</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer.\nPublic Monument Assignment",
+          "text": "<p>Section one First, identify the monument and justify your choice Comment on the {blank:31} of the monument</p><p>Add information about its:</p><p>• geographical location</p><p>• {blank:32} significance</p><p>• historical context</p><p>Illustrate assignment with:</p><p>• {blank:33}</p><p>• photos (with captions)</p><p>End with: record of architect's achievements Section two: Design and construction Include information about</p><p>• The {blank:34} of any particular style on the design</p><p>• The {blank:35} used in construction</p><p>• Specialist {blank:36} required</p><p>Section three: Assessment of design</p><p>Content should include:</p><p>• personal assessment</p><p>• results of your survey</p><p>Use personal assessment and survey to consider:</p><p>• the {blank:37} for building the monument</p><p>• the monument's {blank:38} effect on members of the public</p><p>• how well the monument suits its {blank:39}</p><p>Remember!</p><p>Credit given for good {blank:40}</p>",
           "correctAnswers": {
             "31": "success",
             "32": "social",

@@ -31,8 +31,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Question 1-10\nComplete the form below\nWrite NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer\nTemporary Patient Record Form\nName:",
-          "text": "<p>Street address:</p><p>Suburb:</p><p>Phone number:</p><p>Details of injury</p><p>Sport:</p><p>Type of injury:</p><p>Date of injury:</p><p>Example</p><p>Peter Smith</p><p>Tennis</p><p>Sprained 4</p><p>Previous treatment and current problems</p><p>The patient's own doctor advised treatment</p><p>with 6</p><p>to {blank:7}</p><p>in his 8</p><p>Advice given</p><p>Stop using the 9</p><p>Do regular 10</p><p>The patient is unable</p><p>and he is experiencing pain</p><p>at night, which is affecting his sleep.</p><p>at home</p><p>SECTION 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Question 1-10\nComplete the form below\nWrite NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer\nTemporary Patient Record Form",
+          "text": "<p>Name:</p><p>Street address:</p><p>Suburb:</p><p>Phone number:</p><p>Details of injury</p><p>Sport:</p><p>Type of injury:</p><p>Date of injury:</p><p>Example Peter Smith</p><p>{blank:1}</p><p>{blank:2}</p><p>{blank:3}</p><p>Tennis Sprained {blank:4}</p><p>{blank:5}</p><p>Previous treatment and current problems The patient's own doctor advised treatment with {blank:6} to {blank:7} in his {blank:8} Advice given Stop using the {blank:9} Do regular {blank:10} The patient is unable and he is experiencing pain at night, which is affecting his sleep. at home 2 SECTION 2</p>",
           "correctAnswers": {
             "1": "95 Cross Street",
             "2": "Walkley",
@@ -71,7 +71,7 @@
           "correctAnswers": {
             "11": "C"
           },
-          "instruction": "Question 11"
+          "instruction": "Question 11\n-16\nÉ}ELTS\nQuestions 11\nChoose the correct letter, A, B or C"
         },
         {
           "blockId": "b_ov3l2_12",
@@ -81,17 +81,16 @@
             12
           ],
           "points": 1,
-          "text": "12. Question 12",
+          "text": "12. 13",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "12": "B"
           },
-          "instruction": "-16\nÉ}ELTS\nQuestions 11\nChoose the correct letter, A, B or C\n- 20"
+          "instruction": "11"
         },
         {
           "blockId": "b_ov3l2_13",
@@ -105,8 +104,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "13": "A"
@@ -120,12 +118,11 @@
             14
           ],
           "points": 1,
-          "text": "14. Question 14",
+          "text": "14. 15",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "14": "A"
@@ -143,8 +140,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "15": "B"
@@ -158,15 +154,14 @@
             16
           ],
           "points": 1,
-          "text": "16. Question 16",
+          "text": "16. The announcer says that the main topic of today's talk will be Gisborne's",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A a cultural display in the museum",
+            "B a fashion show in the town hall",
+            "C a photography exhibition in the art gallery 3"
           ],
           "correctAnswers": {
-            "16": "A"
+            "16": "A a cultural display in the museum"
           }
         },
         {
@@ -179,18 +174,18 @@
           "points": 1,
           "text": "17. Question 17",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Attractions",
+            "B 17",
+            "C 18",
+            "D 19",
+            "E 20",
+            "F Hot Springs Reserve",
+            "G Mahia Peninsula Motu River Rafting Eden Woodlands Park disabled people elderly people recently married couples pregnant women secondary school children young school children young adults 4 SECTION 3"
           ],
           "correctAnswers": {
-            "17": "C"
+            "17": "C 18"
           },
-          "instruction": "Questions 17 — 20\nWhich group of people is each of the following attractions recommended for?\nChoose FOUR answers from the box and write the correct letter, A — G, next to\nquestions 17 — 20.\nA"
+          "instruction": "Questions 17 — 20\nWhich group of people is each of the following attractions recommended for?\nChoose FOUR answers from the box and write the correct letter, A — G, next to\nquestions 17 — 20."
         },
         {
           "blockId": "b_ov3l2_18",
@@ -202,16 +197,16 @@
           "points": 1,
           "text": "18. Question 18",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Attractions",
+            "B 17",
+            "C 18",
+            "D 19",
+            "E 20",
+            "F Hot Springs Reserve",
+            "G Mahia Peninsula Motu River Rafting Eden Woodlands Park disabled people elderly people recently married couples pregnant women secondary school children young school children young adults 4 SECTION 3"
           ],
           "correctAnswers": {
-            "18": "G"
+            "18": "G Mahia Peninsula Motu River Rafting Eden Woodlands Park disabled people elderly people recently married couples pregnant women secondary school children young school children young adults 4 SECTION 3"
           }
         },
         {
@@ -224,16 +219,16 @@
           "points": 1,
           "text": "19. Question 19",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Attractions",
+            "B 17",
+            "C 18",
+            "D 19",
+            "E 20",
+            "F Hot Springs Reserve",
+            "G Mahia Peninsula Motu River Rafting Eden Woodlands Park disabled people elderly people recently married couples pregnant women secondary school children young school children young adults 4 SECTION 3"
           ],
           "correctAnswers": {
-            "19": "F"
+            "19": "F Hot Springs Reserve"
           }
         },
         {
@@ -246,16 +241,16 @@
           "points": 1,
           "text": "20. Question 20",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Attractions",
+            "B 17",
+            "C 18",
+            "D 19",
+            "E 20",
+            "F Hot Springs Reserve",
+            "G Mahia Peninsula Motu River Rafting Eden Woodlands Park disabled people elderly people recently married couples pregnant women secondary school children young school children young adults 4 SECTION 3"
           ],
           "correctAnswers": {
-            "20": "A"
+            "20": "A Attractions"
           }
         }
       ]
@@ -282,8 +277,8 @@
             30
           ],
           "points": 10,
-          "instruction": "Questions 21-30\nComplete the notes below.\nWrite NO MORE THAN THREE WORDS for each answer.\nSUVs (Sports Utility Vehicles)\nOriginally made for off-road driving (e.g. in remote areas)",
-          "text": "<p>Now widely used in 21</p><p>Advantages</p><p>• Useful for 22</p><p>e Larger 23 .</p><p>• Suitable for towing large loads</p><p>Why popular in a wider market?</p><p>•</p><p>Because of their image</p><p>Seen as 24</p><p>Larger seating capacity</p><p>Drivers prefer the 25 .</p><p>Disadvantages</p><p>SUVs can be 26</p><p>their 27</p><p>. purposes</p><p>. Capacity</p><p>by mothers</p><p>in urban centres because of</p><p>Bodywork doesn't crumple in an accident</p><p>Liable to 28</p><p>How to limit use of SUVs</p><p>. easily</p><p>Limit use to those people who need them (e.g. 29</p><p>Raise cost of 30</p><p>. paid by SUV drivers</p><p>SECTION 4</p><p>Q21: {blank:21}</p><p>Q22: {blank:22}</p><p>Q23: {blank:23}</p><p>Q24: {blank:24}</p><p>Q25: {blank:25}</p><p>Q26: {blank:26}</p><p>Q27: {blank:27}</p><p>Q28: {blank:28}</p><p>Q29: {blank:29}</p><p>Q30: {blank:30}</p>",
+          "instruction": "Questions 21-30\nComplete the notes below.\nWrite NO MORE THAN THREE WORDS for each answer.\nSUVs (Sports Utility Vehicles)",
+          "text": "<p>Originally made for off-road driving (e.g. in remote areas) Now widely used in {blank:21} Advantages</p><p>• Useful for {blank:22}</p><p>e Larger {blank:23} .</p><p>• Suitable for towing large loads</p><p>Why popular in a wider market?</p><p>•</p><p>Because of their image Seen as {blank:24} Larger seating capacity Drivers prefer the {blank:25} . Disadvantages SUVs can be {blank:26} their {blank:27} . purposes . Capacity by mothers in urban centres because of Bodywork doesn't crumple in an accident Liable to {blank:28} How to limit use of SUVs . easily Limit use to those people who need them (e.g. {blank:29} Raise cost of {blank:30} . paid by SUV drivers 5 SECTION 4</p>",
           "correctAnswers": {
             "21": "cities",
             "22": "commercial",
@@ -321,8 +316,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31-40\nComplete the notes below.\nWrite NO MORE THAN Two WORDS for each answer\nThe Influence of Children on Adult Diet\nBackground",
-          "text": "<p>Obesity — mainly caused by bad eating habits and lack of exercise</p><p>National survey conclusions:</p><p>food consumption rose between 1971 and 2000</p><p>Americans in general eat above the recommended amounts</p><p>the age group that eat most fat is 31</p><p>Family members living together show 32</p><p>. levels of fat in their diet</p><p>Aims of present study: to show whether children affect adult diet</p><p>Methods &amp; procedures</p><p>Who?</p><p>Adults aged 17-65 with children under 17</p><p>191</p><p>Other variables: age, education, race, 33</p><p>. and whether born overseas</p><p>Results</p><p>held at Mobile Examination Centres</p><p>Adults living with children are more likely to:</p><p>eat more fat</p><p>eat convenience food</p><p>Reasons</p><p>Parents have little 36</p><p>Children's preference for certain foods</p><p>Inconvenience of making separate meals</p><p>Limitations of study</p><p>The study did not consider the effects of:</p><p>the 37</p><p>the 38</p><p>Influence may decrease with 39</p><p>Conclusions and recommendations</p><p>More research needed into above areas</p><p>Research needed into how our 40</p><p>of children in each family</p><p>between the adults and children</p><p>. affect our diet</p><p>191</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31-40\nComplete the notes below.\nWrite NO MORE THAN Two WORDS for each answer\nThe Influence of Children on Adult Diet",
+          "text": "<p>Background Obesity — mainly caused by bad eating habits and lack of exercise</p><p>National survey conclusions:</p><p>food consumption rose between 1971 and 2000 Americans in general eat above the recommended amounts the age group that eat most fat is {blank:31} Family members living together show {blank:32} . levels of fat in their diet Aims of present study: to show whether children affect adult diet Methods &amp; procedures Who? Adults aged 17-65 with children under 17 Other variables: age, education, race, {blank:33} . and whether born overseas</p><p>{blank:34}</p><p>Results held at Mobile Examination Centres</p><p>Adults living with children are more likely to:</p><p>eat more fat eat convenience food</p><p>{blank:35}</p><p>6 Reasons Parents have little {blank:36} Children's preference for certain foods Inconvenience of making separate meals Limitations of study</p><p>The study did not consider the effects of:</p><p>the {blank:37} the {blank:38} Influence may decrease with {blank:39} Conclusions and recommendations More research needed into above areas Research needed into how our {blank:40} of children in each family between the adults and children . affect our diet 7</p>",
           "correctAnswers": {
             "31": "teenagers",
             "32": "similar",

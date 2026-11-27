@@ -26,7 +26,7 @@
           ],
           "points": 4,
           "instruction": "Questions 1-4",
-          "text": "<p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p>",
+          "text": "<p>Question 1: {blank:1}</p><p>Question 2: {blank:2}</p><p>Question 3: {blank:3}</p><p>Question 4: {blank:4}</p>",
           "correctAnswers": {
             "1": "7.45",
             "2": "3 courses",
@@ -42,8 +42,8 @@
             5
           ],
           "points": 1,
-          "instruction": "people\nWrite ONL Y ONE WORD AND/OR A NUMBER for each answer.\nStarting time of the party : 1.\nMenu options:\nthe standard ($25)",
-          "text": "<p>the 2</p><p>the gold( $50)</p><p>( $35)</p><p>pm</p><p>option</p><p>each course has some 3.</p><p>one guest is allergic to 4.</p><p>other requests: desserts and {blank:5}</p>",
+          "instruction": "people\nWrite ONL Y ONE WORD AND/OR A NUMBER for each answer.\nStarting time of the party : 1.\nMenu options:",
+          "text": "<p>the standard ($25) the 2 the gold( $50) ( $35) pm option each course has some 3. one guest is allergic to 4. other requests: desserts and {blank:5}</p>",
           "correctAnswers": {
             "5": "cheese"
           }
@@ -60,8 +60,8 @@
             10
           ],
           "points": 5,
-          "instruction": "Questions 6-10\nWrite ONL Y ONE WORD for each answer.\nentertainment: book a 6.\nroom decoration: pink 7.\nSpecial request: write 8'",
-          "text": "<p>after dinner</p><p>Susie' on the birthday cake</p><p>Book a 9</p><p>Phone number {blank:10}</p><p>to take guests to the Forest Hotel</p><p>SECTION 2</p><p>Questions 11-20</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p>",
+          "instruction": "Questions 6-10\nWrite ONL Y ONE WORD for each answer.\nentertainment: book a 6.\nroom decoration: pink 7.",
+          "text": "<p>Special request: write {blank:8} ' after dinner Susie' on the birthday cake Book a {blank:9} Phone number {blank:10} to take guests to the Forest Hotel SECTION 2 Questions 11-20</p><p>Question 6: {blank:6}</p><p>Question 7: {blank:7}</p>",
           "correctAnswers": {
             "6": "disco",
             "7": "flowers",
@@ -87,13 +87,12 @@
           "points": 1,
           "text": "11. When did James Brown start collecting vacuum cleaners??",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A which company made it",
+            "B what problem it might have",
+            "C the age of the battery life"
           ],
           "correctAnswers": {
-            "11": "A"
+            "11": "A which company made it"
           },
           "instruction": "Questions 11-16\nChoose the correct letter, A, B or C"
         },
@@ -126,13 +125,12 @@
           "points": 1,
           "text": "13. Before the 1950s, vacuum cleaners cost",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A the same price of an average car",
+            "B almost a whole year's salary",
+            "C about three months' wages"
           ],
           "correctAnswers": {
-            "13": "C"
+            "13": "C about three months' wages"
           }
         },
         {
@@ -145,16 +143,16 @@
           "points": 1,
           "text": "14. Why did James make a trip to the USA a few years ago?",
           "options": [
-            "A Tuesday to Saturday",
-            "B Monday",
-            "C Thursday",
+            "A not available in shops",
+            "B specially designed to be easy to move",
+            "C as large as a horse",
             "D used two different sources of power",
             "E designed by a businessman",
             "F named after a person other than the inventor",
-            "G associated with a style of building"
+            "G associated with a style of building Companies"
           ],
           "correctAnswers": {
-            "14": "B Monday"
+            "14": "B specially designed to be easy to move"
           }
         },
         {
@@ -270,7 +268,7 @@
             20
           ],
           "points": 1,
-          "text": "20. Kirby",
+          "text": "20. Kirby SECTION 3 Questions 21-30 The Role of Health Visitors",
           "options": [
             "A",
             "B",
@@ -397,16 +395,16 @@
           "points": 1,
           "text": "26. Worldwide Healthcare Policies",
           "options": [
-            "A not available in shops",
-            "B specially designed to be easy to move",
-            "C as large as a horse",
-            "D used two different sources of power",
-            "E designed by a businessman",
-            "F named after a person other than the inventor",
-            "G associated with a style of building"
+            "A Textbooks",
+            "B Features",
+            "C global coverage but sometimes inaccurate",
+            "D interesting but rather unrealistic",
+            "E practical and full of thoughtful tips",
+            "F up-to-date with an international approach",
+            "G wide ranging but poorly organized good value despite some omissions extremely costly but comprehensive"
           ],
           "correctAnswers": {
-            "26": "D used two different sources of power"
+            "26": "D interesting but rather unrealistic"
           },
           "instruction": "questions 26-30\nCharacteristics"
         },
@@ -420,16 +418,16 @@
           "points": 1,
           "text": "27. Supporting Vulnerable Families",
           "options": [
-            "A not available in shops",
-            "B specially designed to be easy to move",
-            "C as large as a horse",
-            "D used two different sources of power",
-            "E designed by a businessman",
-            "F named after a person other than the inventor",
-            "G associated with a style of building"
+            "A Textbooks",
+            "B Features",
+            "C global coverage but sometimes inaccurate",
+            "D interesting but rather unrealistic",
+            "E practical and full of thoughtful tips",
+            "F up-to-date with an international approach",
+            "G wide ranging but poorly organized good value despite some omissions extremely costly but comprehensive"
           ],
           "correctAnswers": {
-            "27": "F named after a person other than the inventor"
+            "27": "F up-to-date with an international approach"
           }
         },
         {
@@ -442,16 +440,16 @@
           "points": 1,
           "text": "28. Health Visitors and Child Protection —",
           "options": [
-            "A not available in shops",
-            "B specially designed to be easy to move",
-            "C as large as a horse",
-            "D used two different sources of power",
-            "E designed by a businessman",
-            "F named after a person other than the inventor",
-            "G associated with a style of building"
+            "A Textbooks",
+            "B Features",
+            "C global coverage but sometimes inaccurate",
+            "D interesting but rather unrealistic",
+            "E practical and full of thoughtful tips",
+            "F up-to-date with an international approach",
+            "G wide ranging but poorly organized good value despite some omissions extremely costly but comprehensive"
           ],
           "correctAnswers": {
-            "28": "G associated with a style of building"
+            "28": "G wide ranging but poorly organized good value despite some omissions extremely costly but comprehensive"
           }
         },
         {
@@ -464,16 +462,16 @@
           "points": 1,
           "text": "29. The Future of Health Visiting —",
           "options": [
-            "A not available in shops",
-            "B specially designed to be easy to move",
-            "C as large as a horse",
-            "D used two different sources of power",
-            "E designed by a businessman",
-            "F named after a person other than the inventor",
-            "G associated with a style of building"
+            "A Textbooks",
+            "B Features",
+            "C global coverage but sometimes inaccurate",
+            "D interesting but rather unrealistic",
+            "E practical and full of thoughtful tips",
+            "F up-to-date with an international approach",
+            "G wide ranging but poorly organized good value despite some omissions extremely costly but comprehensive"
           ],
           "correctAnswers": {
-            "29": "B specially designed to be easy to move"
+            "29": "B Features"
           }
         },
         {
@@ -484,18 +482,18 @@
             30
           ],
           "points": 1,
-          "text": "30. Resources for Health visitors —",
+          "text": "30. Resources for Health visitors — SECTION 4",
           "options": [
-            "A not available in shops",
-            "B specially designed to be easy to move",
-            "C as large as a horse",
-            "D used two different sources of power",
-            "E designed by a businessman",
-            "F named after a person other than the inventor",
-            "G associated with a style of building"
+            "A Textbooks",
+            "B Features",
+            "C global coverage but sometimes inaccurate",
+            "D interesting but rather unrealistic",
+            "E practical and full of thoughtful tips",
+            "F up-to-date with an international approach",
+            "G wide ranging but poorly organized good value despite some omissions extremely costly but comprehensive"
           ],
           "correctAnswers": {
-            "30": "E designed by a businessman"
+            "30": "E practical and full of thoughtful tips"
           }
         }
       ]
@@ -522,8 +520,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31-40\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nCourse on the Sense of Smell\nBackground",
-          "text": "<p>A recent study showed that people make decisions depending on 36</p><p>Experiments on how smells tell us people's feeling</p><p>A group of scientists chose some sweat samples from sky divers</p><p>Then they picked up the same subjects who worked out in a 37</p><p>The result showed people reacted more strongly to the sky dive sweat</p><p>Some scientists also found out that angry faces pose a 38</p><p>Some psychologists try to test some students whether they can smell</p><p>a chef lost her sense of smell, but regained the ability by smelling</p><p>_on a daily basis</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31-40\nComplete the notes below\nWrite ONE WORD ONLY for each answer.\nCourse on the Sense of Smell",
+          "text": "<p>Background People's sense of smell is not as developed as that of some animals Animal with the most accurate sense of smell is the {blank:31} There is a misconception that people's sense of smell is weak In fact subtle smells have great impacts on people's mood People' noses can not detect the {blank:32} of the odor. Practical examples of how smell affects us Estate agents arranged the smell of newly made {blank:33} clients to buy the property quickly Dutch researchers found out that the odor of {blank:34} to go to clubs the smell of detergent makes students to {blank:35} it to encourage makes people like the kitchen after using A recent study showed that people make decisions depending on {blank:36} Experiments on how smells tell us people's feeling A group of scientists chose some sweat samples from sky divers Then they picked up the same subjects who worked out in a {blank:37} The result showed people reacted more strongly to the sky dive sweat Some scientists also found out that angry faces pose a {blank:38} Some psychologists try to test some students whether they can smell</p><p>{blank:39}</p><p>a chef lost her sense of smell, but regained the ability by smelling _on a daily basis</p><p>Question 40: {blank:40}</p>",
           "correctAnswers": {
             "31": "smell",
             "32": "source",

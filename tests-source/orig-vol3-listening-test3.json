@@ -22,8 +22,8 @@
             1
           ],
           "points": 1,
-          "instruction": "Question 1\n-10\nWrite NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer.\nWildlife Conservation Society\nApplication for membership",
-          "text": "<p>Example</p><p>Caller's name:</p><p>Heard of WCS from:</p><p>Address:</p><p>Postcode:</p><p>Phone number:</p><p>Email address:</p><p>Length of membership:</p><p>Type of membership: —</p><p>Fee:</p><p>Payment details:</p><p>Name of bank:</p><p>Account name:</p><p>Account number:</p><p>Date of first payment:</p><p>Reference number:</p><p>Other requests:</p><p>Michael Jones</p><p>Q1: {blank:1}</p>",
+          "instruction": "Question 1\n-10\nWrite NO MORE THAN THREE WORDS AND/OR A NUMBER for each answer.\nWildlife Conservation Society",
+          "text": "<p>Application for membership Example</p><p>Caller's name:</p><p>Heard of WCS from:</p><p>Address:</p><p>Postcode:</p><p>Phone number:</p><p>Email address:</p><p>Length of membership:</p><p>Type of membership: —</p><p>Fee:</p><p>Payment details:</p><p>Name of bank:</p><p>Account name:</p><p>Account number:</p><p>Date of first payment:</p><p>Reference number:</p><p>Other requests:</p><p>Michael Jones</p><p>Question 1: {blank:1}</p>",
           "correctAnswers": {
             "1": "(a) radio program"
           }
@@ -45,7 +45,7 @@
           ],
           "points": 9,
           "instruction": "21 Beel Street, Leeds",
-          "text": "<p>{blank:2}</p><p>01173 58642</p><p>4.</p><p>Years</p><p>direct debit</p><p>Michael Jones</p><p>01059612</p><p>{blank:8}</p><p>{blank:9}</p><p>- extra information pack</p><p>10.</p><p>SECTION 2</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q10: {blank:10}</p>",
+          "text": "<p>{blank:2}</p><p>01173 58642</p><p>{blank:4}</p><p>Years direct debit</p><p>{blank:7}</p><p>Michael Jones 01059612</p><p>{blank:8}</p><p>{blank:9}</p><p>- extra information pack</p><p>{blank:10}</p><p>2 SECTION 2</p><p>Question 3: {blank:3}</p><p>Question 5: {blank:5}</p><p>Question 6: {blank:6}</p>",
           "correctAnswers": {
             "2": "LS14 2JW",
             "3": "hennigs.co.uk",
@@ -81,7 +81,7 @@
           ],
           "points": 8,
           "instruction": "Question 11 — 18\nComplete the notes below.\nQuestions 11\n- 20\nWrite NO MORE THAN Two WORDS AND/OR A NUMBER for each answer.",
-          "text": "<p>4 September</p><p>9 p.m.</p><p>daily</p><p>-10—15 September</p><p>9 a.m. — 10 p.m.</p><p>11-19</p><p>September</p><p>17&amp;18</p><p>September</p><p>Other Information</p><p>Pack a 12</p><p>and blanket</p><p>Buses run from the</p><p>town centre</p><p>every {blank:14}</p><p>minutes</p><p>Saturday matinee</p><p>performance</p><p>at 18</p><p>Q11: {blank:11}</p><p>Q12: {blank:12}</p><p>Q13: {blank:13}</p><p>Q15: {blank:15}</p><p>Q16: {blank:16}</p><p>Q17: {blank:17}</p><p>Q18: {blank:18}</p>",
+          "text": "<p>Spring Festival Event Firework display Display of</p><p>{blank:13}</p><p>The {blank:15} Show 'Grow Your Imagination' 'Swing in Spring' Location Near the</p><p>{blank:11}</p><p>Central Park Exhibition Centre in the</p><p>{blank:16}</p><p>in the</p><p>{blank:17}</p><p>Date and Time 4 September 9 p.m. daily</p><p>-10—15 September</p><p>9 a.m. — 10 p.m.</p><p>11-19 September 17&amp; {blank:18} September 3 Other Information Pack a {blank:12} and blanket Buses run from the town centre every {blank:14} minutes Saturday matinee performance at 18</p>",
           "correctAnswers": {
             "11": "lake",
             "12": "picnic",
@@ -101,17 +101,17 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. 20 In the Spring Festival competition, you can win",
           "options": [
             "A",
-            "B",
+            "B c the radio station the newspaper the Festival's website 4 SECTION 3 Complete the notes below.",
             "C",
             "D"
           ],
           "correctAnswers": {
             "19": "C"
           },
-          "instruction": "Question 19 and 20"
+          "instruction": "Question 19 and 20\nChoose the correct letter, A, B or C."
         },
         {
           "blockId": "b_ov3l3_20",
@@ -124,12 +124,12 @@
           "text": "20. Question 20",
           "options": [
             "A",
-            "B",
+            "B c the radio station the newspaper the Festival's website 4 SECTION 3 Complete the notes below.",
             "C",
             "D"
           ],
           "correctAnswers": {
-            "20": "B"
+            "20": "B c the radio station the newspaper the Festival's website 4 SECTION 3 Complete the notes below."
           }
         }
       ]
@@ -140,11 +140,24 @@
       "text": "<p>Gallery from the 11th to the 19th of September. Come and be inspired by some have the world's</p><p>most beautiful gardens. I've had a sneak preview of some of the photographs, and they are</p><p>magnificent. If music is more your scene, then you should come and hear the Australian</p><p>Philharmonic Orchestra performing swing in spring at the concert hall on Friday, the 17th and</p><p>Saturday the 18th of September. It's a celebration of dance music from the 1940s and 50s. There</p><p>will be three performances. Both evening start at 7pm and a matinee performance at 230 on the</p><p>Saturday, so get your dancing shoes on and head there, it's guaranteed to get your feet tapping.</p><p>2</p><p>Speaker 2</p><p>10:45</p><p>Before you hear the rest of the program, you have some time to look at questions 19 and 20 on</p><p>page four. Now listen and answer questions 19 and 20.</p><p>6</p><p>Speaker 6</p><p>11:14</p><p>Those are just a few of the attractions on offer. But for something a little different, you could try</p><p>balloons down under, which is the largest gathering of hot air balloons in the southern</p><p>hemisphere. It's well worth it. because there'll be over 25 balloons of all shapes and sizes, which</p><p>GROUP: ORIGINAL EXAMS – DỰ ĐOÁN  ĐỀ THI IELTS THEO NGÀY</p><p>is a truly amazing sight. I'm also happy to announce that one lucky person will get the chance to</p><p>go up in one of these balloons absolutely free. That's the prize in our special spring festival</p><p>competition. It had normally cost you $200 So it's not a bad prize I I'm sure you all want a</p><p>chance to win, so you'll need to fill out the entry form. In today's edition of the Yorktown news.</p><p>Don't forget to include your phone number and send it to radio Yorkie. Make sure your entry</p><p>reaches us by 5pm on Thursday, the ninth of September. Then to see if you've won, just check</p><p>out the festivals website on Saturday the 11th of September, where we'll publish the name of the</p><p>lucky winner. It's such a fantastic prize. So hurry up and get your entry in. So there you have it.</p><p>Just a few of the special events happening here in Yorktown over the Spring Festival. And if</p><p>you'd like any more details about the festival</p><p>2</p><p>Speaker 2</p><p>12:47</p><p>that is the end of section two. You now have half a minute to check your answers.</p><p>2</p><p>Speaker 2</p><p>13:22</p><p>Now turn to section three. On page five. Section three, you will hear a student called Paul talking</p><p>to a tutor about a course he is thinking of doing. First you have some time to look at questions 21</p><p>to 25 on page five. Now listen carefully and answer questions 21 to 25.</p><p>7</p><p>Speaker 7</p><p>14:13</p><p>Good morning. Come in. You're Paul, are you? Yes,</p><p>14:17</p><p>I spoke to you on the phone. Yes.</p><p>7</p><p>Speaker 7</p><p>14:19</p><p>Have a seat. You wanted to talk to me about the archaeology course?</p><p>5</p><p>Speaker 5</p><p>14:24</p><p>Yes, I've read the handbook. But I'd like to find out a few more details before I decide whether to</p><p>do it.</p><p>7</p><p>Speaker 7</p><p>14:29</p><p>Right. Yes. What would you like to know? Well, first</p><p>5</p><p>Speaker 5</p><p>14:33</p><p>of all, can I combine the archaeology course with one in anthropology?</p><p>7</p><p>Speaker 7</p><p>GROUP: ORIGINAL EXAMS – DỰ ĐOÁN  ĐỀ THI IELTS THEO NGÀY</p><p>14:38</p><p>Yes, you can combine it with any other subject apart from classical history. That simply because</p><p>there's some overlap in the lecture times for those two courses. We weren't able to coordinate</p><p>them.</p><p>5</p><p>Speaker 5</p><p>14:51</p><p>Okay, fine. And could you tell me about the modules? Well,</p><p>7</p><p>Speaker 7</p><p>14:55</p><p>in the first semester, there are three all of them are compulsory. We don't offer optional modules</p><p>till next year, right? The first one focuses on what can be learned from specific artifacts, such as</p><p>pottery and stone tools. It's called Object matters. And it's taught by Dr. Morris,</p><p>5</p><p>Speaker 5</p><p>15:16</p><p>is that how is the module presented? I mean, is it lectures,</p><p>7</p><p>Speaker 7</p><p>15:21</p><p>we refer to the means of presentation as the learning method. And in this case, its lectures</p><p>integrated with practical sessions. So it's a mixture.</p><p>5</p><p>Speaker 5</p><p>15:31</p><p>What about the content, I suppose we'll be looking at different kinds of archaeological remains,</p><p>and how to date them and so on,</p><p>7</p><p>Speaker 7</p><p>15:39</p><p>to some extent, but the module is basically about processes. First of all, recording material, then</p><p>classification, then interpretation of the data. That's how archaeologists draw conclusions about</p><p>their findings. And finally, display. Is that okay?</p><p>5</p><p>Speaker 5</p><p>15:58</p><p>I think so. Yes, thanks. One other thing? How is the module assessed? Is there an exam?</p><p>16:05</p><p>No, it's all based on coursework.</p>",
       "questions": [
         {
-          "blockId": "b_ov3l3_21_30",
+          "blockId": "b_ov3l3_21_21",
           "type": "fill_blanks",
           "subtype": "fill_blanks",
           "ids": [
-            21,
+            21
+          ],
+          "points": 1,
+          "instruction": "Questions 21",
+          "text": "<p>Question 21: {blank:21}</p>",
+          "correctAnswers": {
+            "21": "classical history"
+          }
+        },
+        {
+          "blockId": "b_ov3l3_22_30",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
             22,
             23,
             24,
@@ -155,11 +168,10 @@
             29,
             30
           ],
-          "points": 10,
-          "instruction": "Choose the correct letter, A, B or C.\nIn the Spring Festival competition, you can win\nB\nc\na family pass to 'Balloons Down Under'",
-          "text": "<p>a cheque for $200</p><p>a flight in a hot air balloon</p><p>You can get an entry form for the competition from</p><p>B</p><p>c</p><p>the radio station</p><p>the newspaper</p><p>the Festival's website</p><p>SECTION 3</p><p>Complete the notes below.</p><p>Questions 21</p><p>-30</p><p>Write NO MORE THAN THREE WORDS for each answer.</p><p>Archaeology Course</p><p>Can be combined with any other subject except 21</p><p>Has three 22</p><p>Module 1</p><p>Title:</p><p>Lecturer:</p><p>Learning method.</p><p>Content:</p><p>Assessment:</p><p>modules in first semester</p><p>Dr Morris</p><p>Lectures and practical sessions</p><p>Based on processes</p><p>recording</p><p>interpretation</p><p>display</p><p>By 25</p><p>Module 2</p><p>Title:</p><p>Lecturer:</p><p>Content:</p><p>Assessment:</p><p>Module 3</p><p>Title:</p><p>Lecturer:</p><p>Content:</p><p>Prof. Elliot</p><p>By 28</p><p>and development of built environments</p><p>examination</p><p>Method and Science</p><p>Dr Thompson</p><p>Standard techniques in fieldwork and analysis</p><p>Learning method: 50% lab work, 50% 29</p><p>Site survey at end of module (the 30</p><p>is to be announced later)</p><p>SECTION 4</p><p>Q21: {blank:21}</p><p>Q22: {blank:22}</p><p>Q23: {blank:23}</p><p>Q24: {blank:24}</p><p>Q25: {blank:25}</p><p>Q26: {blank:26}</p><p>Q27: {blank:27}</p><p>Q28: {blank:28}</p><p>Q29: {blank:29}</p><p>Q30: {blank:30}</p>",
+          "points": 9,
+          "instruction": "-30\nWrite NO MORE THAN THREE WORDS for each answer.\nArchaeology Course\nCan be combined with any other subject except 21",
+          "text": "<p>Has three {blank:22} Module 1</p><p>Title:</p><p>Lecturer:</p><p>Learning method.</p><p>Content:</p><p>Assessment:</p><p>modules in first semester</p><p>{blank:23}</p><p>Dr Morris Lectures and practical sessions Based on processes recording</p><p>{blank:24}</p><p>interpretation display By {blank:25} 5 Module 2</p><p>Title:</p><p>Lecturer:</p><p>Content:</p><p>Assessment:</p><p>Module 3</p><p>Title:</p><p>Lecturer:</p><p>Content:</p><p>{blank:26}</p><p>Prof. Elliot</p><p>{blank:27}</p><p>By {blank:28} and development of built environments examination Method and Science Dr Thompson Standard techniques in fieldwork and analysis Learning method: 50% lab work, 50% {blank:29} Site survey at end of module (the {blank:30} is to be announced later) 6 SECTION 4</p>",
           "correctAnswers": {
-            "21": "classical history",
             "22": "compulsory",
             "23": "Object matters",
             "24": "classification",
@@ -186,17 +198,16 @@
             31
           ],
           "points": 1,
-          "text": "31. Question 31",
+          "text": "31. What impact does Marc Prensky believe that digital technology has had on young people?",
           "options": [
-            "A It has altered their thinking patterns.",
-            "B It has harmed their physical development.",
-            "C It has limited their brain capacity.",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "31": "A It has altered their thinking patterns."
+            "31": "A"
           },
-          "instruction": "Questions 31 — 33\nChoose the correct letter, A, B or C\nQuestions 31\n— 40\nWhat impact does Marc Prensky believe that digital technology has had on young people?"
+          "instruction": "Questions 31 — 33\nChoose the correct letter, A, B or C\nQuestions 31\n— 40"
         },
         {
           "blockId": "b_ov3l3_32",
@@ -206,15 +217,14 @@
             32
           ],
           "points": 1,
-          "text": "32. Question 32",
+          "text": "32. A It has altered their thinking patterns.",
           "options": [
-            "A It has altered their thinking patterns.",
-            "B It has harmed their physical development.",
-            "C It has limited their brain capacity.",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "32": "B It has harmed their physical development."
+            "32": "B"
           }
         },
         {
@@ -225,15 +235,14 @@
             33
           ],
           "points": 1,
-          "text": "33. Question 33",
+          "text": "33. B It has harmed their physical development. What example is given of having a 'digital accent'?",
           "options": [
-            "A It has altered their thinking patterns.",
-            "B It has harmed their physical development.",
-            "C It has limited their brain capacity.",
-            "D"
+            "A having less effective typing skills",
+            "B doing things the old-fashioned way",
+            "C being unable to understand instructions 7"
           ],
           "correctAnswers": {
-            "33": "B It has harmed their physical development."
+            "33": "B doing things the old-fashioned way"
           }
         },
         {
@@ -244,17 +253,16 @@
             34
           ],
           "points": 1,
-          "text": "34. Question 34",
+          "text": "34. Current teaching methods don't work.",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "34": "B"
           },
-          "instruction": "Questions 34 — 40\nWhich theorist makes each of the following points?\nWrite the correct letter, A, B or C, next to questions 34-40.\nPoints made\nCurrent teaching methods don't work."
+          "instruction": "Questions 34 — 40\nWhich theorist makes each of the following points?\nWrite the correct letter, A, B or C, next to questions 34-40.\nPoints made"
         },
         {
           "blockId": "b_ov3l3_35",
@@ -264,12 +272,11 @@
             35
           ],
           "points": 1,
-          "text": "35. Question 35",
+          "text": "35. Many students don't understand computers.",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "35": "C"
@@ -283,12 +290,11 @@
             36
           ],
           "points": 1,
-          "text": "36. Question 36",
+          "text": "36. Computer technology doesn't interest all students.",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "36": "A"
@@ -302,12 +308,11 @@
             37
           ],
           "points": 1,
-          "text": "37. Question 37",
+          "text": "37. Students can still learn the traditional way.",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "37": "B"
@@ -321,12 +326,11 @@
             38
           ],
           "points": 1,
-          "text": "38. Question 38",
+          "text": "38. Students still need to learn research skills.",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "38": "A"
@@ -340,15 +344,14 @@
             39
           ],
           "points": 1,
-          "text": "39. Question 39",
+          "text": "39. We should use computer games to teach.",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A Allen",
+            "B James",
+            "C Vander 8"
           ],
           "correctAnswers": {
-            "39": "B"
+            "39": "B James"
           }
         },
         {
@@ -363,8 +366,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "40": "C"

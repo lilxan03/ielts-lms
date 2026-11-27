@@ -27,8 +27,8 @@
             6
           ],
           "points": 6,
-          "instruction": "Question 1 - 10\nSECTION 1\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer\nSports Photography Course Registration",
-          "text": "<p>Caller's name:</p><p>Chris Johnson</p><p>The level of the selected course: suitable for 1</p><p>How to register:</p><p>Cost:</p><p>Date available:</p><p>Telephone number</p><p>Requirement:</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p>",
+          "instruction": "Question 1 - 10\nSECTION 1\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer",
+          "text": "<p>Sports Photography Course Registration</p><p>Caller's name:</p><p>Chris Johnson The level of the selected course: suitable for {blank:1}</p><p>How to register:</p><p>Cost:</p><p>Date available:</p><p>Telephone number</p><p>Requirement:</p><p>Question 2: {blank:2}</p><p>Question 3: {blank:3}</p><p>Question 4: {blank:4}</p><p>Question 5: {blank:5}</p><p>Question 6: {blank:6}</p>",
           "correctAnswers": {
             "1": "beginners",
             "2": "interview",
@@ -50,7 +50,7 @@
           ],
           "points": 4,
           "instruction": "Question 7-10\nComplete the table below\nno need for an 2",
-          "text": "<p>next course, beginning 4..........</p><p>5..</p><p>bring two photos of different 6.. .</p><p>Write ONE WORD ONLY for each answer.</p><p>Saturday</p><p>Sunday</p><p>SECTION 2</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "text": "<p>next course, beginning 4 {blank:7} 5.. bring two photos of different 6.. . Write ONE WORD ONLY for each answer. Saturday Sunday SECTION 2</p><p>Question 8: {blank:8}</p><p>Question 9: {blank:9}</p><p>Question 10: {blank:10}</p>",
           "correctAnswers": {
             "7": "equipment",
             "8": "position",
@@ -82,7 +82,7 @@
           "correctAnswers": {
             "11": "B local residents"
           },
-          "instruction": "Questions 11-18\nMorning\nAfternoon\nCurriculum\n— Introduction by the instructor"
+          "instruction": "Questions 11-18\nMorning\nAfternoon\nCurriculum"
         },
         {
           "blockId": "b_ov1l9_12",
@@ -220,7 +220,7 @@
           ],
           "points": 2,
           "instruction": "Questions 19 and 20\nComplete the sentences below\nWrite NO MORE THAN WORDS for each answer.",
-          "text": "<p>19 The gift shop is loæted beside the.... on the ground floor {blank:19}</p><p>20 Free {blank:20}</p><p>...... are available for vistors's belongings</p><p>PART 3 Questions 21-30</p>",
+          "text": "<p>19 The gift shop is loæted beside the ____ on the ground floor {blank:19} 20 Free {blank:20} ____ are available for vistors's belongings PART 3 Questions 21-30</p>",
           "correctAnswers": {
             "19": "Information desk",
             "20": "lockers"
@@ -278,7 +278,7 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. The first few questions in the questionnair are",
           "options": [
             "A",
             "B",
@@ -296,7 +296,7 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. A to understand people's staste in music B to clarify the research aim C to disguise the purpose of the survey the questions in the questionnaire came from A a previous study B a professional dictionary C the student herself",
           "options": [
             "A",
             "B",
@@ -359,14 +359,14 @@
           "options": [
             "A people will spend more money in the restaurant.",
             "B people don't even notice the music",
-            "C people will come back again",
+            "C people don't think the restaurant is worth the price",
             "D people will leave the restaurant right after eating",
             "E people don't like the restaurant at all."
           ],
           "correctAnswers": {
             "27": "D people will leave the restaurant right after eating"
           },
-          "instruction": "Questions 27-30\nWhat is people's attitude toward playing each for the following music in restaurants?\nChoose Four answers from the box and write the correct letter, A-F, next to Question\n27-30\nPeople's Attitudes"
+          "instruction": "Questions 27-30\nWhat is people's attitude toward playing each for the following music in restaurants?\nChoose Four answers from the box and write the correct letter, A-F, next to Question\n27-30"
         },
         {
           "blockId": "b_ov1l9_28",
@@ -380,7 +380,7 @@
           "options": [
             "A people will spend more money in the restaurant.",
             "B people don't even notice the music",
-            "C people will come back again",
+            "C people don't think the restaurant is worth the price",
             "D people will leave the restaurant right after eating",
             "E people don't like the restaurant at all."
           ],
@@ -400,7 +400,7 @@
           "options": [
             "A people will spend more money in the restaurant.",
             "B people don't even notice the music",
-            "C people will come back again",
+            "C people don't think the restaurant is worth the price",
             "D people will leave the restaurant right after eating",
             "E people don't like the restaurant at all."
           ],
@@ -416,16 +416,16 @@
             30
           ],
           "points": 1,
-          "text": "30. pop music",
+          "text": "30. pop music Part 4",
           "options": [
             "A people will spend more money in the restaurant.",
             "B people don't even notice the music",
-            "C people will come back again",
+            "C people don't think the restaurant is worth the price",
             "D people will leave the restaurant right after eating",
             "E people don't like the restaurant at all."
           ],
           "correctAnswers": {
-            "30": "C people will come back again"
+            "30": "C people don't think the restaurant is worth the price"
           }
         }
       ]
@@ -452,8 +452,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Question 31-40\nComplete the notes below\nWrite NO WORD ONL Y for each answer.\nCube Houses\nBackground Information",
-          "text": "<p>The Cube Houses sit on top of a {blank:33} For pedestrians to the central city.</p><p>During construction, the work was temporarily discontinued because the</p><p>designer faced the problem of {blank:34}</p><p>Design Features of the Cube Houses.</p><p>•</p><p>•</p><p>•</p><p>•</p><p>Underneath the houses, there are three pillars made of 35</p><p>A new building is situated between a warehouse and a {blank:36}</p><p>architecture.</p><p>It is a three- storey building.</p><p>The ground floor is an entrance</p><p>of</p><p>Both the lower level and the top level of each house are in the shape of a {blank:37}</p><p>The first floor has a living room and an open kitchen.</p><p>The medium level has a bathroom and two bedrooms</p><p>The top floor is sometimes used as a small {blank:38}</p><p>Living in the Cube Houses</p><p>There is a nearby market {blank:39} ..... across the square from the Cube Houses.</p><p>For guests, two advantages of the house are its convenient {blank:40} And</p><p>reasonable price.</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q35: {blank:35}</p>",
+          "instruction": "Question 31-40\nComplete the notes below\nWrite NO WORD ONL Y for each answer.\nCube Houses",
+          "text": "<p>Background Information</p><p>•</p><p>•</p><p>•</p><p>•</p><p>After World War 11, local urban planners wanted to redevelop and revive the city. Altogether, the Cube Houses æn function as a {blank:31} Each Cube building is in the shape of a {blank:32} The Cube Houses sit on top of a {blank:33} For pedestrians to the central city. During construction, the work was temporarily discontinued because the designer faced the problem of {blank:34} Design Features of the Cube Houses.</p><p>•</p><p>•</p><p>•</p><p>•</p><p>Underneath the houses, there are three pillars made of {blank:35} A new building is situated between a warehouse and a {blank:36} architecture. It is a three- storey building. The ground floor is an entrance of Both the lower level and the top level of each house are in the shape of a {blank:37} The first floor has a living room and an open kitchen. The medium level has a bathroom and two bedrooms The top floor is sometimes used as a small {blank:38} Living in the Cube Houses There is a nearby market {blank:39} ____ across the square from the Cube Houses. For guests, two advantages of the house are its convenient {blank:40} And reasonable price.</p>",
           "correctAnswers": {
             "31": "village",
             "32": "tree",

@@ -23,8 +23,8 @@
             4
           ],
           "points": 4,
-          "instruction": "Questions 1–4\nComplete the form below\nWrite NO MORE THAN TWO WORDS for each answer.\nHOMECARE CLEANING AGENCY\nHome Details",
-          "text": "<p>Customers referred by: friend</p><p>Location: in the 1 ……..</p><p>Type of cleaning: regular</p><p>Rooms:</p><p>o two 2……… bedrooms</p><p>(third bedroom used as 3…….. )</p><p>o kitchen/diner</p><p>o 4…………..</p><p>o family room</p><p>o two bathrooms</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p>",
+          "instruction": "Questions 1–4\nComplete the form below\nWrite NO MORE THAN TWO WORDS for each answer.\nHOMECARE CLEANING AGENCY",
+          "text": "<p>Home Details Customers referred by: friend Location: in the {blank:1} Type of cleaning: regular</p><p>Rooms:</p><p>o two {blank:2} bedrooms (third bedroom used as {blank:3} ) o kitchen/diner o {blank:4} o family room o two bathrooms</p>",
           "correctAnswers": {
             "1": "Southwest management",
             "2": "double",
@@ -97,8 +97,8 @@
             10
           ],
           "points": 3,
-          "instruction": "Questions 8–10\nComplete the form below\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for\neach answer.\nHOMECARE CLEANING AGENCY",
-          "text": "<p>Customer Details</p><p>Name: Rose Kelly</p><p>Address: 48 8……… Road</p><p>Mount Eden</p><p>Day of job: 9……….</p><p>Time: 9.30 am.</p><p>Cost per hour: $25</p><p>Maximum length of job: 10………..</p><p>SECTION 2</p><p>Read the text and answer questions 11–20</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 8–10\nComplete the form below\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for\neach answer.",
+          "text": "<p>HOMECARE CLEANING AGENCY Customer Details Name: Rose Kelly Address: 48 {blank:8} Road Mount Eden Day of job: {blank:9} Time: 9.30 am. Cost per hour: $25 Maximum length of job: {blank:10} SECTION 2 Read the text and answer questions 11–20</p>",
           "correctAnswers": {
             "8": "AMYES",
             "9": "Thursday",
@@ -120,7 +120,7 @@
             11
           ],
           "points": 1,
-          "text": "11. What does the tour guide advise the visitors to do in the museum",
+          "text": "11. What does the tour guide advise the visitors to do in the museum today?",
           "options": [
             "A see the most popular exhibits first",
             "B pay a brief visit to each gallery",
@@ -211,7 +211,7 @@
             16
           ],
           "points": 1,
-          "text": "16. Visitors who are interested in learning more about the exhibits",
+          "text": "16. Visitors who are interested in learning more about the exhibits should",
           "options": [
             "A visit the museum’s website",
             "B read the leaflet on display",
@@ -229,19 +229,19 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. 18th-century paintings",
           "options": [
             "A has been shown in different museums",
             "B consist of work by a local resident",
             "C has exhibits from various countries",
             "D in only on temporary display",
             "E shows things that are no longer common",
-            "F is on loan from foreign museum"
+            "F is on loan from foreign museum SECTION 3 Read the text and answer questions 21–30"
           ],
           "correctAnswers": {
             "17": "C has exhibits from various countries"
           },
-          "instruction": "Questions 17–20\nWhat information does the guide give about each of the following\ncollections?\nChoose FOUR correct answers, A-F, next to questions 17-20.\nInformation"
+          "instruction": "Questions 17–20\nWhat information does the guide give about each of the following\ncollections?\nChoose FOUR correct answers, A-F, next to questions 17-20."
         },
         {
           "blockId": "l9p2_18",
@@ -251,14 +251,14 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. Farnley collection",
           "options": [
             "A has been shown in different museums",
             "B consist of work by a local resident",
             "C has exhibits from various countries",
             "D in only on temporary display",
             "E shows things that are no longer common",
-            "F is on loan from foreign museum"
+            "F is on loan from foreign museum SECTION 3 Read the text and answer questions 21–30"
           ],
           "correctAnswers": {
             "18": "B consist of work by a local resident"
@@ -272,14 +272,14 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. Kitchen appliances",
           "options": [
             "A has been shown in different museums",
             "B consist of work by a local resident",
             "C has exhibits from various countries",
             "D in only on temporary display",
             "E shows things that are no longer common",
-            "F is on loan from foreign museum"
+            "F is on loan from foreign museum SECTION 3 Read the text and answer questions 21–30"
           ],
           "correctAnswers": {
             "19": "E shows things that are no longer common"
@@ -293,14 +293,14 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. Fashion gallery",
           "options": [
             "A has been shown in different museums",
             "B consist of work by a local resident",
             "C has exhibits from various countries",
             "D in only on temporary display",
             "E shows things that are no longer common",
-            "F is on loan from foreign museum"
+            "F is on loan from foreign museum SECTION 3 Read the text and answer questions 21–30"
           ],
           "correctAnswers": {
             "20": "D in only on temporary display"
@@ -321,7 +321,7 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. PEST",
           "options": [
             "A it will save a lot of business time and effort",
             "B it is visualized",
@@ -334,7 +334,7 @@
           "correctAnswers": {
             "21": "C it does not fit our company"
           },
-          "instruction": "Questions 21–25\nWhat are the characteristics of the following analysis methods?\nChoose FIVE correct letters, A-G, next to questions 21-25.\nAnalysis methods\nPEST 21…."
+          "instruction": "Questions 21–25\nWhat are the characteristics of the following analysis methods?\nChoose FIVE correct letters, A-G, next to questions 21-25.\nAnalysis methods"
         },
         {
           "blockId": "l9p3_22",
@@ -344,7 +344,7 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. Drill Down",
           "options": [
             "A it will save a lot of business time and effort",
             "B it is visualized",
@@ -366,7 +366,7 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. PMI",
           "options": [
             "A it will save a lot of business time and effort",
             "B it is visualized",
@@ -388,7 +388,7 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. Pareto",
           "options": [
             "A it will save a lot of business time and effort",
             "B it is visualized",
@@ -410,7 +410,7 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. SWOT",
           "options": [
             "A it will save a lot of business time and effort",
             "B it is visualized",
@@ -451,7 +451,7 @@
             27
           ],
           "points": 1,
-          "text": "27. What factor did Sam overlooked for the future growth of the",
+          "text": "27. What factor did Sam overlooked for the future growth of the company?",
           "options": [
             "A seek for cheaper suppliers",
             "B set up an overseas office",
@@ -509,7 +509,7 @@
           "options": [
             "A give a final determination",
             "B reorganize a clear structure",
-            "C add more detailed information"
+            "C add more detailed information SECTION 4 Read the text and answer questions 31–40"
           ],
           "correctAnswers": {
             "30": "A give a final determination"
@@ -539,8 +539,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31–40\nComplete the notes below\nWrite NO MORE THAN TWO WORDS for each answer.\nEmployment Survey on Graduates\nOverview",
-          "text": "<p>o interviews from which subject: 31……..</p><p>o two research methods: email questionnaires and 32………</p><p>Findings</p><p>o 32% of students tended to acquire another 33………</p><p>o only 4% were unemployed</p><p>o most of students work in the 34……. sector</p><p>o majority are happy with: 35……..</p><p>Feedback</p><p>Useful skills learned in college:</p><p>o working as a 36 ……. member</p><p>o personal organization</p><p>o 37………. ability</p><p>Useless skills:</p><p>o 38…………(lack of training)</p><p>o advice on 39 …………(unnecessary)</p><p>o advice on finding a 40 ………….(not enough)</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31–40\nComplete the notes below\nWrite NO MORE THAN TWO WORDS for each answer.\nEmployment Survey on Graduates",
+          "text": "<p>Overview o interviews from which subject: {blank:31} o two research methods: email questionnaires and {blank:32} Findings o 32% of students tended to acquire another {blank:33} o only 4% were unemployed o most of students work in the {blank:34} sector o majority are happy with: {blank:35} Feedback</p><p>Useful skills learned in college:</p><p>o working as a {blank:36} member o personal organization o {blank:37} ability</p><p>Useless skills:</p><p>o {blank:38} (lack of training) o advice on {blank:39} (unnecessary) o advice on finding a {blank:40} (not enough)</p>",
           "correctAnswers": {
             "31": "business",
             "32": "phone interviews",

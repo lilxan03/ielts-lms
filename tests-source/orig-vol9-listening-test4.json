@@ -29,8 +29,8 @@
             10
           ],
           "points": 10,
-          "instruction": "SECTION 1Read the text and answer questions 1 – 10\nQuestions 1–10Complete the form below.Write ONE WORD AND/OR A NUMBER for each answer.\nWeekend Course Booking\nBooking for: a guitar workshopStart date: 1_____________                    Course code: 2_____________                   Previous course attended: Editing 3_____________Name: Nick 4_____________Address: 27 Hawthorn 5_____________ Bristol, BS4 2QGContact number: 07707 438 297Age: 26Occupation: 6_____________Dietary requests: no 7_____________One-to-one lesson selected: 8_____________ guitarFirst heard about us from: a 9_____________Additional request: would like 10_____________ if possible",
-          "text": "<p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "SECTION 1Read the text and answer questions 1 – 10\nQuestions 1–10Complete the form below.Write ONE WORD AND/OR A NUMBER for each answer.\nWeekend Course Booking",
+          "text": "<p>Booking for: a guitar workshopStart date: {blank:1} Course code: {blank:2} Previous course attended: Editing {blank:3} Name: Nick {blank:4} Address: 27 Hawthorn {blank:5} Bristol, BS4 2QGContact number: 07707 438 297Age: 26Occupation: {blank:6} Dietary requests: no {blank:7} One-to-one lesson selected: {blank:8} guitarFirst heard about us from: a {blank:9} Additional request: would like {blank:10} if possible</p>",
           "correctAnswers": {
             "1": "July 18th",
             "2": "Q1632",
@@ -72,7 +72,7 @@
           "correctAnswers": {
             "11": "C an art exhibition"
           },
-          "instruction": "SECTION 2Read the text and answer questions 11 – 20\nQuestions 11–15What is the main attraction in each of the following areas of the festival?Choose FIVE correct answers, A-G, next to questions 11-15.\nAttractions"
+          "instruction": "SECTION 2Read the text and answer questions 11 – 20\nQuestions 11–15What is the main attraction in each of the following areas of the festival?Choose FIVE correct answers, A-G, next to questions 11-15.\nAttractions"
         },
         {
           "blockId": "l4p2_12",
@@ -148,7 +148,7 @@
             15
           ],
           "points": 1,
-          "text": "15. Question 15",
+          "text": "15. Areas of the festivalBridge Street 11_____________King's Park 12_____________Oakvale School 13_____________Green Road 14_____________Sun Lane",
           "options": [
             "A talks about gardening",
             "B live music",
@@ -170,7 +170,7 @@
             16
           ],
           "points": 1,
-          "text": "16. What does Sam say about the festival tickets?",
+          "text": "16. What does Sam say about the festival tickets? They allow you to get into all the festival events. They are more expensive to buy on the day. They have nearly all been sold.",
           "options": [
             "A",
             "B",
@@ -190,7 +190,7 @@
             17
           ],
           "points": 1,
-          "text": "17. On the last night of the festival, visitors will be able to",
+          "text": "17. On the last night of the festival, visitors will be able to take part in a dance. go to a theatre performance. watch some fireworks.",
           "options": [
             "A",
             "B",
@@ -209,7 +209,7 @@
             18
           ],
           "points": 1,
-          "text": "18. What will be provided for international visitors?",
+          "text": "18. What will be provided for international visitors? discounts on accommodation. tours of the local area. a guide written in different languages.",
           "options": [
             "A",
             "B",
@@ -228,7 +228,7 @@
             19
           ],
           "points": 1,
-          "text": "19. What information is given about car park A?",
+          "text": "19. What information is given about car park A? It is bigger than car park B. It is closer to town than car park B. It will close earlier than car park B.",
           "options": [
             "A",
             "B",
@@ -247,7 +247,7 @@
             20
           ],
           "points": 1,
-          "text": "20. What change have the organisers made to the programme this year?",
+          "text": "20. What change have the organisers made to the programme this year? replacing the programme with an app reducing the number of programmes printed introducing a charge for the programmes",
           "options": [
             "A",
             "B",
@@ -275,8 +275,8 @@
             23
           ],
           "points": 3,
-          "instruction": "SECTION 3Read the text and answer questions 21–30\nQuestions 21–23Complete the tables below.Write NO MORE THAN TWO WORDS for each answer.\nAction Research Course for Practising Teachers\nCourse leader: Alan Cumner                        (get his recent book called '21_____________')Course objectives: to develop skills in:●    using different research techniques●    researching as part of a 22_____________●     23_____________ (in a collaborative culture)",
-          "text": "<p>Q21: {blank:21}</p><p>Q22: {blank:22}</p><p>Q23: {blank:23}</p>",
+          "instruction": "SECTION 3Read the text and answer questions 21–30\nQuestions 21–23Complete the tables below.Write NO MORE THAN TWO WORDS for each answer.\nAction Research Course for Practising Teachers",
+          "text": "<p>Course leader: Alan Cumner (get his recent book called ' {blank:21} ')Course objectives: to develop skills in:● using different research techniques● researching as part of a {blank:22} ● {blank:23} (in a collaborative culture)</p>",
           "correctAnswers": {
             "21": "professional learning",
             "22": "team",
@@ -297,8 +297,8 @@
             30
           ],
           "points": 7,
-          "instruction": "Questions 24–30\nComplete the tables below.\nWrite NO MORE THAN TWO WORDS for each answer.\nCourse Components\nObservational techniques | Additional information",
-          "text": "<p>Using observation checklists | To record aspects of lesson, e.g. 24_____________ of pupils</p><p>Writing a 25_____________ | Used to improve skill of reflection</p><p>26_____________ | Try out on fellow students (in classroom 27_____________)</p><p>Non-observational techniques | Additional information</p><p>Analysing 28_____________ | Use statistics based on own students</p><p>Using questionnaires | Use the 29_____________ to find respondents</p><p>Using 30_____________ | Own choice of respondents</p><p>SECTION 4</p><p>Q24: {blank:24}</p><p>Q25: {blank:25}</p><p>Q26: {blank:26}</p><p>Q27: {blank:27}</p><p>Q28: {blank:28}</p><p>Q29: {blank:29}</p><p>Q30: {blank:30}</p>",
+          "instruction": "Questions 24–30\nComplete the tables below.\nWrite NO MORE THAN TWO WORDS for each answer.\nCourse Components",
+          "text": "<p>Observational techniques | Additional information</p><p>Using observation checklists | To record aspects of lesson, e.g. {blank:24} of pupils</p><p>Writing a {blank:25} | Used to improve skill of reflection</p><p>{blank:26} | Try out on fellow students (in classroom {blank:27} )</p><p>Non-observational techniques | Additional information</p><p>Analysing {blank:28} | Use statistics based on own students</p><p>Using questionnaires | Use the {blank:29} to find respondents</p><p>Using {blank:30} | Own choice of respondents</p><p>SECTION 4</p>",
           "correctAnswers": {
             "24": "behaviour",
             "25": "diary",
@@ -324,7 +324,7 @@
             31
           ],
           "points": 1,
-          "text": "31. What impact does Marc Prensky believe that digital technology has had on young people?",
+          "text": "31. What impact does Marc Prensky believe that digital technology has had on young people? It has altered their thinking patterns. It has harmed their physical development. It has limited their brain capacity.",
           "options": [
             "A",
             "B",
@@ -344,7 +344,7 @@
             32
           ],
           "points": 1,
-          "text": "32. Digital immigrants tend to access computers",
+          "text": "32. Digital immigrants tend to access computers using their native language. less efficiently than young people. for less important information.",
           "options": [
             "A",
             "B",
@@ -363,7 +363,7 @@
             33
           ],
           "points": 1,
-          "text": "33. What example is given of having a 'digital accent'?",
+          "text": "33. What example is given of having a 'digital accent'? having less effective typing skills doing things the old-fashioned way being unable to understand instructions",
           "options": [
             "A",
             "B",
@@ -392,7 +392,7 @@
           "correctAnswers": {
             "34": "B"
           },
-          "instruction": "Questions 34–40\nWhich theorist makes each of the following points?\nChoose the correct letter, A, B or C, next to questions 34-40.\nTheorists A Allen B James C Vander\nPoints made"
+          "instruction": "Questions 34–40\nWhich theorist makes each of the following points?\nChoose the correct letter, A, B or C, next to questions 34-40.\nTheorists A Allen B James C Vander"
         },
         {
           "blockId": "l4p4_35",

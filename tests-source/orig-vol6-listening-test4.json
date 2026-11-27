@@ -13,11 +13,24 @@
       "audioUrl": "https://huggingface.co/datasets/lilxan03/orig-vol6-audio/resolve/main/t4_p1.mp3",
       "questions": [
         {
-          "blockId": "l4p1_1_10",
+          "blockId": "l4p1_1_1",
           "type": "fill_blanks",
           "subtype": "fill_blanks",
           "ids": [
-            1,
+            1
+          ],
+          "points": 1,
+          "instruction": "Questions 1 10",
+          "text": "<p>Question 1: {blank:1}</p>",
+          "correctAnswers": {
+            "1": "460"
+          }
+        },
+        {
+          "blockId": "l4p1_2_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
             2,
             3,
             4,
@@ -28,11 +41,10 @@
             9,
             10
           ],
-          "points": 10,
-          "instruction": "Test 4\nPART 1\nQuestions 1 10\nComplete the notes below.\nwrite ONE WORD AND/OR A NUMBER for each answer",
-          "text": "<p>Customers' .....................„.are allowed</p><p>Facilities</p><p>All cooking facilities including a 6 ,</p><p>. (new this year)</p><p>Satellite navigation system</p><p>. rack</p><p>Electricity: mains hook-up or can hire a 9</p><p>. and a microwave</p><p>Collection</p><p>Nearest station: 10</p><p>(customers can be picked up from there)</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "points": 9,
+          "instruction": "Complete the notes below.\nwrite ONE WORD AND/OR A NUMBER for each answer\nCoxhead Motorhomes\nRepresentative:",
+          "text": "<p>Dave Sparrow Model of motorhome recommended: 'Two berth end kitchen' cost €545 - E755 per week Damage deposit: 1 (for drivers of 21 - 25) No charge for an .driver An {blank:3} .</p><p>{blank:2} driving licence is acceptable</p><p>All vehicles are under 30 months old All motorhomes have Customers' {blank:4} {blank:5} .are allowed Facilities All cooking facilities including a {blank:6} , . (new this year) Satellite navigation system . rack Electricity: mains hook-up or can hire a {blank:9} . and a microwave Collection Nearest station: {blank:10} (customers can be picked up from there) 19</p><p>Question 7: {blank:7}</p><p>Question 8: {blank:8}</p>",
           "correctAnswers": {
-            "1": "460",
             "2": "extra",
             "3": "international",
             "4": "manual",
@@ -59,20 +71,21 @@
             11
           ],
           "points": 1,
-          "text": "11. Question 11",
+          "text": "11. Theatre Event",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Information",
+            "B adapted from a film",
+            "C audience are invited on stage",
+            "D enjoyed by young children",
+            "E features a local actor",
+            "F fully booked",
+            "G not suitable for everyone",
+            "H recently performed abroad very few tickets available"
           ],
           "correctAnswers": {
-            "11": "B"
+            "11": "B adapted from a film"
           },
-          "instruction": "Questions 11 - 16\nWhat information does the woman give about the following events at the Citadel\ntheatre?\nChoose SIX answers from the box and write the correct tetter, A-H, next to qUestions\nA"
+          "instruction": "Questions 11 - 16\nWhat information does the woman give about the following events at the Citadel\ntheatre?\nChoose SIX answers from the box and write the correct tetter, A-H, next to qUestions"
         },
         {
           "blockId": "l4p2_12",
@@ -82,18 +95,19 @@
             12
           ],
           "points": 1,
-          "text": "12. Question 12",
+          "text": "12. Comedy Shop",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Information",
+            "B adapted from a film",
+            "C audience are invited on stage",
+            "D enjoyed by young children",
+            "E features a local actor",
+            "F fully booked",
+            "G not suitable for everyone",
+            "H recently performed abroad very few tickets available"
           ],
           "correctAnswers": {
-            "12": "E"
+            "12": "E features a local actor"
           }
         },
         {
@@ -104,18 +118,19 @@
             13
           ],
           "points": 1,
-          "text": "13. Question 13",
+          "text": "13. Seekers",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Information",
+            "B adapted from a film",
+            "C audience are invited on stage",
+            "D enjoyed by young children",
+            "E features a local actor",
+            "F fully booked",
+            "G not suitable for everyone",
+            "H recently performed abroad very few tickets available"
           ],
           "correctAnswers": {
-            "13": "C"
+            "13": "C audience are invited on stage"
           }
         },
         {
@@ -126,18 +141,19 @@
             14
           ],
           "points": 1,
-          "text": "14. Question 14",
+          "text": "14. The Hidden Box",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Information",
+            "B adapted from a film",
+            "C audience are invited on stage",
+            "D enjoyed by young children",
+            "E features a local actor",
+            "F fully booked",
+            "G not suitable for everyone",
+            "H recently performed abroad very few tickets available"
           ],
           "correctAnswers": {
-            "14": "F"
+            "14": "F fully booked"
           }
         },
         {
@@ -148,18 +164,19 @@
             15
           ],
           "points": 1,
-          "text": "15. Question 15",
+          "text": "15. Night Shift",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Information",
+            "B adapted from a film",
+            "C audience are invited on stage",
+            "D enjoyed by young children",
+            "E features a local actor",
+            "F fully booked",
+            "G not suitable for everyone",
+            "H recently performed abroad very few tickets available"
           ],
           "correctAnswers": {
-            "15": "G"
+            "15": "G not suitable for everyone"
           }
         },
         {
@@ -170,18 +187,19 @@
             16
           ],
           "points": 1,
-          "text": "16. Question 16",
+          "text": "16. John Dory Vital Signs 20",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Information",
+            "B adapted from a film",
+            "C audience are invited on stage",
+            "D enjoyed by young children",
+            "E features a local actor",
+            "F fully booked",
+            "G not suitable for everyone",
+            "H recently performed abroad very few tickets available"
           ],
           "correctAnswers": {
-            "16": "A"
+            "16": "A Information"
           }
         },
         {
@@ -192,17 +210,16 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. 18",
           "options": [
-            "A a DVD of the performance.",
-            "B a short summary of the performance.",
-            "C the beginning of August",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "17": "B a short summary of the performance."
+            "17": "B"
           },
-          "instruction": "Questions 17 - 20\nchoose the correct letter, A, B or C.\nYouth Arts Festival\nWhen will the programme for the Youth Arts Festival be finalised?\nA"
+          "instruction": "Questions 17 - 20\nchoose the correct letter, A, B or C.\nYouth Arts Festival\nWhen will the programme for the Youth Arts Festival be finalised?"
         },
         {
           "blockId": "l4p2_18",
@@ -214,13 +231,12 @@
           "points": 1,
           "text": "18. Question 18",
           "options": [
-            "A a DVD of the performance.",
-            "B a short summary of the performance.",
-            "C the beginning of August",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "18": "B a short summary of the performance."
+            "18": "B"
           }
         },
         {
@@ -231,15 +247,14 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. 20",
           "options": [
-            "A a DVD of the performance.",
-            "B a short summary of the performance.",
-            "C the beginning of August",
-            "D"
+            "A Actors use invented language.",
+            "B There is no script.",
+            "C The actors change roles in the performance 21"
           ],
           "correctAnswers": {
-            "19": "A a DVD of the performance."
+            "19": "A Actors use invented language."
           }
         },
         {
@@ -252,13 +267,12 @@
           "points": 1,
           "text": "20. Question 20",
           "options": [
-            "A a DVD of the performance.",
-            "B a short summary of the performance.",
-            "C the beginning of August",
-            "D"
+            "A",
+            "B",
+            "C"
           ],
           "correctAnswers": {
-            "20": "A a DVD of the performance."
+            "20": "A"
           }
         }
       ]
@@ -276,17 +290,16 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. Assignment on multinational companies",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "21": "A"
           },
-          "instruction": "Questions 21 - 25\nChoose the correct letter, A, B or C.\nAssignment on multinational companies\nThe tutor points out to Lara that in different markets, a brand of\nchocolate"
+          "instruction": "Questions 21 - 25\nChoose the correct letter, A, B or C."
         },
         {
           "blockId": "l4p3_22",
@@ -296,15 +309,14 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. The tutor points out to Lara that in different markets, a brand of chocolate",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A B delivery times stock control centralisation 22",
+            "B c offering poor working conditions locally. failing to improve machinery. replacing local managers. Which aspect of distribution does Lara want to read about?",
+            "C need time to build up their reputation. Lara believes that some multinational companies can be criticised for"
           ],
           "correctAnswers": {
-            "22": "B"
+            "22": "B c offering poor working conditions locally. failing to improve machinery. replacing local managers. Which aspect of distribution does Lara want to read about?"
           }
         },
         {
@@ -319,8 +331,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "23": "B"
@@ -338,8 +349,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "24": "C"
@@ -357,8 +367,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "25": "C"
@@ -372,19 +381,19 @@
             26
           ],
           "points": 1,
-          "text": "26. Question 26",
+          "text": "26. 27",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
-            "E",
-            "F"
+            "D Case studies",
+            "E Drummonds",
+            "F Multiplan Elbeys Babbis Emerson Topic bargaining power changing suppliers location of head office mergers size of workforce timing of going global 23"
           ],
           "correctAnswers": {
             "26": "C"
           },
-          "instruction": "Questions 26 - 30\nWhich topic can be found in each of the following case studies?\nChoose FIVE answers from the box and write the conect letter, A-FB next to\nquestions 26-30\nA"
+          "instruction": "Questions 26 - 30\nWhich topic can be found in each of the following case studies?\nChoose FIVE answers from the box and write the conect letter, A-FB next to\nquestions 26-30"
         },
         {
           "blockId": "l4p3_27",
@@ -397,14 +406,14 @@
           "text": "27. Question 27",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
-            "E",
-            "F"
+            "D Case studies",
+            "E Drummonds",
+            "F Multiplan Elbeys Babbis Emerson Topic bargaining power changing suppliers location of head office mergers size of workforce timing of going global 23"
           ],
           "correctAnswers": {
-            "27": "F"
+            "27": "F Multiplan Elbeys Babbis Emerson Topic bargaining power changing suppliers location of head office mergers size of workforce timing of going global 23"
           }
         },
         {
@@ -415,14 +424,14 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. 29",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
-            "E",
-            "F"
+            "D Case studies",
+            "E Drummonds",
+            "F Multiplan Elbeys Babbis Emerson Topic bargaining power changing suppliers location of head office mergers size of workforce timing of going global 23"
           ],
           "correctAnswers": {
             "28": "A"
@@ -439,14 +448,14 @@
           "text": "29. Question 29",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
-            "E",
-            "F"
+            "D Case studies",
+            "E Drummonds",
+            "F Multiplan Elbeys Babbis Emerson Topic bargaining power changing suppliers location of head office mergers size of workforce timing of going global 23"
           ],
           "correctAnswers": {
-            "29": "E"
+            "29": "E Drummonds"
           }
         },
         {
@@ -457,17 +466,17 @@
             30
           ],
           "points": 1,
-          "text": "30. Question 30",
+          "text": "30. A",
           "options": [
             "A",
-            "B",
+            "B c",
             "C",
-            "D",
-            "E",
-            "F"
+            "D Case studies",
+            "E Drummonds",
+            "F Multiplan Elbeys Babbis Emerson Topic bargaining power changing suppliers location of head office mergers size of workforce timing of going global 23"
           ],
           "correctAnswers": {
-            "30": "B"
+            "30": "B c"
           }
         }
       ]
@@ -494,8 +503,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31 - 40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer\nSoundscapes\nSoundscape - the sound environment",
-          "text": "<p>the term was first used by a Canadian, Murray Schafer,</p><p>a well-known</p><p>the soundscape is not just noise, but has 32</p><p>interpreted</p><p>divisions of the soundscape</p><p>- biophony - created by living organisms, e.g. 33 .</p><p>- geophony - caused by non-biological forces, e.g. 34</p><p>- anthrophony - made by humans</p><p>Conclusions of Bernie Krause</p><p>every sound in nature has a unique 35</p><p>the sounds of nature are harmonious in 36 ,</p><p>which can be</p><p>and frequency</p><p>Soundscape changes can be</p><p>• an indication of a change in the 37</p><p>of an environment</p><p>• a waming of the presence of different types of 38</p><p>e.g.insecticides</p><p>Equipment used in the study of soundscapes</p><p>acoustic recorders - data are used to create 39 .</p><p>Most common</p><p>What is the noisiest creature?</p><p>Answer: probably a particular kind of {blank:40}which lives in the ocean</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p>",
+          "instruction": "Questions 31 - 40\nComplete the notes below.\nWrite ONE WORD ONLY for each answer\nSoundscapes",
+          "text": "<p>Soundscape - the sound environment the term was first used by a Canadian, Murray Schafer, a well-known the soundscape is not just noise, but has {blank:32} interpreted divisions of the soundscape</p><p>- biophony - created by living organisms, e.g. {blank:33} .</p><p>- geophony - caused by non-biological forces, e.g. {blank:34}</p><p>- anthrophony - made by humans</p><p>Conclusions of Bernie Krause every sound in nature has a unique {blank:35} the sounds of nature are harmonious in {blank:36} , which can be and frequency Soundscape changes can be</p><p>• an indication of a change in the {blank:37}</p><p>of an environment</p><p>• a waming of the presence of different types of {blank:38}</p><p>e.g.insecticides Equipment used in the study of soundscapes acoustic recorders - data are used to create {blank:39} . Most common What is the noisiest creature? Answer: probably a particular kind of {blank:40} 24</p><p>{blank:31} which lives in the ocean</p>",
           "correctAnswers": {
             "31": "composer",
             "32": "meaning",

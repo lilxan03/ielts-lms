@@ -29,8 +29,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1–10\nComplete the form belowWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nFearnley Sports CenterLifeguard Application Form\nPersonal detailsName: Peter Smith\nHome address:130 South Main Street, Lake 1____________",
-          "text": "<p>Contact number: 2____________ (cell phone)</p><p>Present occupation:• has temporary job as a part-time 3____________• is studying PE• wants to be a high school 4____________ coach</p><p>Qualifications</p><p>Already holds: water safety certificate</p><p>Certificate expires in: 5____________</p><p>Relevant work experience</p><p>Lifeguard at: the 6____________ in Fearnley</p><p>Additional relevant skills: 7____________</p><p>Other Information: is happy to• work on 8____________ mornings• start at 9____________ o’clock</p><p>How did the applicant find out about this Job? on the 10____________</p><p>SECTION 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 1–10\nComplete the form belowWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.\nFearnley Sports CenterLifeguard Application Form\nPersonal detailsName: Peter Smith",
+          "text": "<p>Home address:130 South Main Street, Lake {blank:1} Contact number: {blank:2} (cell phone) Present occupation:• has temporary job as a part-time {blank:3} • is studying PE• wants to be a high school {blank:4} coach Qualifications Already holds: water safety certificate Certificate expires in: {blank:5} Relevant work experience Lifeguard at: the {blank:6} in Fearnley Additional relevant skills: {blank:7} Other Information: is happy to• work on {blank:8} mornings• start at {blank:9} o’clock How did the applicant find out about this Job? on the {blank:10} SECTION 2</p>",
           "correctAnswers": {
             "1": "Elsinore",
             "2": "077896245",
@@ -59,7 +59,7 @@
             11
           ],
           "points": 1,
-          "text": "11. Arthur feels that when starting a business, mistakes should be",
+          "text": "11. Arthur feels that when starting a business, mistakes should be seen as an opportunity to learn. predicted and minimised. avoided at all costs",
           "options": [
             "A",
             "B",
@@ -79,7 +79,7 @@
             12
           ],
           "points": 1,
-          "text": "12. Recent American studies found that confidence will",
+          "text": "12. Recent American studies found that confidence will sometimes reduce people's chances of success. be increased by reading self-help books. ensure good results on business courses.",
           "options": [
             "A",
             "B",
@@ -98,7 +98,7 @@
             13
           ],
           "points": 1,
-          "text": "13. The American studies recommended that new entrepreneurs",
+          "text": "13. The American studies recommended that new entrepreneurs listen to their colleagues' advice. get professional help when things go wrong. remain concentrated on their aims.",
           "options": [
             "A",
             "B",
@@ -117,7 +117,7 @@
             14
           ],
           "points": 1,
-          "text": "14. What does Arthur say about his own experience of marketing?",
+          "text": "14. What does Arthur say about his own experience of marketing? He relied on what he already knew. He hired an expert to take care of it. He realised its importance too late.",
           "options": [
             "A",
             "B",
@@ -136,7 +136,7 @@
             15
           ],
           "points": 1,
-          "text": "15. What does Arthur think Is an important quality shared by good leaders?",
+          "text": "15. What does Arthur think Is an important quality shared by good leaders? They are ambitious for their company. They can deal with difficult people. They earn the respect of their workforce.",
           "options": [
             "A",
             "B",
@@ -155,7 +155,7 @@
             16
           ],
           "points": 1,
-          "text": "16. What does Arthur say about taking risks?",
+          "text": "16. What does Arthur say about taking risks? He advises being cautions. He favours a long-term view. He believes it is financially advantageous.",
           "options": [
             "A",
             "B",
@@ -174,7 +174,7 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. 17-18 Which TWO things does Arthur say people should focus on when developing their business idea?",
           "options": [
             "A",
             "B",
@@ -184,7 +184,7 @@
           "correctAnswers": {
             "17": "B"
           },
-          "instruction": "Questions 17–18\nChoose TWO correct answers.\n17-18 Which TWO things does Arthur say people should focus on when developing their business idea?\nmaking sure the idea is original\noffering a better deal than competitors"
+          "instruction": "Questions 17–18\nChoose TWO correct answers.\n17-18 Which TWO things does Arthur say people should focus on when developing their business idea?\nmaking sure the idea is original"
         },
         {
           "blockId": "l2p2_18",
@@ -194,7 +194,7 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. 17-18 Which TWO things does Arthur say people should focus on when developing their business idea?",
           "options": [
             "A",
             "B",
@@ -213,7 +213,7 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. 19-20 Which TWO things does Arthur say helped him get his business started?",
           "options": [
             "A family support",
             "B getting a loan from a bank",
@@ -224,7 +224,7 @@
           "correctAnswers": {
             "19": "A family support"
           },
-          "instruction": "Questions 19–20\nChoose TWO correct answers.\n19-20 Which TWO things does Arthur say helped him get his business started?"
+          "instruction": "Questions 19–20\nChoose TWO correct answers.\n19-20 Which TWO things does Arthur say helped him get his business started?"
         },
         {
           "blockId": "l2p2_20",
@@ -234,7 +234,7 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. 19-20 Which TWO things does Arthur say helped him get his business started?",
           "options": [
             "A family support",
             "B getting a loan from a bank",
@@ -261,7 +261,7 @@
             21
           ],
           "points": 1,
-          "text": "21. Gina chose to study performance arts at this university because the course",
+          "text": "21. Gina chose to study performance arts at this university because the course has a very good reputation. has links with various theatres. has an international flavour.",
           "options": [
             "A",
             "B",
@@ -281,7 +281,7 @@
             22
           ],
           "points": 1,
-          "text": "22. Which of the options they chose have Gina and Charlie both found useful?",
+          "text": "22. Which of the options they chose have Gina and Charlie both found useful? Movement Analysis Dance and Drama The Body in Dance",
           "options": [
             "A",
             "B",
@@ -300,7 +300,7 @@
             23
           ],
           "points": 1,
-          "text": "23. What did Charlie do during his work experience?",
+          "text": "23. What did Charlie do during his work experience? He worked in a costume department. He performed with a ballet company. He helped out at a dance school for children.",
           "options": [
             "A",
             "B",
@@ -319,7 +319,7 @@
             24
           ],
           "points": 1,
-          "text": "24. What does Gina say she learnt from her work experience?",
+          "text": "24. What does Gina say she learnt from her work experience? how to organise her time better how to work better in a team how to cope when under pressure",
           "options": [
             "A",
             "B",
@@ -338,7 +338,7 @@
             25
           ],
           "points": 1,
-          "text": "25. What does Charlie say about his dissertation topic?",
+          "text": "25. What does Charlie say about his dissertation topic? He wanted it to be different from those of other students. He had already done an assignment in this area. He was inspired to choose it by a performance he saw.",
           "options": [
             "A",
             "B",
@@ -357,7 +357,7 @@
             26
           ],
           "points": 1,
-          "text": "26. Which aspect of writing a dissertation is Gina worried about?",
+          "text": "26. Which aspect of writing a dissertation is Gina worried about? finding enough to say doing the background reading presenting it in an appropriate way",
           "options": [
             "A",
             "B",
@@ -379,8 +379,8 @@
             30
           ],
           "points": 4,
-          "instruction": "Questions 27–30\nWhat do the students say about each of the following types of careers in performance arts?\nChoose FOUR correct answers, A-F, next to questions 27-30.\nComments A The pay can be low. B There is a lot of competition. C An additional qualification is required D Good communication skills are required E People with experience feel very positive about it. F It is a relatively unpopular choice.\nTypes of careers",
-          "text": "<p>Performance 27___________</p><p>Education 28___________</p><p>Theatre management 29___________</p><p>Marketing 30___________</p><p>SECTION 4</p><p>Q27: {blank:27}</p><p>Q28: {blank:28}</p><p>Q29: {blank:29}</p><p>Q30: {blank:30}</p>",
+          "instruction": "Questions 27–30\nWhat do the students say about each of the following types of careers in performance arts?\nChoose FOUR correct answers, A-F, next to questions 27-30.\nComments A The pay can be low. B There is a lot of competition. C An additional qualification is required D Good communication skills are required E People with experience feel very positive about it. F It is a relatively unpopular choice.",
+          "text": "<p>Types of careers Performance {blank:27} Education {blank:28} Theatre management {blank:29} Marketing {blank:30} SECTION 4</p>",
           "correctAnswers": {
             "27": "E People with experience feel very positive about it.",
             "28": "C An additional qualification is required",
@@ -412,8 +412,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31–40\nComplete the notes below.Write ONE WORD ONLY for each answer.\nSea lion tracking study (Western Australia)\nReason for the study• The Australian sea lion is an endangered species.• Until 1892, numbers were affected by hunting.• Sea lions are now affected by nets used to control 31__________\nAnimal tracking systems• Considerations when choosing a tracking method include 32__________ and ease of use.• Plastic tags: the animal must be easy to 33__________• GPS tracking will not work in the 34__________• In isolated regions, some animals are tracked by 35__________ (e.g. the polar bear)• Some animals are identified by markings (e.g. the dolphin is identified by its scars).",
-          "text": "<p>Challenges of tracking sea lions• Perth study: the sea lions lost their tags. (They rubbed against 36__________ to remove them.)• Californian researchers used 37__________ to identify sea lions. (This was unreliable due to regular loss of fur.)</p><p>Our study</p><p>Aims:i) to find out if sea lions' whiskers can be used to identify themii) to create a 38__________ to use as a guide</p><p>Methods:i) contacting 39__________ in Australia for photographsii) asking the 40__________ to get involved</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31–40\nComplete the notes below.Write ONE WORD ONLY for each answer.\nSea lion tracking study (Western Australia)",
+          "text": "<p>Reason for the study• The Australian sea lion is an endangered species.• Until 1892, numbers were affected by hunting.• Sea lions are now affected by nets used to control {blank:31} Animal tracking systems• Considerations when choosing a tracking method include {blank:32} and ease of use.• Plastic tags: the animal must be easy to {blank:33} • GPS tracking will not work in the {blank:34} • In isolated regions, some animals are tracked by {blank:35} (e.g. the polar bear)• Some animals are identified by markings (e.g. the dolphin is identified by its scars). Challenges of tracking sea lions• Perth study: the sea lions lost their tags. (They rubbed against {blank:36} to remove them.)• Californian researchers used {blank:37} to identify sea lions. (This was unreliable due to regular loss of fur.) Our study Aims:i) to find out if sea lions' whiskers can be used to identify themii) to create a {blank:38} to use as a guide Methods:i) contacting {blank:39} in Australia for photographsii) asking the {blank:40} to get involved</p>",
           "correctAnswers": {
             "31": "sharks",
             "32": "cost",

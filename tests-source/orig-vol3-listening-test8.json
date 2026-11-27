@@ -31,8 +31,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Questions 1-10\nWrite ONE WORD AND/OR A NUMBER for each answer .\nTheatre booking\nExample:\nDate :",
-          "text": "<p>Name :</p><p>Contact</p><p>number:</p><p>Booking for Pirates</p><p>Booking details:</p><p>Meals :</p><p>8th December (afternoon)</p><p>Fenella I</p><p>07796892326</p><p>Type of booking : 2</p><p>---tickets : 3 adults at 3</p><p>Children under 16 at 4</p><p>Requires seats on the 5</p><p>---one person uses a 6</p><p>with discount</p><p>pounds each</p><p>pounds each</p><p>row of the circle</p><p>---need to have good access to the 7</p><p>Will collect the tickets from the 8</p><p>Several people are 9</p><p>Food</p><p>( cheese and tomato )</p><p>SECTION 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q3: {blank:3}</p><p>Q4: {blank:4}</p><p>Q5: {blank:5}</p><p>Q6: {blank:6}</p><p>Q7: {blank:7}</p><p>Q8: {blank:8}</p><p>Q9: {blank:9}</p><p>Q10: {blank:10}</p>",
+          "instruction": "Questions 1-10\nWrite ONE WORD AND/OR A NUMBER for each answer .\nTheatre booking",
+          "text": "<p>Example:</p><p>Date :</p><p>Name :</p><p>Contact</p><p>number:</p><p>Booking for Pirates</p><p>Booking details:</p><p>Meals :</p><p>{blank:8} th December (afternoon)</p><p>Fenella I 07796892326 Type of booking : {blank:2}</p><p>---tickets : {blank:3} adults at 3</p><p>Children under 16 at {blank:4} Requires seats on the {blank:5}</p><p>---one person uses a {blank:6}</p><p>with discount pounds each pounds each row of the circle</p><p>---need to have good access to the {blank:7}</p><p>Will collect the tickets from the 8 Several people are {blank:9} Food ( cheese and tomato ) SECTION 2</p><p>Question 1: {blank:1}</p><p>Question 10: {blank:10}</p>",
           "correctAnswers": {
             "1": "Bittens",
             "2": "group",
@@ -61,17 +61,17 @@
             11
           ],
           "points": 1,
-          "text": "11. Question 11",
+          "text": "11. They specialise in a particular type of music",
           "options": [
-            "A",
-            "B",
-            "C",
+            "A Statements",
+            "B Mitchelstown Choir",
+            "C The Blackvale Male Voice Choir The Caroline Singers",
             "D"
           ],
           "correctAnswers": {
-            "11": "C"
+            "11": "C The Blackvale Male Voice Choir The Caroline Singers"
           },
-          "instruction": "Questions 11-15\nQuestions 11-20\nWhich choir does each of the following statements apply to?\nWrite the correct letter, A, B or C, next to questions 11-15\nA"
+          "instruction": "Questions 11-15\nQuestions 11-20\nWhich choir does each of the following statements apply to?\nWrite the correct letter, A, B or C, next to questions 11-15"
         },
         {
           "blockId": "b_ov3l8_12",
@@ -81,15 +81,15 @@
             12
           ],
           "points": 1,
-          "text": "12. Question 12",
+          "text": "12. They organise social events",
           "options": [
-            "A",
-            "B",
-            "C",
+            "A Statements",
+            "B Mitchelstown Choir",
+            "C The Blackvale Male Voice Choir The Caroline Singers",
             "D"
           ],
           "correctAnswers": {
-            "12": "A"
+            "12": "A Statements"
           }
         },
         {
@@ -100,15 +100,15 @@
             13
           ],
           "points": 1,
-          "text": "13. Question 13",
+          "text": "13. They have recently won a competition",
           "options": [
-            "A",
-            "B",
-            "C",
+            "A Statements",
+            "B Mitchelstown Choir",
+            "C The Blackvale Male Voice Choir The Caroline Singers",
             "D"
           ],
           "correctAnswers": {
-            "13": "B"
+            "13": "B Mitchelstown Choir"
           }
         },
         {
@@ -119,15 +119,15 @@
             14
           ],
           "points": 1,
-          "text": "14. Question 14",
+          "text": "14. They have recently recorded their first CD",
           "options": [
-            "A",
-            "B",
-            "C",
+            "A Statements",
+            "B Mitchelstown Choir",
+            "C The Blackvale Male Voice Choir The Caroline Singers",
             "D"
           ],
           "correctAnswers": {
-            "14": "A"
+            "14": "A Statements"
           }
         },
         {
@@ -138,15 +138,15 @@
             15
           ],
           "points": 1,
-          "text": "15. Question 15",
+          "text": "15. They participate in charity events",
           "options": [
-            "A",
-            "B",
-            "C",
+            "A Statements",
+            "B Mitchelstown Choir",
+            "C The Blackvale Male Voice Choir The Caroline Singers",
             "D"
           ],
           "correctAnswers": {
-            "15": "B"
+            "15": "B Mitchelstown Choir"
           }
         },
         {
@@ -157,17 +157,16 @@
             16
           ],
           "points": 1,
-          "text": "16. Question 16",
+          "text": "16. Elizabeth Arnold thinks people join a choir at work because it gives them a chance to",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A have a break from work.",
+            "B improve their singing.",
+            "C make business contacts."
           ],
           "correctAnswers": {
-            "16": "B"
+            "16": "B improve their singing."
           },
-          "instruction": "Questions 16-20\nChoose the correct letter, A, B or C\nElizabeth Arnold thinks people join a choir at work because it gives them a\nchance to\nA"
+          "instruction": "Questions 16-20\nChoose the correct letter, A, B or C"
         },
         {
           "blockId": "b_ov3l8_17",
@@ -177,12 +176,11 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. 18",
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "17": "A"
@@ -200,8 +198,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "18": "C"
@@ -215,12 +212,10 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. When do the choir have their rehearsals?",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D"
+            "A B c by providing concert clothes by funding social events by paying for singing classes SECTION 3",
+            "B"
           ],
           "correctAnswers": {
             "19": "B"
@@ -238,8 +233,7 @@
           "options": [
             "A",
             "B",
-            "C",
-            "D"
+            "C"
           ],
           "correctAnswers": {
             "20": "C"
@@ -260,7 +254,7 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. 22",
           "options": [
             "A",
             "B",
@@ -270,7 +264,7 @@
           "correctAnswers": {
             "21": "A"
           },
-          "instruction": "Questions 21-26\nQuestions 21-30\nChoose the correct letter A, B or C.\nTourism research\nMike suggests they use the word area to mean"
+          "instruction": "Questions 21-26\nQuestions 21-30\nChoose the correct letter A, B or C.\nTourism research"
         },
         {
           "blockId": "b_ov3l8_22",
@@ -299,7 +293,7 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. 24",
           "options": [
             "A",
             "B",
@@ -337,7 +331,7 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. 26 A B c geographical location. tourist site. research field. According to Eva, most people believe that culture A B c refers to long-established events and places. includes modern forms of art and entertainment. is becoming less linked to particular regions. Why should they carry out about 200 surveys? A B c to provide information about a range of events to be able to meet the deadline to get valid results Which groups of people do they decide to interview? A B c domestic tourists and local residents local residents and international tourists international and domestic tourists Mike expresses concern at having to ask about A B c the amount of money a person has spent a person's age a person's occupation Which form will their results be presented in? A B c a table a pie chart a graph",
           "options": [
             "A",
             "B",
@@ -375,20 +369,20 @@
             27
           ],
           "points": 1,
-          "text": "27. Question 27",
+          "text": "27. 28",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Countries",
+            "B Mexico",
+            "C Greece",
+            "D Britain",
+            "E India",
+            "F SECTION 4",
+            "G Complete the notes below"
           ],
           "correctAnswers": {
-            "27": "D"
+            "27": "D Britain"
           },
-          "instruction": "Questions 27-30\nWhich tourist attraction will be highlighted in each of the following countries?\nChoose FOUR answers from the box and write the correct letter, A-G, next to\nquestions 27-30.\nTourist Attractions"
+          "instruction": "Questions 27-30\nWhich tourist attraction will be highlighted in each of the following countries?\nChoose FOUR answers from the box and write the correct letter, A-G, next to\nquestions 27-30."
         },
         {
           "blockId": "b_ov3l8_28",
@@ -400,16 +394,16 @@
           "points": 1,
           "text": "28. Question 28",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Countries",
+            "B Mexico",
+            "C Greece",
+            "D Britain",
+            "E India",
+            "F SECTION 4",
+            "G Complete the notes below"
           ],
           "correctAnswers": {
-            "28": "A"
+            "28": "A Countries"
           }
         },
         {
@@ -420,18 +414,18 @@
             29
           ],
           "points": 1,
-          "text": "29. Question 29",
+          "text": "29. 30",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Countries",
+            "B Mexico",
+            "C Greece",
+            "D Britain",
+            "E India",
+            "F SECTION 4",
+            "G Complete the notes below"
           ],
           "correctAnswers": {
-            "29": "F"
+            "29": "F SECTION 4"
           }
         },
         {
@@ -444,16 +438,16 @@
           "points": 1,
           "text": "30. Question 30",
           "options": [
-            "A",
-            "B",
-            "C",
-            "D",
-            "E",
-            "F",
-            "G"
+            "A Countries",
+            "B Mexico",
+            "C Greece",
+            "D Britain",
+            "E India",
+            "F SECTION 4",
+            "G Complete the notes below"
           ],
           "correctAnswers": {
-            "30": "G"
+            "30": "G Complete the notes below"
           }
         }
       ]
@@ -480,8 +474,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31-40\nWrite NO MORE THAN TWO WORDS for each answer\nWorking as a Patent Attorney\nGetting a patent\nNowadays most patents are applied for by a 31",
-          "text": "<p>• The invention has to be 32</p><p>• A detailed 33</p><p>Requirements</p><p>in order to be patented</p><p>.of the invention is required</p><p>Academic qualifications e g Chemistry or 34</p><p>people with very good 35</p><p>Knowledge of a different 36</p><p>Advantages of the job</p><p>Interesting-uses range of expertise</p><p>. Good 37</p><p>Disadvantages of the job</p><p>• Sometimes quite 38</p><p>• Location is inflexible</p><p>Possible places of work</p><p>. (desirable)</p><p>Large 39</p><p>Private practices</p><p>organisations</p><p>departments</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q34: {blank:34}</p><p>Q35: {blank:35}</p><p>Q36: {blank:36}</p><p>Q37: {blank:37}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31-40\nWrite NO MORE THAN TWO WORDS for each answer\nWorking as a Patent Attorney\nGetting a patent",
+          "text": "<p>Nowadays most patents are applied for by a {blank:31}</p><p>• The invention has to be {blank:32}</p><p>• A detailed {blank:33}</p><p>Requirements in order to be patented .of the invention is required Academic qualifications e g Chemistry or {blank:34} people with very good {blank:35} Knowledge of a different {blank:36} Advantages of the job Interesting-uses range of expertise . Good {blank:37} Disadvantages of the job</p><p>• Sometimes quite {blank:38}</p><p>• Location is inflexible</p><p>Possible places of work . (desirable) Large {blank:39} Private practices organisations departments</p><p>Question 40: {blank:40}</p>",
           "correctAnswers": {
             "31": "company",
             "32": "original",

@@ -31,8 +31,8 @@
             10
           ],
           "points": 10,
-          "instruction": "Question 1 - 10\nSECTION 1\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer\nRented Propert ies Information About a House",
-          "text": "<p>Available date I....</p><p>Prices:</p><p>• Rent : 2$... per month</p><p>• Desposit: $1500</p><p>: $15</p><p>Facilities:</p><p>3 bedroom and 2 bathrooms {blank:3}</p><p>• A remodelled {blank:4}</p><p>• No {blank:5}</p><p>...... with a work area</p><p>Utilities</p><p>•</p><p>•</p><p>•</p><p>•</p><p>The landlord will provide landscaping service, but the tenants must {blank:7} the</p><p>grass</p><p>The tenants should pay $15 for trasing and {blank:8} Service.</p><p>The tenants should pay for electricity water and gas bills.</p><p>Other information</p><p>There is no central air conditions, but there is a {blank:9} Conditioning unit.</p><p>Name of landlord: Sam {blank:10} ..</p><p>SECTION 2</p><p>Q1: {blank:1}</p><p>Q2: {blank:2}</p><p>Q6: {blank:6}</p>",
+          "instruction": "Question 1 - 10\nSECTION 1\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer",
+          "text": "<p>Rented Propert ies Information About a House Available date I {blank:1}</p><p>Prices:</p><p>• Rent : {blank:2} $ {blank:6} per month</p><p>• Desposit: $1500</p><p>: $15</p><p>Facilities:</p><p>3 bedroom and 2 bathrooms {blank:3}</p><p>• A remodelled {blank:4}</p><p>• No {blank:5}</p><p>____ with a work area Utilities</p><p>•</p><p>•</p><p>•</p><p>•</p><p>The landlord will provide landscaping service, but the tenants must {blank:7} the grass The tenants should pay $15 for trasing and {blank:8} Service. The tenants should pay for electricity water and gas bills. Other information There is no central air conditions, but there is a {blank:9} Conditioning unit. Name of landlord: Sam {blank:10} .. SECTION 2</p>",
           "correctAnswers": {
             "1": "5(th) May/May 5(th)",
             "2": "1700",
@@ -83,10 +83,10 @@
           "text": "12. How much does a Family- fast- line Track ticket cost if you book online?",
           "options": [
             "A 278",
-            "B 295"
+            "B 295 CE113"
           ],
           "correctAnswers": {
-            "12": "B 295"
+            "12": "B 295 CE113"
           }
         },
         {
@@ -151,14 +151,14 @@
             16
           ],
           "points": 1,
-          "text": "16. Question 16",
+          "text": "16. what activity is recommended toward the end of a day trip?",
           "options": [
-            "A",
-            "B",
-            "C"
+            "A watching fireworks",
+            "B going fishing",
+            "C joining the circus"
           ],
           "correctAnswers": {
-            "16": "A"
+            "16": "A watching fireworks"
           }
         },
         {
@@ -169,7 +169,7 @@
             17
           ],
           "points": 1,
-          "text": "17. Question 17",
+          "text": "17. Cowboy Show",
           "options": [
             "A doesn't have a long wait",
             "B is suitable for all families",
@@ -177,12 +177,12 @@
             "D is suitable for young adults",
             "E is based on a real story",
             "F is the most frightering one",
-            "G has a surprising ending"
+            "G has a surprising ending Activities"
           ],
           "correctAnswers": {
             "17": "A doesn't have a long wait"
           },
-          "instruction": "Questions 17-20\nWhat comment is made about each of the following activities?\nChoose FOUR answers from the box and write the correct letter, A-G, next to Question\n17- 20\nComments"
+          "instruction": "Questions 17-20\nWhat comment is made about each of the following activities?\nChoose FOUR answers from the box and write the correct letter, A-G, next to Question\n17- 20"
         },
         {
           "blockId": "b_ov1l7_18",
@@ -192,7 +192,7 @@
             18
           ],
           "points": 1,
-          "text": "18. Question 18",
+          "text": "18. Driving School Ride",
           "options": [
             "A doesn't have a long wait",
             "B is suitable for all families",
@@ -200,7 +200,7 @@
             "D is suitable for young adults",
             "E is based on a real story",
             "F is the most frightering one",
-            "G has a surprising ending"
+            "G has a surprising ending Activities"
           ],
           "correctAnswers": {
             "18": "C is suitable for children"
@@ -214,7 +214,7 @@
             19
           ],
           "points": 1,
-          "text": "19. Question 19",
+          "text": "19. Rollercoaster Jumping",
           "options": [
             "A doesn't have a long wait",
             "B is suitable for all families",
@@ -222,7 +222,7 @@
             "D is suitable for young adults",
             "E is based on a real story",
             "F is the most frightering one",
-            "G has a surprising ending"
+            "G has a surprising ending Activities"
           ],
           "correctAnswers": {
             "19": "F is the most frightering one"
@@ -236,7 +236,7 @@
             20
           ],
           "points": 1,
-          "text": "20. Question 20",
+          "text": "20. Magic Show SECTION 3",
           "options": [
             "A doesn't have a long wait",
             "B is suitable for all families",
@@ -244,10 +244,10 @@
             "D is suitable for young adults",
             "E is based on a real story",
             "F is the most frightering one",
-            "G has a surprising ending"
+            "G has a surprising ending Activities"
           ],
           "correctAnswers": {
-            "20": "G has a surprising ending"
+            "20": "G has a surprising ending Activities"
           }
         }
       ]
@@ -265,7 +265,7 @@
             21
           ],
           "points": 1,
-          "text": "21. Question 21",
+          "text": "21. Which TWO aspects should people just graduating from secondary schools emphasise?",
           "options": [
             "A degree of motivation",
             "B practical experience",
@@ -286,7 +286,7 @@
             22
           ],
           "points": 1,
-          "text": "22. Question 22",
+          "text": "22. Which TWO aspects should people just graduating from secondary schools emphasise?",
           "options": [
             "A degree of motivation",
             "B practical experience",
@@ -306,16 +306,16 @@
             23
           ],
           "points": 1,
-          "text": "23. Question 23",
+          "text": "23. Which TWO of the following are mentioned about women returned to work after raising",
           "options": [
             "A they have limited working time",
             "B they are more expensive to retrain.",
-            "C they are very mature",
+            "C they lack confidence",
             "D they have difficilty in re- adiusting to work",
             "E"
           ],
           "correctAnswers": {
-            "23": "C they are very mature"
+            "23": "C they lack confidence"
           },
           "instruction": "Question 23 and 24\nChoose Two letters, A- E\nWhich TWO of the following are mentioned about women returned to work after raising\nchildren?"
         },
@@ -327,11 +327,11 @@
             24
           ],
           "points": 1,
-          "text": "24. Question 24",
+          "text": "24. Which TWO of the following are mentioned about women returned to work after raising",
           "options": [
             "A they have limited working time",
             "B they are more expensive to retrain.",
-            "C they are very mature",
+            "C they lack confidence",
             "D they have difficilty in re- adiusting to work",
             "E"
           ],
@@ -347,7 +347,7 @@
             25
           ],
           "points": 1,
-          "text": "25. Question 25",
+          "text": "25. Which TWO types of people do employers always avoid hiring?",
           "options": [
             "A people who have worked for a rival company",
             "B people who have worked for their previous company for a long time",
@@ -368,7 +368,7 @@
             26
           ],
           "points": 1,
-          "text": "26. Question 26",
+          "text": "26. Which TWO types of people do employers always avoid hiring?",
           "options": [
             "A people who have worked for a rival company",
             "B people who have worked for their previous company for a long time",
@@ -388,7 +388,7 @@
             27
           ],
           "points": 1,
-          "text": "27. Question 27",
+          "text": "27. Which THREE factors are mentioned as reasons why people avoid hiring retrenched",
           "options": [
             "A lack or experience relevant to new industries",
             "B higher costs of employment",
@@ -411,7 +411,7 @@
             28
           ],
           "points": 1,
-          "text": "28. Question 28",
+          "text": "28. Which THREE factors are mentioned as reasons why people avoid hiring retrenched",
           "options": [
             "A lack or experience relevant to new industries",
             "B higher costs of employment",
@@ -433,7 +433,7 @@
             29
           ],
           "points": 1,
-          "text": "29. Question 29",
+          "text": "29. Which THREE factors are mentioned as reasons why people avoid hiring retrenched",
           "options": [
             "A lack or experience relevant to new industries",
             "B higher costs of employment",
@@ -455,8 +455,8 @@
             30
           ],
           "points": 1,
-          "instruction": "Question 30\nComplete the notes below.\nWrite ONE WORD ONLY for the answer.\nReasons for rejection during the application process\n•",
-          "text": "<p>Applicants'inappropriate {blank:30} .... and appearance</p><p>Poor social skills</p><p>SECTION 4</p>",
+          "instruction": "Question 30\nComplete the notes below.\nWrite ONE WORD ONLY for the answer.\nReasons for rejection during the application process",
+          "text": "<p>•</p><p>•</p><p>Unsuitable experience and skills Applicants'inappropriate {blank:30} ____ and appearance Poor social skills SECTION 4</p>",
           "correctAnswers": {
             "30": "Clothes"
           }
@@ -485,8 +485,8 @@
             40
           ],
           "points": 10,
-          "instruction": "Questions 31-40\nComplete the notes below.\nWrite ONE WORD AND OR A NUMBER for each answer.\nOrganic Farming\nAdvantages",
-          "text": "<p>{blank:34} Which double in number may attack organic vegetables.</p><p>Production of organic vegetables such as tomatoes and {blank:35}</p><p>lower.</p><p>Winter weed production is {blank:36}</p><p>.. lower than it used to be.</p><p>Production of organic products for animals including organic {blank:37}</p><p>same.</p><p>keeps the</p><p>Choose the correct letter, A, B or C</p><p>Q31: {blank:31}</p><p>Q32: {blank:32}</p><p>Q33: {blank:33}</p><p>Q38: {blank:38}</p><p>Q39: {blank:39}</p><p>Q40: {blank:40}</p>",
+          "instruction": "Questions 31-40\nComplete the notes below.\nWrite ONE WORD AND OR A NUMBER for each answer.\nOrganic Farming",
+          "text": "<p>Advantages Organic farming is {blank:31}</p><p>• It can boost the {blank:32}</p><p>Of organic food products</p><p>• It can save necessary {blank:33}</p><p>for producing pesticides and fertilisers Comparison with traditional Farming</p><p>•</p><p>{blank:34} Which double in number may attack organic vegetables.</p><p>Production of organic vegetables such as tomatoes and {blank:35} lower. Winter weed production is {blank:36} .. lower than it used to be. Production of organic products for animals including organic {blank:37} same. keeps the Choose the correct letter, A, B or C</p><p>Question 38: {blank:38}</p><p>Question 39: {blank:39}</p><p>Question 40: {blank:40}</p>",
           "correctAnswers": {
             "31": "sustainable",
             "32": "sales",
