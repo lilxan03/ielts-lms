@@ -1,0 +1,406 @@
+{
+  "id": "vol5_listening_test2",
+  "title": "Vol 5 Listening Test 2",
+  "module": "listening",
+  "topics": [
+    "Vol 5",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test2_sec1.mp3",
+      "text": "<p>Morning, thanks for calling Metro Link. Is there anything I can do</p><p><b>WOMAN:</b> for you? Good morning, I would like to go to Harbour City tomorrow</p><p><b>MAN:</b> before 11 a.m., eh, from Bayswater. Well, for Bayswater...</p><p><b>MAN:</b> Oh. .., no, no. From Bayswater, where I am currently living, but Harbour City is my destination. Sorry. That means, Bayswater to Harbour City. Which mode of</p><p><b>WOMAN:</b> vehicles do you prefer, by bus or train? In fact, I have no preference, only if it brought me to Harbour</p><p><b>MAN:</b> faster. Well, if you take an express train, you'll be right in Harbour within</p><p><b>WOMAN:</b> an hour from departure. Let's see, yes, I recommend you to get on the 9:30 a.m. express. Sounds perfect. So, at which station should I get on the train?</p><p><b>WOMAN:</b> Helendale is the nearest station to you.</p><p><b>MAN:</b> Henlensvale? Did you say that? No, Helendale, that's H-E-L-E-N-D-A-L-E.</p><p><b>MAN:</b> Then how can I get there fastest?</p><p><b>WOMAN:</b> Umm... Let me see, please wait a minute, I need to have a look. It says you probably have two options for the routes: the first one is the 706 bus from Bayswater Shopping Centre to Central Street; there will be another bus that can take you to the train station. Or if you don't mind walking directly to the Central Street, like couple of kilometres, then you can take the bus there bringing you to the train station. Sure, but which bus is that, the one in Central Street?</p><p><b>WOMAN:</b> The 702 will take. .. oh, sorry, it's the 782 that will take you to the station. I believe walking will be fine, so option two might seem better to</p><p><b>MAN:</b> me. When should I arrive at Central street to catch the bus?</p><p><b>WOMAN:</b> There are two buses that you can catch up and get the station on time, one just before 9 0'clock, one right after. Yet in the morning, it might be better to take the earlier one just in case of a traffic jam or something like that. I'd like to say the 8:55 one is more reassuring than the 9:05 one.</p><p><b>MAN:</b> Sure, I don't want to miss the train, so the five to nine one will be better.</p><p><b>MAN:</b> One more thing, how much would the fares cost?</p><p><b>WOMAN:</b> Well, the bus is $1.8 in cash and the train is $10 each way. But, do you have a Travel Link Card?</p><p><b>MAN:</b> No, but I may get one before tomorrow.</p><p><b>WOMAN:</b> Alright, if you have the card, you can pay considerably less. The bus will cost you $1.5 and the train to Harbour... sorry, wait, it will still cost you $10 because it is during rush hours in the morning, I'm afraid. Yet, if you could return at an off-peak time...</p><p><b>MAN:</b> What do you mean by that?</p><p><b>WOMAN:</b> All right, if you could begin your returning journey before 5 in the afternoon or later than 7:45 (a quarter to eight) in the evening...</p><p><b>MAN:</b> In fact, my plan is that I won't start to go back home until 8 0'clock anyway.</p><p><b>WOMAN:</b> Then you can save a lot of cash using your Travel Link Card. You did mention that you were planning to buy one, didn't you?</p><p><b>MAN:</b> Yes, today, maybe later, I'll pick one up.</p><p><b>WOMAN:</b> 08 It means, with cash, it would cost you $10, but if with your card, you will only pay $7.15 for returning.</p><p><b>MAN:</b> Thank you</p><p><b>WOMAN:</b> Is there anything else I can help you with?</p><p><b>MAN:</b> Ah, yes. In fact, I would like to know if the Travel Link Card supports ferry services?</p><p><b>WOMAN:</b> If the ferry services you say is Harbour City ferries that connect the northern and southern banks, then yes. They are commuter ferries, one-way trip costs $4.5, but with the Travel Link Card you will enjoy a 20% discount, and the cost will be $3.55.</p><p><b>MAN:</b> So, $3.55 for it. .. What about the tour boats?</p><p><b>WOMAN:</b> You mean those ferries going upriver on sightseeing tours for tourists? No, they do not belong to Travel Link company, and they only take cash and credit card.</p><p><b>MAN:</b> Oh, I see. So, I may believe that you might not know how 'much they cost for one tour? Actually, I do know. I took a friend to the trip up river just last</p><p><b>WOMAN:</b> week. We determined to go an afternoon tour and it cost us $35 each. There is also a whole-day option costing $65.</p><p><b>MAN:</b> Thank you. You really helped me a lot.</p><p><b>WOMAN:</b> With pleasure. Do enjoy your trip! </p>",
+      "questions": [
+        {
+          "blockId": "b_v5l2_1_5",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "points": 5,
+          "instruction": "Questions 1–5\nComplete the notes below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>Transport from Bayswater</h4><p><i>Example: Destination: Harbour City</i></p><p>• Express train leaves at {blank:1}<br>• The {blank:2} is the nearest station.<br>• Number 706 bus heads for {blank:3}<br>• Number {blank:4} bus goes to station.<br>• Earlier bus leaves at {blank:5}</p>",
+          "correctAnswers": {
+            "1": "9:30 a.m.",
+            "2": "Helendale",
+            "3": "Central Street",
+            "4": "782",
+            "5": "8:55 (a.m.)"
+          }
+        },
+        {
+          "blockId": "b_v5l2_6_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 5,
+          "instruction": "Questions 6–10\nComplete the table below.\nWrite ONE WORD AND/OR A NUMBER for each answer.",
+          "text": "<table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Mode of Transport</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Cash fare</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Card fare</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Bus</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$ {blank:6}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$1.50</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Train (peak)</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$10</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$10</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Train (off-peak)<br>- before 5 p.m. or after {blank:7} p.m.</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$10</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$ {blank:8}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:9} ferry</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$4.50</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$3.55</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Tourist ferry ({blank:10})</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$35</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">-</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Tourist ferry (whole day)</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">$65</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">-</td></tr></table>",
+          "correctAnswers": {
+            "6": "1.8",
+            "7": "7:45",
+            "8": "7.15",
+            "9": "commuter",
+            "10": "afternoon"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test2_sec2.mp3",
+      "text": "<p>Good morning, ladies and gentlemen, thank you for returning to Action Radio! We are here talking about current affairs and global issues. I am Jill, and today our focus will be on discussing the very concerning issue of the significance of water conservation and how you can make your own contribution at home.</p><p>The most universal wasted energy of all the domestic kinds is heat. Yet since my house has well-insulated walls, I'm lucky enough to do nothing with this problem. Yet I still found out that a large amount of water was wasted owing to Qil my way of life. I looked into a few approaches online trying to reduce my water usage as much as possible and have been pleasantly surprised to figure out that there are experts in that field who can make some instant changes to my home. But the only dark side is these works are so costly that there are no means for me to get financial help.</p><p>Now, if any of you listeners are interested in reducing your energy usage, here are a couple of easy and positive changes you can make immediately. A lot of the magazines will recommend that you change your bulbs for those with energy saving capabilities. However, I have found that these make little difference to your electricity bills and they also severely reduce the light levels in your home. Instead, simply switch off all plug sockets and appliances to make an immediate saving on your electricity consumption. If this doesn't make enough of a saving for you, you could later turn down the thermostat as well.</p><p>Even though my energy provider gave me discount on my bills for prompt payment, this doesn't make enough of a saving for my monthly bill considering the amount of energy that I was using. So, I felt like switching to another provider. Not only could I do a considerable monthly saving and get other perks from the new company. The bills can now be paid online, for instance, which was a thrill to me because it saves me from driving to the bank. If our contract endures more than one year, they will also provide me with a deduction for all the energy-saving appliances I am currently using.</p><p>Now, many of you listeners will have an electricity meter at home so I'm very sure that all of you will know the problems associated with them. These meters can occupy a lot of room in your home and can be very unsightly if you cannot tuck them away in a cupboard. Mine is as well so large which measures both gas and electricity usage. But it is nicely hidden in the coat cupboard and I'm lucky enough to escape from accessing it easily. But the cons about this is that whenever I need to take a meter reading, I'll have to use a torch because it is hidden in darkness, and without a flashlight I can't read the numbers on the screen correctly.</p><p>I recently extended my house with a new room that takes up as bathroom with a low energy boiler so I am able to take long showers guilty-free. My walls are nice and thick and well-insulted, but disappointingly the window is a little draughty; thus I am about to make some investments by doing some upgrading. Given the renewable energy, I initially thought about installing solar panels on the roof to heat the water rather than applying a new low energy boiler, which was the price-friendly alternative. But I finally determined that the panels would make my house ugly on the exterior, in spite of their easiness on technical operation.</p><p>Now if you are keen to taking long showers as I am, switching from baths to showers doesn't change much on your total water usage. Instead, some small effective changes can be quite helpful and efficient. When making a cup of tea, for instance, before boiling water, measure out the amount that you need during the procedure. Also, when brushing teeth, use a cup of water instead of letting the tap water running. I would recommend you not to fill up washing machine before switching it on, because I found out that the clothes were not thoroughly cleaned. Also, call a plumber to fix your dripping taps; this will give rise to a great reduction of water being wasted.</p><p>Before finishing today's show, I'd like to address two questions that we often get asked by listeners. We had some great feedback about our answer to last week's question on how to calculate the price involved in powering domestic 019 appliances, so let's see how we do this week. One of the most commonly asked questions this week was which device is the lowest energy option for watching films. The simplest answer is that the smaller the screen, the lower the energy used.</p><p>One of our listeners wrote in with a question that made me chuckle, and the answer is yes, solar panels only work when the sun is out! Now, on a more serious note, a number of you wanted to know what the most efficient temperature is to set the thermostat to. The answer is that the closer you set it to room temperature, the lower the energy used.</p><p>Before saying goodbye today, I'll give you one last tip: turn off all the lights when you leave the room. </p>",
+      "questions": [
+        {
+          "blockId": "b_v5l2_11",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            11
+          ],
+          "points": 1,
+          "text": "11 What was Jill surprised to find?",
+          "options": [
+            "A Some work to reduce the water usage to her house could be done soon.",
+            "B The house was poorly insulated.",
+            "C She could get financial help."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "11": "A Some work to reduce the water usage to her house could be done soon."
+          },
+          "instruction": "Questions 11–16\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v5l2_12",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            12
+          ],
+          "points": 1,
+          "text": "12 What does Jill say can do straight away?",
+          "options": [
+            "A Use energy-saving bulbs.",
+            "B Turn down the thermostat.",
+            "C Turn off their appliances completely."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "12": "C Turn off their appliances completely."
+          }
+        },
+        {
+          "blockId": "b_v5l2_13",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            13
+          ],
+          "points": 1,
+          "text": "13 What pleased Jill about the energy provider?",
+          "options": [
+            "A reduction in price for prompt payment",
+            "B allowing customers to pay online",
+            "C having a reduction in price of the energy-saving sources"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "13": "B allowing customers to pay online"
+          }
+        },
+        {
+          "blockId": "b_v5l2_14",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            14
+          ],
+          "points": 1,
+          "text": "14 What difficulty does Jill have with the energy meters?",
+          "options": [
+            "A They are difficult to access.",
+            "B The figures are hard to read accurately.",
+            "C She can't tell whether they're for electricity or for gas."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "14": "B The figures are hard to read accurately."
+          }
+        },
+        {
+          "blockId": "b_v5l2_15",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            15
+          ],
+          "points": 1,
+          "text": "15 What kind of energy-saving method is Jill going to take next?",
+          "options": [
+            "A Use an energy-saving boiler.",
+            "B Have the walls checked for their insulation level.",
+            "C Install double-glazed windows."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "15": "C Install double-glazed windows."
+          }
+        },
+        {
+          "blockId": "b_v5l2_16",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            16
+          ],
+          "points": 1,
+          "text": "16 Why is Jill doubtful about renewable energy?",
+          "options": [
+            "A She thinks it's unsuitable for her house.",
+            "B She doesn't understand the technical details.",
+            "C She believes it's too expensive."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "16": "A She thinks it's unsuitable for her house."
+          }
+        },
+        {
+          "blockId": "b_v5l2_17_18",
+          "type": "multiple_choice",
+          "subtype": "mcq_2_5",
+          "ids": [
+            17,
+            18
+          ],
+          "points": 2,
+          "instruction": "Questions 17 and 18\nChoose TWO letters, A–E.",
+          "text": "Which TWO water-saving tips are not recommended by Jill?",
+          "options": [
+            "A Use more showers than baths.",
+            "B Keep the washing machine full before using it.",
+            "C Boil only as much water as you need.",
+            "D Turn off the taps while you are brushing your teeth.",
+            "E Repair leaking taps."
+          ],
+          "multi": true,
+          "correctAnswers": {
+            "17": "A Use more showers than baths.",
+            "18": "B Keep the washing machine full before using it."
+          }
+        },
+        {
+          "blockId": "b_v5l2_19_20",
+          "type": "multiple_choice",
+          "subtype": "mcq_2_5",
+          "ids": [
+            19,
+            20
+          ],
+          "points": 2,
+          "instruction": "Questions 19 and 20\nChoose TWO letters, A–E.",
+          "text": "Which TWO topics do people most frequently ask about?",
+          "options": [
+            "A the ideal temperature setting on the thermostat",
+            "B whether to leave the light on or not",
+            "C whether to use a computer or laptop to watch movies",
+            "D how to work out the operating cost of appliances",
+            "E whether solar panels only work on sunny days"
+          ],
+          "multi": true,
+          "correctAnswers": {
+            "19": "A the ideal temperature setting on the thermostat",
+            "20": "C whether to use a computer or laptop to watch movies"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test2_sec3.mp3",
+      "text": "<p>nFrjJä2</p><p><b>TIM:</b> Morning, Jenny.</p><p><b>JENNY:</b> Hi Tim, how's everything going on?</p><p><b>TIM:</b> Not bad, but I'm really nervous about our geography assessment next week. Have you done any work on it yet?</p><p><b>JENNY:</b> I've just gone over some of the slides where there are a few difficult terms, but I think it would be helpful if someone else can discuss it together. Would you like to talk about it with me?</p><p><b>TIM:</b> It sounds great! Have you got any information about the requirements for the assessment?</p><p><b>JENNY:</b> For our test last semester, all of us tried our best to collect raw data to meet the requirements so as to achieve a pass. But according to what the tutor has said, this term there won't be any need for us to do so.</p><p><b>TIM:</b> I read through the notes and they said that we are all going to be given a set of instructions that we can choose to follow if we wish, but it's not mandatory and we can complete the exam as we wish.</p><p><b>JENNY:</b> I don't think that it would be hard for us to pass the assessment. As long as we don't copy the answers from anyone else's exam paper, I think we'll be sure to pass.</p><p><b>TIM:</b> Definitely, I agree. Shall we put on a slide show presentation with information of all kinds of volcanoes? I think it will really help us to revise the recognition.</p><p><b>JENNY:</b> 0k, great. First, let's look at Pompeii, which is regarded as the most famous one among all the volcanoes; therefore we might find much easier to search a large amount of information about it on the Net.</p><p><b>TIM:</b> I think I should exclude some of the pictures in the presentation, since many people were killed and some of them can be quite disturbing. It is so lucky that there is going to be a double free break today, so we will have a couple of time to modify this together.</p><p><b>JENNY:</b> Well, the next one to mention is Mount Fago. This is an ancient, mythical volcano, whose site is still ambiguous. In Mexico as well as the USA, there are mountainous regions, both of which are rumoured to be the location of this volcano.</p><p><b>TIM:</b> It's not that reasonable to list two unrelated locations for one volcano, but since no one has been capable of figuring out which is the correct one, there has been no choice left for us yet. It's amazing that we cannot find any other example of a volcano in existence today that is haunted by so much mystery.</p><p><b>JENNY:</b> Definitely yes. I suggest we'd better surf some information online about Mount Etna in Sicily, which is well known for the stunning panoramas that one can appreciate from its peak. According to Google, it's a relatively new volcano compared to others in the nearby region. That's the reason why it has very few of the features found in older volcanoes.</p><p><b>TIM:</b> Oh, interesting.</p><p><b>JENNY:</b> Might we present any information on Mount Herton? Because I don't think that any of the other students have carried out much survey into it, even though it has several unique traits.</p><p><b>TIM:</b> Well, then I think we can just ignore it, since it's a man-made volcano and not that closely linked to our syllabus and probably won't be tested in the exam questions.</p><p><b>TIM:</b> Have you gotten feedback from your tutor on your presentation last week?</p><p><b>JENNY:</b> Yes, but I don't think he was satisfied with the work. He was impressed by the amount of research that I had carried out before I started, but he criticized that I was just mostly writing a summary of the facts instead of giving my own opinion.</p><p><b>TIM:</b> Oh, that's a pity.</p><p><b>JENNY:</b> It was depressing that my work is not appreciated, but in the end I learned a lot from my tutor's feedback. He suggested me that next time I should present my work as a short documentary film, which he thinks will help me to strengthen my arguments. What topic was your presentation based on?</p><p><b>TIM:</b> I opt to discuss about the lack of knowledge that most people have about volcanoes and the awareness that they look at them in such a negative way. During documentaries and lectures, the scientific experts often neglect to mention the positive features that volcanoes possess.</p><p><b>JENNY:</b> That sounds really interesting. Well done! 229</p><p><b>TIM:</b> I think everyone had a really good time, but I was really nervous about speaking in front of the audience. Also, I felt very under-prepared, since I didn't fulfil the presentation until the night before and therefore there had been no time for rehearsal.</p><p><b>JENNY:</b> I'm sure it was great! Is there any other infonnation that you think we should include in our slide show for revision?</p><p><b>TIM:</b> Yes, I think it's important that we list all of the differences between active and extinct volcanoes as there will definitely be a question on this topic. There are no documentaries on the subject, but there's a very informative website that discusses the geological structure of each volcano type.</p><p><b>JENNY:</b> 0k, well I'll continue collecting images and you can carry on with the online research...</p>",
+      "questions": [
+        {
+          "blockId": "b_v5l2_21",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21 Students may fail the exam if they",
+          "options": [
+            "A do not do a slide show.",
+            "B copy other people's work.",
+            "C do not follow the instructions."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "21": "B copy other people's work."
+          },
+          "instruction": "Questions 21–25\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v5l2_22",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22 Why does the man think they should skip some photos of the first volcano in the presentation?",
+          "options": [
+            "A they are not attractive",
+            "B the time is not enough",
+            "C people have never heard of this"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "22": "A they are not attractive"
+          }
+        },
+        {
+          "blockId": "b_v5l2_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23 About Mount Fago, a volcano in Mexico or the USA, the man thinks",
+          "options": [
+            "A they should not use inaccurate information in the presentation.",
+            "B they can find another example.",
+            "C it does not matter to choose which volcano to use."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "23": "A they should not use inaccurate information in the presentation."
+          }
+        },
+        {
+          "blockId": "b_v5l2_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 The woman thinks they should mention Mount Etna since",
+          "options": [
+            "A it covers most of the important points.",
+            "B it was formed a long time ago.",
+            "C it has amazing views."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "C it has amazing views."
+          }
+        },
+        {
+          "blockId": "b_v5l2_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25 They reached an agreement to leave out Mount Herto since",
+          "options": [
+            "A other students have used it before.",
+            "B it is irrelevant to their topic.",
+            "C there is nothing special about this volcano."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "25": "B it is irrelevant to their topic."
+          }
+        },
+        {
+          "blockId": "b_v5l2_26_30",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 5,
+          "instruction": "Questions 26–30\nWhich statement can best fit to each of the following situation?\nChoose FIVE answers from the box and write the correct letter, A–F, next to Questions 26–30.",
+          "text": "26 The woman's last presentation was criticised because it did\n27 The tutor suggested for the next presentation the woman should\n28 People do not know enough about volcanoes and so they\n29 The reason why the man felt nervous is that he did not\n30 They are researching active and extinct volcanoes to",
+          "options": [
+            "A make a short movie.",
+            "B lack his / her own points.",
+            "C ignore the positive sides.",
+            "D watch some documentaries.",
+            "E prepare beforehand.",
+            "F identify the differences between them."
+          ],
+          "correctAnswers": {
+            "26": "B lack his / her own points.",
+            "27": "A make a short movie.",
+            "28": "C ignore the positive sides.",
+            "29": "E prepare beforehand.",
+            "30": "F identify the differences between them."
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test2_sec4.mp3",
+      "text": "<p>Ladies and Gentlemen, good afternoon. In this session, we're going to talk about birds indigenous to New Zealand, delving into the facts and analysing methods of protecting these species from extinction.</p><p>It may be a surprise to you to know that there are millions of bird species that are endemic to New Zealand; in other words, they are rarely found anywhere else throughout the world. Because quite a large number of these birds lead a living on a diet of freshly-caught fish, they often nest alongside the coastline or, follow the neighboring river, if necessary to track freshwater fish. Once they have mated, the female will collect twigs and pieces of debris to build nests where she can hatch her eggs under safe circumstances, like out the reach of predators.</p><p>When first immigrants landed on New Zealand roughly 7 centuries ago, rats were carried on the ships with them. The rats flourished in the warm climate and gradually became a threat to the native bird populations, particularly to the flightless species. In 1984, researchers discovered that just 3 pairs of flightless bird species remained in existence, and that even these faced severe pressure. Now, New Zealand is a global pioneer in facilitating the recovery of severely endangered species from the brink of extinction.</p><p>Every year, researchers conduct certain surveys aimed at monitoring the fluctuation in the levels of bird numbers and species living in New Zealand. Q-33 Owing to migration patterns of a few bird species, it is far from easy to accurately estimate the bird numbers since many may have flown to other regions in search of mates and warmer climates, and thus not be included in the investigation.</p><p>Probably, there is a sensitive link between bird numbers and environmental influences, especially those closely linked to human activities. Routine activities, such as farming or building houses, can have a massive impact on the local populations. Forests that play a role of a habitat for thousands of birds can be entirely eradicated to produce fields for cropping or to provide wood for construction, which is such a catastrophic impact.</p><p>It is not only the activities of humans that threaten the living conditions of bird species, but the population of many predatory animal species has dramatically risen in New Zealand. One of these predators is the Mantane snake, which was introduced from Australia and has decimated the population of Killdeer birds. These birds nest on the ground, and often return to find their eggs have been devoured by the egg-eating snakes.</p><p>One cannot dismiss; of course, it is the disadvantage of that nature itself that imposes on the survival of many bird species. Natural disasters such as storms can be devastating, tearing apart forests and leaving thousands of destroyed nests in their wake. Monsoons flood the rivers and often drown many of the flightless bird species that are unable to escape,</p><p>Unfortunately, illegal hunting, which is the greatest threat to bird species in New Zealand, is nearly impossible to prohibit. Several bird species, which are going to be extinct, now appear on display at the national zoo, and there is such 037 a crucial need that urgent policies are adopted to protect them. The zoo recently employed an expert in bird protection, who strongly suggested that a guard should be employed to protect their birds from poachers.</p><p>The expert also lays much stress on the fact that the birds can be haunted by quite a stressed situation where the public can approach them too closely, suggesting that the administration install a fence network to keep the public a safe distance away from the birds. In spite of this threat to birds in captivity, it is the freely roaming birds that are most at risk. Many efforts are being made to educate the public in terms of how they can contribute towards protecting birds that are living in the wild.</p><p>Q4() Finally, research has indicated that one of the most feasible measures of keeping the public noticed about the significance of protecting the bird populations is through the media. I advise you all to read the related articles in specialist journals, and also do some research on the Internet. Everyone can make your own contribution if you put your mind upon it!</p>",
+      "questions": [
+        {
+          "blockId": "b_v5l2_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite ONE WORD AND/OR A NUMBER for each answer.",
+          "text": "<h4>Birds in New Zealand</h4><p><b>Facts</b><br>• The birds often build their nests along the coastline or besides the {blank:31}.<br>• In 1984, researchers suggested that there were only {blank:32} of this kind of bird left.<br>• It seems hard to {blank:33} the number of birds precisely.</p><p><b>Influencing factors</b><br>• Human activities, such as {blank:34} as well as constructing homes threaten this bird population.<br>• The birds are influenced by many species which can eat their {blank:35}.<br>• Natural disasters including {blank:36} can also reduce the population of the birds.</p><p><b>Ways of protection</b><br>• The zoo should recruit a {blank:37} to prevent the birds from their being poached.<br>• The organizer could build a {blank:38} to prevent the public from getting closer.<br>• People should make more of an effort to protect {blank:39} birds.<br>• Through the {blank:40} people will know more about bird protection.</p>",
+          "correctAnswers": {
+            "31": "river",
+            "32": "3 pairs",
+            "33": "estimate",
+            "34": "farming",
+            "35": "eggs",
+            "36": "storms",
+            "37": "guard",
+            "38": "fence",
+            "39": "wild",
+            "40": "media"
+          }
+        }
+      ]
+    }
+  ]
+}

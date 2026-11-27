@@ -1,0 +1,271 @@
+{
+  "id": "vol5_listening_test1",
+  "title": "Vol 5 Listening Test 1",
+  "module": "listening",
+  "topics": [
+    "Vol 5",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test1_sec1.mp3",
+      "text": "<p>Green Travel Agency. What can I do for you?</p><p><b>MAN:</b> Hi, good morning. My family and I intend to go on a vacation for</p><p><b>WOMAN:</b> Vancouver, and could you please help us reserve a hotel? Sure, with pleasure. First, I'll take some notes down of your</p><p><b>MAN:</b> personal details. May I have your full name, please? Anna Hardie.</p><p><b>WOMAN:</b> Hi Anna, there is a hotel in Vancouver named Holiday Chilcotin,</p><p><b>MAN:</b> which is very popular with guests on vacation.</p><p><b>WOMAN:</b> Mmm, Chilcotin, can you spell it?</p><p><b>MAN:</b> C-H-I-L-C-O-T-I-N, a local hotel. Where is it? Is it in the downtown? You see, my family member</p><p><b>WOMAN:</b> prefers to stay in a quieter zone during vacation. Not too buzzy you know.</p><p><b>MAN:</b> Uh, no worries. Actually it's ten miles from the city centre, near a train station. Oh, I think that's okay. I am travelling with my husband. Is it</p><p><b>WOMAN:</b> expensive to live in that hotel?</p><p><b>MAN:</b> Well, in your case, I think a double room would suit you well. Normally, it's 210 dollars, but if you can make a reservation in advance, you can pay 169 dollars for a night. That sounds pretty reasonable. I'd like to book for 5 days from 27</p><p><b>WOMAN:</b> June through I July. Are there still rooms available?</p><p><b>MAN:</b> Oh, let me check. Ah, yes, they still have some vacant rooms. Would you like to book it now?</p><p><b>WOMAN:</b> Wait. One more question: any meals are included in the price?</p><p><b>MAN:</b> Well, you need to pay separately for lunch and dinner, except the breakfast, which is provided from 7 to 9.</p><p><b>WOMAN:</b> Alright, please book it for me. Is there anything we can do near the hotel?</p><p><b>MAN:</b> Yeah, it only takes 10 minutes to walk to a science museum sponsored by the city council.</p><p><b>WOMAN:</b> Excellent, I think my husband will love it.</p><p><b>WOMAN:</b> Are there any outdoor activities to recommend to us? Because we don't like to stay in the hotel for all day.</p><p><b>MAN:</b> Oh yes. If you like to go cycling there is a shop near the hotel, where you can rent a bike. Helmets are on sales, but you'll have to take your own boots.</p><p><b>WOMAN:</b> That sounds great. I think I'll do that.</p><p><b>MAN:</b> Also, it's a charming place for visitors who like to go mountain climbing. Oh, awesome!</p><p><b>MAN:</b> The hotel prepares two trips to a nearby mountain. One trip starts at 9 in the morning, and the other one is at 2 in the afternoon each day. You can just call reception to make a reservation. And it's free of charge, but please be careful of fires, which are not allowed. If you like, you can go fishing in the lakes. For camping, a tent can be borrowed for a rest from the driver.</p><p><b>WOMAN:</b> Oh, I can't wait. It sounds like a lot of fun!</p><p><b>MAN:</b> If you'd like some adventure, you can go hiking in the forest. Sometimes you can even see some black bears. Be careful.</p><p><b>WOMAN:</b> Oh my god, we really do not like to take risks while travelling.</p><p><b>MAN:</b> One last thing. There is a visit to an ancient gold mine every afternoon. If you are interested, just call reception.</p><p><b>WOMAN:</b> I think we will do that. Thank you so much for your help.</p><p><b>MAN:</b> You are more than welcome...</p>",
+      "questions": [
+        {
+          "blockId": "b_v5l1_1_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 10,
+          "instruction": "Questions 1–10\nComplete the form below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>Hotel booking enquiry</h4><p><i>Example: Destination: Vancouver</i></p><p>• Hotel name: Holiday {blank:1}<br>• Site: near a {blank:2}<br>• Price: $ {blank:3}<br>• Length of stay: 5 days<br>• Price included a free {blank:4}<br>• Can visit a {blank:5} museum nearby</p><p><b>Outdoor activities for guests</b><br>go cycling<br>  - bikes can be hired<br>  - should bring {blank:6}<br>mountain climbing<br>  - fire is banned<br>  - can go {blank:7}<br>  - can sleep in a {blank:8}<br>go hiking<br>  - if lucky, visitors can see {blank:9} in the forest<br>  - can also go on a trip to an old {blank:10}</p>",
+          "correctAnswers": {
+            "1": "Chilcotin",
+            "2": "train station",
+            "3": "169",
+            "4": "breakfast",
+            "5": "science",
+            "6": "boots",
+            "7": "fishing",
+            "8": "tent",
+            "9": "black bears",
+            "10": "gold mine"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test1_sec2.mp3",
+      "text": "<p>Right. Now, let me bring you up to date with arrangements for our cycling tour next month. First of all, think of the tents. You know at the beginning, the idea was that I arranged to borrow some tents from the college, but it proves that they will be used by the hiking club at the same time, so I'm afraid you will have to bring your own. So, do remember to tell me whether you prefer to use a single tent or share with others. In this case, I'll know how many tents there'll be when I make the reservation at the various campsites. Last time son-le of you said you would like to hire bikes and pick them up when you arrive instead of taking your own. Well, I've asked lots of shops or agencies about bike hiring in St. Andrews, the town where we'll be arriving, and unfortunately there aren't any shops that offer this service, so which, I am afraid, means taking your own.</p><p>I'll book them on the train when I book the train tickets, which reminds me, I'll need to know the exact number of people going to, so that I can get a group discount on the train fare. Another one that'll need to be booked is tickets for the football match we discussed last time. I've enquired about availability and there are only a few seats left so anyone who wants to go will need to get tickets very soon, ideally today or tomorrow.</p><p>At our next meeting, I'll be able to give you all individual packs with the final program and something about the area we'll be cycling through and places we'll be visiting. I'm afraid I haven't had the time to do that yet.</p><p>Now, I'll tell you briefly about some of the attractions in the places we'll be staying, as I said we'll be taking the train to St. Andrews where there is one or two very good restaurants. One thing that's definitely worth visiting there 7 is the sites where the original town was constructed nearly 1,000 years ago. There's not much of the original buildings left but there's still plenty to see. The site is being excavated and you'll be able to help out if you want to. Our next overnight stop will be in the village of Cluny. There are a number of ancient 018 barns here that have been modernised into a museum indicating the significance of sheep in the area over the centuries. The wool used to be sold for cloth and it brought richness to the district. There are also several photos describing how agricultural workers lived.</p><p>From there we'll leave for Pennerley Pennerley is well known for its museum of village life but that's been refurbished at the moment and isn't likely to reopen by the time we go there, but there's an open-air farmer market everyday selling fruits, vegetables, cheese and meat all grown or processed within a few miles of the town and sold by the farmers themselves. It's definitely worth a visit.</p><p>In Farlow, which is one of the oldest towns in the region, there's a museum that shows how horses used to be the most universal way of travelling around, and how they were gradually substituted by steam and later, of course, electric trains, buses, cars and bicycles. Right, now, I'll pass around this sheet of paper...</p>",
+      "questions": [
+        {
+          "blockId": "b_v5l1_11_16",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "points": 6,
+          "instruction": "Questions 11–16\nWhat does the organiser tell the members about who should do each of the following tasks?\nWrite the correct letter, A, B or C, next to Questions 11–16.",
+          "text": "11 Taking tents\n12 Booking campsites\n13 Taking bicycles\n14 Buying train tickets\n15 Buying tickets for a football match\n16 Collecting information about the area of the tour",
+          "options": [
+            "A All the members must do it.",
+            "B Members have the option of doing it.",
+            "C The organiser is responsible for doing it."
+          ],
+          "correctAnswers": {
+            "11": "A All the members must do it.",
+            "12": "B Members have the option of doing it.",
+            "13": "A All the members must do it.",
+            "14": "C The organiser is responsible for doing it.",
+            "15": "B Members have the option of doing it.",
+            "16": "C The organiser is responsible for doing it."
+          }
+        },
+        {
+          "blockId": "b_v5l1_17_20",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 4,
+          "instruction": "Questions 17–20\nWhich location has the following attraction?\nChoose FOUR answers from the box and write the correct letter, A–H, next to Questions 17–20.",
+          "text": "17 St. Andrews\n18 Cluny\n19 Pennerley\n20 Farlow",
+          "options": [
+            "A farming museum",
+            "B horseriding",
+            "C locally produced food",
+            "D market selling clothes",
+            "E old ruins",
+            "F steam railway",
+            "G transport museum",
+            "H water sports"
+          ],
+          "correctAnswers": {
+            "17": "E old ruins",
+            "18": "A farming museum",
+            "19": "C locally produced food",
+            "20": "G transport museum"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test1_sec3.mp3",
+      "text": "<p>Come in, Helen, what can I do for you?</p><p><b>TUTOR:</b> Well, I'm doing research for the anthropology project. And I was Helen: hoping to ask some help for a few details. Sure. I remember you opted Pacific tapa cloth as the topic, didn't</p><p><b>TUTOR:</b> you? What do you figure out so far? Helen: Well, I was going to introduce my project by stating that tapa cloth is fibre made from bark, just the out layer of the trees, which particularly universal among the Pacific Islands, but not exclusive to them. Actually, people in other parts of the world have also produced high-quality cloth from bark. But what set pacific tapa apart is the incredible variety role it's played in this region. Nice! So what about raw materials that used in the production?</p><p><b>TUTOR:</b> Well, tapa cloth is made from many species of tree. In the Pacific, Helen: the paper mulberry tree is most common, but it doesn't thrive in all conditions. In fact, it wasn't discovered in the islands at first, but was carried in canoes by the first migrants. Tapa is also made from the breadfruit tree, which is a more convenient way, because its fruit is the staple food. The paper mulberry tree is only grown for tapa making mill. Yes, that's right. Then how about the Maori people here in New</p><p><b>TUTOR:</b> Zealand? But at present the Maori don't produce tapa. Helen:</p><p><b>TUTOR:</b> Yeah, but I suggest you should take it into account. We know that when Maori migrate here from other pacific islands, they were ready to produce tapa because they took the paper mulberry tree with them. The thing was after they'd been in New Zealand a 023 bit, they found the flax plant is superior to tapa, because it makes stronger fabric. By the time Europeans arrived in the 18th century, Mao were producing all their fabric from flax rather than the tapa and had been for some time. OK. So in terms of the production process itself, first the inner Helen: bark is beaten with wooden hammer to soften the fibres; then the 024 various pieces are glued together using adhesive paste made from the aloe root tuber, which is the only way to fabricate large pieces of cloth because bark strings are too fine to be woven together and stitch isn't strong enough.</p><p><b>TUTOR:</b> So now you should do more research on the details about different countries. Where should I go into now? Helen:</p><p><b>TUTOR:</b> Well, I think Samoa is the typical place known for its Seaple, which is hand-painted with representations of the ancestors. Till now, at the most profound events in lives, such as births, funerals, weddings and the investiture of chief, some are with Seaple ropes to add significance and eating to the ceremony. Helen: OK. Then I can talk about Tonga. It seems to me that the great innovation in Tonga has been developing a simple coarse cloth, which is quick and easy to produce. This is suitable for all sorts of 026 daily functions around the house like bed covers, nets and curtains.</p><p><b>TUTOR:</b> Good point. Now what about Cook Islands tapa? Helen: Well, the Sweallier is of poor quality; consequently, the bread fruit tree is often used. One type of thick cloth, called Tikoda, was wrapped around the poles and used to make the entrances to places of worship, and therefore, was highly regarded in local culture.</p><p><b>TUTOR:</b> You might mention Fiji as well, which is interesting, because tapa Q 28 was actually used as currency there. Fijians used to sail between the islands and exchange tapa for other commodities like canoes or pigs. Helen: I know that in Tahiti, the tapa cloth is regarded differently, because the patterns are in colour, which is considered more valuable than the usual patterns.</p><p><b>TUTOR:</b> You are right about the Tahitians using coloured pigments, but 029 they aren't more valuable. The colours are only decoration. People enjoy wearing bright robes especially for dancing and competitive games and do it just for fun. Helen: Oh, I'll take a note of it. Well, the last place I was going to mention was Tikopia. Even today it's a common place to see wearing clothes made of tapa cloth. And on many of the other islands, the tapa only come out on special occasions, But here you see people working in the gardens wearing tapa. Sound promising, Helen. I'll look forward to the presentation of</p><p><b>TUTOR:</b> your project. o A%kh: adhesive paste </p>",
+      "questions": [
+        {
+          "blockId": "b_v5l1_21",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21 Pacific tapa cloth is different from other types of tapa cloth because it is",
+          "options": [
+            "A the only tapa made today.",
+            "B better quality than others.",
+            "C put a wider range of users."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "21": "C put a wider range of users."
+          },
+          "instruction": "Questions 21–24\nChoose the correct letter, A, B or C.\nPacific Tapa Cloth"
+        },
+        {
+          "blockId": "b_v5l1_22",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22 What does Helen say about the paper mulberry tree?",
+          "options": [
+            "A It is also a source of food.",
+            "B It is not native to the Pacific.",
+            "C It can grow in any environment."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "22": "B It is not native to the Pacific."
+          }
+        },
+        {
+          "blockId": "b_v5l1_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23 Why did the Maori people of New Zealand stop making tapa?",
+          "options": [
+            "A They could not find the right trees in New Zealand.",
+            "B They were introduced to other fabrics by the Europeans.",
+            "C They found a better material for making fabric."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "23": "C They found a better material for making fabric."
+          }
+        },
+        {
+          "blockId": "b_v5l1_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 Large pieces of tapa are made from smaller pieces which are",
+          "options": [
+            "A stuck together.",
+            "B woven together.",
+            "C sewn together."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "A stuck together."
+          }
+        },
+        {
+          "blockId": "b_v5l1_25_30",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 6,
+          "instruction": "Questions 25–30\nAccording to the speakers, what function has tapa played in the following countries?\nWrite the correct letter, A, B, C or D, next to Questions 25–30.",
+          "text": "25 Samoa\n26 Tonga\n27 Cook Islands\n28 Fiji\n29 Tahiti\n30 Tikopia",
+          "options": [
+            "A recreational",
+            "B practical",
+            "C spiritual",
+            "D commercial"
+          ],
+          "correctAnswers": {
+            "25": "C spiritual",
+            "26": "B practical",
+            "27": "C spiritual",
+            "28": "D commercial",
+            "29": "A recreational",
+            "30": "B practical"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol5-audio/resolve/main/test1_sec4.mp3",
+      "text": "<p>We were required to do the investigation regarding survival strategies of particular animals, and I chose to study how the butterflies will do for survival when cold weather and food shortage could easily influence their life cycle.</p><p>I concentrated on a number of main strategies butterflies adopt to handle these harsh conditions: hibernation, and migration.</p><p>First let's talk about the hibernation, which means a long term sleep, in which an animal's metabolism slows to conserve strength.</p><p>Various butterfly species have formed different patterns of hibernation, at continuous periods of their life cycle.</p><p>For example, the 'Banded Hair Freak' hardly hibernates in its full grown adult form, but as an egg. And another species, the 'Dappled White', breathes during the winter in a crystallise stage, and during this time, it's able to draw on the energy it stimulated earlier on in its larval stage. Though the slowing of the metabolism in hibernation functions with many of the difficulties faced in winter, it can't prevent them all.</p><p>In addition, some butterflies have extra plans for survival. For instance, they develop a substance in their blood, usually in glycerol, or sorbitol, which serves as 'anti-freeze', thereby adding extra resistance against lower temperatures.</p><p>Actually, there is a positive side about the cold weather, fewer predators exist around to cause problems, this is because they are actively mainly in warm weather.</p><p>So, now let's move on to the second type of survival strategy the butterflies used in winter: migration. That means moving to regions with a more suitable environment.</p><p>I'm going to start this topic with a detailed study about particular cases of migratory species, the 'Monarch Butterfly'.</p><p>Many butterfly species are found in various zones of the world migrate, like 035 'the Red Admiral', a British butterfly which 'winters' in North Africa, but the 'Monarch Butterfly' is the sole example to do this in North America.</p><p>At any stage of the life cycle, the Monarch cannot survive in the low winter temperatures, so when it gets cold, the Monarchs begin to gather in huge groups and fly south. They can travel up to 3,500 miles.</p><p>But only the last summer generation of Monarchs migrate. Normal generations only live for a maximum of 10 days, in fact the last migration generation, as reported, do for 6 months, which enables them to take such a long journey.</p><p>These huge teams of migrating monarchs only fly during daylight hours, and at night they usually have a rest in trees, again often in vast groups.</p><p>Research is now being exercised into what encourages them to reach the destination. It has been known for years that they find their way on the journey by following rivers, and there are a few these along their migratory route, However, the new research indicates they may also treat the sun as a navigational aid. During this time, they are able to feed, mainly from a type of flower called 'milkweed', but they are not able to reproduce during this period.</p><p>The Monarchs 'hand in their lineage' to a particular region in Mexico, known as the 'Pier A Sequoia'.</p><p>The Monarchs are anticipated with great interest within the region, and over recent years, there annual arrival has gained great popularity among tourists.</p><p>However, their habitat is being increasingly threatened...</p>",
+      "questions": [
+        {
+          "blockId": "b_v5l1_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31–40\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>Monarch Butterflies</h4><p><b>Hibernation</b><br>• Butterfly species adopt different hibernation patterns during their life cycle.<br>• Butterflies named 'Banded Hair Freak' hibernate in the form of an {blank:31} from larval stage.<br>• A species called 'Dapple White' accumulates {blank:32}.<br>• Slow metabolism can help them to sort out some problems in winter.<br>• A substance is produced in the blood which may function as {blank:33}.<br>• There are few predators because they can only survive in {blank:34} weather.</p><p><b>Migration</b><br>• Monarch butterflies move to {blank:35} in winter.<br>• To avoid cold temperature, they migrate to the south in large groups.<br>• The survival skill can help them last for up to {blank:36} during a long journey.<br>• Monarch butterflies fly in the daytime and stay in {blank:37} during night.<br>• Researchers found out that they orient by flying along the {blank:38} for navigational aid.<br>• They also follow the direction of the {blank:39}.<br>• During migration, they mainly feed on flowers and cannot reproduce.<br>• Recently the annual arrival of the monarchs can be a good interest to {blank:40} in the region.</p>",
+          "correctAnswers": {
+            "31": "egg",
+            "32": "energy",
+            "33": "anti-freeze/extra resistance",
+            "34": "warm",
+            "35": "North America",
+            "36": "6 months",
+            "37": "trees",
+            "38": "rivers",
+            "39": "sun",
+            "40": "tourists"
+          }
+        }
+      ]
+    }
+  ]
+}
