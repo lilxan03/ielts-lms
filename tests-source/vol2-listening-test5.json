@@ -1,0 +1,342 @@
+{
+  "id": "vol2_listening_test5",
+  "title": "Vol 2 Listening Test 5",
+  "module": "listening",
+  "topics": [
+    "Vol 2",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test11_sec1.mp3",
+      "text": "<p><b>JANET:</b> Hello?</p><p><b>AGENT:</b> Yes, I'd like to speak with Janet Evans, please.</p><p><b>JANET:</b> Speaking.</p><p><b>AGENT:</b> Hi Ms. Evans, this is Jim Rodriguez calling from Farrelly Mutual about your recent homeowner's insurance inquiry.</p><p><b>JANET:</b> Yes, hi. Thanks for returning my call.</p><p><b>AGENT:</b> My pleasure. I understand you are potentially interested in insurance for a bungalow located a bit out of town. Could you give me the address?</p><p><b>JANET:</b> Sure, it's 49 Greenway Court. Greenway is one word.</p><p><b>AGENT:</b> Thank you. Alright, and would you prefer to be contacted via email or phone?</p><p><b>JANET:</b> Either one is fine - maybe try emailing me first and€as an alternative I can give you my phone number.</p><p><b>AGENT:</b> Great - and what is your email address?</p><p><b>JANET:</b> pk2@cat.com.</p><p><b>AGENT:</b> Hm, did you say \"cat,\" as in the animal?</p><p><b>JANET:</b> Yes. It is the acronym for the construction company I work for - I'm sure you've seen them around.</p><p><b>AGENT:</b> Yes, I have. And could you give me your primary phone number, and the best time to reach you?</p><p><b>JANET:</b> Sure — the number is (020) 4251-9443. I am generally unable to answer my phone at work, but anytime after 5.30 p.m. is fine.</p><p><b>AGENT:</b> I will make a note of that here. Now I'm going to ask you a little bit about the property itself so we can make an accurate estimate of the cost of insuring your home. Could you tell me the size of your house?</p><p><b>JANET:</b> Um, well, I don't have the exact measurements, but I'm pretty sure it's right around 80 square metres. Should I measure it and call you back later?</p><p><b>AGENT:</b> No, that's completely alright. I'll write 80 square metres for now to get the estimate and then an agent will come get the exact measurements later on if you decide to purchase our insurance.</p><p><b>JANET:</b> Okay, great.</p><p><b>AGENT:</b> And what material is your house made of? For example, wood, brick, stucco...</p><p><b>JANET:</b> It's mainly brick.</p><p><b>AGENT:</b> Great that will give you a lower rate than most other materials — since it is so strong.</p><p><b>JANET:</b> Wonderful!</p><p><b>AGENT:</b> And do you have any sott of home security, Ms. Evans?</p><p><b>JANET:</b> Um, we don't have a fence or anything yet, but we have an alarm system that we use regularly.</p><p><b>AGENT:</b> God</p><p><b>AGENT:</b> Now I'll go through a number of things we offer coverage for, and I'd like you to tell me which items you want your policy to cover.</p><p><b>JANET:</b> Okay.</p><p><b>AGENT:</b> We'll start with the building itself first — would you like us cover incidental damage to the structure to your house?</p><p><b>JANET:</b> Absolutely.</p><p><b>AGENT:</b> Splendid. And the contents inside your house — we usually cover all items with an appraised value above £200. Would you like us to cover theft and damage beyond natural wear-and-tear? will let you know that the second option here will come with considerable increase in your rates.</p><p><b>JANET:</b> I think I'd just like the contents of the house to be covered against theft then.</p><p><b>AGENT:</b> Alright — and would you like any other insurance — fire, flood, etc?</p><p><b>JANET:</b> Yes — I definitely want flood coverage. It rains a lot here, and the drainage system in the area is not the greatest.</p><p><b>AGENT:</b> Okay. I am calculating your quotation now. It will just take second. (Two seconds pause) It looks like your annual insurance rate will be £148.30.</p><p><b>JANET:</b> Thanks, that seems somewhat reasonable. I would like to take some time to think about it. How long does it take to begin receiving coverage after signing up?</p><p><b>AGENT:</b> It depends on the time of year - it can take anywhere from two six weeks. I would say if you sign up by July 1st, you could start your coverage by August 1st.</p><p><b>JANET:</b> I see. Okay, thanks for your help. Should I call you back at this number when I have made my decision?</p><p><b>AGENT:</b> Yes, please. And so that we can look up your account faster, I'll give you a reference nunber that you should provide when eg. Ready?</p><p><b>JANET:</b> Yep!</p><p><b>AGENT:</b> It's TR278Q.</p><p><b>JANET:</b> Got it. Thanks!</p><p><b>AGENT:</b> Thank you, and have a nice day!</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l5_1_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 10,
+          "instruction": "Questions 1–10\nComplete the form below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>Home Insurance Quotation Form</h4><table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Example</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Answer</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Name:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><i>Janet Evans</i></td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Address:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">49 {blank:1} Court</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Email:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:2}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Telephone number:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">(020) 4251-9443</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Best time to contact:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:3} pm</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Property Information — Property size:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:4} m²</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Material(s):</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:5}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Security measures (if any):</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:6}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Coverage — Items to cover:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• building<br>• contents<br>• {blank:7}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Quotation:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">£{blank:8}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Coverage start date:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:9}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Reference number:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:10}</td></tr></table>",
+          "correctAnswers": {
+            "1": "Greenway",
+            "2": "pk2@cat.com",
+            "3": "5.30",
+            "4": "80",
+            "5": "brick",
+            "6": "alarm system",
+            "7": "flood",
+            "8": "148.30",
+            "9": "1 August/August 1(st)",
+            "10": "TR278Q"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test11_sec2.mp3",
+      "text": "<p>Hey if you're just joining us on WKPX \"The Sound\", welcome. We're here the studio with Matt and Cam in the morning, and this morning we're talking about keeping the kids occupied on summer vacation. Folks, there's a new kid town in the world of summer fun. Get ready for the Pool for the People, a pool and outdoor venue created by - that's right — the people.</p><p>Scheduled to open in November, the ideas for everything from the design of the pool right down to the items sold in the snack bar have been decided upon by sample of 1,050 members of the public.</p><p>The public selected two top proposals from over a dozen created by renowned architect Ned Mosby, and the final design is truly something else. The pool shaped like a fishbowl, sinking down into the ground, and there's — you guessed it - a real, live fish tank in the centre! It's certainly the centre of attention in the Bridgewater area.</p><p>Now, you are probably wondering how much an extravagance like this must cost right? Well, have no fear. At just £15 for adults and £10 for kids, it's affordable way to entertain the kids in those dog days of summer. The only problem now is the possibility that it will in fact become too popular! The pool</p><p>is only so large, so swarms of people coming to enjoy it may cause quite crowd in its first summer ofepening.</p><p>There will be an opening party for a select audience, and in line with the pool's mission, the people have decided on all the arrangements. They collectively decided</p><p>on actress Rebel Wllson to host the festivities scheduled for later this month, and even dictated the playlist by ranking their top 10 songs from a list ofhundreds.</p><p>There is some discrepancy, however, on the sculpture design for the foyer at the entrance. The people elected a jellyfish sculpture to greet entering visitors, but given last week's vicious attack by a box jellyfish on a local youth, coordinators fear it will bring too much fear to patrons. The theme of the clubhouse is set to be \"international waters\" with a different section representing each continent, designed by the legendary local artist Robena Anuzzi. Representing Asia in the reception area will be a mosaic made up of prominent animals indigenous to the continent — a camel, a panda, and the Siberian white tiger, to name just a few.</p><p>In the West lounge, feel the cool, icy vibes of the Transantarctic Mountains of Antarctica. Makes you cold just thinking about it, doesn't it? Just seeing a wall with a mural of the glacial mountains is almost enough to cool you off on December afternoon. Almost.</p><p>Why not make the trip to the pool a social studies lesson at the same time? The theme in the lady's lounge room for Africa may not be what you expected. safari? Drum music? The Nile River? No, did you know that Africa was home to the first jewelry? I sure didn't.</p><p>By contrast, as you may expect, North America's theme for the card room is as modern — even futuristic — as it gets. Anuzzi created for North America a sort of absurdist print interestingly juxtaposing the moon landing of 1969 with an abstract depiction of humans living on Mars. Seems to me like an interesting commentary on the future of space exploration.</p><p>And in the men's lounge room, the ancient forts of Sparta, Rome, Greece, and other European civilisations fittingly exhibit the strength and combatant</p><p>characteristics of these societies.</p><p>Finally, the cafe and breakfast room area is an enchanting round room that</p><p>draws all attention to its centre - where there is a strikingly realistic sculpture of a volcano. The delicious food may actually be only the second most exciting</p><p>part of this room in comparison to the 9-foot statue complete with brightly colored molten lava to characterise South America.</p><p>Honestly, it is like a museum visiting each room of the clubhouse. Why not</p><p>make the tip to the pool an educational one for the kids?</p><p>We're going to take a quick commercial break here at MIKPX, but we'll be back</p><p>10 with more on what's touted to be the Summer's Hottest Place to Beat the Heat...</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l5_11",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            11
+          ],
+          "points": 1,
+          "text": "11 The top two proposals for the design of the swimming pool were chosen by",
+          "options": [
+            "A the public.",
+            "B the radio station.",
+            "C architects."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "11": "A the public."
+          },
+          "instruction": "Questions 11–14\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v2l5_12",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            12
+          ],
+          "points": 1,
+          "text": "12 What is special about the pool's construction?",
+          "options": [
+            "A It was constructed by the people.",
+            "B Its architectural style is one-of-a-kind.",
+            "C It is the first pool in Bridgewater."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "12": "B Its architectural style is one-of-a-kind."
+          }
+        },
+        {
+          "blockId": "b_v2l5_13",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            13
+          ],
+          "points": 1,
+          "text": "13 News reports covering the new pool expressed concerns over",
+          "options": [
+            "A price.",
+            "B safety.",
+            "C size."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "13": "C size."
+          }
+        },
+        {
+          "blockId": "b_v2l5_14",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            14
+          ],
+          "points": 1,
+          "text": "14 What factor of the pool's Grand Opening remains undecided?",
+          "options": [
+            "A who will host",
+            "B the exact opening time",
+            "C what sculpture will be in the foyer"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "14": "C what sculpture will be in the foyer"
+          }
+        },
+        {
+          "blockId": "b_v2l5_15_20",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 6,
+          "instruction": "Questions 15–20\nWhat's the theme of each continent based on the rooms of the clubhouse?\nChoose SIX answers from the box and write the correct letter, A–H, next to questions 15–20.",
+          "text": "15 Asia\n16 Antarctica\n17 Africa\n18 North America\n19 Europe\n20 South America",
+          "options": [
+            "A film and music",
+            "B mountains",
+            "C space travel",
+            "D jewelry",
+            "E animals",
+            "F waterways",
+            "G volcano",
+            "H ancient forts"
+          ],
+          "correctAnswers": {
+            "15": "E animals",
+            "16": "B mountains",
+            "17": "D jewelry",
+            "18": "C space travel",
+            "19": "H ancient forts",
+            "20": "G volcano"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test11_sec3.mp3",
+      "text": "<p><b>TUTOR:</b> Before we start, Jimmy and Kathy, thanks for coming in today io talk about your current research paper! Well, I will also give you some suggestions for your future presentation later.</p><p><b>JIMMY:</b> That's great!</p><p><b>TUTOR:</b> Okay, I have read the introductory chapter, and so far I like where you're going with your research, you two.</p><p><b>KATHY:</b> Thanks! What did you think of the procedure section?</p><p><b>TUTOR:</b> I haven't gotten there yet. I will get to that and the results and discussion section in a bit.</p><p><b>JIMMY:</b> Oh. If you haven't read the rest, are you just saying you like the introduction?</p><p><b>TUTOR:</b> No — the layout is really well done. You have each section clearly marked and have the header and footer perfectly formatted, and your title page is right on the money. A lot of students have trouble with that one.</p><p><b>JIMMY:</b> To be honest, we did refer a lot to the example we received in class.</p><p><b>TUTOR:</b> That's good to do for spacing and layout, as long as you're not also copying the information. The background information is little sparse, though. You may want to add to it.</p><p><b>KATHY:</b> You think so? I was more worried about whether I had enough data.</p><p><b>TUTOR:</b> You definitely need more background information. I would think about finding some more online articles or doing more research in the cam us libra</p><p><b>JIMMY:</b> That's a good idea — we can go tomorrow. I find it too tough finding the subject matter in the online journal database.</p><p><b>TUTOR:</b> I also like being able to flip through the physical journal</p><p><b>KATHY:</b> Me too. Oh, I almost forgot. I've included all of my citations in the abstract, but could you help me with the bibliography? I should using a bibliography, right? Not an appendix?</p><p><b>TUTOR:</b> Sure, I can help with that. Yes — for this type of scientific research paper, list all sources that you cite in the body of your paper a bibliography. Go to the website I gave you last time to see the exact way to list each source.</p><p><b>KATHY:</b> Okay, thanks. I'll do that. We still have a lot of things to fix up.</p><p><b>TUTOR:</b> Yeah, but there's a lot of good stuff here to work with. So enough about the paper, how is the presentation going?</p><p><b>KATHY:</b> Well, it's alright. I am going to go try out the new presentation software while Jimmy's working on the bibliography.</p><p><b>JIMMY:</b> Yeah, we are hoping to make an animation of an actual pump but still have a lot to learn about how to do that.</p><p><b>KATHY:</b> Who would have thought before we started this project that would be able to recreate the motion of a pump? This stuff is just so interesting.</p><p><b>TUTOR:</b> So glad to hear it!</p><p><b>JIMMY:</b> Yeah, I am glad I took engineering this semester. I would definitely like to keep up with it.</p><p><b>TUTOR:</b> You know, there's an organisation called the Machine Engineer Society. You should look into joining it. You would need to score well in y_our engineering class to qualify, but I think you can do</p><p><b>KATHY:</b> Hm, interesting. I will definitely check it out. I would really like get in contact with some professionals in the engineering field find out more. I don't really know</p><p><b>JIMMY:</b> I think if you keep meeting people in your classes and professors ou'll be ableto etincontactwith some reall hel ful eo le.</p><p><b>TUTOR:</b> Well said, Jimmy. If engineering pumps is something you both are specifically interested in, make sure you stay up to date on new developments. In fact, you could visit the local water treatment facility periodically to see what new developments are going on.</p><p><b>KATHY:</b> Hm, that may be a good way to get some practical experience.</p><p><b>TUTOR:</b> Well, I don't think they would let you handle any equipment by just visiting the facility. If you really want to get your hands dirty, so to speak, I would recommend instead seeking a summer internship.</p><p><b>KATHY:</b> Wow, you have so many helpful suggestions for getting a leg up. Now ifonly you could tell me how to get my work published!</p><p><b>JIMMY:</b> Haha, wouldn't that be nice.</p><p><b>TUTOR:</b> Well, honestly, all you really need to do is once you have dissertation, present it. Present it often and to many audiences, and once ou etfeedback, ad'ust it. You'll et ublished one da .</p><p><b>KATHY:</b> Wow, this meeting has been truly inspiring. Thanks for your help!</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l5_21",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21 Which part has the tutor already read?",
+          "options": [
+            "A the introductory chapter",
+            "B the procedure section",
+            "C the results and discussion section"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "21": "A the introductory chapter"
+          },
+          "instruction": "Questions 21–25\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v2l5_22",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22 Which part of the paper did the tutor like?",
+          "options": [
+            "A introduction",
+            "B layout",
+            "C background information"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "22": "B layout"
+          }
+        },
+        {
+          "blockId": "b_v2l5_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23 Kathy and the tutor both agree to continue to",
+          "options": [
+            "A refer a lot to the example received in class.",
+            "B copy the information.",
+            "C conduct further research in the library"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "23": "C conduct further research in the library"
+          }
+        },
+        {
+          "blockId": "b_v2l5_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 Kathy asks the tutor for help with the ______ section.",
+          "options": [
+            "A abstract",
+            "B bibliography",
+            "C appendix"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "B bibliography"
+          }
+        },
+        {
+          "blockId": "b_v2l5_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25 What will Kathy do next?",
+          "options": [
+            "A try out software",
+            "B work on the bibliography",
+            "C make an animation"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "25": "A try out software"
+          }
+        },
+        {
+          "blockId": "b_v2l5_26_30",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 5,
+          "instruction": "Questions 26–30\nWhat is the desired outcome to each of the following course of action?\nChoose FIVE answers from the box and write the correct letter, A–F, next to questions 26–30.",
+          "text": "26 Make a good grade\n27 Meet engineering professionals\n28 Visit the factory\n29 Seek summer internships\n30 Present dissertation",
+          "options": [
+            "A practical experience",
+            "B publish the work",
+            "C join Machine Engineer Society",
+            "D give suggestions",
+            "E stay up to date",
+            "F make important contacts"
+          ],
+          "correctAnswers": {
+            "26": "C join Machine Engineer Society",
+            "27": "F make important contacts",
+            "28": "E stay up to date",
+            "29": "A practical experience",
+            "30": "B publish the work"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test11_sec4.mp3",
+      "text": "<p>Tonight I'm going to present an overview of the research on amber. Okay, start by giving a brief introduction about amber, then talk about the formation amber, and then describe amber's applications in different fields.</p><p>First of all, what is amber? Amber is not a stone, but is ancient, fossilised tree resin, which is the semi-solid amorphous organic substance secreted in pockets and canals through epithelial cells of the plant. And why is resin produced? Although there are contrasting views as to why resin is produced, it is a plant's protection mechanism. The resin may be produced to protect the tree from disease and injury inflicted by insects and fringi.</p><p>Amber occurs in a range of different colors. Besides the usual yellow, orange, and brown, other uncommon colors are also associated with it. Interestingly, blue amber, the rarest Dominican amber, is highly sought after. It is only found in Santiago, Dominican Republic. There are several theories about what causes the blue color in amber. The most common one links it to the occurrence of volcanic dust that was present when the resin was first pressed out from hymenaea protera millions of years ago.</p><p>At this point, you might be curious about how amber is formed. Molecular polymerisation, resulting from high pressures and temperatures produced</p><p>overlying sediment, transforms the resin first into copal. Sustained heat and pressure drives off terpenes and results in the formation of amber. Copal that I've just mentioned is also a tree resin but it hasn't fully fossilised to amber. More generally, the term copal describes resinous substances in an intermediate stage So where can we find amber? It can be found on sea shores. The main producer worldwide is Russia. In fact about 90% of the world's available amber is located in the Kaliningrad region of Russia, which is located on the Baltic. Here, the resin is washed up on the coast after being dislodged from the ocean floor by years of water and ocean currents. However, exposure to sunlight, rain, and temperate extremes tends to disintegrate resin. This also indicates that amber is not really an ideal fossil preservative for most uses.</p><p>We've already learned that amber is made of tree resin. It often includes insects that were trapped within the tree many millions of years ago. A piece with a visible and well-arranged insect is generally valued much higher than simple, solid amber. One Dominican amber source reported finding a butterfly with a five-inch wing spread; this is both a large and unusual find; most butterfly specimens have no more than a two-inch wingspan. Inclusions in Dominican amber are numerous — 1 inclusion to every 100 pieces; Baltic amber contains approximately I inclusion to every 1 ,000 pieces.</p><p>Now that you have a basic knowledge of amber, I'd like to talk a bit about amber's applications in different fields. First, amber is appreciated for its color and beauty. Good quality amber is used to manufacture ornamental objects and jewelry, for instance using a variety of exclusive first class quality natural Baltic amber with silver to make natural amber jewelry. But due to the biodegradation of Amber fossils, people with amber jewelry have to take special care of it, to ensure that the amber is not damaged.</p><p>It was previously believed that amber worn on the neck served to protect one from diseases of the throat and preserved the sound mind. Kalistrate, a famous doctor in the Roman Empire wrote that amber powder mixed with honey cures throat, eye and ear diseases, and if it is taken with water, eases stomachache. While the mystery around that use of amber has not been cleared, one thing is Amber has even been used as a building material. Amber created the altar in St. Brygida Church in Gdansk, Poland. In St. Petersburg, Russia, the walls of the famous Amber Room were lined with intricate canings and inlaid designs. This palace room is being reconstructed from photographs, and can be visited at the Catherine Palace, located in the town of Tsarskoye Selo.</p><p>And finally, the fourth use of amber is that...</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l5_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>An Overview of The Research on Amber</h4><p>Amber: a fossilised tree resin, which may be produced to protect itself against {blank:31} and fungi.</p><p><b>Colors</b></p><ul><li>usual yellow, orange, or brown</li><li>uncommon colors e.g. blue (what causes the blue color in amber is related to the occurrence of {blank:32})</li></ul><p><b>Formation</b></p><ul><li>under sustained {blank:33} and pressure</li><li>during an {blank:34} stage between resins and amber, copal is produced.</li></ul><p><b>Places and Conditions</b></p><ul><li>commonly found on {blank:35}, e.g. in Russia</li><li>avoid exposure to {blank:36}, rain, and temperate extremes</li></ul><p><b>Inclusions</b></p><ul><li>Dominican amber: 1 inclusion to every 100 pieces</li><li>Baltic amber: 1 inclusion to every {blank:37} pieces</li></ul><p><b>Uses and Applications</b></p><ul><li>It can be used to make ornamental objects and jewelry in {blank:38} settings.</li><li>Some people believe that its powder mixed with {blank:39} cures throat, eye and ear diseases.</li><li>It has even been used as a {blank:40} material, for instance using it to create the Amber Room.</li></ul>",
+          "correctAnswers": {
+            "31": "insects",
+            "32": "volcanic dust",
+            "33": "heat",
+            "34": "intermediate",
+            "35": "sea shores",
+            "36": "sunlight",
+            "37": "1,000",
+            "38": "silver",
+            "39": "honey",
+            "40": "building"
+          }
+        }
+      ]
+    }
+  ]
+}

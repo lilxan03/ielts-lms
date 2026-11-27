@@ -1,0 +1,435 @@
+{
+  "id": "vol2_listening_test3",
+  "title": "Vol 2 Listening Test 3",
+  "module": "listening",
+  "topics": [
+    "Vol 2",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test9_sec1.mp3",
+      "text": "<p><b>POLICE:</b> Hello, London Police Department.</p><p><b>ANNA:</b> Yes, I would like to report a</p><p><b>POLICE:</b> Alright, just a minute while I pull up the form. OK, could you give me your first and last name?</p><p><b>ANNA:</b> Anna Grieg.</p><p><b>POLICE:</b> kina, Greg? G-R-E-G?</p><p><b>ANNA:</b> No, Grieg. G-R-I-E-G.</p><p><b>POLICE:</b> Got it. Alright moving on: gender — female. Date of birth?</p><p><b>ANNA:</b> 15th of March, 1980.</p><p><b>POLICE:</b> Alright, thanks. Just a few more personal information questions and then we can address your claim.</p><p><b>ANNA:</b> Alright.</p><p><b>POLICE:</b> What is the address?</p><p><b>ANNA:</b> 4 Ellendale St. That's E-L-L-E-N-D-A-L-E.</p><p><b>POLICE:</b> Oh right, Ellendale Street. Yeah we've had a lot of break-ins in that area lately. And the postal code?</p><p><b>ANNA:</b> W5 2AT.</p><p><b>POLICE:</b> And are you a citizen of the UK?</p><p><b>ANNA:</b> No.</p><p><b>POLICE:</b> Okay, what type of citizenship do you have?</p><p><b>ANNA:</b> Well, I lived in the United States for most of my life, but I am actually of Grenadian nationality.</p><p><b>POLICE:</b> Okay, so is that the country that issued your passport?</p><p><b>ANNA:</b> Yes.</p><p><b>POLICE:</b> And what is the crime you are reporting?</p><p><b>ANNA:</b> I already said a robbcry!</p><p><b>POLICE:</b> Oh, right. Sorry, this is about the hundredth robbery report I've filled out today. Have you had any prior break-ins?</p><p><b>ANNA:</b> Um, in the building or just my flat? The unit below mine got broken into last year.</p><p><b>POLICE:</b> No, just your flat.</p><p><b>ANNA:</b> Oh — then no. Not here.</p><p><b>POLICE:</b> Alright, let's see here. Can you think of anything that was out of the ordinary around your building, or anyone who may have had reason to do this?</p><p><b>ANNA:</b> No, it seemed like just a normal evening. I didn't see anyone suspicious, and can't think of anyone that would target me specifically.</p><p><b>POLICE:</b> How long has this been your place of residence?</p><p><b>ANNA:</b> Hm, let me think. I moved in on February 1, and it's October, so it's been about 8 months already. Wow, time flies!</p><p><b>POLICE:</b> And that is just for Ellendale, yeah?</p><p><b>ANNA:</b> Yes. I have lived in the UK forjust over I year.</p><p><b>POLICE:</b> I see. Can you give me the first and last name of all members of the household?</p><p><b>ANNA:</b> Actually, I live alone.</p><p><b>POLICE:</b> OK — so no other occupants. And can you give me a brief account of what happened?</p><p><b>ANNA:</b> I left to go to a dinner party at 6 p.m., and when I returned at 11 found the place ransacked and a lot of my things gone.</p><p><b>POLICE:</b> Any sign of forced entry?</p><p><b>ANNA:</b> Yes, the back door wide and it looked like</p><p><b>POLICE:</b> I see. And just to be clear, was the door locked when you left?</p><p><b>ANNA:</b> Of course!</p><p><b>POLICE:</b> Hey, you would be surprised how many reports we get where people have failed to lock their doors. Now I need you to list any missing items valued above €200. So far I'm missing my computer, my purse with my wallet in it, and the TV.</p><p><b>POLICE:</b> OK. Let's start with the computer. What is the estimated value?</p><p><b>ANNA:</b> {500.</p><p><b>POLICE:</b> And what is the serial number? G4168770.</p><p><b>POLICE:</b> Thank you, and a visual description?</p><p><b>ANNA:</b> It is a black 13-inch Pemdas Cloudbook. There is an Oxford sticker on the lid.</p><p><b>POLICE:</b> OK, and could you give a description of the purse?</p><p><b>ANNA:</b> Sure. It's a Claude Frieda shoulder bag and the material is silvercolored cloth.</p><p><b>POLICE:</b> Price?</p><p><b>ANNA:</b> BOO.</p><p><b>POLICE:</b> Okay. That concludes my report. I'll submit it and we'll let you know of any developments.</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l3_1_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 10,
+          "instruction": "Questions 1–10\nComplete the form below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>Registration Form</h4><table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Example</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Answer</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Type of crime reported:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><i>robbery</i></td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Name:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Anna {blank:1}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Date of Birth:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:2}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Address:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">34 {blank:3} St.</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Post code:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:4}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Nationality:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Grenadian</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Number of previous burglaries:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:5}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Time of apartment tenancy:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:6}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Number of occupants:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:7}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Entry point of burglar:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:8}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Details of lost property:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• Serial number of lost computer: {blank:9}<br>• Material of stolen purse: {blank:10}</td></tr></table>",
+          "correctAnswers": {
+            "1": "Grieg",
+            "2": "15(th) March/March 15(th)",
+            "3": "Ellendale",
+            "4": "W5 2AT",
+            "5": "0",
+            "6": "8 months",
+            "7": "1",
+            "8": "back door",
+            "9": "G4168770",
+            "10": "silver-colored cloth"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test9_sec2.mp3",
+      "text": "<p><b>TUTOR:</b> Hi, Mark. Hi, Gina. Mhat can I help you with?</p><p><b>MARK:</b> So we were hoping you could help us with this extracurricular project.</p><p><b>TUTOR:</b> Sure - what is the topic?</p><p><b>GINA:</b> Attending business school.</p><p><b>TUTOR:</b> This sounds like a great idea. So you're going to explain the requirements for getting into business school?</p><p><b>MARK:</b> Not exactly. It will be more broadly about the experience the academics, accommodation, and social experience that comes with being a pmt of the business school.</p><p><b>TUTOR:</b> I see. So would your audience be the general public?</p><p><b>GINA:</b> Well, we would probably want more to focus on members of the institution - we would especially like to reach individual applicants to the business school.</p><p><b>TUTOR:</b> I see. Now what form will this infomation be? You could give a talk to all the summer courses - all you would need is pennission from the course director. Or you could pass out information outside the student union.</p><p><b>MARK:</b> Those are both good ideas. What about sending out pamphlets in the mail?</p><p><b>TUTOR:</b> Most college students never check their mail. Maybe you could make a video and show it on campus?</p><p><b>GINA:</b> That's a great idea. We'll do the video.</p><p><b>TUTOR:</b> Great. And as members cf the business school, do you have an incentive to attract new students? If so, this idea is a great way to do that.</p><p><b>MARK:</b> No, the idea actually came about because of how much students like us worry about their studies.</p><p><b>GINA:</b> Yeah - when I got into business school, there were a lot of things I had not prepared for, so the video would cover a lot of things Mark and I wish we had known upon entering business school.</p><p><b>TUTOR:</b> Right.</p><p><b>TUTOR:</b> What would you talk about first?</p><p><b>MARK:</b> The first and probably most important section would be academics.</p><p><b>TUTOR:</b> Good idea. So would you provide guidance on what courses to take?</p><p><b>GINA:</b> We want to focus especially on the approaches professors take — their teaching methods. It is far different than what students are used to in high school, and even in liberal arts college.</p><p><b>TUTOR:</b> Good idea. And how long do you think you would spend explaining academics?</p><p><b>MARK:</b> We'll probably spend 7 minutes on it.</p><p><b>GINA:</b> We also have some ideas for talking about housing, food options, and stuff like that. We're not really sure how to tie it all together though.</p><p><b>TUTOR:</b> I think it would be suitable to title that section accommodation what do you think?</p><p><b>MARK:</b> That could work. We'll definitely describe the different dining options at the cafeteria, and then walk students through flats and the grueling process of finding one near the business school campus.</p><p><b>GINA:</b> Okay - so we would cover specifics on the cafeteria, as well as flats?</p><p><b>MARK:</b> I think those are both helpful. We could spend about 6 minutes on accommodation, and be sure to touch on those specifically.</p><p><b>TUTOR:</b> Great. Is there anything else you would talk about?</p><p><b>GINA:</b> We definitely want to go over the social aspect of attending school here.</p><p><b>TUTOR:</b> Of course. I think it's good to have a little fun once in a while when you're working so hard in school.</p><p><b>MARK:</b> I think we are going to introduce new students to the disco that so many upperclassmen know and love. Maybe we'll include a few other places too, but that's the main one.</p><p><b>GINA:</b> We're also going to invite students to the international evening taking place in the first week of school as a great chance for our large international student population to meet a lot of other new students.</p><p><b>TUTOR:</b> It can definitely be hard to meet people as an international student. I think that is a great idea. You may want to spend slightly longer on this section than the other two.</p><p><b>MARK:</b> Hm.. .how about 8 minutes?</p><p><b>GINA:</b> That sounds reasonable. So overall, the introduction should take 3 minutes, and then the conclusion should take 4, giving us a total of 28 minutes.</p><p><b>TUTOR:</b> I wouldn't rush your introduction. Maybe give it between 4 and 6 minutes. The conclusion, though, can be shorter since it's just a quick refresher of each of the topics. Give that not more than 2 minutes.</p><p><b>MARK:</b> Okay. So in total the video should take about the same time, just more intro and less conclusion?</p><p><b>TUTOR:</b> Precisely.</p><p><b>GINA:</b> Alright — we are going to get to work on our video. Thanks for</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l3_11",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            11
+          ],
+          "points": 1,
+          "text": "11 What is the project that Mark and Gina want to start?",
+          "options": [
+            "A business school requirements",
+            "B directions to the business school",
+            "C explaining the business school experience"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "11": "C explaining the business school experience"
+          },
+          "instruction": "Questions 11–14\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v2l3_12",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            12
+          ],
+          "points": 1,
+          "text": "12 Who is the target audience?",
+          "options": [
+            "A business students",
+            "B business school applicants",
+            "C summer school attendees"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "12": "B business school applicants"
+          }
+        },
+        {
+          "blockId": "b_v2l3_13",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            13
+          ],
+          "points": 1,
+          "text": "13 How will they convey the information?",
+          "options": [
+            "A summer course lecture",
+            "B informational video",
+            "C pamphlet in the mail"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "13": "B informational video"
+          }
+        },
+        {
+          "blockId": "b_v2l3_14",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            14
+          ],
+          "points": 1,
+          "text": "14 They want to do this project because",
+          "options": [
+            "A students worry about their studies.",
+            "B they want to obtain a good grade.",
+            "C they want to attract future business school applicants."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "14": "A students worry about their studies."
+          }
+        },
+        {
+          "blockId": "b_v2l3_15_20",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 6,
+          "instruction": "Questions 15–20\nComplete the table below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Topic</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Time</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• Academics<br>- {blank:15}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">7 minutes</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• {blank:16}<br>- cafeteria<br>- {blank:17}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">6 minutes</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• Social activity<br>- {blank:18}<br>- {blank:19}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">8 minutes</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• Conclusion</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">nearly {blank:20}</td></tr></table>",
+          "correctAnswers": {
+            "15": "teaching methods",
+            "16": "Accommodation",
+            "17": "flats",
+            "18": "disco",
+            "19": "international evening",
+            "20": "2 minutes"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test9_sec3.mp3",
+      "text": "<p><b>DANI:</b> So tell me about your research project, John.</p><p><b>JOHN:</b> I created a questionnaire for the study to determine people's opinions of the relative feasibility of earning a living in Brisbane.</p><p><b>DANI:</b> Oh, cool. How is it scored? Are they all multiple choice questions? JOI--N: Well, the questions consist primarily of yes/no responses. There are two free response questions at the end. Participants will use a computer to fill in their answers; that way it is really easy to analyse the data afterward.</p><p><b>DANI:</b> Great! It sounds like you have a pretty solid idea of what you should do. Just don't forget to submit a copy of your plans to Professor Curran by the 15th.</p><p><b>JOHN:</b> Oh, I almost forgot!</p><p><b>DANI:</b> Hm, you don't do it for high grade or appraise, but he can review and give you feedback.</p><p><b>JOHN:</b> Right, that will be helpful — he has been conducting studies like this for 30 years now.</p><p><b>DANI:</b> Yep, oh and I'm curious — are you going to be in the room giving subjects directions for the questionnaire? JOI-m: Well, I think the instructions will be provided by another representative who will not be analysing the data. I want them to feel they can answer and be completely anonymous, so I will not be in the room. Anonymity is really important for this study. DAN]: I agree. Good idea. You should tell the representative to remind subjects to fully consider both sides of each issue. Sometimes it's really easy to immediately check \"yes\" or \"no\" without stopping to think about it completely.</p><p><b>JOHN:</b> That's so true! It's like a race to finish the questionnaire first or something. I'll make sure to include that in the instructions. This report has to be perfect!</p><p><b>DANI:</b> So tell me about your research project, John.</p><p><b>JOHN:</b> I created a questionnaire for the study to determine people's opinions of the relative feasibility of earning a living in Brisbane.</p><p><b>DANI:</b> Oh, cool. How is it scored? Are they all multiple choice questions?</p><p><b>JOHN:</b> Well, the questions consist primarily of yes/no responses. There are two free response questions at the end. Participants will use a computer to fill in their answers; that way it is really easy to analyse the data afterward.</p><p><b>DANI:</b> Great! It sounds like you have a pretty solid idea of what you should do. Just don't forget to submit a copy of your plans to Professor Curran by the 15th.</p><p><b>JOHN:</b> Oh, I almost forgot! DAN]: Hm, you don't do it for high grade or appraise, but he can review and give you feedback.</p><p><b>JOHN:</b> Right, that will be helpful — he has been conducting studies like this for 30 years now.</p><p><b>DANI:</b> Yep, oh and I'm curious — are you going to be in the room giving subjects directions for the questionnaire? JOI-m: Well, I think the instructions will be provided by another representative who will not be analysing the data. I want them to feel they can answer and be completely anonymous, so I will not be in the room. Anonymity is really important for this study.</p><p><b>DANI:</b> I agree. Good idea. You should tell the representative to remind subjects to fully consider both sides of each issue. Sometimes it's really easy to immediately check \"yes\" or \"no\" without stopping to think about it completely. JOI-N: That's so true! It's like a race to finish the questionnaire first or</p><p><b>DANI:</b> Wow, what's the big deal? I know it's part of your g-cade and all...</p><p><b>JOHN:</b> Well it's that, but also a well-executed study could grab the attention of faculty in the department, which would be a huge deal.</p><p><b>DANI:</b> So...for attention?</p><p><b>JOHN:</b> No silly! I mean I could really gain the respect of professors who ma later take me on as a duatestudentin their labs.</p><p><b>DANI:</b> Oh, I see.</p><p><b>DANI:</b> Let me take a look at the survey. Wow, this looks great! The map of the median income by region is a great tool where did you find it?</p><p><b>JOHN:</b> Well thanks! I read a lot of sources and just noticed this one in a small psychology journal called Modern Psychology . It's more helpful than the photo I added, but I think the photo is just so interesting. It was in the newspaper last year during that huge wage strike.</p><p><b>DANI:</b> It's great. Probably not necessary, but it looks great. I don't understand — what is WKRX's involvement here? </p><p><b>JOHN:</b> Oh — the radio station agreed to sponsor the study if I play their station in the room.</p><p><b>DANI:</b> Wow, interesting. So you don't have to pay for any of this?</p><p><b>JOHN:</b> Exactly.</p><p><b>DANI:</b> Nice! Where did you get that idea?</p><p><b>JOHN:</b> Last month at the Psychology Club Council meeting someone talked about how easy it is to get sponsorship from local businesses, so I listened to their advice and called around!</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l3_21",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21 The subjects in questionnaire are",
+          "options": [
+            "A tourists in the hotel in this area.",
+            "B local residents.",
+            "C people who are living in this area."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "21": "C people who are living in this area."
+          },
+          "instruction": "Questions 21–26\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v2l3_22",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22 The results of the questionnaire should be",
+          "options": [
+            "A directly entered into the computer.",
+            "B scored by hand.",
+            "C submitted directly to Professor Curran."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "22": "A directly entered into the computer."
+          }
+        },
+        {
+          "blockId": "b_v2l3_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23 Why should John give a copy of plans to the professor?",
+          "options": [
+            "A to receive a good grade",
+            "B to get advice",
+            "C to earn high praise"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "23": "B to get advice"
+          }
+        },
+        {
+          "blockId": "b_v2l3_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 How will the instructions be presented?",
+          "options": [
+            "A given by a group representative",
+            "B given by all members of the group",
+            "C given by the professor"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "A given by a group representative"
+          }
+        },
+        {
+          "blockId": "b_v2l3_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25 What does Dani suggest to John when those subjects receive the questionnaire?",
+          "options": [
+            "A divide into 2 parts to argue",
+            "B focus on the opinion of the interviewees",
+            "C take consideration of both sides"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "25": "C take consideration of both sides"
+          }
+        },
+        {
+          "blockId": "b_v2l3_26",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            26
+          ],
+          "points": 1,
+          "text": "26 Why is this project particularly important to John?",
+          "options": [
+            "A to earn respect from professors in the department",
+            "B to raise his grade",
+            "C to impress his professor"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "26": "A to earn respect from professors in the department"
+          }
+        },
+        {
+          "blockId": "b_v2l3_27_30",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 4,
+          "instruction": "Questions 27–30\nWhat is the source of each one below in this survey?\nChoose FOUR answers from the box and write the correct letter, A–F, next to questions 27–30.",
+          "text": "27 Map\n28 Photo\n29 Budget\n30 Comment",
+          "options": [
+            "A radio",
+            "B council meeting",
+            "C the television",
+            "D newspaper",
+            "E journal",
+            "F the Internet"
+          ],
+          "correctAnswers": {
+            "27": "E journal",
+            "28": "D newspaper",
+            "29": "A radio",
+            "30": "B council meeting"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test9_sec4.mp3",
+      "text": "<p>Good afternoon. In the last few lectures we've been covering the social and political pressures that influenced the rise of the rebellion of 1679. Today I would like to focus on the Pleasanton Town Market.</p><p>Now, why are we talking all about some market? It's not like it was the first market ever, or even a particularly large market. The Pleasanton Town Market is important because it is often mentioned in the literature found in the library. If you have ever been there, you have probably seen all of the hand-crafted items sold there now. But what was originally bought and sold in the town market?</p><p>In the beginning, the market sold products such as meats, furs, and simple tools. Over time, though, it became known as the place to find quality livestock. People came from all over the world to find the biggest and best cows, pigs, and chickens. In fact, the profits from the Town Market became the savior of a</p><p>plummeting economy during a time of much turmoil. Not to be confused with the reconstruction era, a period of ra id develo ment came about in the 1660's as a result of the market's vendors contributin their rofits to buildin much needed public facilities and defense, which would later make huge impact u the outcome of the war. a on</p><p>For many years, the market flourished and began to draw in large tourism crowds in addition to the throngs of livestock customers. However, revolutions in farming came about, more people moved to farms far from the as city centre. Customers ew more and more reluctant to travel all the wa to the town centre for their meats when the could easily choose to bu from local farmers With such a fall in the profits of the town's major profit generator, some quality town planning was needed. In the mayoral election of 1668, a young man of little fame just barely claimed the popular vote — none other than the now legendary John C. Wiley.</p><p>Wiley's first decision as mayor of Pleasanton was to deal with the quickly failing Town Market. The building with the large clock was a landmark that had symbolised growth in Pleasanton for a generation. Wiley decided to use the notoriety ofthe Town Market to set an example. During the historical Rotterdam Rebellion, Wiley gave all those involved lifetime prison sentences in the very same building. It stayed a prison for about 50 more years until they transported all remaining prisoners to other facilities and turned it into the historical monument today.</p><p>Now that you know the basics of the history of the Pleasanton Town Market, will introduce your next group project. I want you, to make a short film based on the real historical events that occurred in Pleasanton before and during the uprising.</p><p>i will give you some class time to look through the library's reference section, but you will be responsible for conducting further research outside of class. I suggest starting by looking for information on the market itself. You'll find plenty of information — in fact, some students complain that there is actually too much information on it. On your own time, you could find family members of old war veterans to conduct interviews. Sometimes they provide wonderful insight that you wouldn't find in proper history books, but be careful - an interview that riddled with bias is useless.</p><p>I myself have some very old photographs here that you are welcome to take look at for some inspiration. I'm lucky enough to own this one of Jim Wiley himself! Very interesting to see, but does not provide enough information to add</p><p>much to your film.</p><p>Feel free to take this film into whatever direction you choose. You could even do a crime thriller based on real outlaws. All you would have to do is look through the newspaper archives in the crime section during that time period. Try</p><p>to get as much detail as you can, but you may end up having to draw your own conclusions.</p><p>Okay, that's enough from me, so let's go on to...</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l3_31",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            31
+          ],
+          "points": 1,
+          "text": "31 Why did the lecturer choose to focus on the Pleasanton Town Market?",
+          "options": [
+            "A It was the first ever Town Market.",
+            "B It has been covered extensively in local history classes.",
+            "C It is often mentioned in some literature of the library."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "31": "C It is often mentioned in some literature of the library."
+          },
+          "instruction": "Questions 31–35\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v2l3_32",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            32
+          ],
+          "points": 1,
+          "text": "32 The Town Market originally made a large profit selling",
+          "options": [
+            "A handcrafts.",
+            "B vegetables.",
+            "C animals."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "32": "C animals."
+          }
+        },
+        {
+          "blockId": "b_v2l3_33",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            33
+          ],
+          "points": 1,
+          "text": "33 The money that the marketers made contributes to local",
+          "options": [
+            "A reconstruction.",
+            "B development.",
+            "C defense."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "33": "B development."
+          }
+        },
+        {
+          "blockId": "b_v2l3_34",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            34
+          ],
+          "points": 1,
+          "text": "34 Market sales plummeted due to a lack of viable",
+          "options": [
+            "A agriculture.",
+            "B transport.",
+            "C city planning."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "34": "B transport."
+          }
+        },
+        {
+          "blockId": "b_v2l3_35",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            35
+          ],
+          "points": 1,
+          "text": "35 Mayor John C. Wiley decided the Clock tower would be used as a ______ in the early stages of the uprising.",
+          "options": [
+            "A clock",
+            "B grounds for battle",
+            "C jail"
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "35": "C jail"
+          }
+        },
+        {
+          "blockId": "b_v2l3_36_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 5,
+          "instruction": "Questions 36–40\nComplete the table below.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Research Methods</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Objects</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Problems</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">reference section</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:36}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">there is too much information</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:37}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Rebellion</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">bias makes it {blank:38}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:39}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Jim Wiley</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">the information is insufficient</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">newspaper archives</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:40}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">more detail is needed</td></tr></table>",
+          "correctAnswers": {
+            "36": "market",
+            "37": "interviews",
+            "38": "useless",
+            "39": "photographs",
+            "40": "crime"
+          }
+        }
+      ]
+    }
+  ]
+}

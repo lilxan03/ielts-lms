@@ -1,0 +1,295 @@
+{
+  "id": "vol2_listening_test6",
+  "title": "Vol 2 Listening Test 6",
+  "module": "listening",
+  "topics": [
+    "Vol 2",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test12_sec1.mp3",
+      "text": "<p><b>AGENT:</b> Hello, Elite Travel, this is Emily speaking, how may I assist you today?</p><p><b>CUSTOMER:</b> Hi, I have a group visit to plan, and I wonder whether you could help me decide on which hotel to book. I have narrowed it down to either the Winchester, the Royal Hotel, or the Star Hotel. I am wondering if you have a recommendation.</p><p><b>AGENT:</b> I would be happy to help! Those three are excellent choices. If everyone is booking hotel rooms independently, an easy way to do it is online booking. The Star Hotel offers online bookings at no additional charge.</p><p><b>CUSTOMER:</b> It sounds fine!</p><p><b>AGENT:</b> Yeah, and you can even book the gorgeous sea view rooms if you act quickly.</p><p><b>CUSTOMER:</b> Hm, I will consider that. It would be great since we are mostly first-time visitors to the area to get a nice view of the water. Now, are there handicap accessible rooms?</p><p><b>AGENT:</b> Yes, all three options have access for the physically disabled.</p><p><b>CUSTOMER:</b> Great. I should also mention that we will be on a tight schedule, so we won't have much time to go out for meals. Which of these hotels serve food?</p><p><b>AGENT:</b> There is a limited continental breakfast menu at the Star and at the Winchester. For a full restaurant and room service, the Royal Hotel is your best bet.</p><p><b>CUSTOMER:</b> Oh wonderful! Could you tell me more about the restaurant?</p><p><b>AGENT:</b> Absolutely. In the morning there is a gourmet buffet or a la carte item, and after 11 a.m. lunch is served in the dining room. Dinners are in a nice, low-key but high quality setting in the hotel's</p><p><b>AGENT:</b> No, sorry. Not at the Royal hotel. Let though. Could I place me check on the others,</p><p><b>CUSTOMER:</b> you on hold for just a second? sure, thanks.</p><p><b>AGENT:</b> It looks like there is one at the Winchesteroff when book 8 or more rooms.</p><p><b>CUSTOMER:</b> Really? Sold! We'll book at the Winchester. Wait — is it suitable for children though? We'll have a few little ones in our group, and it would be great to have a way to keep them occupied.</p><p><b>AGENT:</b> Yes. In fact, it has a play_ place that kids just love, with slides, and swings and everything. Definitely a good hotel to bring the kids.</p><p><b>CUSTOMER:</b> Okay, great.</p><p><b>CUSTOMER:</b> So now I know where we'll be staying, what next? Should I go ahead and book transportation and assign rooms and everything?</p><p><b>AGENT:</b> Well, for now, there are only a few things for you to take care of. We will hold a block of rooms for you as soon as you send a deposit. I recommend booking as soon as possible, so you probably want to send the invitations as soon as you know how many rooms to hold.</p><p><b>CUSTOMER:</b> Oh, right. Okay, I'll send the invitations and put down the deposit. Is there anything else I should take care of?</p><p><b>AGENT:</b> Great! And don't wony about this now, but sometime before you arrive do let us know if you'll be requiring our transport service to and from the airport.</p><p><b>CUSTOMER:</b> I'll make sure to let you know. Does that incur a service charge? Or perhaps a tip, or some presents to show our gratitude for the</p><p><b>AGENT:</b> Oh, don't worry about it. It is a free service, so if you would like to tip you are welcome to do so, but hotel drivers do not accept giLs.</p><p><b>CUSTOMER:</b> Thanks for help!</p><p><b>AGENT:</b> My pleasure. Enjoy your stay at the Winchester!</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l6_1_6",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "points": 6,
+          "instruction": "Questions 1–6\nWhich hotels have the following facilities?\nWrite the correct letter, A, B, C, or D next to questions 1–6.",
+          "text": "1 Sea view\n2 Handicap accessibility\n3 Multiple meal options\n4 Private dining\n5 Group discount\n6 Children's play area",
+          "options": [
+            "A Royal Hotel",
+            "B Star Hotel",
+            "C Winchester Hotel",
+            "D All Three Hotels"
+          ],
+          "correctAnswers": {
+            "1": "B Star Hotel",
+            "2": "D All Three Hotels",
+            "3": "A Royal Hotel",
+            "4": "A Royal Hotel",
+            "5": "C Winchester Hotel",
+            "6": "C Winchester Hotel"
+          }
+        },
+        {
+          "blockId": "b_v2l6_7_10",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            7,
+            8,
+            9,
+            10
+          ],
+          "points": 4,
+          "instruction": "Questions 7–10\nComplete the sentences below.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<p>7 The man needs to send his {blank:7} to the hotel.</p><p>8 He also needs to make {blank:8} immediately.</p><p>9 The hotel must be alerted in advance if guests will need help with {blank:9}.</p><p>10 There is no need to prepare {blank:10} for hotel drivers.</p>",
+          "correctAnswers": {
+            "7": "deposit",
+            "8": "invitations",
+            "9": "transport/transportation",
+            "10": "gifts/presents"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test12_sec2.mp3",
+      "text": "<p>Ladies and Gentlemen of Durham, start your engines! Skip Gordon here inviting you to the eleventh annual Durham County Car Exhibition! That's right, it's that time of year again! Mark your calendars — the pre-opening event kicks off on the 18th, and the exhibition offcially opens to the public on Saturday, March 19th. Take it from me — you won't want to miss Durham 's most attended public event of the year 5 times running. You don't have to be a motor head to appreciate the finest cars both new and old in existence today, but it helps! Be one of the 70,000 people to see everything from big rig monster trucks to good old fashion classic hot rods.</p><p>Get your tickets now! Admission is £10 for adults and £5 for children during off-peak times, and £20 for adults and £10 for children and senior citizens on weekends and for full-day passes.</p><p>Come see vintage classics, bid in the auctions, and even test out a few on the Winner's Circle Racetrack. An insider tip — weekends are the exact time when all of the best attractions take place, but to avoid Saturday crowds join us this You'll see me — Skip Gordon - and all your friends from WKXP there this Sunday at our very own booth, so stop by and say hi and you might just win a prize of your own.</p><p>A new attraction this year will be the addition of a new car category — electricity, namely the electric car class. See displays from Toyota, Honda, and — you guessed it — Tesla! Watch as the first generation of fully electric cars compete on style, ride, and watch the main entertainment as there's going to be a fabulous show typically known for their speed, this new class is guaranteed to surprise you.</p><p>Get tickets before they sell out! Last year's tickets sold out fast, so we upped the attendance this year. That's right, more seats! But don't wait — act now and save! That's right - if you buy your tickets before this Friday, you'll get two for the price of one. That's right, TWO for the price of one!</p><p>And don't worry kids, just like last year, there's something specially for you! Wreak havoc on the road with the Kids Krazy Cars ride, and then Race around the Tiny Tykes Track in your favorite child-sized race car. Meanwhile Mom and Dad can take a spin in a ride a bit more than their size. We're rolling out massive dirt track so you can get behind the wheel and test drive something little more adventurous. Put the pedal to the metal in a 4 by 4 SUV as you go over bumps and navigate through twists and turns — you'll want to buckle up!</p><p>You heard it here — act now to get in on the fun at the Durham Counv Car Show before it's too late. Come for prizes, good prices, and good old fashioned family fun. We had a lucky draw for a NEW car last year, but this year our main event is the Monster Truck Rally, where one lucky fan will win a chance experience the thrill from behind the wheel — well, next to the wheel as they ride with legendary driver Smash Tate! Feel the speed first hand and talk to a living legend in a hue once-in-a-lifetime opportunity.</p><p>For tickets, go online to www.durhamcountycars.com, or call 1-888-CAR- SHOW We'll there! And always remember to buckle up!</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l6_11_16",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "points": 6,
+          "instruction": "Questions 11–16\nComplete the form below.\nWrite NO MORE THAN TWO WORDS AND/OR A NUMBER for each answer.",
+          "text": "<h4>Durham County Car Show</h4><table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Item</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Details</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Public grand opening date:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:11}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Number of viewers:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:12}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Off-peak day price:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• £10 for adults<br>• £{blank:13} for children</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Best day to visit:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:14}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>New car category:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:15}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\"><b>Entertainment included:</b></td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:16}</td></tr></table>",
+          "correctAnswers": {
+            "11": "March 19(th)/19 March",
+            "12": "70,000",
+            "13": "5",
+            "14": "Sunday",
+            "15": "electricity",
+            "16": "racing car"
+          }
+        },
+        {
+          "blockId": "b_v2l6_17_20",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 4,
+          "instruction": "Questions 17–20\nWhen were the following features included in an auto show?\nWrite the correct letter, A, B, or C next to questions 17–20.",
+          "text": "17 Higher number of seats\n18 Fun for children\n19 4x4 test drive\n20 Lucky draw for car",
+          "options": [
+            "A last year",
+            "B this year",
+            "C both"
+          ],
+          "correctAnswers": {
+            "17": "B this year",
+            "18": "C both",
+            "19": "C both",
+            "20": "A last year"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test12_sec3.mp3",
+      "text": "<p><b>STUDENT:</b> Hi, Professor Jamison, I was hoping we could talk this week about choosing courses for next semester.</p><p><b>TUTOR:</b> That sounds great! Any idea yet what you would like to take?</p><p><b>STUDENT:</b> Well, I was hoping you could kind oftell me. There are so many to choose from. I don't even know where to start!</p><p><b>TUTOR:</b> Sure. Well, first thing's first. Do you know what you will major in? It is important to take courses that are relevant to your career path.</p><p><b>STUDENT:</b> Well, I think I want to major in Biology. I want to go to medical school, so it seems like it would make sense.</p><p><b>TUTOR:</b> I agree — if you like Biology, it is definitely a good idea to focus on that since so many of the requirements overlap.</p><p><b>STUDENT:</b> Okay, so I should take a few Biology classes then?</p><p><b>TUTOR:</b> Yes. Let's start there. You should pick one or two Biology classes. Not just any Biology classes, though! If possible, read online or talk to senior fellows and find out about the structure pf the courses. You don't want to end up signing up for two classes that require labs in the same semester — you'll spend so much time in the Biology Department that you won't see the light of day.</p><p><b>STUDENT:</b> Oh right, good idea. I heard labs can be as long as 4 hours.</p><p><b>TUTOR:</b> That is true. And another thing — make sure the topic is either relevant to your major, or something y_ou are interested in learning about. It sounds obvious, but do not just take a class because you heard it was easy, or because it does not require attendance. STUDENT; Of course not. Though it would be really nice to have at least one class, that's a little bit less rigorous than the ones I'm taking this semester. I barely sleep as it is with all this studying.</p><p><b>TUTOR:</b> That have to do with study habits, though I don't</p><p><b>TUTOR:</b> So any idea which Biology classes you may decide on for next semester?</p><p><b>STUDENT:</b> Well, I was thinking of taking Human Physiology it sounds — relevant and interesting.</p><p><b>TUTOR:</b> I think it is an interesting class, but I would recommend against it. You are already in Human Anatomy, which also covers Physiology so it would be repetitive, and probably not the best use of your time.</p><p><b>STUDENT:</b> If I already know some of the stuff, I could take it to boost my GPA a little bit.</p><p><b>TUTOR:</b> Um, you could maybe do that, except the professor that teaches is famous for giving out the fewest A's of any professor.</p><p><b>STUDENT:</b> Oh wow. Never mind.</p><p><b>TUTOR:</b> Now, changing subjects, have you decided yet on your research topic?</p><p><b>STUDENT:</b> Well, I actually decided. I don't want to do a research paper. I'm going to do a dissertation instead. I think I will much more enjoy coming up with a thesis and finding all the details to support it.</p><p><b>TUTOR:</b> I see. Didn't you already do some of the research though? What happened to that?</p><p><b>STUDENT:</b> Well, I started doing research. Then the more data I collected, the more complicated things got. I realised I would have to take a lot more steps to randomise the sample, and then I realised I would need to control for more factors.</p><p><b>TUTOR:</b> I see. What kind of data collection did you do?</p><p><b>STUDENT:</b> I interviewed employees at the water treatment facility after Professor Dickinson recommended it.</p><p><b>STUDENT:</b> No, I am a lot happier just doing the dissertation.</p><p><b>TUTOR:</b> That's fine with me. Just remember, you need to finish your first draft and send it in soon. It's already the middle ofFebruaBJl.</p><p><b>STUDENT:</b> Oh wow, it is, isn't it? I just have to finish it by the end of March, right?</p><p><b>TUTOR:</b> Yep, but don't forget! The date will really sneak up on you.</p><p><b>STUDENT:</b> OK, I'll make sure to set reminders in my calendar. And who do talk to about registering my dissertation?</p><p><b>TUTOR:</b> You should go to the Department Office, and then talk to the</p><p><b>STUDENT:</b> I thought I needed to talk to the Department Head.</p><p><b>TUTOR:</b> Not for registering. If you need help developing your dissertation, that's when you should go to the Department Head.</p><p><b>STUDENT:</b> Oh, I see. And who would I see about getting access to the database ofpast research on my topic?</p><p><b>TUTOR:</b> That you can find in the computer lab, specifically in the offceyou'll have to ask a lab technician to give you access.</p><p><b>STUDENT:</b> Okay. Well, I'll go ahead and get started on that then. Thanks!</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l6_21_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_3_7",
+          "ids": [
+            21,
+            22,
+            23
+          ],
+          "points": 3,
+          "instruction": "Questions 21–23\nChoose THREE letters, A–G.",
+          "text": "Which THREE factors should the student consider while selecting courses?",
+          "options": [
+            "A class time",
+            "B course topic",
+            "C amount of homework",
+            "D ease of course",
+            "E relevant to future career",
+            "F course structure",
+            "G professor reputation"
+          ],
+          "multi": true,
+          "correctAnswers": {
+            "21": "B course topic",
+            "22": "E relevant to future career",
+            "23": "F course structure"
+          }
+        },
+        {
+          "blockId": "b_v2l6_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 The tutor recommends against taking Human Physiology because it would not be the best",
+          "options": [
+            "A time management.",
+            "B chance at earning an A.",
+            "C topic for a research paper."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "A time management."
+          },
+          "instruction": "Questions 24–27\nChoose the correct letter, A, B or C."
+        },
+        {
+          "blockId": "b_v2l6_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25 The student decides to do a dissertation because",
+          "options": [
+            "A he takes it to boost his GPA.",
+            "B he likes to develop more supportive details.",
+            "C he wants to conduct more interviews."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "25": "B he likes to develop more supportive details."
+          }
+        },
+        {
+          "blockId": "b_v2l6_26",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            26
+          ],
+          "points": 1,
+          "text": "26 The student thought the research paper was",
+          "options": [
+            "A already completed.",
+            "B worth finishing.",
+            "C too complicated."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "26": "C too complicated."
+          }
+        },
+        {
+          "blockId": "b_v2l6_27",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            27
+          ],
+          "points": 1,
+          "text": "27 The method of data collection was",
+          "options": [
+            "A interviews.",
+            "B lab studies.",
+            "C questionnaires."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "27": "A interviews."
+          }
+        },
+        {
+          "blockId": "b_v2l6_28_30",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            28,
+            29,
+            30
+          ],
+          "points": 3,
+          "instruction": "Questions 28–30\nComplete the sentences below.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<p>28 First draft should be finished by the end of {blank:28}.</p><p>29 Dissertation should be registered with the {blank:29} in the Department Office.</p><p>30 Get a database from the {blank:30} Office.</p>",
+          "correctAnswers": {
+            "28": "March",
+            "29": "secretary",
+            "30": "Computer"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol2-audio/resolve/main/test12_sec4.mp3",
+      "text": "<p>Good morning, everyone. In today's lecture, I'm going to talk about the role of sleep in humans and animals. Of all the biological processes in the animal kingdom, sleep is perhaps the most important. A human can survive for almost two weeks without eating, but did you know that one week without sleep can be fatal? It's even worse for animals, especially for those who must avoid predators. Without sleep, an animal is much less capable of avoiding an attack — this is the case for all animals, whether they are reptiles, mammals or fish. Let us look now at how different animals sleep, reasons for their ways of rest, and the potential problems they might encounter.</p><p>In marine life, sleep must be balanced with breathing. For example, the dolphin must float to the surface as it sleeps in order to breathe. Like other large sea mammals, they keep one eye open and one half of the brain awake at all times to maintain some amount of consciousness required to breathe and to watch out for possible threats. They sleep with only one brain hemisphere in slow-wave sleep.</p><p>Birds also have unusual sleeping patterns, mostly due to being constantly on edge in the presence of numerous predators. They usually sleep quite lightly — for example, Swainson's Thrush, also called Olive-backed Thrush, is a mediumsized thrush that takes hundreds of naps during the day, each of which lasts just a few seconds. While migrating, migratory birds tend to function well on micronaps.</p><p>Horses, on the other hand, do most of their sleeping standing up. Scientists think that horses develop their habit of sleeping upright as a defense mechanism, way of protecting themselves against predators, and a standing position keeps Also, horses do occasionally take short naps lying down. Horses are heavy animals with big muscles, but their bones are surprisingly delicate, so lying in one position for a long time could well injure a horse.</p><p>Just like humans, animals can also have sleeping problems. Dr. John Hedricks and Adrian Morrison from the School of Veterinary Medicine, University of Pennsylvania in Philadelphia, determined that certain diseases were primarily associated with the sleep states in animals. In their research they emphasised that because so much in this area still remains unclear, animal models were very important for studies of sleep disorders. The physiology of sleep in animals is similar to that of humans.</p><p>But why do we humans sleep? Researchers and scientists believe it helps us organise our memories of the day — that sleep acts as a kind of filing system for the brain. Without it, our thoughts become disorderly and confused, which leads to increased likelihood of accidents and a tendency to say and do bizarre things. Researchers also believe that sleep plays a key role in learning. We sleep so that the brain can integrate new knowledge and form new associations. Because of the similar sleeping pattern to that of humans, rats are often studied in order to increase our knowledge of human physiology. In one study, rats were kept awake for almost two weeks, and their behavior was observed. Researchers found the sleep-deprived rats could hardly remember anything of what they had been taught that day. For example, one rat had been taught to recognise pictures of various Parisian landmarks in order to receive food — pressing a button below a picture of the Louvre would result in food being released and so forth. However, when deprived of sleep, they would press buttons seemingly at In addition to rats, the fruit fly, a small insect that feeds and breeds on spoiled fruit, also has been used as a model organism and thousands of scientists around the world work on it. But why was the fruit fly chosep to be studied? It was fcr practical reasons. The most important one is that the relationship between fly and human genes is so close that the sequences of newly discovered human genes, including genes that show a susceptibility, can often be matched against their fly counterparts. This provides an indication of the function of the human gene and could help in the development of effective drugs to help people with sleeping disorders. Therefore, many scientists today choose to study the genetic</p><p>structure of the fruit fly, which could make a particularly important contribution to the understanding of developmental processes in humans.</p><p>In conclusion, sleep is a necessary part of life not just for humans, but for entire animal kingdom. Now, I'd be happy to answer any questions you may have...</p>",
+      "questions": [
+        {
+          "blockId": "b_v2l6_31_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 10,
+          "instruction": "Questions 31–40\nComplete the notes below.\nWrite NO MORE THAN TWO WORDS for each answer.",
+          "text": "<h4>The role of sleep in humans and animals</h4><p><b>Importance of sleep in animals</b></p><ul><li>Compared to those without food, animals without sleep are more likely to suffer from {blank:31}.</li><li>Sleep is necessary for all animals, whether they are reptiles, {blank:32}, or fish.</li></ul><p><b>Differences in animals' sleep and reasons for their ways of resting</b></p><ul><li><b>Dolphins:</b> swim to the surface when sleeping, because they need to {blank:33}.</li><li><b>Birds:</b> are constantly {blank:34} in the presence of numerous predators.</li><li><b>Horses:</b> do most of their sleeping standing up; do occasionally take short naps lying down. Lying in one position for a long time could well injure a horse, because their {blank:35} are delicate.</li></ul><p><b>Potential problems encountering</b></p><ul><li>Animals can also have {blank:36}, the same as humans.</li></ul><p><b>Importance of sleep in humans</b></p><ul><li>It helps us to organise our {blank:37} of the day.</li><li>It plays a key role in {blank:38}.</li><li>e.g. Because of the similar sleeping pattern to that in humans, {blank:39} are studied in order to increase our knowledge of human physiology.</li><li>Scientists choose to study the {blank:40} of the fruit fly in order to know the function of the human gene and understand developmental processes in humans.</li></ul>",
+          "correctAnswers": {
+            "31": "attack",
+            "32": "mammals",
+            "33": "breathe",
+            "34": "on edge",
+            "35": "bones",
+            "36": "sleeping problems",
+            "37": "memories",
+            "38": "learning",
+            "39": "rats",
+            "40": "genetic structure"
+          }
+        }
+      ]
+    }
+  ]
+}
