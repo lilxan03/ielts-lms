@@ -1,0 +1,350 @@
+{
+  "id": "vol6_listening_test3",
+  "title": "Vol 6 Listening Test 3",
+  "module": "listening",
+  "topics": [
+    "Vol 6",
+    "Listening"
+  ],
+  "difficulty": "Actual Test",
+  "vocab": [],
+  "parts": [
+    {
+      "title": "Section 1",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol6-audio/resolve/main/test3.mp3",
+      "text": "<p>You will hear a young student, Andrew, ringing an employment agency, enquiring about their services.</p><p><b>ANDREW:</b> Hello. Is this the Triple A Employment agency? .</p><p><b>WOMAN:</b> Yes.</p><p><b>ANDREW:</b> Hi. I rang before. My name's Andrew. ndrewPeterso . I rang you earlier and gave you my personal details. If you remember, I'm that student looking for work during the summer holidays.</p><p><b>WOMAN:</b> Oh, sure. Actually, I have your file right here. But... we still need to add some further information.</p><p><b>ANDREW:</b> Yeah, that's whatåhey old me d that' wh I'm ringing. What do you need to know?</p><p><b>WOMAN:</b> Well, we have to know your main level of education. It's a degree, I suppose.</p><p><b>ANDREW:</b> Yes, but I'm still doing it, in engineerin . It's quite interesting. Some of my friends are studying computing though, so I'm interested in that, also.</p><p><b>WOMAN:</b> Well, I'll just write in your main degree subject. Engineering. We usually have a demand in computing though. Have you worked with computers before? Andrew: No. I just do some programming for fun at the university, but I almost got a job as a computer designer once. Actually, the only job I've ever had m , believe it or not. was as a</p><p><b>WOMAN:</b> Well, at least you've had experience dealing with customers. What about hobbies though? Sometimes they can help develop useful skills.</p><p><b>ANDREW:</b> Ummm in my free time I don't do much — mostly study. I la es occasionally at the university chess club. That's right next to the tennis courts, but I'm not interested in that.</p><p><b>WOMAN:</b> Chess helps develop analytical skills, so I'll put that down. Of course, it's your main skills that employers want to know about. What would you say they are?</p><p><b>ANDREW:</b> Well, I'm in my third year now, studying electrical machines and generating systems, but I'd say lectronlc is my best skill— much better than, say, my machine skills, which aren't so good, actually.</p><p><b>WOMAN:</b> Okay ... machine skills are in demand, but so too are electronic ones, so we might be able to find you a part-time job in that field. But what sort of money do you expect to got?</p><p><b>ANDREW:</b> Oh, anything really. I'd want the standard payment, let's say. What's normal? 1,000 a month? 1,500? Woman. I'll just put $j>öO, Okay? D O</p><p><b>ANDREW:</b> That's fine by me.</p><p><b>WOMAN:</b> When can you start? Say, within two days?</p><p><b>ANDREW:</b> Easily! Actually, less. In fact, just give me a ring, and I'll be able to start ediatel , although I admit it'll take me a few days to get used to getting up early in the morning.</p><p><b>WOMAN:</b> Okay! That's just about it, unless you'd like to add anything else which may help with your application?</p><p><b>ANDREW:</b> Ah, not really. I ride a motorbike, but that's unimportant. I'm friendly, but every applicant claims that, right? I can speak another language.</p><p><b>WOMAN:</b> Ah, that might be useful, depending on the language. Is it Chinese? A Chinese speaker would go down well. 54 |</p><p><b>ANDREW:</b> anis , I' m afraid. You see, I grew up with some friends who came from South America.</p><p><b>WOMAN:</b> Okay, I'll write that down, but I don't think it will help that much, sorry to say.</p><p><b>ANDREW:</b> Well, thanks for your help, and hopefully I'll get a job soon, but can I just ask one more question? [Sure] What, basically, are employers looking for when they Interview someone?</p><p><b>WOMAN:</b> Oh, many things. Being hardworking, diligent, and focused on your job is good, but surprisingly, it often means you can't see the bigger picture, or provide ing fo suggestions which help the company move forward. That requires oursel , outside the box as the sa an eln free o e standard wa s o approaching tas . Employers certainly value that.</p><p><b>ANDREW:</b> I guess experience must help, though?</p><p><b>WOMAN:</b> It depends. I! ne IIIc) didn't exercise your mind, it might not mean that much at all. But since companies are basically composed of people, it is important to be able to et along with other There's no point in hiring someone whom the other employees don 't like, right? That just causes problems — in fact, I would say that being friendly and approachable ranks far more highly than your academic qualifications.</p><p><b>ANDREW:</b> Okay, and that's all assessed at the interview, right?</p><p><b>WOMAN:</b> Yes, and your qualifications, experience, and approach to the job, such as whether you can do different things, work overtime, or do long hours as needed. But those latter qualities are pretty much standard. What may be more important is based on the fact that things inevitably go wrong. Mistakes are made, and omeone's o fix the in a way that creates the least disturbance. People with demonstrated abilities to do this are certainly regarded highly.</p><p><b>ANDREW:</b> I see. That's very interesting</p>",
+      "questions": [
+        {
+          "blockId": "b_v6l3_1_7",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "points": 7,
+          "instruction": "Questions 1–7\nComplete the form.\nWrite NO MORE THAN TWO WORDS OR A NUMBER for each answer.",
+          "text": "<h4>Client Details</h4><p><i>Example: Name: Andrew Peterson</i></p><p>• Educational Qualification: Degree in {blank:1}<br>• Previous Job: {blank:2}<br>• Hobbies: {blank:3}<br>• Main Skills: {blank:4}<br>• Expected Salary ($): {blank:5}<br>• Can start? {blank:6}<br>• Other languages? {blank:7}</p>",
+          "correctAnswers": {
+            "1": "engineering",
+            "2": "car salesman",
+            "3": "(play)(ing) chess",
+            "4": "electronics",
+            "5": "1,200",
+            "6": "immediately",
+            "7": "(speaks) Spanish"
+          }
+        },
+        {
+          "blockId": "b_v6l3_8_10",
+          "type": "multiple_choice",
+          "subtype": "mcq_3_7",
+          "ids": [
+            8,
+            9,
+            10
+          ],
+          "points": 3,
+          "instruction": "Questions 8–10\nChoose THREE letters from the list, A–G.",
+          "text": "Which THREE qualities do employers most value in their staff?",
+          "options": [
+            "A Problem-solving skills",
+            "B Diligence",
+            "C Experience",
+            "D Flexible hours",
+            "E Independent thinking",
+            "F Good personality",
+            "G Qualifications"
+          ],
+          "multi": true,
+          "correctAnswers": {
+            "8": "A Problem-solving skills",
+            "9": "E Independent thinking",
+            "10": "F Good personality"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol6-audio/resolve/main/test3.mp3",
+      "text": "<p>You will hear the manager of a fitness centre giving information about the centre to some new customers.</p><p>Hello everyone, and welcome to the \"Fit for Life\" Health Centre — a place which, as the name suggests, is not just for short-term solutions, but rather, intends to put you on a sensible and achievable looting for the rest of your life. And that's how we're different. For example, we could immediately put you on a harsh exercise program, expeeling you to work out every day, but such a plan would see you quickly lose interest. That's why the initial step is a one-and-a-halfhour onsultat10 , in which your lifestyle, current situation, and long-term goals, are all thoroughly analysed.</p><p>Now, an important part of this consultation involves analysing what you eat. There's no point exercising here and losin weight, then pulling it 11 back on, later. You 14 will need to show sel!-c ntrol and discipline i your d we'll work on that. Similarly, we'll put you on an exercise regime suitable for your level of fitness, so that will involve ate , where we will take you through some activities, then measure your heart rate and blood pressure to determine how fit you are. This will be monitored during every subsequent consultation, along with your exercise schedule, and that occurs onthl , and not half-yearly, as with many other centres.</p><p>As to our actual exercise machines and programs, you will have to decide whether it is muscle mass, stamina, or general fitness, that you want to develop. Think about which of these you want to target, and we'll design a specific program for you but remember, bulging muscles aren't necessarily suitable for everyone. Sometimes it's better to think in terms of two simple concepts: muscle definition and stamina; or, if you are female, being fit and healthy, in both mind and body.</p><p>Now, if you're going to work out at this gym. you'll need to think about your reasons for exercising, so let's consider that in more detail. Muscle mass is certainly popular with the guys, probably seeking, to impress the girls, and with</p><p>56 | muscles comes the confidence to do that, right? Well, for that, you'll need our • h stresswelght unit , where pumping iron is all the rage. Moving, on to other benefits,</p><p>one of the main ones is beating the tension of life, right, and the longer the exercise is, the greater the rewards in this respect. Thus, playing squash can certainly help, and so can swimming, but what's much better, as every jogger will tell you, is their activity, so we have ample o in machine , and they're always popular. They can provide good fitness too, as can the yoga classes; however, again, let's not forget laying squas , which, I would say, is the optimum way to improve your general wellbeing. Such an active, energetic game, plus the competitive element, drives you forward into high levels of health and fitness. These, of course, are the ultimate purposes of being here, but remember, the centre is full of likeminded people, all of whom are interesting to meet, and valuable sources of information.</p><p>The yoga classes have a pre- and post-meeting session, so you'll certainly meet others there, although they'll all be yoga enthusiasts, which limits the range somewhat. But whether doing kerCiSing, everyone showers, right, so those facilities are where you'll heanallsorts of interesting conversations, and ecal knwpop —not like the front-desk area, which is mostly empty as patrons go immediately inside to do their exercise. Of course, the front desk can answer all your questions, and has information brochures, and such like, but for knowing more about a greater variety of subjects and community concerns,.look at the notice board in the voga studi , where there's a huge array of papers, leaflets, and articles, all for you to read and consider.</p>",
+      "questions": [
+        {
+          "blockId": "b_v6l3_11_15",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            11,
+            12,
+            13,
+            14,
+            15
+          ],
+          "points": 5,
+          "instruction": "Questions 11–15\nAnswer the questions.\nWrite ONE WORD ONLY for each answer.",
+          "text": "<p>11 What does the centre provide first? {blank:11}</p><p>12 What is important to control? {blank:12}</p><p>13 What will be used to assess member's fitness level? {blank:13}</p><p>14 How often is the exercise schedule reviewed? {blank:14}</p><p>15 How many exercise programs are available? {blank:15}</p>",
+          "correctAnswers": {
+            "11": "consultation(s)",
+            "12": "diet",
+            "13": "test",
+            "14": "monthly",
+            "15": "three"
+          }
+        },
+        {
+          "blockId": "b_v6l3_16_20",
+          "type": "matching_info",
+          "subtype": "matching_statements",
+          "ids": [
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "points": 5,
+          "instruction": "Questions 16–20\nWrite the correct letter, A–G, next to the questions.\nWhich place is best for",
+          "text": "16 developing confidence?\n17 reducing stress?\n18 building fitness?\n19 meeting others?\n20 finding information?",
+          "options": [
+            "A Jogging machines",
+            "B Yoga studio",
+            "C Weight units",
+            "D Front-desk area",
+            "E Squash courts",
+            "F Shower blocks",
+            "G Swimming pool"
+          ],
+          "correctAnswers": {
+            "16": "C Weight units",
+            "17": "A Jogging machines",
+            "18": "E Squash courts",
+            "19": "F Shower blocks",
+            "20": "B Yoga studio"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol6-audio/resolve/main/test3.mp3",
+      "text": "<p>You will hear two faculty directors talking about which person in their university to promote.</p><p><b>DIR. A:</b> Okay, we've got to decide who to promote to Leading Education Officer.</p><p><b>DIR. B:</b> Someone from the arts faculty, I suppose. 57 |</p><p><b>DIR. A:</b> Well, it can be from any faculty, since the position requires more general skills: andling personne , settling disputes, and motivating them„to focus on the task. It was the last position which involved computer knowledge, not this one.</p><p><b>DIR. B:</b> Surely computer knowledge would help. So too would knowledge in the arts.</p><p><b>DIR. A:</b> Sure, it would help, but the key criterion is being able to direct the staff appropriately.</p><p><b>DIR. B:</b> So, it doesn't matter then from which faculty we select our candidates?</p><p><b>DIR. A:</b> Not really, but I've already looked at those from computing, and rejected them all.</p><p><b>DIR. B:</b> Why?</p><p><b>DIR. A:</b> They'll all too new, lacking in sufficient experience, whereas these ones from are longtimers, sowe'lltakesomeon fr m r</p><p><b>DIR. B:</b> I suppose you're right. The arts faculty doesn' t present much in the way of suitable candidates either.</p><p><b>DIR. A:</b> But we'll still have to train the person—teach the ropes, as they say. And he or she will have to expect to o„oyerti , as needed.</p><p><b>DIR. B:</b> Of course. It can get so busy that, if we were open on the weekend, they'd have to work then as well.</p><p><b>DIR. A:</b> Just as well we're a Monday to Friday university, right?</p><p><b>DIR. B:</b> Right! But are you sure these people will actually want the job? The salary isn't such an improvement on their current ones.</p><p><b>DIR. A:</b> I know, but there are benefits. You get overtime rates, nlce aceto u our c , as well as additional petrol money if you drive for company purposes, which they'll probably be required to do.</p><p><b>DIR. B:</b> But those benefits are quite limited, especially given all the work and responsibility involved. People often don 't like that. They prefer the creative freedom of less-senior teaching positions.</p><p><b>DIR. A:</b> Yeah I know, but these candidates should realise that if they do this job well, ere' 11 be more promotions down the lin . You know how everyone likes having their own office, right?</p><p><b>DIR. B:</b> Sure.</p><p><b>DIR. A:</b> Well, that would come after a few years, if they're prepared to work hard and grow with the university.</p><p><b>DIR. B:</b> Yes, that should attract these people.</p><p><b>DIR. A:</b> Well, that's enough talk about the job. What about the actual candidates? How many do we have? Steven, Abdul, Lek, d OsceÅ using their first names, that's between them, about 34 years in all.</p><p><b>DIR. A:</b> What's the exact breakdown of figures?</p><p><b>DIR. B:</b> Abdul and Steven both have myears, Lek has one more, and Oscar is the most experienced, at 12.</p><p><b>DIR. A:</b> But who's the most qualified?</p><p><b>DIR. B:</b> Steven and Abdul have an MBA — sorry! Abdul's got something called some foreign thing which translates as Master of Business Practice.</p><p><b>DIR. A:</b> I'm not sure what that is, but does he do the job well?</p><p><b>DIR. B:</b> Very well, apparently — better than Lek and Oscar, who hold a degree and some certificates, respectively. But we have to think about any drawbacks — 59 | y'know, possible issues with any of them. I asked their respective deans for feedback, and I found out that Steven, the younger one, drinks a bit.</p><p><b>DIR. A:</b> So, he has a problem with alcohol?</p><p><b>DIR. B:</b> No, he never drinks to excess, but at the bar he's often expressed his intention of moving on, of teaching abroad.</p><p><b>DIR. A:</b> Ah, he's ot stabl</p><p><b>DIR. B:</b> Not stable at all, apparently. We'll never know for how long he'll hold the job.</p><p><b>DIR. A:</b> We need stable personnel, and people without family problems, or sick relatives, like the last guy we promoted. What about Abdul then? Will he do?</p><p><b>DIR. B:</b> He might do, except his English language ability is limited. It's functional, but a bit broken, and meaning is sometimes lost. That's not the problem with the next candidate, Lek, who has good language ability but his job involves handling people, and his dean ys Lek'é Åttitude is ba</p><p><b>DIR. A:</b> In what way?</p><p><b>DIR. B:</b> His manners are okay, and he's interested in his job, but he believes there should always be adequate leisure in life. He definitely won't work overtime and complains a lot already about his job, but this last candidate, Oscar, is probably not the right one, either.</p><p><b>DIR. A:</b> Why not? Not another problem with language?</p><p><b>DIR. B:</b> His first language isn't English, but he speaks it well enough. He's stable, with a good attitude, but his age is the problem.</p><p><b>DIR. A:</b> Age is not a problem. That would be ageism, and I don't believe in that.</p><p><b>DIR. B:</b> But with his age comes ealth proble as well, and serious ones at that. 60 |</p><p><b>DIR. A:</b> Oh, that might be an issue then.</p>",
+      "questions": [
+        {
+          "blockId": "b_v6l3_21",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            21
+          ],
+          "points": 1,
+          "text": "21 The position needs someone good at",
+          "options": [
+            "A Computers.",
+            "B Dealing with people.",
+            "C Arts."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "21": "B Dealing with people."
+          },
+          "instruction": "Questions 21–25\nChoose the correct letter, A, B, or C."
+        },
+        {
+          "blockId": "b_v6l3_22",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            22
+          ],
+          "points": 1,
+          "text": "22 The directors will select someone from the faculty of",
+          "options": [
+            "A Arts.",
+            "B Computing.",
+            "C Business."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "22": "C Business."
+          }
+        },
+        {
+          "blockId": "b_v6l3_23",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            23
+          ],
+          "points": 1,
+          "text": "23 The position will require the person to",
+          "options": [
+            "A Work long hours.",
+            "B Train others.",
+            "C Do weekend work."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "23": "A Work long hours."
+          }
+        },
+        {
+          "blockId": "b_v6l3_24",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            24
+          ],
+          "points": 1,
+          "text": "24 The position will come with a",
+          "options": [
+            "A Car.",
+            "B Parking space.",
+            "C Much better salary."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "24": "B Parking space."
+          }
+        },
+        {
+          "blockId": "b_v6l3_25",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            25
+          ],
+          "points": 1,
+          "text": "25 The best aspect of the job is it",
+          "options": [
+            "A Gives more responsibility.",
+            "B Comes with a private office.",
+            "C Is a step to higher positions."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "25": "C Is a step to higher positions."
+          }
+        },
+        {
+          "blockId": "b_v6l3_26_30",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "points": 5,
+          "instruction": "Questions 26–30\nComplete the table.\nWrite NO MORE THAN TWO WORDS OR A NUMBER for each answer.",
+          "text": "<table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Candidates</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Years of Experience</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Qualification</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Possible Concerns</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Steven</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:26}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:27}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">limited English</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Abdul</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">7</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">MBA</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:28}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Lek</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">8</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">degree</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:29}</td></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Oscar</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">12</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">Certificates</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">{blank:30}</td></tr></table>",
+          "correctAnswers": {
+            "26": "7",
+            "27": "MBP",
+            "28": "not stable",
+            "29": "bad attitude",
+            "30": "health problems"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4",
+      "audioUrl": "https://huggingface.co/datasets/lilxan03/vol6-audio/resolve/main/test3.mp3",
+      "text": "<p>You will hear a lecturer talking about caves.</p><p>If there is one natural feature which has long fascinated man, it is caves those natural underground spaces into which people can enter. No known cave in the world can exist without it being extensively explored, whether it be in remote areas, such as the Clearwater Cave in Borneo, or immensely long and difficult, such as Mammoth Cave in America, or perhaps the most challenging: those caves below the water table, full with water in which ease the exploration is known as cave diving. Whatever the ease, if the caves are known, s com lex and difficult as the usuall they will be explored.</p><p>The formal name fo the stud oftaves peleology and involves many disciplines, such as chemist geolog , biolog ndgtrtography, or the science of making accurate maps, since the largest caves can be hundreds of kilometers long and highly complicated. If the exploration is just for fun, the activity is known as caving, but with the difficulties and dangers involved, eavera ec aver ien f en in lv</p><p>As for the number of caves in the world, research suggests that only a fraction have been found and documented, mostly in the areas in which caving has long been a popular activity, such as in America, France, or Australia. China, for example, has huge areas of limestone bedrock—prime material for cave formation—and logically mustcontainamongthelargestnumberOfcavesintheWOr yet only few are documented due to the lack of interest in caving there. Thus, as exploration continues, new caves will be discovered, and it is likely that the numbers could radically change in the future.</p><p>With caves being such mysterious and intriguing places, the obvious question concerns how they form. The most common cause is the effect of slightly acidic water in a process called 'dissolution'. Here, water seeps into the ground, and down</p><p>61 | through rock masses. If this rock is soluble, the water dissolves some of it, and over time, the passage expands to become a cave, or cave system. The largest and although other materials are possible, most common of these involves including gypsum, marble, and even salt.</p><p>Now, if the cave is formed at the same lime as the rock, it is called a primary cave, and the most common of these are lava tubes. When lava from volcanoes flows downhill, the topmost surface cools and lidif1éS first, leaving the hotter lava to continue to flow beneath. If most of this eventually flows out, a hollow tube is left. The country Iceland, has some excellent caves of this type, and even far-flung Australia has a few. Finally, there are sea caves, formed from waves pounding into coastal cliffs, and eroding into ault line , or softer rock. These caves are usually the shortest, about 50 meters at most, since the erosive action of the waves can only reach a certain distance.</p><p>However, it is limestone eaves which will always be the most interesting. This is due to the presence of limestone formation', As the groundwater seeps downward through the ceiling of th€gave •t encOunter\\a differenfibreksure and temperature, causing it to deposit Wsmall amount of its dissolved alciu carbonate. Over time, through the action of millions of drops, this deposition process results in evergrowing masses, known as stalactites of hanging from the ceiling), or stalagmites (if growing from the floor). Alternatively, the water may flow over a large surface of rock, forming n , and with other sorts of processes, can result in beautiful milky-white formations of astonishing complexity.</p><p>One of the best examples of this, as well as of what surprising discoveries may yet await, is the Lechuguilla Cave in New Mexico. In the 1950s, some cavers heard the sound of wind underneath some large boulders on the cave floor, a clear sign of a deeper passageway. It look until 1984 for a group of cavers to gain permission to start digging, and two years later, in 986 they broke through into a walkable passageway —unlocking, one of the longest cave systems in the world, the deepest in America, and some of the most beautiful formations ever found, Unusually, many of these were yellow with sulphur, suggesting that the caves were a result of hydrogen-sulfide from nearby oil deposits. This was forced through fracture lines, combining with existing groundwater to form sulfuric acid, dissolving the limestone</p><p>62 | from the ottom u , instead of the normal top-down seepage which characterises most limestone cave formation.</p><p>Nam Dö IELTS</p><p>63 |</p>",
+      "questions": [
+        {
+          "blockId": "b_v6l3_31",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            31
+          ],
+          "points": 1,
+          "text": "31 Caves are",
+          "options": [
+            "A Often ignored.",
+            "B Mostly in remote areas.",
+            "C Often difficult to explore."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "31": "C Often difficult to explore."
+          },
+          "instruction": "Questions 31–33\nChoose the correct letter, A, B, or C."
+        },
+        {
+          "blockId": "b_v6l3_32",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            32
+          ],
+          "points": 1,
+          "text": "32 People who explore caves",
+          "options": [
+            "A Mostly need to know about cartography.",
+            "B Enjoy overcoming the difficulties.",
+            "C Usually know about cave sciences."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "32": "C Usually know about cave sciences."
+          }
+        },
+        {
+          "blockId": "b_v6l3_33",
+          "type": "multiple_choice",
+          "subtype": "mcq_1_3",
+          "ids": [
+            33
+          ],
+          "points": 1,
+          "text": "33 China has",
+          "options": [
+            "A Probably the most undiscovered caves.",
+            "B A growing number of cave explorers.",
+            "C Some of the best documented caves."
+          ],
+          "multi": false,
+          "correctAnswers": {
+            "33": "A Probably the most undiscovered caves."
+          }
+        },
+        {
+          "blockId": "b_v6l3_34_40",
+          "type": "fill_blanks",
+          "subtype": "fill_blanks",
+          "ids": [
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ],
+          "points": 7,
+          "instruction": "Questions 34–40\nComplete the table and notes.\nWrite NO MORE THAN TWO WORDS for each answer.",
+          "text": "<h4>Three Main Reasons for Cave Formation</h4><table class=\"w-full border-collapse border border-slate-300 text-sm my-2 bg-white\"><tr><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Dissolution</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Volcanic Lava Tubes</th><th class=\"border border-slate-300 bg-slate-100 px-3 py-2 text-left font-bold text-slate-800\">Action of Waves</th></tr><tr><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">mainly involves {blank:34}</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">• topmost surface cools down and {blank:35}<br>• hotter lava continue to flow beneath</td><td class=\"border border-slate-300 px-3 py-2 align-top text-slate-800\">waves pound in to cliffs then erode into {blank:36}</td></tr></table><p><b>Limestone caves</b> (e.g. Lechuguilla):<br>• often have formations made of {blank:37} carbonate<br>• e.g. stalactites, stalagmites, and {blank:38}<br>• finally revealed in {blank:39}<br>• interestingly, formed from the {blank:40} or less rigid rocks.</p>",
+          "correctAnswers": {
+            "34": "limestone",
+            "35": "solidifies",
+            "36": "fault lines",
+            "37": "calcium",
+            "38": "flowstone",
+            "39": "1986",
+            "40": "bottom up"
+          }
+        }
+      ]
+    }
+  ]
+}
